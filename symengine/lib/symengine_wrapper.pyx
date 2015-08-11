@@ -96,6 +96,8 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = ATanh.__new__(ATanh)
     elif (symengine.is_a_ACoth(deref(o))):
         r = ACoth.__new__(ACoth)
+    elif (symengine.is_a_PyNumber(deref(o))):
+        r = PyNumber.__new__(PyNumber)
     else:
         raise Exception("Unsupported SymEngine class.")
     r.thisptr = o
@@ -203,8 +205,9 @@ def sympy2symengine(a, raise_error=False):
             for e in r:
                 v.append(e)
         return DenseMatrix(row, col, v)
-    if raise_error:
-        raise SympifyError("sympy2symengine: Cannot convert '%r' to a symengine type." % a)
+
+    #if raise_error:
+    #    raise SympifyError("sympy2symengine: Cannot convert '%r' to a symengine type." % a)
 
 def sympify(a, raise_error=True):
     """
@@ -778,6 +781,61 @@ cdef inline void SymPy_XINCREF(void* o):
 
 cdef inline int SymPy_CMP(void* o1, void* o2):
     return <int>PyObject_CallMethodObjArgs(<object>o1, "compare", <PyObject *>o2, NULL)
+
+cdef RCP[const symengine.Basic] pynumber_to_symengine(PyObject* o1):
+    cdef Basic X = sympify(<object>o1, False)
+    return X.thisptr
+
+cdef PyObject* symengine_to_sage(RCP[const symengine.Basic] o1):
+    t = c2py(o1)._sage_()
+    return <PyObject*>(t)
+
+cdef PyObject* symengine_to_sympy(RCP[const symengine.Basic] o1):
+    t = c2py(o1)._sympy_()
+    return <PyObject*>(t)
+
+cdef RCP[const symengine.Basic] sympy_eval(PyObject* o1, long bits):
+    cdef Basic X = sympify((<object>o1).n(bits), False)
+    return X.thisptr
+
+cdef RCP[const symengine.Basic] sage_eval(PyObject* o1, long bits):
+    import sage.all as sage
+    cdef Basic X = sympify(sage.SR(<object>o1).n(bits), False)
+    return X.thisptr
+
+cdef symengine.PyModule* sympy_module
+cdef symengine.PyModule* sage_module
+
+try:
+    import sympy
+    sympy_module = new symengine.PyModule(<PyObject*>(sympy), &symengine_to_sympy,
+                                                          &pynumber_to_symengine, &sympy_eval)
+except ImportError:
+    pass
+
+try:
+    import sage.all as sage
+    sage_module = new symengine.PyModule(<PyObject*>(sage), &symengine_to_sage,
+                                                          &pynumber_to_symengine, &sage_eval)
+except ImportError:
+    pass
+
+cdef class PyNumber(Number):
+     def __cinit__(self, obj = None, module_name = None):
+        if obj is None:
+            return
+        if module_name == "sympy":
+            self.thisptr = symengine.make_rcp_PyNumber(<PyObject*>(obj), sympy_module)
+        elif module_name == "sage":
+            self.thisptr = symengine.make_rcp_PyNumber(<PyObject*>(obj), sage_module)
+
+     def _sympy_(self):
+        import sympy
+        return sympy.sympify(<object>deref(symengine.rcp_static_cast_PyNumber(self.thisptr)).get_py_object())
+
+     def pyobject(self):
+        return <object>deref(symengine.rcp_static_cast_PyNumber(self.thisptr)).get_py_object()
+
 
 cdef class FunctionWrapper(FunctionSymbol):
 

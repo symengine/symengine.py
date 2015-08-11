@@ -28,6 +28,9 @@ cdef class RealMPFR(Number):
 cdef class ComplexMPC(Number):
     pass
 
+cdef class PyNumber(Number):
+    pass
+
 cdef class Add(Basic):
     pass
 
