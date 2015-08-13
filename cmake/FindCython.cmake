@@ -4,14 +4,14 @@
 
 # This finds the "cython" executable in your PATH, and then in some standard
 # paths:
-FIND_FILE(CYTHON_BIN cython /usr/bin /usr/local/bin)
+FIND_PROGRAM(CYTHON_BIN cython /usr/bin /usr/local/bin)
 SET(CYTHON_FLAGS --cplus --fast-fail)
 
 SET(Cython_FOUND FALSE)
 IF (CYTHON_BIN)
     # Try to run Cython, to make sure it works:
     execute_process(
-        COMMAND ${CYTHON_BIN} ${CYTHON_FLAGS} ${CMAKE_MODULE_PATH}/cython_test.pyx
+        COMMAND ${CYTHON_BIN} ${CYTHON_FLAGS} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cython_test.pyx
         RESULT_VARIABLE CYTHON_RESULT
         OUTPUT_QUIET
         ERROR_QUIET

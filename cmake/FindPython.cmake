@@ -16,16 +16,26 @@ execute_process(
 string(STRIP ${PYTHON_LIB_PATH} PYTHON_LIB_PATH)
 
 execute_process(
+	COMMAND python -c "import sys; print(sys.prefix)"
+	OUTPUT_VARIABLE PYTHON_PREFIX_PATH
+	)
+
+string(STRIP ${PYTHON_PREFIX_PATH} PYTHON_PREFIX_PATH)
+
+execute_process(
 	COMMAND python -c "import sys; print('%s.%s' % sys.version_info[:2])"
     OUTPUT_VARIABLE PYTHON_VERSION
 	)
 string(STRIP ${PYTHON_VERSION} PYTHON_VERSION)
 message(STATUS "Python version: ${PYTHON_VERSION}")
 
+string(REPLACE "." "" PYTHON_VERSION_WITHOUT_DOTS ${PYTHON_VERSION})
+
 FIND_LIBRARY(PYTHON_LIBRARY NAMES
         python${PYTHON_VERSION}
         python${PYTHON_VERSION}m
-    PATHS ${PYTHON_LIB_PATH}
+        python${PYTHON_VERSION_WITHOUT_DOTS}
+    PATHS ${PYTHON_LIB_PATH} ${PYTHON_PREFIX_PATH}/lib ${PYTHON_PREFIX_PATH}/libs
     PATH_SUFFIXES ${CMAKE_LIBRARY_ARCHITECTURE}
     NO_DEFAULT_PATH
     NO_SYSTEM_ENVIRONMENT_PATH
@@ -87,7 +97,8 @@ macro(ADD_PYTHON_LIBRARY name)
         add_library(${name} SHARED ${ARGN})
     ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set_target_properties(${name} PROPERTIES PREFIX "")
-    IF(${CMAKE_SYSTEM_NAME} STREQUAL "CYGWIN")
-            target_link_libraries(${name} ${PYTHON_LIBRARY})
-    ENDIF(${CMAKE_SYSTEM_NAME} STREQUAL "CYGWIN")
+    target_link_libraries(${name} ${PYTHON_LIBRARY})
+    IF(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+        set_target_properties(${name} PROPERTIES SUFFIX ".pyd")
+    ENDIF()
 endmacro(ADD_PYTHON_LIBRARY)
