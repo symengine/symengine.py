@@ -27,7 +27,7 @@ if not use_setuptools:
     from distutils.core import setup
     from distutils.command.install import install as _install
 
-cmake_opts = [("WITH_PYTHON","yes")]
+cmake_opts = [("WITH_PYTHON","yes"), ("BUILD_TESTS", "no"), ("BUILD_BENCHMARKS", "no")]
 
 def process_opts(opts):
     return ['-D'+'='.join(o) for o in opts]
@@ -100,19 +100,19 @@ class InstallWithCmake(_install):
 
 long_description = '''
 SymEngine is a standalone fast C++ symbolic manipulation library.
-Optional thin Python wrappers (CSymPy) allow easy usage from Python and
+Optional thin Python wrappers (SymEngine) allow easy usage from Python and
 integration with SymPy.'''
 
-setup(name = "csympy",
+setup(name = "symengine",
       version = "git",
-      description = "CSymPy is a Python library providing wrappers to SymEngine",
+      description = "Python library providing wrappers to SymEngine",
       long_description = "",
       author = "",
       author_email = "",
       license = "MIT",
       url = "https://github.com/sympy/symengine",
-      packages = ["csympy", "csympy.lib", "csympy.tests"],
-      package_data= {'' : ['lib/csympy_wrapper.so']},
+      packages=['symengine', 'symengine.lib', 'symengine.tests'],
+      package_data= {'symengine' : ['lib/symengine_wrapper.so']},
       cmdclass={
           'build' : BuildWithCmake,
           'install' : InstallWithCmake,
