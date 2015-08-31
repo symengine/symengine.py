@@ -4,10 +4,11 @@
 #include <Python.h>
 #include <symengine/number.h>
 #include <symengine/constants.h>
+#include <symengine/functions.h>
 
 namespace SymEngine {
 
-class PyModule {
+class PyModule : public EnableRCPFromThis<PyModule> {
 public:
     PyObject* pyobject_;
     PyObject* (*to_py_)(const RCP<const Basic> x);
@@ -17,7 +18,6 @@ public:
     PyModule(PyObject*, PyObject* (*)(const RCP<const Basic> x),
              RCP<const Basic> (*)(PyObject*), RCP<const Basic> (*)(PyObject*, long bits));
     PyObject* get_py_object() const {
-
         return pyobject_;
     }
 };
@@ -25,18 +25,18 @@ public:
 class PyNumber : public NumberWrapper {
 private:
     PyObject* pyobject_;
-    PyModule* pymodule_;
+    RCP<const PyModule> pymodule_;
 
 public:
     IMPLEMENT_TYPEID(NUMBER_WRAPPER)
-    PyNumber(PyObject* pyobject, PyModule* pymodule);
+    PyNumber(PyObject* pyobject, const RCP<const PyModule> &pymodule);
     ~PyNumber() {
         Py_DecRef(pyobject_);
     }
     PyObject* get_py_object() const {
         return pyobject_;
     }
-    PyModule* get_py_module() const {
+    RCP<const PyModule> get_py_module() const {
         return pymodule_;
     }
     static PyObject* get_zero() {
@@ -81,7 +81,7 @@ public:
     virtual RCP<const Number> add(const Number &other) const {
         PyObject* other_p;
         if (is_a<PyNumber>(other)) {
-            other_p = static_cast< ..Number &>(other).pyobject_;
+            other_p = static_cast<const PyNumber &>(other).pyobject_;
         } else {
             other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
         }

@@ -3,14 +3,13 @@
 
 namespace SymEngine {
 
-PyNumber::PyNumber(PyObject* pyobject, PyModule* pymodule) : pyobject_(pyobject), pymodule_(pymodule) {
-
+PyNumber::PyNumber(PyObject* pyobject, const RCP<const PyModule> &pymodule) :
+        pyobject_(pyobject), pymodule_(pymodule) {
 }
 
 PyModule::PyModule(PyObject* pyobject, PyObject* (*to_py)(const RCP<const Basic>),
-            RCP<const Basic> (*from_py)(PyObject*), RCP<const Basic> (*eval)(PyObject*, long)) :
-            pyobject_(pyobject), to_py_(to_py), from_py_(from_py), eval_(eval) {
-
+        RCP<const Basic> (*from_py)(PyObject*), RCP<const Basic> (*eval)(PyObject*, long)) :
+        pyobject_(pyobject), to_py_(to_py), from_py_(from_py), eval_(eval) {
 }
 
 
@@ -35,7 +34,7 @@ int PyNumber::compare(const Basic &o) const {
     virtual RCP<const Basic> function(const Basic &x) const { \
         SYMENGINE_ASSERT(is_a<PyNumber>(x)); \
         static PyObject* name = PyString_FromString(xstr(function)); \
-        PyModule* module = static_cast<const PyNumber &>(x).get_py_module(); \
+        RCP<const PyModule> module = static_cast<const PyNumber &>(x).get_py_module(); \
         return module->from_py_(PyObject_CallMethodObjArgs(module->get_py_object(), name, static_cast<const PyNumber &>(x).get_py_object(), NULL));\
     } \
 

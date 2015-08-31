@@ -252,6 +252,8 @@ def sympify(a, raise_error=True):
         return a._symengine_()
     elif hasattr(a, '_sympy_'):
         return sympy2symengine(a._sympy_(), raise_error)
+    elif hasattr(a, 'pyobject'):
+        return sympify(a.pyobject(), raise_error)
     return sympy2symengine(a, raise_error)
 
 cdef class Basic(object):
@@ -783,15 +785,18 @@ cdef inline int SymPy_CMP(void* o1, void* o2):
     return <int>PyObject_CallMethodObjArgs(<object>o1, "compare", <PyObject *>o2, NULL)
 
 cdef RCP[const symengine.Basic] pynumber_to_symengine(PyObject* o1):
+    Py_XINCREF(o1)
     cdef Basic X = sympify(<object>o1, False)
     return X.thisptr
 
 cdef PyObject* symengine_to_sage(RCP[const symengine.Basic] o1):
     t = c2py(o1)._sage_()
+    Py_XINCREF(<PyObject*>t)
     return <PyObject*>(t)
 
 cdef PyObject* symengine_to_sympy(RCP[const symengine.Basic] o1):
     t = c2py(o1)._sympy_()
+    Py_XINCREF(<PyObject*>t)
     return <PyObject*>(t)
 
 cdef RCP[const symengine.Basic] sympy_eval(PyObject* o1, long bits):
@@ -803,19 +808,19 @@ cdef RCP[const symengine.Basic] sage_eval(PyObject* o1, long bits):
     cdef Basic X = sympify(sage.SR(<object>o1).n(bits), False)
     return X.thisptr
 
-cdef symengine.PyModule* sympy_module
-cdef symengine.PyModule* sage_module
+cdef RCP[const symengine.PyModule] sympy_module
+cdef RCP[const symengine.PyModule] sage_module
 
 try:
     import sympy
-    sympy_module = new symengine.PyModule(<PyObject*>(sympy), &symengine_to_sympy,
+    sympy_module = symengine.make_rcp_PyModule(<PyObject*>(sympy), &symengine_to_sympy,
                                                           &pynumber_to_symengine, &sympy_eval)
 except ImportError:
     pass
 
 try:
     import sage.all as sage
-    sage_module = new symengine.PyModule(<PyObject*>(sage), &symengine_to_sage,
+    sage_module = symengine.make_rcp_PyModule(<PyObject*>(sage), &symengine_to_sage,
                                                           &pynumber_to_symengine, &sage_eval)
 except ImportError:
     pass
@@ -825,9 +830,9 @@ cdef class PyNumber(Number):
         if obj is None:
             return
         if module_name == "sympy":
-            self.thisptr = symengine.make_rcp_PyNumber(<PyObject*>(obj), sympy_module)
+            self.thisptr = symengine.make_rcp_PyNumber(<PyObject*>(obj), <const RCP[const symengine.PyModule]>sympy_module)
         elif module_name == "sage":
-            self.thisptr = symengine.make_rcp_PyNumber(<PyObject*>(obj), sage_module)
+            self.thisptr = symengine.make_rcp_PyNumber(<PyObject*>(obj), <const RCP[const symengine.PyModule]>sage_module)
 
      def _sympy_(self):
         import sympy
