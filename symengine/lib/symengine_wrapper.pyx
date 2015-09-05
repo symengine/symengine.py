@@ -808,22 +808,10 @@ cdef RCP[const symengine.Basic] sage_eval(PyObject* o1, long bits):
     cdef Basic X = sympify(sage.SR(<object>o1).n(bits), False)
     return X.thisptr
 
-cdef RCP[const symengine.PyModule] sympy_module
-cdef RCP[const symengine.PyModule] sage_module
-
-try:
-    import sympy
-    sympy_module = symengine.make_rcp_PyModule(<PyObject*>(sympy), &symengine_to_sympy,
-                                                          &pynumber_to_symengine, &sympy_eval)
-except ImportError:
-    pass
-
-try:
-    import sage.all as sage
-    sage_module = symengine.make_rcp_PyModule(<PyObject*>(sage), &symengine_to_sage,
-                                                          &pynumber_to_symengine, &sage_eval)
-except ImportError:
-    pass
+cdef RCP[const symengine.PyModule] sympy_module = \
+        symengine.make_rcp_PyModule(&symengine_to_sympy, &pynumber_to_symengine, &sympy_eval)
+cdef RCP[const symengine.PyModule] sage_module = \
+        symengine.make_rcp_PyModule(&symengine_to_sage, &pynumber_to_symengine, &sage_eval)
 
 cdef class PyNumber(Number):
      def __cinit__(self, obj = None, module_name = None):

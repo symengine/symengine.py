@@ -155,11 +155,10 @@ cdef extern from "<symengine/number.h>" namespace "SymEngine":
 
 cdef extern from "pynumber.h" namespace "SymEngine":
     cdef cppclass PyNumber(NumberWrapper):
-        PyNumber(PyObject* pyobject, PyModule* pymodule) nogil
+        pass
         PyObject* get_py_object()
     cdef cppclass PyModule:
-        PyModule(PyObject* , PyObject* (*)(RCP[const Basic] x), \
-                 RCP[const Basic] (*)(PyObject*), RCP[const Basic] (*)(PyObject*, long bits)) nogil
+        pass
 
 cdef extern from "<symengine/integer.h>" namespace "SymEngine":
     cdef cppclass Integer(Number):
@@ -247,7 +246,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
             void (*dec_ref)(void *), int (*comp)(void *, void *)) nogil
     RCP[const Basic] make_rcp_RealDouble "SymEngine::make_rcp<const SymEngine::RealDouble>"(double x) nogil
     RCP[const Basic] make_rcp_ComplexDouble "SymEngine::make_rcp<const SymEngine::ComplexDouble>"(double complex x) nogil
-    RCP[const PyModule] make_rcp_PyModule "SymEngine::make_rcp<const SymEngine::PyModule>"(PyObject* , PyObject* (*) (RCP[const Basic] x), \
+    RCP[const PyModule] make_rcp_PyModule "SymEngine::make_rcp<const SymEngine::PyModule>"(PyObject* (*) (RCP[const Basic] x), \
             RCP[const Basic] (*)(PyObject*), RCP[const Basic] (*)(PyObject*, long bits)) nogil
     RCP[const Basic] make_rcp_PyNumber "SymEngine::make_rcp<const SymEngine::PyNumber>"(PyObject*, const RCP[const PyModule] &x) nogil
 
