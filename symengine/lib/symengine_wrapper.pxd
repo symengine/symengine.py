@@ -112,7 +112,7 @@ cdef class ACoth(HyperbolicFunction):
 cdef class FunctionSymbol(Function):
     pass
 
-cdef class FunctionWrapper(FunctionSymbol):
+cdef class PyFunction(FunctionSymbol):
     pass
 
 cdef class Abs(Function):
@@ -132,3 +132,6 @@ cdef class DenseMatrix(MatrixBase):
 
 cdef class Log(Basic):
     pass
+
+cdef class PyFunctionClass(object):
+    cdef RCP[const symengine.PyFunctionClass] thisptr

@@ -74,6 +74,7 @@ cdef extern from "<symengine/symengine_rcp.h>" namespace "SymEngine":
     RCP[const ComplexMPC] rcp_static_cast_ComplexMPC "SymEngine::rcp_static_cast<const SymEngine::ComplexMPC>"(RCP[const Basic] &b) nogil
     RCP[const Log] rcp_static_cast_Log "SymEngine::rcp_static_cast<const SymEngine::Log>"(RCP[const Basic] &b) nogil
     RCP[const PyNumber] rcp_static_cast_PyNumber "SymEngine::rcp_static_cast<const SymEngine::PyNumber>"(RCP[const Basic] &b) nogil
+    RCP[const PyFunction] rcp_static_cast_PyFunction "SymEngine::rcp_static_cast<const SymEngine::PyFunction>"(RCP[const Basic] &b) nogil
     Ptr[RCP[Basic]] outArg(RCP[const Basic] &arg) nogil
     Ptr[RCP[Integer]] outArg_Integer "SymEngine::outArg<SymEngine::RCP<const SymEngine::Integer>>"(RCP[const Integer] &arg) nogil
 
@@ -132,6 +133,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_Derivative "SymEngine::is_a<SymEngine::Derivative>"(const Basic &b) nogil
     bool is_a_Subs "SymEngine::is_a<SymEngine::Subs>"(const Basic &b) nogil
     bool is_a_FunctionWrapper "SymEngine::is_a<SymEngine::FunctionWrapper>"(const Basic &b) nogil
+    bool is_a_PyFunction "SymEngine::is_a<SymEngine::PyFunction>"(const Basic &b) nogil
     bool is_a_RealDouble "SymEngine::is_a<SymEngine::RealDouble>"(const Basic &b) nogil
     bool is_a_ComplexDouble "SymEngine::is_a<SymEngine::ComplexDouble>"(const Basic &b) nogil
     bool is_a_RealMPFR "SymEngine::is_a<SymEngine::RealMPFR>"(const Basic &b) nogil
@@ -155,10 +157,15 @@ cdef extern from "<symengine/number.h>" namespace "SymEngine":
 
 cdef extern from "pynumber.h" namespace "SymEngine":
     cdef cppclass PyNumber(NumberWrapper):
-        pass
         PyObject* get_py_object()
     cdef cppclass PyModule:
         pass
+
+cdef extern from "pyfunction.h" namespace "SymEngine":
+    cdef cppclass PyFunctionClass:
+        pass
+    cdef cppclass PyFunction:
+        PyObject* get_py_object()
 
 cdef extern from "<symengine/integer.h>" namespace "SymEngine":
     cdef cppclass Integer(Number):
@@ -249,6 +256,10 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     RCP[const PyModule] make_rcp_PyModule "SymEngine::make_rcp<const SymEngine::PyModule>"(PyObject* (*) (RCP[const Basic] x), \
             RCP[const Basic] (*)(PyObject*), RCP[const Basic] (*)(PyObject*, long bits)) nogil
     RCP[const Basic] make_rcp_PyNumber "SymEngine::make_rcp<const SymEngine::PyNumber>"(PyObject*, const RCP[const PyModule] &x) nogil
+    RCP[const PyFunctionClass] make_rcp_PyFunctionClass "SymEngine::make_rcp<const SymEngine::PyFunctionClass>"(PyObject* pyobject,
+            string name, const RCP[const PyModule] &pymodule) nogil
+    RCP[const Basic] make_rcp_PyFunction "SymEngine::make_rcp<const SymEngine::PyFunction>" (const vec_basic &vec,
+            const RCP[const PyFunctionClass] &pyfunc_class, const PyObject* pyobject) nogil
 
 cdef extern from "<symengine/functions.h>" namespace "SymEngine":
     cdef RCP[const Basic] sin(RCP[const Basic] &arg) nogil except+

@@ -36,6 +36,8 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = Symbol.__new__(Symbol)
     elif (symengine.is_a_Constant(deref(o))):
         r = Constant.__new__(Constant)
+    elif (symengine.is_a_PyFunction(deref(o))):
+        r = PyFunction.__new__(PyFunction)
     elif (symengine.is_a_FunctionSymbol(deref(o))):
         r = FunctionSymbol.__new__(FunctionSymbol)
     elif (symengine.is_a_Abs(deref(o))):
@@ -44,8 +46,6 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = Derivative.__new__(Derivative)
     elif (symengine.is_a_Subs(deref(o))):
         r = Subs.__new__(Subs)
-    elif (symengine.is_a_FunctionWrapper(deref(o))):
-        r = FunctionWrapper.__new__(FunctionWrapper)
     elif (symengine.is_a_RealDouble(deref(o))):
         r = RealDouble.__new__(RealDouble)
     elif (symengine.is_a_ComplexDouble(deref(o))):
@@ -197,7 +197,7 @@ def sympy2symengine(a, raise_error=False):
         name = str(a.func)
         return function_symbol(name, *(a.args))
     elif isinstance(a, sympy.Function):
-        return FunctionWrapper(a)
+        return PyFunction(a, a.args, get_function_class(a.func, "sympy"))
     elif isinstance(a, sympy.Matrix):
         row, col = a.shape
         v = []
@@ -255,6 +255,23 @@ def sympify(a, raise_error=True):
     elif hasattr(a, 'pyobject'):
         return sympify(a.pyobject(), raise_error)
     return sympy2symengine(a, raise_error)
+
+funcs = {}
+
+cdef get_function_class(function, module=None):
+    cdef PyFunctionClass t
+    if function in funcs:
+        t = funcs[function]
+    else:
+        t = PyFunctionClass.__new__(PyFunctionClass)
+        if module is None:
+            module = function.__module__
+        if "sympy" in str(module):
+            t.thisptr = symengine.make_rcp_PyFunctionClass(<PyObject*>(function), str(function), <const RCP[const symengine.PyModule]>sympy_module)
+        elif "sage" in str(module):
+            t.thisptr = symengine.make_rcp_PyFunctionClass(<PyObject*>(function), str(function), <const RCP[const symengine.PyModule]>sage_module)
+        funcs[function] = t
+    return t
 
 cdef class Basic(object):
 
@@ -785,7 +802,6 @@ cdef inline int SymPy_CMP(void* o1, void* o2):
     return <int>PyObject_CallMethodObjArgs(<object>o1, "compare", <PyObject *>o2, NULL)
 
 cdef RCP[const symengine.Basic] pynumber_to_symengine(PyObject* o1):
-    Py_XINCREF(o1)
     cdef Basic X = sympify(<object>o1, False)
     return X.thisptr
 
@@ -814,12 +830,14 @@ cdef RCP[const symengine.PyModule] sage_module = \
         symengine.make_rcp_PyModule(&symengine_to_sage, &pynumber_to_symengine, &sage_eval)
 
 cdef class PyNumber(Number):
-     def __cinit__(self, obj = None, module_name = None):
+     def __cinit__(self, obj = None, module = None):
         if obj is None:
             return
-        if module_name == "sympy":
+        if module == None:
+            module = obj.__module__
+        if "sympy" in str(module):
             self.thisptr = symengine.make_rcp_PyNumber(<PyObject*>(obj), <const RCP[const symengine.PyModule]>sympy_module)
-        elif module_name == "sage":
+        elif "sage" in str(module):
             self.thisptr = symengine.make_rcp_PyNumber(<PyObject*>(obj), <const RCP[const symengine.PyModule]>sage_module)
 
      def _sympy_(self):
@@ -830,37 +848,34 @@ cdef class PyNumber(Number):
         return <object>deref(symengine.rcp_static_cast_PyNumber(self.thisptr)).get_py_object()
 
 
-cdef class FunctionWrapper(FunctionSymbol):
+cdef class PyFunction(FunctionSymbol):
 
-    def __cinit__(self, sympy_function = None):
-        import sympy
-        if not isinstance(sympy_function, sympy.Function):
+    def __cinit__(self, pyfunction = None, args = None, pyfunction_class = None):
+        if pyfunction is None:
             return
-        cdef void* ptr
-        ptr = <void *>(sympy_function)
-        cdef string name = str(sympy_function.func).encode("utf-8")
-        cdef string hash_ = str(sympy_function.__hash__()).encode("utf-8")
         cdef symengine.vec_basic v
         cdef Basic arg_
-        for arg in sympy_function.args:
-            arg_ = sympify(arg)
+        for arg in args:
+            arg_ = sympify(arg, True)
             v.push_back(arg_.thisptr)
-        SymPy_XINCREF(ptr)
-        self.thisptr = symengine.make_rcp_FunctionWrapper(ptr, name, hash_, v, &SymPy_XDECREF, &SymPy_CMP)
+        cdef PyFunctionClass _pyfunction_class = pyfunction_class
+        cdef PyObject* _pyfunction = <PyObject*>pyfunction
+        Py_XINCREF(_pyfunction)
+        self.thisptr = symengine.make_rcp_PyFunction(v, <const RCP[const symengine.PyFunctionClass]>(_pyfunction_class.thisptr), _pyfunction)
 
     def _sympy_(self):
         cdef object pyobj
-        cdef RCP[const symengine.FunctionWrapper] X = \
-            symengine.rcp_static_cast_FunctionWrapper(self.thisptr)
-        pyobj = <object>(deref(X).get_object())
+        cdef RCP[const symengine.PyFunction] X = \
+            symengine.rcp_static_cast_PyFunction(self.thisptr)
+        pyobj = <object>(deref(X).get_py_object())
         return pyobj
 
     def _sage_(self):
         cdef object pyobj
-        cdef RCP[const symengine.FunctionWrapper] X = \
-            symengine.rcp_static_cast_FunctionWrapper(self.thisptr)
-        pyobj = <object>(deref(X).get_object())
-        return pyobj._sage_()
+        cdef RCP[const symengine.PyFunction] X = \
+            symengine.rcp_static_cast_PyFunction(self.thisptr)
+        pyobj = <object>(deref(X).get_py_object())
+        return pyobj
 
 
 cdef class Abs(Function):

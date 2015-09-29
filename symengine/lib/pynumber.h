@@ -18,99 +18,23 @@ public:
     PyModule(PyObject* (*)(const RCP<const Basic> x), RCP<const Basic> (*)(PyObject*),
              RCP<const Basic> (*)(PyObject*, long bits));
     ~PyModule();
-    PyObject* get_zero() const {
-        return zero;
-    }
-    PyObject* get_one() const {
-        return one;
-    }
-    PyObject* get_minus_one() const {
-        return minus_one;
-    }
-};
-
-class PyFunctionClass : public EnableRCPFromThis<PyFunctionClass> {
-private:
-    PyObject* pyobject_;
-    std::string name_;
-    mutable size_t hash_;
-    RCP<const PyModule> pymodule_;
-public:
-    PyFunctionClass(PyObject* pyobject, std::string name, RCP<const PyModule> &pymodule) :
-        pyobject_{pyobject}, name_{name}, pymodule_{pymodule} {
-
-    }
-    PyObject* get_py_object() const {
-        return pyobject_;
-    }
-    RCP<const PyModule> get_py_module() const {
-        return pymodule_;
-    }
-    std::string get_name() const {
-        return name_;
-    }
-    PyObject* call(const vec_basic &vec) const {
-        PyObject* tuple = PyTuple_New(vec.size());
-        for (unsigned i = 0; i < vec.size(); i++) {
-            PyTuple_SetItem(tuple, i, pymodule_->to_py_(vec[i]));
-        }
-        return PyObject_CallObject(pyobject_, tuple);
-    }
-    bool __eq__(const PyFunctionClass &x) const {
-        return PyObject_RichCompareBool(pyobject_, x.pyobject_, Py_EQ) != 1;
-    }
-    int compare(const PyFunctionClass &x) const {
-        if (__eq__(x)) return 0;
-        return PyObject_RichCompareBool(pyobject_, x.pyobject_, Py_LT) == 1 ? 1 : -1;
-    }
-    std::size_t __hash__() const {
-        return PyObject_Hash(pyobject_);
-    }
-    std::size_t hash() const {
-        if (hash_ == 0)
-            hash_ = __hash__();
-        return hash_;
-    }
-};
-
-class PyFunction : public FunctionSymbol {
-private:
-    RCP<const PyFunctionClass> pyfunction_class_;
-    mutable PyObject* pyobject_;
-public:
-    PyFunction(const vec_basic &vec, const RCP<const PyFunctionClass> &pyfunc_class, const PyObject* pyobject = nullptr) :
-            FunctionSymbol(pyfunc_class->get_name(), vec), pyfunction_class_{pyfunc_class}, pyobject_{pyobject_} {
-
-    }
-    PyObject* get_py_object() const {
-        if (pyobject_ != nullptr) {
-            return pyobject_;
-        }
-        pyobject_ = pyfunction_class_->call(arg_);
-        return pyobject_;
-    }
-    virtual RCP<const FunctionSymbol> create(const vec_basic &x) const {
-        return make_rcp<const PyFunction>(x, pyfunction_class_);
-    }
+    PyObject* get_zero() const { return zero; }
+    PyObject* get_one() const { return one; }
+    PyObject* get_minus_one() const { return minus_one; }
 };
 
 class PyNumber : public NumberWrapper {
 private:
     PyObject* pyobject_;
     RCP<const PyModule> pymodule_;
-
 public:
     IMPLEMENT_TYPEID(NUMBER_WRAPPER)
     PyNumber(PyObject* pyobject, const RCP<const PyModule> &pymodule);
     ~PyNumber() {
         Py_DecRef(pyobject_);
     }
-    PyObject* get_py_object() const {
-        return pyobject_;
-    }
-    RCP<const PyModule> get_py_module() const {
-        return pymodule_;
-    }
+    PyObject* get_py_object() const { return pyobject_; }
+    RCP<const PyModule> get_py_module() const { return pymodule_; }
     //! \return true if `0`
     virtual bool is_zero() const {
         return PyObject_RichCompareBool(pyobject_, pymodule_->get_zero(), Py_EQ) == 1;

@@ -1,4 +1,5 @@
 #include "pynumber.h"
+#include "pyfunction.h"
 #include <symengine/number.h>
 
 namespace SymEngine {
