@@ -258,20 +258,11 @@ def sympify(a, raise_error=True):
 
 funcs = {}
 
-cdef get_function_class(function, module=None):
-    cdef PyFunctionClass t
-    if function in funcs:
-        t = funcs[function]
-    else:
-        t = PyFunctionClass.__new__(PyFunctionClass)
-        if module is None:
-            module = function.__module__
-        if "sympy" in str(module):
-            t.thisptr = symengine.make_rcp_PyFunctionClass(<PyObject*>(function), str(function), <const RCP[const symengine.PyModule]>sympy_module)
-        elif "sage" in str(module):
-            t.thisptr = symengine.make_rcp_PyFunctionClass(<PyObject*>(function), str(function), <const RCP[const symengine.PyModule]>sage_module)
-        funcs[function] = t
-    return t
+def get_function_class(function, module=None):
+    if not function in funcs:
+        funcs[function] = PyFunctionClass(function, module)
+    return funcs[function]
+
 
 cdef class Basic(object):
 
@@ -806,7 +797,8 @@ cdef RCP[const symengine.Basic] pynumber_to_symengine(PyObject* o1):
     return X.thisptr
 
 cdef PyObject* symengine_to_sage(RCP[const symengine.Basic] o1):
-    t = c2py(o1)._sage_()
+    import sage.all as sage
+    t = sage.SR(c2py(o1)._sage_())
     Py_XINCREF(<PyObject*>t)
     return <PyObject*>(t)
 
@@ -816,19 +808,24 @@ cdef PyObject* symengine_to_sympy(RCP[const symengine.Basic] o1):
     return <PyObject*>(t)
 
 cdef RCP[const symengine.Number] sympy_eval(PyObject* o1, long bits):
-    import sympy
-    cdef Number X = sympify(sympy.S(<object>o1).n(bits))
+    prec = max(1, int(round(bits/3.3219280948873626)-1))
+    cdef Number X = sympify((<object>o1).n(prec))
     return symengine.rcp_static_cast_Number(X.thisptr)
 
 cdef RCP[const symengine.Number] sage_eval(PyObject* o1, long bits):
-    import sage.all as sage
-    cdef Number X = sympify(sage.SR(<object>o1).n(bits))
+    cdef Number X = sympify((<object>o1).n(bits))
     return symengine.rcp_static_cast_Number(X.thisptr)
 
+cdef RCP[const symengine.Basic] py_diff(PyObject* o1, RCP[const symengine.Basic] symbol):
+    cdef Basic X = sympify((<object>o1).diff(c2py(symbol)))
+    return X.thisptr
+
 cdef RCP[const symengine.PyModule] sympy_module = \
-        symengine.make_rcp_PyModule(&symengine_to_sympy, &pynumber_to_symengine, &sympy_eval)
+        symengine.make_rcp_PyModule(&symengine_to_sympy, &pynumber_to_symengine, &sympy_eval,
+                                    &py_diff)
 cdef RCP[const symengine.PyModule] sage_module = \
-        symengine.make_rcp_PyModule(&symengine_to_sage, &pynumber_to_symengine, &sage_eval)
+        symengine.make_rcp_PyModule(&symengine_to_sage, &pynumber_to_symengine, &sage_eval,
+                                    &py_diff)
 
 cdef class PyNumber(Number):
      def __cinit__(self, obj = None, module = None):
@@ -877,6 +874,18 @@ cdef class PyFunction(FunctionSymbol):
             symengine.rcp_static_cast_PyFunction(self.thisptr)
         pyobj = <object>(deref(X).get_py_object())
         return pyobj
+
+
+cdef class PyFunctionClass(object):
+
+    def __cinit__(self, function, module=None):
+        if module is None:
+            module = function.__module__
+        if "sympy" in str(module):
+            self.thisptr = symengine.make_rcp_PyFunctionClass(<PyObject*>(function), str(function), <const RCP[const
+            symengine.PyModule]>sympy_module)
+        elif "sage" in str(module):
+            self.thisptr = symengine.make_rcp_PyFunctionClass(<PyObject*>(function), str(function), <const RCP[const symengine.PyModule]>sage_module)
 
 
 cdef class Abs(Function):

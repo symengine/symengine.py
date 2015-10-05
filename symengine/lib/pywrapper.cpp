@@ -5,8 +5,8 @@ namespace SymEngine {
 
 // PyModule
 PyModule::PyModule(PyObject* (*to_py)(const RCP<const Basic>), RCP<const Basic> (*from_py)(PyObject*),
-        RCP<const Number> (*eval)(PyObject*, long)) :
-        to_py_(to_py), from_py_(from_py), eval_(eval) {
+                   RCP<const Number> (*eval)(PyObject*, long), RCP<const Basic> (*diff)(PyObject*, RCP<const Basic>)) :
+        to_py_(to_py), from_py_(from_py), eval_(eval), diff_(diff) {
     zero = PyInt_FromLong(0);
     one = PyInt_FromLong(1);
     minus_one = PyInt_FromLong(-1);
@@ -227,6 +227,10 @@ RCP<const Basic> PyFunction::create(const vec_basic &x) const {
 
 RCP<const Number> PyFunction::eval(long bits) const {
     return pyfunction_class_->get_py_module()->eval_(pyobject_, bits);
+}
+
+RCP<const Basic> PyFunction::diff(const RCP<const Symbol> &s) const {
+    return pyfunction_class_->get_py_module()->diff_(pyobject_, s);
 }
 
 } // SymEngine

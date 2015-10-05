@@ -252,7 +252,8 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     RCP[const Basic] make_rcp_RealDouble "SymEngine::make_rcp<const SymEngine::RealDouble>"(double x) nogil
     RCP[const Basic] make_rcp_ComplexDouble "SymEngine::make_rcp<const SymEngine::ComplexDouble>"(double complex x) nogil
     RCP[const PyModule] make_rcp_PyModule "SymEngine::make_rcp<const SymEngine::PyModule>"(PyObject* (*) (RCP[const Basic] x), \
-            RCP[const Basic] (*)(PyObject*), RCP[const Number] (*)(PyObject*, long bits)) nogil
+            RCP[const Basic] (*)(PyObject*), RCP[const Number] (*)(PyObject*, long bits),
+            RCP[const Basic] (*)(PyObject*, RCP[const Basic])) nogil
     RCP[const Basic] make_rcp_PyNumber "SymEngine::make_rcp<const SymEngine::PyNumber>"(PyObject*, const RCP[const PyModule] &x) nogil
     RCP[const PyFunctionClass] make_rcp_PyFunctionClass "SymEngine::make_rcp<const SymEngine::PyFunctionClass>"(PyObject* pyobject,
             string name, const RCP[const PyModule] &pymodule) nogil

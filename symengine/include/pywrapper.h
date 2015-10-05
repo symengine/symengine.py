@@ -10,13 +10,14 @@ namespace SymEngine {
 
 class PyModule : public EnableRCPFromThis<PyModule> {
 public:
-    PyObject* (*to_py_)(const RCP<const Basic> x);
+    PyObject* (*to_py_)(const RCP<const Basic>);
     RCP<const Basic> (*from_py_)(PyObject*);
-    RCP<const Number> (*eval_)(PyObject*, long bits);
+    RCP<const Number> (*eval_)(PyObject*, long);
+    RCP<const Basic> (*diff_)(PyObject*, RCP<const Basic>);
     PyObject *one, *zero, *minus_one;
 public:
     PyModule(PyObject* (*)(const RCP<const Basic> x), RCP<const Basic> (*)(PyObject*),
-             RCP<const Number> (*)(PyObject*, long bits));
+             RCP<const Number> (*)(PyObject*, long), RCP<const Basic> (*)(PyObject*, RCP<const Basic>));
     ~PyModule();
     PyObject* get_zero() const { return zero; }
     PyObject* get_one() const { return one; }
@@ -103,6 +104,7 @@ public:
     PyObject *get_py_object() const;
     virtual RCP<const Basic> create(const vec_basic &x) const;
     virtual RCP<const Number> eval(long bits) const;
+    virtual RCP<const Basic> diff(const RCP<const Symbol> &x) const;
 };
 
 }
