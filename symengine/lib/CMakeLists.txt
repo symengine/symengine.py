@@ -1,6 +1,6 @@
 set(SRC
     symengine_wrapper.cpp
-    pynumber.cpp
+    pywrapper.cpp
     )
 
 configure_file(config.pxi.in config.pxi)

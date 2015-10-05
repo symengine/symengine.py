@@ -1,0 +1,235 @@
+#include "pywrapper.h"
+#include <symengine/number.h>
+
+namespace SymEngine {
+
+// PyModule
+PyModule::PyModule(PyObject* (*to_py)(const RCP<const Basic>), RCP<const Basic> (*from_py)(PyObject*),
+        RCP<const Number> (*eval)(PyObject*, long)) :
+        to_py_(to_py), from_py_(from_py), eval_(eval) {
+    zero = PyInt_FromLong(0);
+    one = PyInt_FromLong(1);
+    minus_one = PyInt_FromLong(-1);
+}
+
+PyModule::~PyModule(){
+    Py_DecRef(zero);
+    Py_DecRef(one);
+    Py_DecRef(minus_one);
+}
+
+// PyNumber
+PyNumber::PyNumber(PyObject* pyobject, const RCP<const PyModule> &pymodule) :
+        pyobject_(pyobject), pymodule_(pymodule) {
+}
+
+std::size_t PyNumber::__hash__() const {
+    return PyObject_Hash(pyobject_);
+}
+
+bool PyNumber::__eq__(const Basic &o) const {
+    return PyObject_RichCompareBool(pyobject_, pymodule_->to_py_(o.rcp_from_this_cast<const Basic>()), Py_EQ) == 1;
+}
+
+int PyNumber::compare(const Basic &o) const {
+    PyObject* o1 = pymodule_->to_py_(o.rcp_from_this_cast<const Basic>());
+    if (PyObject_RichCompareBool(pyobject_, o1, Py_EQ) == 1)
+        return 0;
+    return PyObject_RichCompareBool(pyobject_, o1, Py_LT) == 1 ? -1 : 1;
+}
+
+bool PyNumber::is_zero() const {
+    return PyObject_RichCompareBool(pyobject_, pymodule_->get_zero(), Py_EQ) == 1;
+}
+//! \return true if `1`
+bool PyNumber::is_one() const {
+    return PyObject_RichCompareBool(pyobject_, pymodule_->get_one(), Py_EQ) == 1;
+}
+//! \return true if `-1`
+bool PyNumber::is_minus_one() const {
+    return PyObject_RichCompareBool(pyobject_, pymodule_->get_minus_one(), Py_EQ) == 1;
+}
+//! \return true if negative
+bool PyNumber::is_negative() const {
+    return PyObject_RichCompareBool(pyobject_, pymodule_->get_zero(), Py_LT) == 1;
+}
+//! \return true if positive
+bool PyNumber::is_positive() const {
+    return PyObject_RichCompareBool(pyobject_, pymodule_->get_zero(), Py_GT) == 1;
+}
+
+//! Addition
+RCP<const Number> PyNumber::add(const Number &other) const {
+    PyObject *other_p, *result;
+    if (is_a<PyNumber>(other)) {
+        other_p = static_cast<const PyNumber &>(other).pyobject_;
+        result = PyNumber_Add(pyobject_, other_p);
+    } else {
+        other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
+        result = PyNumber_Add(pyobject_, other_p);
+        Py_DecRef(other_p);
+    }
+    return make_rcp<PyNumber>(result, pymodule_);
+}
+//! Subtraction
+RCP<const Number> PyNumber::sub(const Number &other) const {
+    PyObject *other_p, *result;
+    if (is_a<PyNumber>(other)) {
+        other_p = static_cast<const PyNumber &>(other).pyobject_;
+        result = PyNumber_Subtract(pyobject_, other_p);
+    } else {
+        other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
+        result = PyNumber_Subtract(pyobject_, other_p);
+        Py_DecRef(other_p);
+    }
+    return make_rcp<PyNumber>(result, pymodule_);
+}
+RCP<const Number> PyNumber::rsub(const Number &other) const {
+    PyObject *other_p, *result;
+    if (is_a<PyNumber>(other)) {
+        other_p = static_cast<const PyNumber &>(other).pyobject_;
+        result = PyNumber_Subtract(other_p, pyobject_);
+    } else {
+        other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
+        result = PyNumber_Subtract(other_p, pyobject_);
+        Py_DecRef(other_p);
+    }
+    return make_rcp<PyNumber>(result, pymodule_);
+}
+//! Multiplication
+RCP<const Number> PyNumber::mul(const Number &other) const {
+    PyObject *other_p, *result;
+    if (is_a<PyNumber>(other)) {
+        other_p = static_cast<const PyNumber &>(other).pyobject_;
+        result = PyNumber_Multiply(pyobject_, other_p);
+    } else {
+        other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
+        result = PyNumber_Multiply(pyobject_, other_p);
+        Py_DecRef(other_p);
+    }
+    return make_rcp<PyNumber>(result, pymodule_);
+}
+//! Division
+RCP<const Number> PyNumber::div(const Number &other) const {
+    PyObject *other_p, *result;
+    if (is_a<PyNumber>(other)) {
+        other_p = static_cast<const PyNumber &>(other).pyobject_;
+        result = PyNumber_Divide(pyobject_, other_p);
+    } else {
+        other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
+        result = PyNumber_Divide(pyobject_, other_p);
+        Py_DecRef(other_p);
+    }
+    return make_rcp<PyNumber>(result, pymodule_);
+}
+RCP<const Number> PyNumber::rdiv(const Number &other) const {
+    PyObject *other_p, *result;
+    if (is_a<PyNumber>(other)) {
+        other_p = static_cast<const PyNumber &>(other).pyobject_;
+        result = PyNumber_Divide(pyobject_, other_p);
+    } else {
+        other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
+        result = PyNumber_Divide(pyobject_, other_p);
+        Py_DecRef(other_p);
+    }
+    return make_rcp<PyNumber>(result, pymodule_);
+}
+//! Power
+RCP<const Number> PyNumber::pow(const Number &other) const {
+    PyObject *other_p, *result;
+    if (is_a<PyNumber>(other)) {
+        other_p = static_cast<const PyNumber &>(other).pyobject_;
+        result = PyNumber_Power(pyobject_, other_p, Py_None);
+    } else {
+        other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
+        result = PyNumber_Power(pyobject_, other_p, Py_None);
+        Py_DecRef(other_p);
+    }
+    return make_rcp<PyNumber>(result, pymodule_);
+}
+RCP<const Number> PyNumber::rpow(const Number &other) const {
+    PyObject *other_p, *result;
+    if (is_a<PyNumber>(other)) {
+        other_p = static_cast<const PyNumber &>(other).pyobject_;
+        result = PyNumber_Power(other_p, pyobject_, Py_None);
+    } else {
+        other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
+        result = PyNumber_Power(other_p, pyobject_, Py_None);
+        Py_DecRef(other_p);
+    }
+    return make_rcp<PyNumber>(result, pymodule_);
+}
+//! Differentiation w.r.t Symbol `x`
+RCP<const Basic> PyNumber::diff(const RCP<const Symbol> &x) const {
+    return zero;
+}
+
+RCP<const Number> PyNumber::eval(long bits) const {
+    return pymodule_->eval_(pyobject_, bits);
+}
+
+std::string PyNumber::__str__() const {
+    return std::string(PyString_AsString(PyObject_Str(pyobject_)));
+}
+
+// PyFunctionClass
+
+PyFunctionClass::PyFunctionClass(PyObject *pyobject, std::string name, const RCP<const PyModule> &pymodule) :
+        pyobject_{pyobject}, name_{name}, pymodule_{pymodule} {
+
+}
+
+PyObject* PyFunctionClass::call(const vec_basic &vec) const {
+    PyObject *tuple = PyTuple_New(vec.size());
+    PyObject *temp;
+    for (unsigned i = 0; i < vec.size(); i++) {
+        temp = pymodule_->to_py_(vec[i]);
+        PyTuple_SetItem(tuple, i, temp);
+        Py_DecRef(temp);
+    }
+    temp = PyObject_CallObject(pyobject_, tuple);
+    Py_DecRef(tuple);
+    return temp;
+}
+
+bool PyFunctionClass::__eq__(const PyFunctionClass &x) const {
+    return PyObject_RichCompareBool(pyobject_, x.pyobject_, Py_EQ) != 1;
+}
+
+int PyFunctionClass::compare(const PyFunctionClass &x) const {
+    if (__eq__(x)) return 0;
+    return PyObject_RichCompareBool(pyobject_, x.pyobject_, Py_LT) == 1 ? 1 : -1;
+}
+
+std::size_t PyFunctionClass::hash() const {
+    if (hash_ == 0)
+        hash_ = PyObject_Hash(pyobject_);
+    return hash_;
+}
+
+// PyFunction
+PyFunction::PyFunction(const vec_basic &vec, const RCP<const PyFunctionClass> &pyfunc_class,
+           PyObject *pyobject) : FunctionSymbol(pyfunc_class->get_name(), std::move(vec)), pyfunction_class_{pyfunc_class}, pyobject_{pyobject} {
+
+}
+
+PyFunction::~PyFunction() {
+    Py_DecRef(pyobject_);
+}
+
+PyObject* PyFunction::get_py_object() const {
+    return pyobject_;
+}
+
+RCP<const Basic> PyFunction::create(const vec_basic &x) const {
+    PyObject* pyobj = pyfunction_class_->call(x);
+    RCP<const Basic> result = pyfunction_class_->get_py_module()->from_py_(pyobj);
+    Py_DecRef(pyobj);
+    return result;
+}
+
+RCP<const Number> PyFunction::eval(long bits) const {
+    return pyfunction_class_->get_py_module()->eval_(pyobject_, bits);
+}
+
+} // SymEngine
