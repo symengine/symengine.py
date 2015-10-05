@@ -1,4 +1,4 @@
-#include "pywrapper.h"
+#include <symengine/include/pywrapper.h>
 #include <symengine/number.h>
 
 namespace SymEngine {
@@ -13,9 +13,9 @@ PyModule::PyModule(PyObject* (*to_py)(const RCP<const Basic>), RCP<const Basic> 
 }
 
 PyModule::~PyModule(){
-    Py_DecRef(zero);
-    Py_DecRef(one);
-    Py_DecRef(minus_one);
+    Py_DECREF(zero);
+    Py_DECREF(one);
+    Py_DECREF(minus_one);
 }
 
 // PyNumber
@@ -67,7 +67,7 @@ RCP<const Number> PyNumber::add(const Number &other) const {
     } else {
         other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
         result = PyNumber_Add(pyobject_, other_p);
-        Py_DecRef(other_p);
+        Py_XDECREF(other_p);
     }
     return make_rcp<PyNumber>(result, pymodule_);
 }
@@ -80,7 +80,7 @@ RCP<const Number> PyNumber::sub(const Number &other) const {
     } else {
         other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
         result = PyNumber_Subtract(pyobject_, other_p);
-        Py_DecRef(other_p);
+        Py_XDECREF(other_p);
     }
     return make_rcp<PyNumber>(result, pymodule_);
 }
@@ -92,7 +92,7 @@ RCP<const Number> PyNumber::rsub(const Number &other) const {
     } else {
         other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
         result = PyNumber_Subtract(other_p, pyobject_);
-        Py_DecRef(other_p);
+        Py_XDECREF(other_p);
     }
     return make_rcp<PyNumber>(result, pymodule_);
 }
@@ -105,7 +105,7 @@ RCP<const Number> PyNumber::mul(const Number &other) const {
     } else {
         other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
         result = PyNumber_Multiply(pyobject_, other_p);
-        Py_DecRef(other_p);
+        Py_XDECREF(other_p);
     }
     return make_rcp<PyNumber>(result, pymodule_);
 }
@@ -118,7 +118,7 @@ RCP<const Number> PyNumber::div(const Number &other) const {
     } else {
         other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
         result = PyNumber_Divide(pyobject_, other_p);
-        Py_DecRef(other_p);
+        Py_XDECREF(other_p);
     }
     return make_rcp<PyNumber>(result, pymodule_);
 }
@@ -130,7 +130,7 @@ RCP<const Number> PyNumber::rdiv(const Number &other) const {
     } else {
         other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
         result = PyNumber_Divide(pyobject_, other_p);
-        Py_DecRef(other_p);
+        Py_XDECREF(other_p);
     }
     return make_rcp<PyNumber>(result, pymodule_);
 }
@@ -143,7 +143,7 @@ RCP<const Number> PyNumber::pow(const Number &other) const {
     } else {
         other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
         result = PyNumber_Power(pyobject_, other_p, Py_None);
-        Py_DecRef(other_p);
+        Py_XDECREF(other_p);
     }
     return make_rcp<PyNumber>(result, pymodule_);
 }
@@ -155,7 +155,7 @@ RCP<const Number> PyNumber::rpow(const Number &other) const {
     } else {
         other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
         result = PyNumber_Power(other_p, pyobject_, Py_None);
-        Py_DecRef(other_p);
+        Py_XDECREF(other_p);
     }
     return make_rcp<PyNumber>(result, pymodule_);
 }
@@ -181,15 +181,12 @@ PyFunctionClass::PyFunctionClass(PyObject *pyobject, std::string name, const RCP
 
 PyObject* PyFunctionClass::call(const vec_basic &vec) const {
     PyObject *tuple = PyTuple_New(vec.size());
-    PyObject *temp;
     for (unsigned i = 0; i < vec.size(); i++) {
-        temp = pymodule_->to_py_(vec[i]);
-        PyTuple_SetItem(tuple, i, temp);
-        Py_DecRef(temp);
+        PyTuple_SetItem(tuple, i, pymodule_->to_py_(vec[i]));
     }
-    temp = PyObject_CallObject(pyobject_, tuple);
-    Py_DecRef(tuple);
-    return temp;
+    PyObject* result = PyObject_CallObject(pyobject_, tuple);
+    Py_DECREF(tuple);
+    return result;
 }
 
 bool PyFunctionClass::__eq__(const PyFunctionClass &x) const {
@@ -214,7 +211,7 @@ PyFunction::PyFunction(const vec_basic &vec, const RCP<const PyFunctionClass> &p
 }
 
 PyFunction::~PyFunction() {
-    Py_DecRef(pyobject_);
+    Py_DECREF(pyobject_);
 }
 
 PyObject* PyFunction::get_py_object() const {
@@ -224,7 +221,7 @@ PyObject* PyFunction::get_py_object() const {
 RCP<const Basic> PyFunction::create(const vec_basic &x) const {
     PyObject* pyobj = pyfunction_class_->call(x);
     RCP<const Basic> result = pyfunction_class_->get_py_module()->from_py_(pyobj);
-    Py_DecRef(pyobj);
+    Py_XDECREF(pyobj);
     return result;
 }
 

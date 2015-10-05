@@ -1,4 +1,5 @@
 add_subdirectory(lib)
+add_subdirectory(include)
 add_subdirectory(tests)
 
 set(PY_PATH ${PYTHON_INSTALL_PATH}/symengine)

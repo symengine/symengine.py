@@ -197,7 +197,7 @@ def sympy2symengine(a, raise_error=False):
         name = str(a.func)
         return function_symbol(name, *(a.args))
     elif isinstance(a, sympy.Function):
-        return PyFunction(a, a.args, get_function_class(a.func, "sympy"))
+        return PyFunction(a, a.args, a.func, "sympy")
     elif isinstance(a, sympy.Matrix):
         row, col = a.shape
         v = []
@@ -206,8 +206,8 @@ def sympy2symengine(a, raise_error=False):
                 v.append(e)
         return DenseMatrix(row, col, v)
 
-    #if raise_error:
-    #    raise SympifyError("sympy2symengine: Cannot convert '%r' to a symengine type." % a)
+    if raise_error:
+        raise SympifyError("sympy2symengine: Cannot convert '%r' to a symengine type." % a)
 
 def sympify(a, raise_error=True):
     """
@@ -250,8 +250,6 @@ def sympify(a, raise_error=True):
         return v
     elif hasattr(a, '_symengine_'):
         return a._symengine_()
-    elif 'sage' in str(type(a)):
-        return 0
     elif hasattr(a, '_sympy_'):
         return sympy2symengine(a._sympy_(), raise_error)
     elif hasattr(a, 'pyobject'):
@@ -818,12 +816,13 @@ cdef PyObject* symengine_to_sympy(RCP[const symengine.Basic] o1):
     return <PyObject*>(t)
 
 cdef RCP[const symengine.Number] sympy_eval(PyObject* o1, long bits):
-    cdef Number X = sympify((<object>o1).n(bits), False)
+    import sympy
+    cdef Number X = sympify(sympy.S(<object>o1).n(bits))
     return symengine.rcp_static_cast_Number(X.thisptr)
 
 cdef RCP[const symengine.Number] sage_eval(PyObject* o1, long bits):
     import sage.all as sage
-    cdef Number X = sympify(sage.SR(<object>o1).n(bits), False)
+    cdef Number X = sympify(sage.SR(<object>o1).n(bits))
     return symengine.rcp_static_cast_Number(X.thisptr)
 
 cdef RCP[const symengine.PyModule] sympy_module = \
@@ -852,7 +851,7 @@ cdef class PyNumber(Number):
 
 cdef class PyFunction(FunctionSymbol):
 
-    def __cinit__(self, pyfunction = None, args = None, pyfunction_class = None):
+    def __cinit__(self, pyfunction = None, args = None, pyfunction_class=None, module=None):
         if pyfunction is None:
             return
         cdef symengine.vec_basic v
@@ -860,7 +859,7 @@ cdef class PyFunction(FunctionSymbol):
         for arg in args:
             arg_ = sympify(arg, True)
             v.push_back(arg_.thisptr)
-        cdef PyFunctionClass _pyfunction_class = pyfunction_class
+        cdef PyFunctionClass _pyfunction_class = get_function_class(pyfunction_class, module)
         cdef PyObject* _pyfunction = <PyObject*>pyfunction
         Py_XINCREF(_pyfunction)
         self.thisptr = symengine.make_rcp_PyFunction(v, <const RCP[const symengine.PyFunctionClass]>(_pyfunction_class.thisptr), _pyfunction)

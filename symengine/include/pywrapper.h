@@ -31,7 +31,7 @@ public:
     IMPLEMENT_TYPEID(NUMBER_WRAPPER)
     PyNumber(PyObject* pyobject, const RCP<const PyModule> &pymodule);
     ~PyNumber() {
-        Py_DecRef(pyobject_);
+        Py_DECREF(pyobject_);
     }
     PyObject* get_py_object() const { return pyobject_; }
     RCP<const PyModule> get_py_module() const { return pymodule_; }

@@ -155,13 +155,13 @@ cdef extern from "<symengine/number.h>" namespace "SymEngine":
     cdef cppclass NumberWrapper(Basic):
         pass
 
-cdef extern from "pywrapper.h" namespace "SymEngine":
+cdef extern from "<symengine/include/pywrapper.h>" namespace "SymEngine":
     cdef cppclass PyNumber(NumberWrapper):
         PyObject* get_py_object()
     cdef cppclass PyModule:
         pass
     cdef cppclass PyFunctionClass:
-        pass
+        PyObject* call(const vec_basic &vec)
     cdef cppclass PyFunction:
         PyObject* get_py_object()
 
