@@ -5,15 +5,11 @@ set -e
 # Echo each command
 set -x
 
-source bin/test_travis.sh
-
 # Build and install python wrappers
-if [[ "${WITH_PYTHON}" == "yes" ]]; then
-    cd $PYTHON_SOURCE_DIR
-    python setup.py install --symengine-dir=$our_install_dir
-fi
+python setup.py install --symengine-dir=$our_install_dir
+
 # Test python wrappers
-if [[ "${WITH_PYTHON}" == "yes" ]] && [[ "${WITH_SAGE}" != "yes" ]]; then
+if [[ "${WITH_SAGE}" != "yes" ]]; then
     nosetests -v
     mkdir -p empty
     cd empty
