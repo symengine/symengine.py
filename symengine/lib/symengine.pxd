@@ -534,6 +534,16 @@ cdef extern from "<symengine/eval_double.h>" namespace "SymEngine":
     double eval_double(const Basic &b) nogil except +
     double complex eval_complex_double(const Basic &b) nogil except +
 
+cdef extern from "<symengine/lambda_double.h>" namespace "SymEngine":
+    cdef cppclass LambdaRealDoubleVisitor:
+        LambdaRealDoubleVisitor() nogil
+        void init(const vec_basic &x, const Basic &b) nogil
+        double call(const vector[double] &x) nogil
+    cdef cppclass LambdaComplexDoubleVisitor:
+        LambdaComplexDoubleVisitor() nogil
+        void init(const vec_basic &x, const Basic &b) nogil
+        double complex call(const vector[double complex] &x) nogil
+
 IF HAVE_SYMENGINE_MPFR:
     cdef extern from "<symengine/eval_mpfr.h>" namespace "SymEngine":
         void eval_mpfr(mpfr_t result, const Basic &b, mpfr_rnd_t rnd) nogil except +

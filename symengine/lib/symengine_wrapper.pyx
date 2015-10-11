@@ -3,6 +3,7 @@ cimport symengine
 from symengine cimport RCP, set
 from libcpp cimport bool
 from libcpp.string cimport string
+from libcpp.vector cimport vector
 from cpython cimport PyObject, Py_XINCREF, Py_XDECREF, \
     PyObject_CallMethodObjArgs
 from libc.string cimport memcpy
@@ -1745,23 +1746,6 @@ def eval_double(basic):
     return symengine.eval_double(deref(b.thisptr))
 
 
-@cython.wraparound(False)
-@cython.boundscheck(False)
-cdef void as_real(symengine.vec_basic vec, double[::1] out) nogil:
-    cdef size_t i
-    for i in range(vec.size()):
-        out[i] = symengine.eval_double(deref(
-            <symengine.RCP[const symengine.Basic]>(vec[i])))
-
-@cython.wraparound(False)
-@cython.boundscheck(False)
-cdef void as_complex(symengine.vec_basic vec, double complex[::1] out) nogil:
-    cdef size_t i
-    for i in range(vec.size()):
-        out[i] = symengine.eval_complex_double(deref(
-            <symengine.RCP[const symengine.Basic]>(vec[i])))
-
-
 cdef size_t _size(n):
     try:
         return n.size
@@ -1837,12 +1821,15 @@ cdef class Lambdify(object):
     """
     cdef size_t inp_size, out_size
     cdef tuple out_shape
-    cdef symengine.vec_basic args, exprs
+    cdef vector[symengine.LambdaRealDoubleVisitor] lambda_double
+    cdef vector[symengine.LambdaComplexDoubleVisitor] lambda_double_complex
 
     def __cinit__(self, args, exprs):
+        cdef symengine.vec_basic args_
         cdef Basic e_
         cdef size_t ri, ci, nr, nc
         cdef symengine.MatrixBase *mtx
+        cdef RCP[const symengine.Basic] b_
         try:
             self.out_shape = exprs.shape
         except AttributeError:
@@ -1862,35 +1849,43 @@ cdef class Lambdify(object):
             mtx = (<DenseMatrix>args).thisptr
             for ri in range(nr):
                 for ci in range(nc):
-                    self.args.push_back(deref(mtx).get(ri, ci))
+                   args_.push_back(deref(mtx).get(ri, ci))
         else:
             for e in args:
                 e_ = sympify(e)
-                self.args.push_back(e_.thisptr)
+                args_.push_back(e_.thisptr)
 
+        self.lambda_double.resize(self.out_size)
+        self.lambda_double_complex.resize(self.out_size)
+
+        cdef int i = 0
         if isinstance(exprs, DenseMatrix):
             nr = exprs.nrows()
             nc = exprs.ncols()
             mtx = (<DenseMatrix>exprs).thisptr
             for ri in range(nr):
                 for ci in range(nc):
-                    self.exprs.push_back(deref(mtx).get(ri, ci))
+                    b_ = deref(mtx).get(ri, ci)
+                    self.lambda_double[ri*nc+ci].init(args_, deref(b_))
+                    self.lambda_double_complex[ri*nc+ci].init(args_, deref(b_))
         else:
             try:
                 exprs = exprs.flatten()
             except AttributeError:
                 exprs = tuple(exprs)
+
             for e in exprs:
                 e_ = sympify(e)
-                self.exprs.push_back(e_.thisptr)
+                self.lambda_double[i].init(args_, deref(e_.thisptr))
+                self.lambda_double_complex[i].init(args_, deref(e_.thisptr))
+                i = i + 1
 
     # Two fused types InType and OutType are the same, but with Cython >= 0.21,
     # fused types have to be declared under different names to generate different
     # methods for each combination of inp and out
 
-    cdef void _eval(self, InType[::1] inp, OutType[::1] out):
-        cdef symengine.map_basic_basic d
-        cdef symengine.vec_basic expr_subs
+    cdef void _eval(self, InType[::1] inp, InType[::1] out):
+        cdef vector[InType] inp_
         cdef size_t idx, ninp = inp.size, nout = out.size
 
         if inp.size != self.inp_size:
@@ -1900,31 +1895,39 @@ cdef class Lambdify(object):
 
         # Create the substitution "dict"
         for idx in range(ninp):
-            if InType == cython.double:
-                d[self.args[idx]] = symengine.make_rcp_RealDouble(inp[idx])
-            else:
-                d[self.args[idx]] = symengine.make_rcp_ComplexDouble(inp[idx])
-
-        # Do the substitution
-        for idx in range(nout):
-            expr_subs.push_back(deref(self.exprs[idx]).subs(d))
+            inp_.push_back(inp[idx])
 
         # Convert expr_subs to doubles write to out
-        if OutType == cython.double:
-            as_real(expr_subs, out)
+        if InType == cython.double:
+            self.as_real(inp_, out)
         else:
-            as_complex(expr_subs, out)
+            self.as_complex(inp_, out)
+
+
+    @cython.wraparound(False)
+    @cython.boundscheck(False)
+    cdef void as_real(self, vector[double] &vec, double[::1] out) nogil:
+        cdef size_t i
+        for i in range(self.out_size):
+            out[i] = self.lambda_double[i].call(vec)
+
+    @cython.wraparound(False)
+    @cython.boundscheck(False)
+    cdef void as_complex(self, vector[double complex] &vec, double complex[::1] out) nogil:
+        cdef size_t i
+        for i in range(self.out_size):
+            out[i] = self.lambda_double_complex[i].call(vec)
 
     # the four cpdef:ed methods below may use void return type
     # once Cython 0.23 (from 2015) is acceptable as requirement.
     cpdef unsafe_real_real(self, double[::1] inp, double[::1] out):
         self._eval(inp, out)
 
-    cpdef unsafe_real_complex(self, double[::1] inp, double complex[::1] out):
-        self._eval(inp, out)
+    #cpdef unsafe_real_complex(self, double[::1] inp, double complex[::1] out):
+    #    self._eval(inp, out)
 
-    cpdef unsafe_complex_real(self, double complex[::1] inp, double[::1] out):
-        self._eval(inp, out)
+    #cpdef unsafe_complex_real(self, double complex[::1] inp, double[::1] out):
+    #    self._eval(inp, out)
 
     cpdef unsafe_complex_complex(self, double complex[::1] inp, double complex[::1] out):
         self._eval(inp, out)
@@ -2042,16 +2045,16 @@ cdef class Lambdify(object):
                 real_out_view = out
                 self.unsafe_real_real(real_inp_view[idx*self.inp_size:(idx+1)*self.inp_size],
                                       real_out_view[idx*self.out_size:(idx+1)*self.out_size])
-            elif (complex_in, complex_out) == (False, True):
-                real_inp_view = inp
-                complex_out_view = out
-                self.unsafe_real_complex(real_inp_view[idx*self.inp_size:(idx+1)*self.inp_size],
-                                         complex_out_view[idx*self.out_size:(idx+1)*self.out_size])
-            elif (complex_in, complex_out) == (True, False):
-                complex_inp_view = inp
-                real_out_view = out
-                self.unsafe_complex_real(complex_inp_view[idx*self.inp_size:(idx+1)*self.inp_size],
-                                         real_out_view[idx*self.out_size:(idx+1)*self.out_size])
+            #elif (complex_in, complex_out) == (False, True):
+            #    real_inp_view = inp
+            #    complex_out_view = out
+            #    self.unsafe_real_complex(real_inp_view[idx*self.inp_size:(idx+1)*self.inp_size],
+            #                             complex_out_view[idx*self.out_size:(idx+1)*self.out_size])
+            #elif (complex_in, complex_out) == (True, False):
+            #    complex_inp_view = inp
+            #    real_out_view = out
+            #    self.unsafe_complex_real(complex_inp_view[idx*self.inp_size:(idx+1)*self.inp_size],
+            #                             real_out_view[idx*self.out_size:(idx+1)*self.out_size])
             elif (complex_in, complex_out) == (True, True):
                 complex_inp_view = inp
                 complex_out_view = out
