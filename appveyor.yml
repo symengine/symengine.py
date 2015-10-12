@@ -37,6 +37,7 @@ environment:
       PYTHON_VERSION: 27-x64
 
 install:
+- set PYTHON_SOURCE_DIR=%CD%
 - if [%COMPILER%]==[MSVC15] set PATH=C:\Program Files (x86)\MSBuild\14.0\Bin;%PATH%
 - if [%COMPILER%]==[MSVC15] appveyor DownloadFile https://raw.githubusercontent.com/symengine/dependencies/fd912ad34c848e7a7a9dab4628f836ab167b9e59/mpir-2.7.0.zip
 - if [%COMPILER%]==[MSVC15] 7z x mpir-2.7.0.zip > NUL
@@ -93,7 +94,7 @@ build_script:
 test_script:
 - if [%WITH_PYTHON%]==[yes] if not [%COMPILER%]==[MSVC15] nosetests
 - if [%WITH_PYTHON%]==[yes] mkdir empty && cd empty
-- if [%WITH_PYTHON%]==[yes] python C:\projects\symengine-py\bin\test_python.py
+- if [%WITH_PYTHON%]==[yes] python %PYTHON_SOURCE_DIR%\bin\test_python.py
 
 # Enable this to be able to login to the build worker. You can use the
 # `remmina` program in Ubuntu, use the login information that the line below
