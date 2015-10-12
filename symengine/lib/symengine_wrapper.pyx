@@ -1753,23 +1753,12 @@ cdef size_t _size(n):
         return len(n)  # e.g. array.array
 
 
-def with_buffer(iterable, complex_t=False):
+def with_buffer(iterable, real=True):
     """ if iterable supports the buffer interface: return iterable,
         if not, return a cython.view.array object (which does) """
     cdef double[::1] real_view
     cdef double complex[::1] cmplx_view
-    if complex_t:
-        try:
-            cmplx_view = iterable
-        except (ValueError, TypeError):
-            cmplx_view = cython.view.array(shape=(_size(iterable),),
-                                           itemsize=sizeof(double complex), format='Zd')
-            for i in range(_size(iterable)):
-                cmplx_view[i] = iterable[i]
-            return cmplx_view
-        else:
-            return iterable  # already supports memoryview
-    else:
+    if real:
         try:
             real_view = iterable
         except (ValueError, TypeError):
@@ -1780,15 +1769,23 @@ def with_buffer(iterable, complex_t=False):
             return real_view
         else:
             return iterable  # already supports memview
+    else:
+        try:
+            cmplx_view = iterable
+        except (ValueError, TypeError):
+            cmplx_view = cython.view.array(shape=(_size(iterable),),
+                                           itemsize=sizeof(double complex), format='Zd')
+            for i in range(_size(iterable)):
+                cmplx_view[i] = iterable[i]
+            return cmplx_view
+        else:
+            return iterable  # already supports memoryview
 
 
-ctypedef fused InType:
+ctypedef fused ValueType:
     cython.doublecomplex
     cython.double
 
-ctypedef fused OutType:
-    cython.doublecomplex
-    cython.double
 
 cdef class Lambdify(object):
     """
@@ -1880,12 +1877,8 @@ cdef class Lambdify(object):
                 self.lambda_double_complex[i].init(args_, deref(e_.thisptr))
                 i = i + 1
 
-    # Two fused types InType and OutType are the same, but with Cython >= 0.21,
-    # fused types have to be declared under different names to generate different
-    # methods for each combination of inp and out
-
-    cdef void _eval(self, InType[::1] inp, InType[::1] out):
-        cdef vector[InType] inp_
+    cdef void _eval(self, ValueType[::1] inp, ValueType[::1] out):
+        cdef vector[ValueType] inp_
         cdef size_t idx, ninp = inp.size, nout = out.size
 
         if inp.size != self.inp_size:
@@ -1898,7 +1891,7 @@ cdef class Lambdify(object):
             inp_.push_back(inp[idx])
 
         # Convert expr_subs to doubles write to out
-        if InType == cython.double:
+        if ValueType == cython.double:
             self.as_real(inp_, out)
         else:
             self.as_complex(inp_, out)
@@ -1918,21 +1911,15 @@ cdef class Lambdify(object):
         for i in range(self.out_size):
             out[i] = self.lambda_double_complex[i].call(vec)
 
-    # the four cpdef:ed methods below may use void return type
+    # the two cpdef:ed methods below may use void return type
     # once Cython 0.23 (from 2015) is acceptable as requirement.
-    cpdef unsafe_real_real(self, double[::1] inp, double[::1] out):
+    cpdef unsafe_real(self, double[::1] inp, double[::1] out):
         self._eval(inp, out)
 
-    #cpdef unsafe_real_complex(self, double[::1] inp, double complex[::1] out):
-    #    self._eval(inp, out)
-
-    #cpdef unsafe_complex_real(self, double complex[::1] inp, double[::1] out):
-    #    self._eval(inp, out)
-
-    cpdef unsafe_complex_complex(self, double complex[::1] inp, double complex[::1] out):
+    cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out):
         self._eval(inp, out)
 
-    def __call__(self, inp, out=None, use_numpy=None, complex_in=False, complex_out=False):
+    def __call__(self, inp, out=None, use_numpy=None, real=True):
         """
         Parameters
         ----------
@@ -1944,15 +1931,10 @@ cdef class Lambdify(object):
             cython.view.array)
         use_numpy: bool (default: None)
             None -> use numpy if available
-        complex_in: bool (default: False)
-            Input are complex numbers
-        complex_out: bool (default: False)
-            Output are complex numbers
+        real: bool (default: True)
+            Work with real values (input and output). For complex input/output
+            set it to False.
         """
-        if complex_in and not complex_out:
-            warnings.warn("Known issues with complex_in=True, complex_out=False "
-                          "See xfail:ed test in tests. Use complex_in=True and"
-                          " complex_out=True instead")
         cdef cython.view.array tmp
         cdef double[::1] real_out_view, real_inp_view
         cdef double* out_ptr
@@ -1984,40 +1966,40 @@ cdef class Lambdify(object):
 
         if use_numpy:
             if isinstance(inp, DenseMatrix):
-                if complex_in:
-                    arr = np.empty(len(inp), dtype=np.complex128)
-                    inp.dump_complex(arr)
-                    inp = arr
-                else:
+                if real:
                     arr = np.empty(len(inp), dtype=np.float64)
                     inp.dump_real(arr)
                     inp = arr
+                else:
+                    arr = np.empty(len(inp), dtype=np.complex128)
+                    inp.dump_complex(arr)
+                    inp = arr
             else:
-                inp = np.ascontiguousarray(inp, dtype=np.complex128 if
-                                           complex_in else np.float64)
+                inp = np.ascontiguousarray(inp, dtype=np.float64 if
+                                           real else np.complex128)
             if inp.ndim > 1:
                 inp = inp.ravel()
         else:
-            inp = with_buffer(inp, complex_in)
+            inp = with_buffer(inp, not real)
 
         if out is None:
             # allocate output container
             if use_numpy:
                 nbroadcast = inp.size // self.inp_size
-                out = np.empty(new_out_size, dtype=np.complex128 if
-                               complex_out else np.float64)
+                out = np.empty(new_out_size, dtype=np.float64 if
+                               real else np.complex128)
             else:
-                if complex_out:
-                    out = cython.view.array(shape=new_out_shape,
-                                            itemsize=sizeof(double complex), format='Zd')
-                else:
+                if real:
                     out = cython.view.array(shape=new_out_shape,
                                             itemsize=sizeof(double), format='d')
+                else:
+                    out = cython.view.array(shape=new_out_shape,
+                                            itemsize=sizeof(double complex), format='Zd')
             reshape_out = len(new_out_shape) > 1
         else:
             if use_numpy:
-                out = np.asarray(out, dtype=np.complex128 if
-                                 complex_out else np.float64)  # copy if needed
+                out = np.asarray(out, dtype=np.float64 if
+                                 real else np.complex128)  # copy if needed
                 if out.size < new_out_size:
                     raise ValueError("Incompatible size of output argument")
                 if not out.flags['C_CONTIGUOUS']:
@@ -2037,46 +2019,36 @@ cdef class Lambdify(object):
                     # we trust the user to do the right thing.
                     reshape_out = False
             else:
-                out = with_buffer(out, complex_out)
+                out = with_buffer(out, not real)
                 reshape_out = False  # only reshape if we allocated.
         for idx in range(nbroadcast):
-            if (complex_in, complex_out) == (False, False):
+            if real:
                 real_inp_view = inp  # slicing cython.view.array does not give a memview
                 real_out_view = out
-                self.unsafe_real_real(real_inp_view[idx*self.inp_size:(idx+1)*self.inp_size],
-                                      real_out_view[idx*self.out_size:(idx+1)*self.out_size])
-            #elif (complex_in, complex_out) == (False, True):
-            #    real_inp_view = inp
-            #    complex_out_view = out
-            #    self.unsafe_real_complex(real_inp_view[idx*self.inp_size:(idx+1)*self.inp_size],
-            #                             complex_out_view[idx*self.out_size:(idx+1)*self.out_size])
-            #elif (complex_in, complex_out) == (True, False):
-            #    complex_inp_view = inp
-            #    real_out_view = out
-            #    self.unsafe_complex_real(complex_inp_view[idx*self.inp_size:(idx+1)*self.inp_size],
-            #                             real_out_view[idx*self.out_size:(idx+1)*self.out_size])
-            elif (complex_in, complex_out) == (True, True):
+                self.unsafe_real(real_inp_view[idx*self.inp_size:(idx+1)*self.inp_size],
+                                 real_out_view[idx*self.out_size:(idx+1)*self.out_size])
+            else:
                 complex_inp_view = inp
                 complex_out_view = out
-                self.unsafe_complex_complex(complex_inp_view[idx*self.inp_size:(idx+1)*self.inp_size],
-                                            complex_out_view[idx*self.out_size:(idx+1)*self.out_size])
+                self.unsafe_complex(complex_inp_view[idx*self.inp_size:(idx+1)*self.inp_size],
+                                    complex_out_view[idx*self.out_size:(idx+1)*self.out_size])
 
         if use_numpy and reshape_out:
             out = out.reshape(new_out_shape)
         elif reshape_out:
-            if complex_out:
-                tmp = cython.view.array(shape=new_out_shape,
-                                        itemsize=sizeof(double complex), format='Zd')
-                cmplx_out_view = tmp
-                memcpy(<double complex*>tmp.data, &cmplx_out_view[0],
-                       sizeof(double complex)*new_out_size)
-                out = tmp
-            else:
+            if real:
                 tmp = cython.view.array(shape=new_out_shape,
                                         itemsize=sizeof(double), format='d')
                 real_out_view = out
                 memcpy(<double *>tmp.data, &real_out_view[0],
                        sizeof(double)*new_out_size)
+                out = tmp
+            else:
+                tmp = cython.view.array(shape=new_out_shape,
+                                        itemsize=sizeof(double complex), format='Zd')
+                cmplx_out_view = tmp
+                memcpy(<double complex*>tmp.data, &cmplx_out_view[0],
+                       sizeof(double complex)*new_out_size)
                 out = tmp
         return out
 

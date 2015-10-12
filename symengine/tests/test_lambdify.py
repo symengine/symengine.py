@@ -129,39 +129,6 @@ def test_broadcast():
     assert np.allclose(dists, 1)
 
 
-@pytest.mark.xfail(not HAVE_NUMPY, reason='array.array lacks "Zd"')
-def test_real_in_complex_out():
-    x = se.Symbol('x')
-    lmb = se.Lambdify([x], [se.sqrt(x)])
-    assert abs(lmb([9]) - 3) < 1e-15
-    assert abs(lmb([-9], complex_out=True) - 3.0j) < 1e-15
-
-
-@pytest.mark.xfail
-def test_complex_in_real_out():
-    x = se.Symbol('x')
-    lmb = se.Lambdify([x], [x*x])
-    assert abs(lmb([3])[0] - 9) < 1e-15
-    # The line below emits:
-    # Exception RuntimeError: 'Not implemented.' in
-    # 'symengine.lib.symengine_wrapper.as_real' ignored
-    out = lmb([3j], complex_in=True)
-    try:
-        discrepancy = out + 9
-    except (TypeError, ValueError):
-        # memory view needs to be wrapped:
-        discrepancy = array.array('d', out)[0] + 9
-    assert abs(discrepancy) < 1e-15
-
-
-@pytest.mark.xfail(not HAVE_NUMPY, reason='array.array lacks "Zd"')
-def test_complex_in_complex_out():
-    x = se.Symbol('x')
-    lmb = se.Lambdify([x], [3 + x - 1j])
-    assert abs(lmb([11+13j], complex_in=True, complex_out=True)[0] -
-               (14 + 12j)) < 1e-15
-
-
 def _get_cse_exprs():
     import sympy as sp
     args = x, y = sp.symbols('x y')
@@ -347,38 +314,20 @@ def test_2_to_2by2_numpy():
 
 
 @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
-def test_unsafe_real_real():
+def test_unsafe_real():
     l, check = _get_2_to_2by2_list()
     inp = np.array([13., 17.])
     out = np.empty(4)
-    l.unsafe_real_real(inp, out)
+    l.unsafe_real(inp, out)
     check(out.reshape((2, 2)), inp)
 
 
 @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
-def test_unsafe_real_complex():
-    l, check = _get_2_to_2by2_list()
-    inp = np.array([-4, 17.])
-    out = np.empty(4, dtype=np.complex128)
-    l.unsafe_real_complex(inp, out)
-    check(out.reshape((2, 2)), inp)
-
-
-@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
-def test_unsafe_complex_real():
-    l, check = _get_2_to_2by2_list()
-    inp = np.array([13, 4j], dtype=np.complex128)
-    out = np.empty(4)
-    l.unsafe_complex_real(inp, out)
-    check(out.reshape((2, 2)), inp)
-
-
-@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
-def test_unsafe_complex_complex():
+def test_unsafe_complex():
     l, check = _get_2_to_2by2_list()
     inp = np.array([13+11j, 7+4j], dtype=np.complex128)
     out = np.empty(4, dtype=np.complex128)
-    l.unsafe_complex_complex(inp, out)
+    l.unsafe_complex(inp, out)
     check(out.reshape((2, 2)), inp)
 
 
@@ -388,3 +337,11 @@ def test_itertools_chain():
     inp = itertools.chain([inp[0]], (inp[1],), [inp[2]])
     A = l(inp, use_numpy=False)
     check(A)
+
+# This test is currently segfaulting:
+@pytest.mark.xfail(not HAVE_NUMPY, reason='array.array lacks "Zd"')
+def test_complex():
+    x = se.Symbol('x')
+    lmb = se.Lambdify([x], [3 + x - 1j])
+    assert abs(lmb([11+13j], real=False)[0] -
+               (14 + 12j)) < 1e-15
