@@ -13,7 +13,7 @@ if [[ "${WITH_SAGE}" != "yes" ]]; then
     conda update -q conda;
     conda info -a;
 
-    conda create -q -n test-environment python="${PYTHON_VERSION}" pip cython sympy nose pytest;
+    conda create -q -n test-environment python="${PYTHON_VERSION}" pip cython sympy nose pytest numpy;
     source activate test-environment;
 else
     wget -O- http://files.sagemath.org/linux/64bit/sage-6.8-x86_64-Linux-Ubuntu_12.04_64_bit.tar.gz | tar xz
