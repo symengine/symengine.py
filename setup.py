@@ -1,6 +1,7 @@
 from __future__ import print_function
 from os import getenv, path
 import subprocess
+import sys
 
 # use setuptools by default as per the official advice at:
 # packaging.python.org/en/latest/current.html#packaging-tool-recommendations
@@ -27,7 +28,7 @@ if not use_setuptools:
     from distutils.core import setup
     from distutils.command.install import install as _install
 
-cmake_opts = [("WITH_PYTHON","yes"), ("BUILD_TESTS", "no"), ("BUILD_BENCHMARKS", "no")]
+cmake_opts = [("PYTHON_BIN", sys.executable)]
 
 def process_opts(opts):
     return ['-D'+'='.join(o) for o in opts]
@@ -44,14 +45,16 @@ def cmake_build():
 class BuildWithCmake(_build):
     _build_opts = _build.user_options
     user_options = [
+        ('symengine-dir=', None, 'path to symengine installation or build directory'),
         ('define=', 'D',
-         'cmake <var>:<type>=<value>'),
+         'options to cmake <var>:<type>=<value>')
     ]
     user_options.extend(_build_opts)
 
     def initialize_options(self):
         _build.initialize_options(self)
         self.define = None
+        self.symengine_dir = None
 
     def finalize_options(self):
         _build.finalize_options(self)
@@ -64,6 +67,8 @@ class BuildWithCmake(_build):
                            tuple(ss.strip() for ss in s.split('='))
                            for s in defines]
             cmake_opts.extend(self.define)
+        if self.symengine_dir:
+            cmake_opts.extend(['SymEngine_DIR', self.symengine_dir])
 
     def run(self):
         cmake_build()
@@ -73,14 +78,16 @@ class BuildWithCmake(_build):
 class InstallWithCmake(_install):
     _install_opts = _install.user_options
     user_options = [
+        ('symengine-dir=', None, 'path to symengine installation or build directory'),
         ('define=', 'D',
-         'cmake <var>:<type>=<value>'),
+         'options to cmake <var>:<type>=<value>')
     ]
     user_options.extend(_install_opts)
 
     def initialize_options(self):
         _install.initialize_options(self)
         self.define = None
+        self.symengine_dir = None
 
     def finalize_options(self):
         _install.finalize_options(self)
@@ -93,6 +100,8 @@ class InstallWithCmake(_install):
                            tuple(ss.strip() for ss in s.split('='))
                            for s in defines]
             cmake_opts.extend(self.define)
+        if self.symengine_dir:
+            cmake_opts.extend([('SymEngine_DIR', self.symengine_dir)])
 
     def run(self):
         # can't use super() here because _install is an old style class in 2.7
@@ -104,7 +113,7 @@ Optional thin Python wrappers (SymEngine) allow easy usage from Python and
 integration with SymPy.'''
 
 setup(name = "symengine",
-      version = "git",
+      version = "0.1.0.dev",
       description = "Python library providing wrappers to SymEngine",
       long_description = "",
       author = "",
