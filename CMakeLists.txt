@@ -14,6 +14,18 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 find_package(Python REQUIRED)
 find_package(Cython REQUIRED)
 
+if(HAVE_SYMENGINE_MPC OR MPC_LIBRARY_FOUND)
+    set(HAVE_SYMENGINE_MPC True)
+else()
+    set(HAVE_SYMENGINE_MPC False)
+endif()
+
+if(HAVE_SYMENGINE_MPC OR MPFR_LIBRARY_FOUND)
+    set(HAVE_SYMENGINE_MPFR True)
+else()
+    set(HAVE_SYMENGINE_MPFR False)
+endif()
+
 message("Copying source of python wrappers into: ${CMAKE_CURRENT_BINARY_DIR}")
 file(COPY symengine/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/symengine)
 
