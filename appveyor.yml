@@ -63,7 +63,7 @@ install:
 - if [%COMPILER%]==[MinGW-w64] 7z x -aoa -oC:\ pyx64.7z > NUL
 
 - set PATH=C:\Python%PYTHON_VERSION%;C:\Python%PYTHON_VERSION%\Scripts;%PATH%
-- pip install nose pytest sympy
+- pip install nose pytest sympy numpy
 - pip install --install-option="--no-cython-compile" cython
 
 - git clone https://github.com/sympy/symengine symengine-cpp
