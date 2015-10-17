@@ -103,7 +103,10 @@ install:
 
   - git clone https://github.com/symengine/symengine symengine-cpp
   - cd symengine-cpp
-  - git checkout 8537c67507fae9b1d8d575d322c6ade4f1a59297
+  # This PR relies on modifications to symengine, merge a PR
+  # introducing those first, then checkout appropriate chemcksum below:
+  #  - git checkout 8537c67507fae9b1d8d575d322c6ade4f1a59297
+  - git remote add isuruf git://github.com/isuruf/symengine.git; git fetch isuruf; git checkout isuruf/lambdify
 
   # Setup travis for C++ library
   - source bin/install_travis.sh

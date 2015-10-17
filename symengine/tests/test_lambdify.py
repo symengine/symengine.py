@@ -338,7 +338,7 @@ def test_itertools_chain():
     A = l(inp, use_numpy=False)
     check(A)
 
-# This test is currently segfaulting:
+# This test is currently failing due to missing bvisit method:
 @pytest.mark.xfail(not HAVE_NUMPY, reason='array.array lacks "Zd"')
 def test_complex():
     x = se.Symbol('x')
