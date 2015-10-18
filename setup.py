@@ -174,19 +174,33 @@ class InstallWithCmake(_install):
 long_description = '''
 SymEngine is a standalone fast C++ symbolic manipulation library.
 Optional thin Python wrappers (SymEngine) allow easy usage from Python and
-integration with SymPy.'''
+integration with SymPy and Sage.'''
+
+exec(open('symengine/release.py').read())
 
 setup(name = "symengine",
-      version = "0.1.0.dev",
+      version=__version__,
       description = "Python library providing wrappers to SymEngine",
       setup_requires = ['cython>=0.19.1'],
-      long_description = "",
-      author = "",
-      author_email = "",
+      long_description = long_description,
+      author = "SymPy development team",
+      author_email = "sympy@googlegroups.com",
       license = "MIT",
       url = "https://github.com/sympy/symengine",
       cmdclass={
           'build' : BuildWithCmake,
           'install' : InstallWithCmake,
-          }
-  )
+          },
+      classifiers=[
+        'License :: OSI Approved :: MIT License',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Topic :: Scientific/Engineering',
+        'Topic :: Scientific/Engineering :: Mathematics',
+        'Topic :: Scientific/Engineering :: Physics',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        ]
+    )
