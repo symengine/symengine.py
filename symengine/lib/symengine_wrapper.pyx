@@ -1818,15 +1818,19 @@ cdef class Lambdify(object):
     """
     cdef size_t inp_size, out_size
     cdef tuple out_shape
+    cdef readonly bool real
     cdef vector[symengine.LambdaRealDoubleVisitor] lambda_double
     cdef vector[symengine.LambdaComplexDoubleVisitor] lambda_double_complex
 
-    def __cinit__(self, args, exprs):
-        cdef symengine.vec_basic args_
-        cdef Basic e_
-        cdef size_t ri, ci, nr, nc
-        cdef symengine.MatrixBase *mtx
-        cdef RCP[const symengine.Basic] b_
+    def __cinit__(self, args, exprs, bool real=True):
+        cdef:
+            symengine.vec_basic args_
+            Basic e_
+            size_t ri, ci, nr, nc
+            symengine.MatrixBase *mtx
+            RCP[const symengine.Basic] b_
+            int idx = 0
+        self.real = real
         try:
             self.out_shape = exprs.shape
         except AttributeError:
@@ -1852,10 +1856,11 @@ cdef class Lambdify(object):
                 e_ = sympify(e)
                 args_.push_back(e_.thisptr)
 
-        self.lambda_double.resize(self.out_size)
-        self.lambda_double_complex.resize(self.out_size)
+        if self.real:
+            self.lambda_double.resize(self.out_size)
+        else:
+            self.lambda_double_complex.resize(self.out_size)
 
-        cdef int i = 0
         if isinstance(exprs, DenseMatrix):
             nr = exprs.nrows()
             nc = exprs.ncols()
@@ -1863,8 +1868,10 @@ cdef class Lambdify(object):
             for ri in range(nr):
                 for ci in range(nc):
                     b_ = deref(mtx).get(ri, ci)
-                    self.lambda_double[ri*nc+ci].init(args_, deref(b_))
-                    self.lambda_double_complex[ri*nc+ci].init(args_, deref(b_))
+                    if real:
+                        self.lambda_double[ri*nc+ci].init(args_, deref(b_))
+                    else:
+                        self.lambda_double_complex[ri*nc+ci].init(args_, deref(b_))
         else:
             try:
                 exprs = exprs.flatten()
@@ -1873,9 +1880,11 @@ cdef class Lambdify(object):
 
             for e in exprs:
                 e_ = sympify(e)
-                self.lambda_double[i].init(args_, deref(e_.thisptr))
-                self.lambda_double_complex[i].init(args_, deref(e_.thisptr))
-                i = i + 1
+                if real:
+                    self.lambda_double[idx].init(args_, deref(e_.thisptr))
+                else:
+                    self.lambda_double_complex[idx].init(args_, deref(e_.thisptr))
+                idx = idx + 1
 
     cdef void _eval(self, ValueType[::1] inp, ValueType[::1] out):
         cdef vector[ValueType] inp_
@@ -1895,7 +1904,6 @@ cdef class Lambdify(object):
             self.as_real(inp_, out)
         else:
             self.as_complex(inp_, out)
-
 
     @cython.wraparound(False)
     @cython.boundscheck(False)
@@ -1919,7 +1927,7 @@ cdef class Lambdify(object):
     cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out):
         self._eval(inp, out)
 
-    def __call__(self, inp, out=None, use_numpy=None, real=True):
+    def __call__(self, inp, out=None, use_numpy=None):
         """
         Parameters
         ----------
@@ -1931,9 +1939,6 @@ cdef class Lambdify(object):
             cython.view.array)
         use_numpy: bool (default: None)
             None -> use numpy if available
-        real: bool (default: True)
-            Work with real values (input and output). For complex input/output
-            set it to False.
         """
         cdef cython.view.array tmp
         cdef double[::1] real_out_view, real_inp_view
@@ -1966,7 +1971,7 @@ cdef class Lambdify(object):
 
         if use_numpy:
             if isinstance(inp, DenseMatrix):
-                if real:
+                if self.real:
                     arr = np.empty(len(inp), dtype=np.float64)
                     inp.dump_real(arr)
                     inp = arr
@@ -1976,20 +1981,20 @@ cdef class Lambdify(object):
                     inp = arr
             else:
                 inp = np.ascontiguousarray(inp, dtype=np.float64 if
-                                           real else np.complex128)
+                                           self.real else np.complex128)
             if inp.ndim > 1:
                 inp = inp.ravel()
         else:
-            inp = with_buffer(inp, not real)
+            inp = with_buffer(inp, self.real)
 
         if out is None:
             # allocate output container
             if use_numpy:
                 nbroadcast = inp.size // self.inp_size
                 out = np.empty(new_out_size, dtype=np.float64 if
-                               real else np.complex128)
+                               self.real else np.complex128)
             else:
-                if real:
+                if self.real:
                     out = cython.view.array(shape=new_out_shape,
                                             itemsize=sizeof(double), format='d')
                 else:
@@ -1999,7 +2004,7 @@ cdef class Lambdify(object):
         else:
             if use_numpy:
                 out = np.asarray(out, dtype=np.float64 if
-                                 real else np.complex128)  # copy if needed
+                                 self.real else np.complex128)  # copy if needed
                 if out.size < new_out_size:
                     raise ValueError("Incompatible size of output argument")
                 if not out.flags['C_CONTIGUOUS']:
@@ -2019,10 +2024,10 @@ cdef class Lambdify(object):
                     # we trust the user to do the right thing.
                     reshape_out = False
             else:
-                out = with_buffer(out, not real)
+                out = with_buffer(out, self.real)
                 reshape_out = False  # only reshape if we allocated.
         for idx in range(nbroadcast):
-            if real:
+            if self.real:
                 real_inp_view = inp  # slicing cython.view.array does not give a memview
                 real_out_view = out
                 self.unsafe_real(real_inp_view[idx*self.inp_size:(idx+1)*self.inp_size],
@@ -2036,7 +2041,7 @@ cdef class Lambdify(object):
         if use_numpy and reshape_out:
             out = out.reshape(new_out_shape)
         elif reshape_out:
-            if real:
+            if self.real:
                 tmp = cython.view.array(shape=new_out_shape,
                                         itemsize=sizeof(double), format='d')
                 real_out_view = out
@@ -2053,13 +2058,16 @@ cdef class Lambdify(object):
         return out
 
 
-def LambdifyCSE(args, exprs, cse=None, concatenate=None):
+def LambdifyCSE(args, exprs, real=True, cse=None, concatenate=None):
     """
     Analogous with Lambdify but performs common subexpression elimination
     internally. See docstring of Lambdify.
 
     Parameters
     ----------
+    args: iterable of symbols
+    exprs: iterable of expressions (with symbols from args)
+    real: bool (default: True)
     cse: callback (default: None)
         defaults to sympy.cse (see SymPy documentation)
     concatenate: callback (default: numpy.concatenate)
@@ -2073,8 +2081,8 @@ def LambdifyCSE(args, exprs, cse=None, concatenate=None):
         from numpy import concatenate
     subs, new_exprs = cse(exprs)
     cse_symbs, cse_exprs = zip(*subs)
-    lmb = Lambdify(tuple(args) + cse_symbs, new_exprs)
-    cse_lambda = Lambdify(args, cse_exprs)
+    lmb = Lambdify(tuple(args) + cse_symbs, new_exprs, real=real)
+    cse_lambda = Lambdify(args, cse_exprs, real=real)
 
     def cb(inp, out=None, **kwargs):
         cse_vals = cse_lambda(inp, **kwargs)
