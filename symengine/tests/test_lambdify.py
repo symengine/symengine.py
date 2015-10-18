@@ -282,10 +282,10 @@ def ravelled(A):
         return A
 
 
-def _get_2_to_2by2_list():
+def _get_2_to_2by2_list(real=True):
     args = x, y = se.symbols('x y')
     exprs = [[x + y*y, x*y*y], [x*y*y, se.sqrt(x)+y*y]]
-    l = se.Lambdify(args, exprs)
+    l = se.Lambdify(args, exprs, real=real)
 
     def check(A, inp):
         X, Y = inp
@@ -324,7 +324,8 @@ def test_unsafe_real():
 
 @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_unsafe_complex():
-    l, check = _get_2_to_2by2_list()
+    l, check = _get_2_to_2by2_list(real=False)
+    assert not l.real
     inp = np.array([13+11j, 7+4j], dtype=np.complex128)
     out = np.empty(4, dtype=np.complex128)
     l.unsafe_complex(inp, out)
@@ -340,8 +341,16 @@ def test_itertools_chain():
 
 # This test is currently failing due to missing bvisit method:
 @pytest.mark.xfail(not HAVE_NUMPY, reason='array.array lacks "Zd"')
-def test_complex():
+def test_complex_1():
     x = se.Symbol('x')
-    lmb = se.Lambdify([x], [3 + x - 1j])
-    assert abs(lmb([11+13j], real=False)[0] -
+    lmb = se.Lambdify([x], [1j + x], real=False)
+    assert abs(lmb([11+13j])[0] -
+               (11 + 14j)) < 1e-15
+
+# This test is currently failing due to missing bvisit method:
+@pytest.mark.xfail(not HAVE_NUMPY, reason='array.array lacks "Zd"')
+def test_complex_2():
+    x = se.Symbol('x')
+    lmb = se.Lambdify([x], [3 + x - 1j], real=False)
+    assert abs(lmb([11+13j])[0] -
                (14 + 12j)) < 1e-15
