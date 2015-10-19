@@ -10,9 +10,9 @@ python setup.py install --symengine-dir=$our_install_dir
 
 # Test python wrappers
 if [[ "${WITH_SAGE}" != "yes" ]]; then
-    py.test -v
     mkdir -p empty
     cd empty
+    py.test -v --pyargs symengine  # test "symengine.tests"
     python $PYTHON_SOURCE_DIR/bin/test_python.py
 fi
 if [[ "${WITH_SAGE}" == "yes" ]]; then

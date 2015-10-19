@@ -106,7 +106,7 @@ install:
   #  - git checkout 8537c67507fae9b1d8d575d322c6ade4f1a59297
   # This PR relies proposed modifications of symengine:
   # see https://github.com/symengine/symengine/pull/623
-  - git remote add bjodah git://github.com/bjodah/symengine.git; git fetch bjodah; git checkout c4bd85366d80b26e860f24273e7a4af35553cb93
+  - git remote add bjodah git://github.com/bjodah/symengine.git; git fetch bjodah; git checkout d9c4e3185a798c4aaeaac75363597e40b10517c9
 
   # Setup travis for C++ library
   - source bin/install_travis.sh
