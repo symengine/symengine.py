@@ -1942,7 +1942,6 @@ cdef class Lambdify(object):
         """
         cdef cython.view.array tmp
         cdef double[::1] real_out_view, real_inp_view
-        cdef double* out_ptr
         cdef double complex[::1] cmplx_out_view, cmplx_inp_view
         cdef size_t nbroadcast = 1
 
@@ -1995,10 +1994,10 @@ cdef class Lambdify(object):
                                self.real else np.complex128)
             else:
                 if self.real:
-                    out = cython.view.array(shape=new_out_shape,
+                    out = cython.view.array(shape=(new_out_size,),
                                             itemsize=sizeof(double), format='d')
                 else:
-                    out = cython.view.array(shape=new_out_shape,
+                    out = cython.view.array(shape=(new_out_size,),
                                             itemsize=sizeof(double complex), format='Zd')
             reshape_out = len(new_out_shape) > 1
         else:

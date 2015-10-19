@@ -111,7 +111,11 @@ install:
   - git clone https://github.com/symengine/symengine symengine-cpp
   - cd symengine-cpp
   - export SOURCE_DIR=`pwd`
-  - git checkout 27053764c81e49ec11fc292a6c2930a7da38b49c
+  # - git checkout 27053764c81e49ec11fc292a6c2930a7da38b49c
+  #  - git checkout 27053764c81e49ec11fc292a6c2930a7da38b49c
+  # This PR relies proposed modifications of symengine:
+  # see https://github.com/symengine/symengine/pull/623
+  - git remote add bjodah git://github.com/bjodah/symengine.git; git fetch bjodah; git checkout 492900eb592e0fd1a94a825526d22fb47ebc9caf
 
   # Setup travis for C++ library
   - if [[ "${WITH_SAGE}" != "yes" ]]; then source bin/install_travis.sh; fi

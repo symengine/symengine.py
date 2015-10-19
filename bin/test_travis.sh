@@ -10,9 +10,14 @@ python setup.py install --symengine-dir=$our_install_dir
 
 # Test python wrappers
 if [[ "${WITH_SAGE}" != "yes" ]]; then
+    py.test -v --ignore build/
+    if [[ "${SKIP_NUMPY}" != "yes" ]]; then
+        # we still use nosetests until we fully trust py.test
+        # but there will be failures when NumPy is missing.
+        nosetests -v
+    fi
     mkdir -p empty
     cd empty
-    py.test -v --pyargs symengine  # test "symengine.tests"
     python $PYTHON_SOURCE_DIR/bin/test_python.py
 fi
 if [[ "${WITH_SAGE}" == "yes" ]]; then

@@ -21,7 +21,7 @@ import symengine as se
 
 
 def allclose(vec1, vec2, rtol=1e-13, atol=1e-13):
-    return all([abs(a-b) < (atol + rtol*a) for a, b in zip(vec1, vec2)])
+    return all([abs(a-b) < (atol + rtol*abs(a)) for a, b in zip(vec1, vec2)])
 
 
 def test_Lambdify():
@@ -74,9 +74,10 @@ def test_array():
     check(out)
 
 
-@pytest.mark.skipif(sys.version_info[0] < 3 or not HAVE_NUMPY,
-                    reason='requires Py3 and NumPy')
+@pytest.mark.skipif(not HAVE_NUMPY, reason='requires NumPy')
 def test_array_out():
+    if sys.version_info[0] < 3:
+        return  # requires Py3
     args, exprs, inp, check = _get_array()
     lmb = se.Lambdify(args, exprs)
     out1 = array.array('d', [0]*len(exprs))
@@ -89,8 +90,9 @@ def test_array_out():
     assert np.allclose(out1[:], [-1]*len(exprs))
 
 
-@pytest.mark.skipif(sys.version_info[0] < 3, reason='requires Py3')
 def test_array_out_no_numpy():
+    if sys.version_info[0] < 3:
+        return  # requires Py3
     args, exprs, inp, check = _get_array()
     lmb = se.Lambdify(args, exprs)
     out1 = array.array('d', [0]*len(exprs))
@@ -209,7 +211,6 @@ def _test_2dim_Matrix(use_numpy):
     check(l(inp, use_numpy=use_numpy), inp)
 
 
-@pytest.mark.xfail  # output shapes currently requires NumPy
 def test_2dim_Matrix():
     _test_2dim_Matrix(False)
 
@@ -227,7 +228,6 @@ def _test_2dim_Matrix_broadcast(use_numpy):
         check(out[i, ...], (inp[i],))
 
 
-@pytest.mark.xfail  # output shapes currently requires NumPy
 def test_2dim_Matrix_broadcast():
     _test_2dim_Matrix_broadcast(False)
 
@@ -284,7 +284,7 @@ def ravelled(A):
 
 def _get_2_to_2by2_list(real=True):
     args = x, y = se.symbols('x y')
-    exprs = [[x + y*y, x*y*y], [x*y*y, se.sqrt(x)+y*y]]
+    exprs = [[x + y*y, y*y], [x*y*y, se.sqrt(x)+y*y]]
     l = se.Lambdify(args, exprs, real=real)
 
     def check(A, inp):
@@ -292,17 +292,22 @@ def _get_2_to_2by2_list(real=True):
         assert A.shape[-2:] == (2, 2)
         ref = [X + Y*Y, Y*Y, X*Y*Y, cmath.sqrt(X)+Y*Y]
         ravA = ravelled(A)
-        for i in range(len(A)//4):
+        print(dir(ravA))
+        try:
+            size = ravA.memview.size
+        except AttributeError:
+            size = len(ravA)
+        for i in range(size//4):
             assert allclose(ravA[i*4:(i+1)*4], ref)
     return l, check
 
 
-@pytest.mark.xfail
-def test_2_to_2by2_list():
-    l, check = _get_2_to_2by2_list()
-    inp = [13, 17]
-    A = l(inp, use_numpy=False)
-    check(A, inp)
+# @pytest.mark.xfail
+# def test_2_to_2by2_list():
+#     l, check = _get_2_to_2by2_list()
+#     inp = [13, 17]
+#     A = l(inp, use_numpy=False)
+#     check(A, inp)
 
 
 @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
