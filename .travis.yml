@@ -36,6 +36,9 @@ env:
   - PYTHON_VERSION="3.3" WITH_MPC="yes"
   - PYTHON_VERSION="3.4" WITH_MPFR="yes"
 
+  - BUILD_TYPE="Release" WITH_SAGE="yes" WITH_MPC="yes"
+  - BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="2.7" SKIP_NUMPY="yes"
+
 matrix:
   exclude:
     - compiler: clang
