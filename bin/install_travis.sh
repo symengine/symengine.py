@@ -16,8 +16,8 @@ if [[ "${WITH_SAGE}" != "yes" ]]; then
     conda create -q -n test-environment python="${PYTHON_VERSION}" pip cython sympy nose pytest;
     source activate test-environment;
 else
-    wget -O- http://files.sagemath.org/linux/64bit/sage-6.8-x86_64-Linux-Ubuntu_12.04_64_bit.tar.gz | tar xz
-    SAGE_ROOT=`pwd`/sage-6.8-x86_64-Linux
+    wget -O- http://files.sagemath.org/linux/64bit/sage-6.9-x86_64-Linux-Ubuntu_12.04_64_bit.tar.lrz | lrzip -dq | tar x
+    SAGE_ROOT=`pwd`/sage-6.9-x86_64-Linux
     export PATH="$SAGE_ROOT:$PATH"
     source $SAGE_ROOT/src/bin/sage-env
     export our_install_dir=$SAGE_LOCAL

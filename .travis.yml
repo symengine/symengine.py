@@ -36,8 +36,6 @@ env:
   - PYTHON_VERSION="3.3" WITH_MPC="yes"
   - PYTHON_VERSION="3.4" WITH_MPFR="yes"
 
-  - BUILD_TYPE="Release" WITH_SAGE="yes" WITH_MPC="yes"
-
 matrix:
   exclude:
     - compiler: clang
@@ -95,6 +93,13 @@ matrix:
     - env: BUILD_TYPE="Release" PYTHON_VERSION="2.7"
       compiler: gcc
       os: osx
+    - env: BUILD_TYPE="Release" WITH_SAGE="yes" WITH_MPC="yes"
+      compiler: gcc
+      os: linux
+      addons:
+        apt:
+          packages:
+          - lrzip
 
 install:
   - export PYTHON_SOURCE_DIR=`pwd`
@@ -102,10 +107,11 @@ install:
 
   - git clone https://github.com/symengine/symengine symengine-cpp
   - cd symengine-cpp
+  - export SOURCE_DIR=`pwd`
   - git checkout 27053764c81e49ec11fc292a6c2930a7da38b49c
 
   # Setup travis for C++ library
-  - source bin/install_travis.sh
+  - if [[ "${WITH_SAGE}" != "yes" ]]; then source bin/install_travis.sh; fi
 
   # Setup travis for Python wrappers
   - cd $PYTHON_SOURCE_DIR
