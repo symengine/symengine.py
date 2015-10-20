@@ -12,28 +12,22 @@ environment:
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
       PLATFORM: "Win32"
-      WITH_PYTHON: yes
       PYTHON_VERSION: 27
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
       PLATFORM: "x64"
-      WITH_PYTHON: yes
       PYTHON_VERSION: 27-x64
     - BUILD_TYPE: "Debug"
       COMPILER: MinGW
-      WITH_PYTHON: yes
       PYTHON_VERSION: 27
     - BUILD_TYPE: "Release"
       COMPILER: MinGW
-      WITH_PYTHON: yes
       PYTHON_VERSION: 34
     - BUILD_TYPE: "Release"
       COMPILER: MinGW-w64
-      WITH_PYTHON: yes
       PYTHON_VERSION: 27-x64
     - BUILD_TYPE: "Debug"
       COMPILER: MinGW-w64
-      WITH_PYTHON: yes
       PYTHON_VERSION: 27-x64
 
 install:
@@ -80,21 +74,18 @@ install:
 - cmake -DBUILD_TESTS=no -DBUILD_BENCHMARKS=no ..
 
 - cmake --build . --config %BUILD_TYPE% --target install
-- cd ../
+- cd ../../
 
 build_script:
 
-- if [%COMPILER%]==[MSVC15] if [%PLATFORM%]==[Win32] cmake -G "Visual Studio 14 2015" ..
-- if [%COMPILER%]==[MSVC15] if [%PLATFORM%]==[x64] cmake -G "Visual Studio 14 2015 Win64" ..
-- if [%COMPILER%]==[MinGW] cmake -G "MinGW Makefiles" ..
-- if [%COMPILER%]==[MinGW-w64] cmake -G "MinGW Makefiles" ..
-
-- cmake --build . --config %BUILD_TYPE% --target install
+- if [%COMPILER%]==[MSVC15] python setup.py install build --compiler=msvc --build-type=%BUILD_TYPE%
+- if [%COMPILER%]==[MinGW] python setup.py install build --compiler=mingw
+- if [%COMPILER%]==[MinGW-w64] python setup.py install build --compiler=mingw
 
 test_script:
-- if [%WITH_PYTHON%]==[yes] if not [%COMPILER%]==[MSVC15] nosetests
-- if [%WITH_PYTHON%]==[yes] mkdir empty && cd empty
-- if [%WITH_PYTHON%]==[yes] python %PYTHON_SOURCE_DIR%\bin\test_python.py
+- if not [%COMPILER%]==[MSVC15] nosetests
+- mkdir empty && cd empty
+- python %PYTHON_SOURCE_DIR%\bin\test_python.py
 
 # Enable this to be able to login to the build worker. You can use the
 # `remmina` program in Ubuntu, use the login information that the line below
