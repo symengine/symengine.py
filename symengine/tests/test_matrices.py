@@ -264,6 +264,8 @@ def test_shape():
 
 @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_dump_real():
+    if not HAVE_NUMPY:  # nosetests work-around
+        return
     ref = [1, 2, 3, 4]
     A = DenseMatrix(2, 2, ref)
     out = np.empty(4)
@@ -272,6 +274,8 @@ def test_dump_real():
 
 @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_dump_complex():
+    if not HAVE_NUMPY:  # nosetests work-around
+        return
     ref = [1j, 2j, 3j, 4j]
     A = DenseMatrix(2, 2, ref)
     out = np.empty(4, dtype=np.complex128)
