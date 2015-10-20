@@ -28,7 +28,7 @@ if not use_setuptools:
     from distutils.core import setup
     from distutils.command.install import install as _install
 
-cmake_opts = [("PYTHON_BIN", sys.executable)]
+cmake_opts = [("PYTHON_BIN", sys.executable), ("CMAKE_INSTALL_RPATH_USE_LINK_PATH", "yes")]
 cmake_generator = [None]
 cmake_build_type = ["Release"]
 
@@ -76,7 +76,8 @@ class BuildWithCmake(_build):
         dir = path.dirname(path.realpath(__file__))
         cmake_cmd = ["cmake", dir, "-DCMAKE_BUILD_TYPE=" + cmake_build_type[0]]
         cmake_cmd.extend(process_opts(cmake_opts))
-        cmake_cmd.extend(self.get_generator())
+        if not path.exists("CMakeCache.txt"):
+            cmake_cmd.extend(self.get_generator())
         if subprocess.call(cmake_cmd) != 0:
             raise EnvironmentError("error calling cmake")
 
