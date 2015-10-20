@@ -142,13 +142,14 @@ class InstallWithCmake(_install):
             cmake_generator[0] = self.generator
 
         cmake_build_type[0] = self.build_type
+        cmake_opts.extend([('PYTHON_INSTALL_PATH', self.install_platlib)])
 
     def cmake_install(self):
         dir = path.dirname(path.realpath(__file__))
         cmake_cmd = ["cmake", dir]
         cmake_cmd.extend(process_opts(cmake_opts))
 
-        # CMake has to be called here to update CMAKE_INSTALL_PREFIX and PYTHON_INSTALL_PATH
+        # CMake has to be called here to update PYTHON_INSTALL_PATH
         # if build and install were called separately by the user
         if subprocess.call(cmake_cmd) != 0:
             raise EnvironmentError("error calling cmake")
@@ -156,9 +157,8 @@ class InstallWithCmake(_install):
         if subprocess.call(["cmake", "--build", ".", "--config", cmake_build_type[0], "--target", "install"]) != 0:
             raise EnvironmentError("error installing")
 
-        if self.compile:
-            import compileall
-            compileall.compile_dir(path.join(sys.prefix), "symengine")
+        import compileall
+        compileall.compile_dir(path.join(self.install_platlib, "symengine"))
 
     def run(self):
         # can't use super() here because _install is an old style class in 2.7
