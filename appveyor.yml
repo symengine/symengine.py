@@ -78,7 +78,7 @@ install:
 
 build_script:
 
-- if [%COMPILER%]==[MSVC15] python setup.py install build --compiler=msvc
+- if [%COMPILER%]==[MSVC15] python setup.py install build --compiler=msvc --build-type=%BUILD_TYPE%
 - if [%COMPILER%]==[MinGW] python setup.py install build --compiler=mingw
 - if [%COMPILER%]==[MinGW-w64] python setup.py install build --compiler=mingw
 
