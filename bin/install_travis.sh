@@ -13,9 +13,7 @@ if [[ "${WITH_SAGE}" != "yes" ]]; then
     conda update -q conda;
     conda info -a;
     CONDA_PKGS="pip cython sympy nose pytest"
-    if [[ "${SKIP_NUMPY}" == "yes" ]]; then
-        true;  # pass
-    else
+    if [[ "${WITH_NUMPY}" == "yes" ]]; then
         CONDA_PKGS="${CONDA_PKGS} numpy";
     fi
     conda create -q -n test-environment python="${PYTHON_VERSION}" ${CONDA_PKGS};
