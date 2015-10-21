@@ -112,10 +112,7 @@ SymEngine is a standalone fast C++ symbolic manipulation library.
 Optional thin Python wrappers (SymEngine) allow easy usage from Python and
 integration with SymPy and Sage.'''
 
-exec(open('symengine/release.py').read())
-
 setup(name = "symengine",
-      version=__version__,
       description = "Python library providing wrappers to SymEngine",
       long_description = long_description,
       author = "SymPy development team",
