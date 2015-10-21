@@ -20,8 +20,28 @@ except ImportError:
 import symengine as se
 
 
+def _size(arr):
+    try:
+        return arr.memview.size
+    except AttributeError:
+        return len(arr)
+
+
+def isclose(a, b, rtol=1e-13, atol=1e-13):
+    discr = a - b
+    toler = (atol + rtol*abs(a))
+    return abs(discr) < toler
+
+
 def allclose(vec1, vec2, rtol=1e-13, atol=1e-13):
-    return all([abs(a-b) < (atol + rtol*abs(a)) for a, b in zip(vec1, vec2)])
+    n1, n2 = _size(vec1), _size(vec2)
+    if n1 != n2:
+        return False
+
+    for idx in range(n1):
+        if not isclose(vec1[idx], vec2[idx], rtol, atol):
+            return False
+    return True
 
 
 def test_Lambdify():
@@ -297,11 +317,18 @@ def test_excessive_out():
     assert out[1] == 1
 
 
+def all_indices(shape):
+    return itertools.product(*(range(dim) for dim in shape))
+
+
 def ravelled(A):
     try:
         return A.ravel()
     except AttributeError:
-        return A
+        l = []
+        for idx in all_indices(A.memview.shape):
+            l.append(A[idx])
+        return l
 
 
 def _get_2_to_2by2_list(real=True):
@@ -314,18 +341,14 @@ def _get_2_to_2by2_list(real=True):
         assert A.shape[-2:] == (2, 2)
         ref = [X + Y*Y, Y*Y, X*Y*Y, cmath.sqrt(X)+Y*Y]
         ravA = ravelled(A)
-        print(dir(ravA))
-        try:
-            size = ravA.memview.size
-        except AttributeError:
-            size = len(ravA)
+        size = _size(ravA)
         for i in range(size//4):
-            assert allclose(ravA[i*4:(i+1)*4], ref)
+            for j in range(4):
+                assert isclose(ravA[i*4 + j], ref[j])
     return l, check
 
 
-@pytest.mark.xfail
-def xtest_2_to_2by2_list():
+def test_2_to_2by2_list():
     l, check = _get_2_to_2by2_list()
     inp = [13, 17]
     A = l(inp, use_numpy=False)
@@ -372,7 +395,7 @@ def test_itertools_chain():
     A = l(inp, use_numpy=False)
     check(A)
 
-# This test is currently failing due to missing bvisit method:
+
 @pytest.mark.xfail(not HAVE_NUMPY, reason='array.array lacks "Zd"')
 def test_complex_1():
     if not HAVE_NUMPY:  # nosetests work-around
@@ -382,7 +405,7 @@ def test_complex_1():
     assert abs(lmb([11+13j])[0] -
                (11 + 14j)) < 1e-15
 
-# This test is currently failing due to missing bvisit method:
+
 @pytest.mark.xfail(not HAVE_NUMPY, reason='array.array lacks "Zd"')
 def test_complex_2():
     if not HAVE_NUMPY:  # nosetests work-around
