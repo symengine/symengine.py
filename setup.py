@@ -173,6 +173,7 @@ integration with SymPy.'''
 setup(name = "symengine",
       version = "0.1.0.dev",
       description = "Python library providing wrappers to SymEngine",
+      setup_requires = ['cython>=0.19.1'],
       long_description = "",
       author = "",
       author_email = "",
