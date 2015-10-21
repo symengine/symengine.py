@@ -2,7 +2,7 @@ from symengine import symbols
 from symengine.lib.symengine_wrapper import (DenseMatrix, Symbol, Integer,
     function_symbol, I, NonSquareMatrixError)
 from symengine.utilities import raises
-import pytest
+
 
 try:
     import numpy as np
@@ -262,7 +262,7 @@ def test_shape():
     A = DenseMatrix(2, 2, [1, 2, 3, 4])
     assert A.shape == (2, 2)
 
-@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_dump_real():
     if not HAVE_NUMPY:  # nosetests work-around
         return
@@ -272,7 +272,7 @@ def test_dump_real():
     A.dump_real(out)
     assert np.allclose(out, ref)
 
-@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_dump_complex():
     if not HAVE_NUMPY:  # nosetests work-around
         return
