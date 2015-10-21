@@ -68,9 +68,7 @@ install:
 
 - git clone https://github.com/sympy/symengine symengine-cpp
 - cd symengine-cpp
-- git remote add bjodah git://github.com/bjodah/symengine.git
-- git fetch bjodah
-- git checkout 492900eb592e0fd1a94a825526d22fb47ebc9caf
+- git checkout 3a1152fdafc83f8d1f35004b5bcda08f355e57c3
 - mkdir build
 - cd build
 
