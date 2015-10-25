@@ -8,6 +8,7 @@ from cpython cimport PyObject, Py_XINCREF, Py_XDECREF, \
     PyObject_CallMethodObjArgs
 from libc.string cimport memcpy
 import cython
+import itertools
 import warnings
 from operator import mul
 from functools import reduce
@@ -1753,6 +1754,44 @@ cdef size_t _size(n):
         return len(n)  # e.g. array.array
 
 
+def _get_shape_nested(ndarr):
+    # no checking of shape consistency is done
+    if isinstance(ndarr, (list, tuple)):
+        return (len(ndarr),) + _get_shape_nested(ndarr[0])
+    else:
+        return ()
+
+
+def get_shape(ndarr):
+    try:
+        return ndarr.shape
+    except AttributeError:
+        return _get_shape_nested(ndarr)
+
+
+def _nested_getitem(ndarr, indices):
+    if len(indices) == 0:
+        return ndarr
+    else:
+        return _nested_getitem(ndarr[indices[0]], indices[1:])
+
+
+def all_indices_from_shape(shape):
+    return itertools.product(*(range(dim) for dim in shape))
+
+
+def _ravel_nested(ndarr):
+    return [_nested_getitem(ndarr, indices) for indices in
+            all_indices_from_shape(get_shape(ndarr))]
+
+
+def ravel(ndarr):
+    try:
+        return ndarr.ravel()
+    except AttributeError:
+        return _ravel_nested(ndarr)
+
+
 def with_buffer(iterable, real=True):
     """ if iterable supports the buffer interface: return iterable,
         if not, return a cython.view.array object (which does) """
@@ -1831,16 +1870,7 @@ cdef class Lambdify(object):
             RCP[const symengine.Basic] b_
             int idx = 0
         self.real = real
-        try:
-            self.out_shape = exprs.shape
-        except AttributeError:
-            try:
-                import numpy as np
-            except ImportError:
-                self.out_shape = len(exprs),
-            else:
-                exprs = np.array(exprs)
-                self.out_shape = exprs.shape
+        self.out_shape = get_shape(exprs)
         self.inp_size = len(args)
         self.out_size = reduce(mul, self.out_shape)
 
@@ -1873,18 +1903,13 @@ cdef class Lambdify(object):
                     else:
                         self.lambda_double_complex[ri*nc+ci].init(args_, deref(b_))
         else:
-            try:
-                exprs = exprs.flatten()
-            except AttributeError:
-                exprs = tuple(exprs)
-
-            for e in exprs:
+            for e in ravel(exprs):
                 e_ = sympify(e)
                 if real:
                     self.lambda_double[idx].init(args_, deref(e_.thisptr))
                 else:
                     self.lambda_double_complex[idx].init(args_, deref(e_.thisptr))
-                idx = idx + 1
+                idx += 1
 
     cdef void _eval(self, ValueType[::1] inp, ValueType[::1] out):
         cdef vector[ValueType] inp_
@@ -1971,11 +1996,11 @@ cdef class Lambdify(object):
         if use_numpy:
             if isinstance(inp, DenseMatrix):
                 if self.real:
-                    arr = np.empty(len(inp), dtype=np.float64)
+                    arr = np.empty(inp_size, dtype=np.float64)
                     inp.dump_real(arr)
                     inp = arr
                 else:
-                    arr = np.empty(len(inp), dtype=np.complex128)
+                    arr = np.empty(inp_size, dtype=np.complex128)
                     inp.dump_complex(arr)
                     inp = arr
             else:
