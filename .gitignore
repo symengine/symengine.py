@@ -28,7 +28,9 @@ build*
 *.pyc
 MANIFEST
 *.egg-info
-dist
+dist/
+.cache/
+symengine.egg-info/
 
 # Temp files
 *~
