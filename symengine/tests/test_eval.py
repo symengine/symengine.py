@@ -48,3 +48,10 @@ def test_n():
     except ImportError:
         x = sqrt(Integer(2))
         raises(ValueError, lambda: (x.n(75)))
+
+def test_rel():
+    x = Symbol("x")
+    y = Symbol("y")
+    ex = (x + y < x)
+    assert repr(ex) == "x + y < x"
+
