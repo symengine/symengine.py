@@ -306,8 +306,8 @@ cdef class Basic(object):
             elif (op == 3):
                 return True
             else:
-                return NotImplemented
-        return Basic._richcmp_(A, B, op)
+                raise NotImplementedError
+        raise NotImplementedError
 
     def _richcmp_(Basic A, Basic B, int op):
         if (op == 2):
