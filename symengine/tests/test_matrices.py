@@ -3,6 +3,14 @@ from symengine.lib.symengine_wrapper import (DenseMatrix, Symbol, Integer,
     function_symbol, I, NonSquareMatrixError)
 from symengine.utilities import raises
 
+
+try:
+    import numpy as np
+    HAVE_NUMPY = True
+except ImportError:
+    HAVE_NUMPY = False
+
+
 def test_get():
     A = DenseMatrix(2, 2, [1, 2, 3, 4])
 
@@ -245,3 +253,31 @@ def test_jacobian():
     x = DenseMatrix(4, 1, [x, y, z, t])
     J = D.jacobian(x)
     assert J == J_correct
+
+def test_size():
+    A = DenseMatrix(2, 2, [1, 2, 3, 4])
+    assert A.size == 4
+
+def test_shape():
+    A = DenseMatrix(2, 2, [1, 2, 3, 4])
+    assert A.shape == (2, 2)
+
+#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+def test_dump_real():
+    if not HAVE_NUMPY:  # nosetests work-around
+        return
+    ref = [1, 2, 3, 4]
+    A = DenseMatrix(2, 2, ref)
+    out = np.empty(4)
+    A.dump_real(out)
+    assert np.allclose(out, ref)
+
+#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+def test_dump_complex():
+    if not HAVE_NUMPY:  # nosetests work-around
+        return
+    ref = [1j, 2j, 3j, 4j]
+    A = DenseMatrix(2, 2, ref)
+    out = np.empty(4, dtype=np.complex128)
+    A.dump_complex(out)
+    assert np.allclose(out, ref)
