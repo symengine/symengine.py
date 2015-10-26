@@ -51,6 +51,7 @@ def test_n():
 
 def test_rel():
     x = Symbol("x")
-    ex = (x + 1 < x)
-    assert repr(ex) == "x + 1 < x"
+    y = Symbol("y")
+    ex = (x + y < x)
+    assert repr(ex) == "x + y < x"
 
