@@ -65,7 +65,7 @@ class BuildWithCmake(_build):
                            for s in defines]
             cmake_opts.extend(self.define)
         if self.symengine_dir:
-            cmake_opts.extend(['SymEngine_DIR', self.symengine_dir])
+            cmake_opts.extend([('SymEngine_DIR', self.symengine_dir)])
 
         if self.generator:
             cmake_generator[0] = self.generator
