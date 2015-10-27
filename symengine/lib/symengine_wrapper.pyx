@@ -9,7 +9,6 @@ from cpython cimport PyObject, Py_XINCREF, Py_XDECREF, \
 from libc.string cimport memcpy
 import cython
 import itertools
-import warnings
 from operator import mul
 from functools import reduce
 
