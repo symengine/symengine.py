@@ -1,4 +1,4 @@
-#include <symengine/include/pywrapper.h>
+#include <symengine/pywrapper.h>
 #include <symengine/number.h>
 
 namespace SymEngine {
@@ -28,11 +28,13 @@ std::size_t PyNumber::__hash__() const {
 }
 
 bool PyNumber::__eq__(const Basic &o) const {
-    return PyObject_RichCompareBool(pyobject_, pymodule_->to_py_(o.rcp_from_this_cast<const Basic>()), Py_EQ) == 1;
+    return is_a<PyNumber>(o) and
+        PyObject_RichCompareBool(pyobject_, static_cast<const PyNumber &>(o).get_py_object(), Py_EQ) == 1;
 }
 
 int PyNumber::compare(const Basic &o) const {
-    PyObject* o1 = pymodule_->to_py_(o.rcp_from_this_cast<const Basic>());
+    SYMENGINE_ASSERT(is_a<PyNumber>(o))
+    PyObject* o1 = static_cast<const PyNumber &>(o).get_py_object();
     if (PyObject_RichCompareBool(pyobject_, o1, Py_EQ) == 1)
         return 0;
     return PyObject_RichCompareBool(pyobject_, o1, Py_LT) == 1 ? -1 : 1;
@@ -190,7 +192,7 @@ PyObject* PyFunctionClass::call(const vec_basic &vec) const {
 }
 
 bool PyFunctionClass::__eq__(const PyFunctionClass &x) const {
-    return PyObject_RichCompareBool(pyobject_, x.pyobject_, Py_EQ) != 1;
+    return PyObject_RichCompareBool(pyobject_, x.pyobject_, Py_EQ) == 1;
 }
 
 int PyFunctionClass::compare(const PyFunctionClass &x) const {
@@ -206,7 +208,8 @@ std::size_t PyFunctionClass::hash() const {
 
 // PyFunction
 PyFunction::PyFunction(const vec_basic &vec, const RCP<const PyFunctionClass> &pyfunc_class,
-           PyObject *pyobject) : FunctionSymbol(pyfunc_class->get_name(), std::move(vec)), pyfunction_class_{pyfunc_class}, pyobject_{pyobject} {
+           PyObject *pyobject) : FunctionWrapper(pyfunc_class->get_name(), std::move(vec)),
+           pyfunction_class_{pyfunc_class}, pyobject_{pyobject} {
 
 }
 
@@ -216,6 +219,10 @@ PyFunction::~PyFunction() {
 
 PyObject* PyFunction::get_py_object() const {
     return pyobject_;
+}
+
+RCP<const PyFunctionClass> PyFunction::get_pyfunction_class() const {
+    return pyfunction_class_;
 }
 
 RCP<const Basic> PyFunction::create(const vec_basic &x) const {
@@ -231,6 +238,26 @@ RCP<const Number> PyFunction::eval(long bits) const {
 
 RCP<const Basic> PyFunction::diff(const RCP<const Symbol> &s) const {
     return pyfunction_class_->get_py_module()->diff_(pyobject_, s);
+}
+
+std::size_t PyFunction::__hash__() const {
+    return PyObject_Hash(pyobject_);
+}
+
+bool PyFunction::__eq__(const Basic &o) const {
+    if (is_a<PyFunction>(o) and
+        pyfunction_class_->__eq__(*static_cast<const PyFunction &>(o).get_pyfunction_class()) and
+        vec_basic_eq(arg_, static_cast<const PyFunction &>(o).arg_))
+        return true;
+    return false;
+}
+
+int PyFunction::compare(const Basic &o) const {
+    SYMENGINE_ASSERT(is_a<PyFunction>(o))
+    const PyFunction &s = static_cast<const PyFunction &>(o);
+    int cmp = pyfunction_class_->compare(*s.get_pyfunction_class());
+    if (cmp != 0) return cmp;
+    return vec_basic_compare(arg_, s.arg_);
 }
 
 } // SymEngine

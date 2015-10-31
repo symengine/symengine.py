@@ -92,7 +92,7 @@ public:
     std::size_t hash() const;
 };
 
-class PyFunction : public FunctionSymbol {
+class PyFunction : public FunctionWrapper {
 private:
     RCP<const PyFunctionClass> pyfunction_class_;
     PyObject *pyobject_;
@@ -100,11 +100,16 @@ public:
     PyFunction(const vec_basic &vec, const RCP<const PyFunctionClass> &pyfunc_class,
                PyObject *pyobject);
     ~PyFunction();
+    IMPLEMENT_TYPEID(FUNCTIONWRAPPER)
 
     PyObject *get_py_object() const;
+    RCP<const PyFunctionClass> get_pyfunction_class() const;
     virtual RCP<const Basic> create(const vec_basic &x) const;
     virtual RCP<const Number> eval(long bits) const;
     virtual RCP<const Basic> diff(const RCP<const Symbol> &x) const;
+    virtual int compare(const Basic &o) const;
+    virtual bool __eq__(const Basic &o) const;
+    virtual std::size_t __hash__() const;
 };
 
 }

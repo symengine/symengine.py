@@ -11,7 +11,8 @@ FIND_PATH(PYTHON_INCLUDE_PATH Python.h
     NO_SYSTEM_ENVIRONMENT_PATH
     )
 
-set(PYTHON_INCLUDEPY ${PYTHON_INCLUDE_PATH})
+set(PYTHON_INSTALL_HEADER_PATH ${PYTHON_INCLUDE_PATH}/symengine
+    CACHE BOOL "Python install headers path")
 
 execute_process(
 	COMMAND ${PYTHON_BIN} -c "from distutils.sysconfig import get_config_var; print(get_config_var('LIBDIR'))"

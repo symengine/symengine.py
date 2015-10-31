@@ -132,8 +132,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_Abs "SymEngine::is_a<SymEngine::Abs>"(const Basic &b) nogil
     bool is_a_Derivative "SymEngine::is_a<SymEngine::Derivative>"(const Basic &b) nogil
     bool is_a_Subs "SymEngine::is_a<SymEngine::Subs>"(const Basic &b) nogil
-    bool is_a_FunctionWrapper "SymEngine::is_a<SymEngine::FunctionWrapper>"(const Basic &b) nogil
-    bool is_a_PyFunction "SymEngine::is_a<SymEngine::PyFunction>"(const Basic &b) nogil
+    bool is_a_PyFunction "SymEngine::is_a<SymEngine::FunctionWrapper>"(const Basic &b) nogil
     bool is_a_RealDouble "SymEngine::is_a<SymEngine::RealDouble>"(const Basic &b) nogil
     bool is_a_ComplexDouble "SymEngine::is_a<SymEngine::ComplexDouble>"(const Basic &b) nogil
     bool is_a_RealMPFR "SymEngine::is_a<SymEngine::RealMPFR>"(const Basic &b) nogil
@@ -155,7 +154,7 @@ cdef extern from "<symengine/number.h>" namespace "SymEngine":
     cdef cppclass NumberWrapper(Basic):
         pass
 
-cdef extern from "<symengine/include/pywrapper.h>" namespace "SymEngine":
+cdef extern from "<symengine/pywrapper.h>" namespace "SymEngine":
     cdef cppclass PyNumber(NumberWrapper):
         PyObject* get_py_object()
     cdef cppclass PyModule:
