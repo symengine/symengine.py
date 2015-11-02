@@ -108,7 +108,7 @@ install:
   - git clone https://github.com/symengine/symengine symengine-cpp
   - cd symengine-cpp
   - export SOURCE_DIR=`pwd`
-  - git checkout 3a1152fdafc83f8d1f35004b5bcda08f355e57c3
+  - git checkout 5000de30fb4933a73317a764fa5e8494a4f34886
 
   # Setup travis for C++ library
   - if [[ "${WITH_SAGE}" != "yes" ]]; then source bin/install_travis.sh; fi

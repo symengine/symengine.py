@@ -63,7 +63,7 @@ install:
 - pip install --install-option="--no-cython-compile" cython
 
 - cd symengine-cpp
-- git checkout 3a1152fdafc83f8d1f35004b5bcda08f355e57c3
+- git checkout 5000de30fb4933a73317a764fa5e8494a4f34886
 - mkdir build
 - cd build
 
