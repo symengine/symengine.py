@@ -162,6 +162,7 @@ def test_add_scalar():
     assert A.add_scalar(i5) == DenseMatrix(2, 2, [6, 7, 8, 9])
     assert A + 5 == DenseMatrix(2, 2, [6, 7, 8, 9])
     assert 5 + A == DenseMatrix(2, 2, [6, 7, 8, 9])
+    assert a + A == DenseMatrix(2, 2, [a + 1, a + 2, a + 3, a + 4])
 
 def test_mul_scalar():
     A = DenseMatrix(2, 2, [1, 2, 3, 4])
@@ -173,6 +174,7 @@ def test_mul_scalar():
     assert A.mul_scalar(i5) == DenseMatrix(2, 2, [5, 10, 15, 20])
     assert A * 5 == DenseMatrix(2, 2, [5, 10, 15, 20])
     assert 5 * A == DenseMatrix(2, 2, [5, 10, 15, 20])
+    assert a * A == DenseMatrix(2, 2, [a, 2*a, 3*a, 4*a])
 
 def test_transpose():
     A = DenseMatrix(3, 3, [1, 2, 3, 4, 5, 6, 7, 8, 9])

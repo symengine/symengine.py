@@ -280,20 +280,23 @@ cdef class Basic(object):
 
     def __add__(a, b):
         cdef Basic A = sympify(a, False)
-        cdef Basic B = sympify(b, False)
-        if A is None or B is None: return NotImplemented
+        B_ = sympify(b, False)
+        if A is None or B_ is None or isinstance(B_, MatrixBase): return NotImplemented
+        cdef Basic B = B_
         return c2py(symengine.add(A.thisptr, B.thisptr))
 
     def __sub__(a, b):
         cdef Basic A = sympify(a, False)
-        cdef Basic B = sympify(b, False)
-        if A is None or B is None: return NotImplemented
+        B_ = sympify(b, False)
+        if A is None or B_ is None or isinstance(B_, MatrixBase): return NotImplemented
+        cdef Basic B = B_
         return c2py(symengine.sub(A.thisptr, B.thisptr))
 
     def __mul__(a, b):
         cdef Basic A = sympify(a, False)
-        cdef Basic B = sympify(b, False)
-        if A is None or B is None: return NotImplemented
+        B_ = sympify(b, False)
+        if A is None or B_ is None or isinstance(B_, MatrixBase): return NotImplemented
+        cdef Basic B = B_
         return c2py(symengine.mul(A.thisptr, B.thisptr))
 
     def __truediv__(a, b):
