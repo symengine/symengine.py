@@ -1,5 +1,9 @@
 #include <symengine/pywrapper.h>
-#include <symengine/number.h>
+
+#if PY_MAJOR_VERSION >= 3
+#define PyInt_FromLong PyLong_FromLong
+#define PyNumber_Divide PyNumber_TrueDivide
+#endif
 
 namespace SymEngine {
 
@@ -171,7 +175,17 @@ RCP<const Number> PyNumber::eval(long bits) const {
 }
 
 std::string PyNumber::__str__() const {
-    return std::string(PyString_AsString(PyObject_Str(pyobject_)));
+    PyObject* temp;
+    std::string str;
+#if PY_MAJOR_VERSION > 2
+    temp = PyUnicode_AsUTF8String(pyobject_);
+    str = std::string(PyBytes_AsString(temp));
+#else
+    temp = PyObject_Str(pyobject_);
+    str = std::string(PyString_AsString(temp));
+#endif
+    Py_XDECREF(temp);
+    return str;
 }
 
 // PyFunctionClass

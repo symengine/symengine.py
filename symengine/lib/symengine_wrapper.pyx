@@ -882,10 +882,11 @@ cdef class PyFunctionClass(object):
         if module is None:
             module = function.__module__
         if "sympy" in str(module):
-            self.thisptr = symengine.make_rcp_PyFunctionClass(<PyObject*>(function), str(function), <const RCP[const
-            symengine.PyModule]>sympy_module)
+            self.thisptr = symengine.make_rcp_PyFunctionClass(<PyObject*>(function), str(function).encode("utf-8"),
+                                <const RCP[const symengine.PyModule]>sympy_module)
         elif "sage" in str(module):
-            self.thisptr = symengine.make_rcp_PyFunctionClass(<PyObject*>(function), str(function), <const RCP[const symengine.PyModule]>sage_module)
+            self.thisptr = symengine.make_rcp_PyFunctionClass(<PyObject*>(function), str(function).encode("utf-8"),
+                                <const RCP[const symengine.PyModule]>sage_module)
 
 
 cdef class Abs(Function):
