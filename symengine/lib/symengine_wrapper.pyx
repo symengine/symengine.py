@@ -1032,17 +1032,33 @@ cdef class DenseMatrix(MatrixBase):
     [3, 4]
     [5, 6]
 
+    >>> DenseMatrix([[1, 2], [3, 4], [5, 6]])
+    [1, 2]
+    [3, 4]
+    [5, 6]
+
     """
 
-    def __cinit__(self, row, col, v=None):
-        if v == None:
+    def __cinit__(self, row=None, col=None, v=None):
+        if row == None:
+            return
+        if v == None and col != None:
             self.thisptr = new symengine.DenseMatrix(row, col)
             return
+        if col == None:
+            v = row
+            row = len(v)
+            col = 1
         cdef symengine.vec_basic v_
         cdef Basic e_
         for e in v:
-            e_ = sympify(e, False)
-            if e_ is not None:
+            f = sympify(e)
+            try:
+                for e_ in f:
+                    v_.push_back(e_.thisptr)
+                col = len(f)
+            except TypeError:
+                e_ = f
                 v_.push_back(e_.thisptr)
 
         self.thisptr = new symengine.DenseMatrix(row, col, v_)

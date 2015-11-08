@@ -12,7 +12,7 @@ except ImportError:
 
 
 def test_get():
-    A = DenseMatrix(2, 2, [1, 2, 3, 4])
+    A = DenseMatrix([[1, 2], [3, 4]])
 
     assert A.get(0, 0) == 1
     assert A.get(0, 1) == 2
