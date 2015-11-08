@@ -1,6 +1,6 @@
 from symengine import symbols
 from symengine.lib.symengine_wrapper import (DenseMatrix, Symbol, Integer,
-    function_symbol, I, NonSquareMatrixError)
+    function_symbol, I, NonSquareMatrixError, ShapeError)
 from symengine.utilities import raises
 
 
@@ -126,6 +126,9 @@ def test_add_matrix():
     assert A.add_matrix(B) == DenseMatrix(2, 2, [2*a, 2*a, 0, 2*b])
     assert A + B == DenseMatrix(2, 2, [2*a, 2*a, 0, 2*b])
 
+    C = DenseMatrix(1, 2, [a, b])
+    raises(ShapeError, lambda: A + C)
+
 def test_mul_matrix():
     A = DenseMatrix(2, 2, [1, 2, 3, 4])
     B = DenseMatrix(2, 2, [1, 0, 0, 1])
@@ -142,10 +145,12 @@ def test_mul_matrix():
     assert A.mul_matrix(B) == DenseMatrix(2, 2, [a + b, 0, c + d, 0])
     assert A * B == DenseMatrix(2, 2, [a + b, 0, c + d, 0])
 
-    A = DenseMatrix(2, 3, [1, 2, 3, 2, 3, 4])
-    B = DenseMatrix(3, 2, [3, 4, 4, 5, 5, 6])
+    C = DenseMatrix(2, 3, [1, 2, 3, 2, 3, 4])
+    D = DenseMatrix(3, 2, [3, 4, 4, 5, 5, 6])
 
-    assert A.mul_matrix(B) == DenseMatrix(2, 2, [26, 32, 38, 47])
+    assert C.mul_matrix(D) == DenseMatrix(2, 2, [26, 32, 38, 47])
+
+    raises(ShapeError, lambda: A*D)
 
 def test_add_scalar():
     A = DenseMatrix(2, 2, [1, 2, 3, 4])

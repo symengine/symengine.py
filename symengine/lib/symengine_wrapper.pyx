@@ -1058,6 +1058,8 @@ cdef class DenseMatrix(MatrixBase):
         b = sympify(b)
         if isinstance(a, MatrixBase):
             if isinstance(b, MatrixBase):
+                if (a.shape != b.shape):
+                    raise ShapeError("Invalid shapes for matrix addition. Got %s %s" % (a.shape, b.shape))
                 return a.add_matrix(b)
             else:
                 return a.add_scalar(b)
@@ -1069,6 +1071,8 @@ cdef class DenseMatrix(MatrixBase):
         b = sympify(b)
         if isinstance(a, MatrixBase):
             if isinstance(b, MatrixBase):
+                if (a.ncols() != b.nrows()):
+                    raise ShapeError("Invalid shapes for matrix multiplication. Got %s %s" % (a.shape, b.shape))
                 return a.mul_matrix(b)
             else:
                 return a.mul_scalar(b)
