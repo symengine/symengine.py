@@ -1098,6 +1098,22 @@ cdef class DenseMatrix(MatrixBase):
         else:
             return b.mul_scalar(a)
 
+    def __sub__(a, b):
+        a = sympify(a)
+        b = sympify(b)
+        if isinstance(a, MatrixBase):
+            if isinstance(b, MatrixBase):
+                if (a.shape != b.shape):
+                    raise ShapeError("Invalid shapes for matrix subtraction. Got %s %s" % (a.shape, b.shape))
+                return a.add_matrix(-b)
+            else:
+                return a.add_scalar(-b)
+        else:
+            return (-b).add_scalar(a)
+
+    def __neg__(self):
+        return self.mul_scalar(-1)
+
     def __getitem__(self, item):
         s = [0, 0, 0, 0]
         if isinstance(item, slice):
