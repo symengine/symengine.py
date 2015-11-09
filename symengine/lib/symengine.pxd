@@ -3,6 +3,7 @@ from libcpp.string cimport string
 from libcpp.map cimport map
 from libcpp.vector cimport vector
 from cpython.ref cimport PyObject
+from libcpp.pair cimport pair
 
 include "config.pxi"
 
@@ -80,10 +81,39 @@ cdef extern from "<symengine/symengine_rcp.h>" namespace "SymEngine":
 
     void print_stack_on_segfault() nogil
 
-
 cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     ctypedef Basic const_Basic "const SymEngine::Basic"
-    ctypedef map[RCP[Basic], RCP[Basic]] map_basic_basic
+    # Cython has broken support for the following:
+    # ctypedef map[RCP[const Basic], RCP[const Basic]] map_basic_basic
+    # So instead we replicate the map features we need here
+    cdef cppclass std_pair_rcp_const_basic_rcp_const_basic "std::pair<SymEngine::RCP<const SymEngine::Basic>, SymEngine::RCP<const SymEngine::Basic>>":
+        RCP[const Basic] first
+        RCP[const Basic] second
+
+    cdef cppclass map_basic_basic:
+        map_basic_basic() except +
+        map_basic_basic(map_basic_basic&) except +
+        cppclass iterator:
+            std_pair_rcp_const_basic_rcp_const_basic& operator*()
+            iterator operator++()
+            iterator operator--()
+            bint operator==(iterator)
+            bint operator!=(iterator)
+        RCP[const Basic]& operator[](RCP[const Basic]&)
+        void clear()
+        bint empty()
+        size_t size()
+        void swap(map_basic_basic&)
+        iterator begin()
+        iterator end()
+        iterator find(RCP[const Basic]&)
+        void erase(iterator, iterator)
+        void erase_it(iterator)
+        size_t erase(RCP[const Basic]&)
+        pair[iterator, bint] insert(std_pair_rcp_const_basic_rcp_const_basic) except + # XXX pair[T,U]&
+        iterator insert(iterator, std_pair_rcp_const_basic_rcp_const_basic) except + # XXX pair[T,U]&
+
+
     ctypedef vector[RCP[Basic]] vec_basic "SymEngine::vec_basic"
     ctypedef vector[RCP[Integer]] vec_integer "SymEngine::vec_integer"
     ctypedef map[RCP[Integer], unsigned] map_integer_uint "SymEngine::map_integer_uint"
