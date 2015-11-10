@@ -265,8 +265,38 @@ def get_function_class(function, module):
         funcs[function] = PyFunctionClass(function, module)
     return funcs[function]
 
-cdef class Dict(object):
+cdef class DictBasic(object):
     cdef symengine.map_basic_basic c
+
+    def __init__(self, tocopy = None):
+        if tocopy != None:
+            self.add_dict(tocopy)
+
+    def as_dict(self):
+        ret = {}
+        it = self.c.begin()
+        while it != self.c.end():
+            ret[c2py(deref(it).first)] = c2py(deref(it).second)
+            inc(it)
+        return ret
+
+    def add_dict(self, d):
+        cdef DictBasic D
+        if isinstance(d, DictBasic):
+            D = d
+            self.c.insert(D.c.begin(), D.c.end())
+        else:
+            for key, value in d.iteritems():
+                self.add(key, value)
+
+    def __str__(self):
+        return self.as_dict().__str__()
+
+    def __repr__(self):
+        return self.as_dict().__repr__()
+
+    def copy(self):
+        return DictBasic(self)
 
     def add(self, key, value):
         cdef Basic K = sympify(key)
@@ -309,7 +339,6 @@ cdef class Dict(object):
         cdef Basic K = sympify(key)
         it = self.c.find(K.thisptr)
         return it != self.c.end()
->>>>>>> 45f2782... dictionary object Dict that wraps the map_basic_basic
 
 cdef class Basic(object):
 
@@ -409,8 +438,8 @@ cdef class Basic(object):
         return c2py(deref(self.thisptr).diff(X))
 
     def subs_dict(Basic self not None, subs_dict):
-        cdef Dict D
-        if isinstance(subs_dict, Dict):
+        cdef DictBasic D
+        if isinstance(subs_dict, DictBasic):
           D = subs_dict
           return c2py(deref(self.thisptr).subs(D.c))
         cdef symengine.map_basic_basic d

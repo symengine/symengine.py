@@ -110,8 +110,9 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
         void erase(iterator, iterator)
         void erase_it(iterator)
         size_t erase(RCP[const Basic]&)
-        pair[iterator, bint] insert(std_pair_rcp_const_basic_rcp_const_basic) except + # XXX pair[T,U]&
-        iterator insert(iterator, std_pair_rcp_const_basic_rcp_const_basic) except + # XXX pair[T,U]&
+        pair[iterator, bint] insert(std_pair_rcp_const_basic_rcp_const_basic) except +
+        iterator insert(iterator, std_pair_rcp_const_basic_rcp_const_basic) except +
+        void insert(iterator, iterator) except +
 
 
     ctypedef vector[RCP[Basic]] vec_basic "SymEngine::vec_basic"
