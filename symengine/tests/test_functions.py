@@ -111,7 +111,7 @@ def test_FunctionWrapper():
     assert abs(float(v) - 459.13420537) < 1e-7
 
     f = e.diff(x)
-    f == 1 + sympy.polygamma(0, x)
+    assert f == 1 + sympy.polygamma(0, x)
 
 def test_log():
     x = Symbol("x")
