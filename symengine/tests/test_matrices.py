@@ -1,6 +1,6 @@
 from symengine import symbols
 from symengine.lib.symengine_wrapper import (DenseMatrix, Symbol, Integer,
-    function_symbol, I, NonSquareMatrixError)
+    function_symbol, I, NonSquareMatrixError, ShapeError)
 from symengine.utilities import raises
 
 
@@ -12,7 +12,7 @@ except ImportError:
 
 
 def test_get():
-    A = DenseMatrix(2, 2, [1, 2, 3, 4])
+    A = DenseMatrix([[1, 2], [3, 4]])
 
     assert A.get(0, 0) == 1
     assert A.get(0, 1) == 2
@@ -126,6 +126,9 @@ def test_add_matrix():
     assert A.add_matrix(B) == DenseMatrix(2, 2, [2*a, 2*a, 0, 2*b])
     assert A + B == DenseMatrix(2, 2, [2*a, 2*a, 0, 2*b])
 
+    C = DenseMatrix(1, 2, [a, b])
+    raises(ShapeError, lambda: A + C)
+
 def test_mul_matrix():
     A = DenseMatrix(2, 2, [1, 2, 3, 4])
     B = DenseMatrix(2, 2, [1, 0, 0, 1])
@@ -142,10 +145,12 @@ def test_mul_matrix():
     assert A.mul_matrix(B) == DenseMatrix(2, 2, [a + b, 0, c + d, 0])
     assert A * B == DenseMatrix(2, 2, [a + b, 0, c + d, 0])
 
-    A = DenseMatrix(2, 3, [1, 2, 3, 2, 3, 4])
-    B = DenseMatrix(3, 2, [3, 4, 4, 5, 5, 6])
+    C = DenseMatrix(2, 3, [1, 2, 3, 2, 3, 4])
+    D = DenseMatrix(3, 2, [3, 4, 4, 5, 5, 6])
 
-    assert A.mul_matrix(B) == DenseMatrix(2, 2, [26, 32, 38, 47])
+    assert C.mul_matrix(D) == DenseMatrix(2, 2, [26, 32, 38, 47])
+
+    raises(ShapeError, lambda: A*D)
 
 def test_add_scalar():
     A = DenseMatrix(2, 2, [1, 2, 3, 4])
@@ -157,6 +162,7 @@ def test_add_scalar():
     assert A.add_scalar(i5) == DenseMatrix(2, 2, [6, 7, 8, 9])
     assert A + 5 == DenseMatrix(2, 2, [6, 7, 8, 9])
     assert 5 + A == DenseMatrix(2, 2, [6, 7, 8, 9])
+    assert a + A == DenseMatrix(2, 2, [a + 1, a + 2, a + 3, a + 4])
 
 def test_mul_scalar():
     A = DenseMatrix(2, 2, [1, 2, 3, 4])
@@ -168,6 +174,23 @@ def test_mul_scalar():
     assert A.mul_scalar(i5) == DenseMatrix(2, 2, [5, 10, 15, 20])
     assert A * 5 == DenseMatrix(2, 2, [5, 10, 15, 20])
     assert 5 * A == DenseMatrix(2, 2, [5, 10, 15, 20])
+    assert a * A == DenseMatrix(2, 2, [a, 2*a, 3*a, 4*a])
+
+def test_neg():
+    A = DenseMatrix(2, 3, [1, 2, 3, 4, 5, 6])
+    B = DenseMatrix(2, 3, [-1, -2, -3, -4, -5, -6])
+    assert -A == B
+
+def test_sub():
+    A = DenseMatrix(2, 2, [1, 2, 3, 4])
+    B = DenseMatrix(2, 2, [0, -1, -2, -3])
+    a = Symbol("a")
+    assert A - 5 == DenseMatrix(2, 2, [-4, -3, -2, -1])
+    assert a - A == DenseMatrix(2, 2, [a - 1, a - 2, a - 3, a - 4])
+    assert A - B == DenseMatrix(2, 2, [1, 3, 5, 7])
+
+    C = DenseMatrix(2, 1, [1, 2])
+    raises(ShapeError, lambda: A - C)
 
 def test_transpose():
     A = DenseMatrix(3, 3, [1, 2, 3, 4, 5, 6, 7, 8, 9])

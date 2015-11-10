@@ -267,20 +267,23 @@ cdef class Basic(object):
 
     def __add__(a, b):
         cdef Basic A = sympify(a, False)
-        cdef Basic B = sympify(b, False)
-        if A is None or B is None: return NotImplemented
+        B_ = sympify(b, False)
+        if A is None or B_ is None or isinstance(B_, MatrixBase): return NotImplemented
+        cdef Basic B = B_
         return c2py(symengine.add(A.thisptr, B.thisptr))
 
     def __sub__(a, b):
         cdef Basic A = sympify(a, False)
-        cdef Basic B = sympify(b, False)
-        if A is None or B is None: return NotImplemented
+        B_ = sympify(b, False)
+        if A is None or B_ is None or isinstance(B_, MatrixBase): return NotImplemented
+        cdef Basic B = B_
         return c2py(symengine.sub(A.thisptr, B.thisptr))
 
     def __mul__(a, b):
         cdef Basic A = sympify(a, False)
-        cdef Basic B = sympify(b, False)
-        if A is None or B is None: return NotImplemented
+        B_ = sympify(b, False)
+        if A is None or B_ is None or isinstance(B_, MatrixBase): return NotImplemented
+        cdef Basic B = B_
         return c2py(symengine.mul(A.thisptr, B.thisptr))
 
     def __truediv__(a, b):
@@ -955,17 +958,33 @@ cdef class DenseMatrix(MatrixBase):
     [3, 4]
     [5, 6]
 
+    >>> DenseMatrix([[1, 2], [3, 4], [5, 6]])
+    [1, 2]
+    [3, 4]
+    [5, 6]
+
     """
 
-    def __cinit__(self, row, col, v=None):
-        if v == None:
+    def __cinit__(self, row=None, col=None, v=None):
+        if row == None:
+            return
+        if v == None and col != None:
             self.thisptr = new symengine.DenseMatrix(row, col)
             return
+        if col == None:
+            v = row
+            row = len(v)
+            col = 1
         cdef symengine.vec_basic v_
         cdef Basic e_
         for e in v:
-            e_ = sympify(e, False)
-            if e_ is not None:
+            f = sympify(e)
+            try:
+                for e_ in f:
+                    v_.push_back(e_.thisptr)
+                col = len(f)
+            except TypeError:
+                e_ = f
                 v_.push_back(e_.thisptr)
 
         self.thisptr = new symengine.DenseMatrix(row, col, v_)
@@ -981,6 +1000,8 @@ cdef class DenseMatrix(MatrixBase):
         b = sympify(b)
         if isinstance(a, MatrixBase):
             if isinstance(b, MatrixBase):
+                if (a.shape != b.shape):
+                    raise ShapeError("Invalid shapes for matrix addition. Got %s %s" % (a.shape, b.shape))
                 return a.add_matrix(b)
             else:
                 return a.add_scalar(b)
@@ -992,11 +1013,29 @@ cdef class DenseMatrix(MatrixBase):
         b = sympify(b)
         if isinstance(a, MatrixBase):
             if isinstance(b, MatrixBase):
+                if (a.ncols() != b.nrows()):
+                    raise ShapeError("Invalid shapes for matrix multiplication. Got %s %s" % (a.shape, b.shape))
                 return a.mul_matrix(b)
             else:
                 return a.mul_scalar(b)
         else:
             return b.mul_scalar(a)
+
+    def __sub__(a, b):
+        a = sympify(a)
+        b = sympify(b)
+        if isinstance(a, MatrixBase):
+            if isinstance(b, MatrixBase):
+                if (a.shape != b.shape):
+                    raise ShapeError("Invalid shapes for matrix subtraction. Got %s %s" % (a.shape, b.shape))
+                return a.add_matrix(-b)
+            else:
+                return a.add_scalar(-b)
+        else:
+            return (-b).add_scalar(a)
+
+    def __neg__(self):
+        return self.mul_scalar(-1)
 
     def __getitem__(self, item):
         s = [0, 0, 0, 0]
