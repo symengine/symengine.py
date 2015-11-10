@@ -10,6 +10,7 @@ FIND_PATH(PYTHON_INCLUDE_PATH Python.h
     NO_DEFAULT_PATH
     NO_SYSTEM_ENVIRONMENT_PATH
     )
+message(STATUS "Python include path: ${PYTHON_INCLUDE_PATH}")
 
 execute_process(
 	COMMAND ${PYTHON_BIN} -c "from distutils.sysconfig import get_config_var; print(get_config_var('LIBDIR'))"

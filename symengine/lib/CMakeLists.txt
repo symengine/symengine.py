@@ -4,7 +4,6 @@ set(SRC
 
 configure_file(config.pxi.in config.pxi)
 
-include_directories(${PYTHON_INCLUDE_PATH})
 include_directories(BEFORE ${python_wrapper_BINARY_DIR}/symengine/lib)
 
 cython_add_module_pyx(symengine_wrapper symengine.pxd)

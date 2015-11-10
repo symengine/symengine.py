@@ -55,8 +55,8 @@ install:
 - if [%COMPILER%]==[MinGW-w64] call symengine-cpp\bin\appveyor-download.cmd "https://raw.githubusercontent.com/symengine/dependencies/5cff7d1736877336cf9fb58267111beea4fa152f/gmp-6.0.0-x86_64-w64-mingw32.7z" -FileName gmp.7z
 - if [%COMPILER%]==[MinGW-w64] 7z x -oC:\mingw64 gmp.7z > NUL
 
-- if [%COMPILER%]==[MinGW-w64] call symengine-cpp\bin\appveyor-download.cmd "https://raw.githubusercontent.com/symengine/dependencies/5cff7d1736877336cf9fb58267111beea4fa152f/python-x86_64-w64-mingw32.7z" -FileName pyx64.7z
-- if [%COMPILER%]==[MinGW-w64] 7z x -aoa -oC:\ pyx64.7z > NUL
+- if NOT [%COMPILER%]==[MSVC15] call symengine-cpp\bin\appveyor-download.cmd "https://raw.githubusercontent.com/symengine/dependencies/dcc10cce2133e2b57e61c5ced6120139bbcdfa20/python-libs-mingw32.7z" -FileName pylibs.7z
+- if NOT [%COMPILER%]==[MSVC15] 7z x -aoa -oC:\ pylibs.7z > NUL
 
 - set PATH=C:\Python%PYTHON_VERSION%;C:\Python%PYTHON_VERSION%\Scripts;%PATH%
 - pip install nose pytest sympy

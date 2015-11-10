@@ -14,6 +14,21 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 find_package(Python REQUIRED)
 find_package(Cython REQUIRED)
 
+include_directories(${PYTHON_INCLUDE_PATH})
+
+if (MINGW AND ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8"))
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DMS_WIN64")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DMS_WIN64")
+endif()
+
+if (MINGW AND (CMAKE_BUILD_TYPE STREQUAL "Release"))
+    try_compile(CHECK_PYTHON_HYPOT "${CMAKE_CURRENT_BINARY_DIR}/" "${CMAKE_SOURCE_DIR}/cmake/check_python_hypot.cpp")
+    if (NOT ${CHECK_PYTHON_HYPOT})
+        # include cmath before all headers
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -include cmath")
+    endif()
+endif()
+
 if(HAVE_SYMENGINE_MPC OR MPC_LIBRARY_FOUND)
     set(HAVE_SYMENGINE_MPC True)
 else()
@@ -25,6 +40,13 @@ if(HAVE_SYMENGINE_MPC OR MPFR_LIBRARY_FOUND)
 else()
     set(HAVE_SYMENGINE_MPFR False)
 endif()
+
+
+message("CMAKE_BUILD_TYPE : ${CMAKE_BUILD_TYPE}")
+message("CMAKE_CXX_FLAGS_RELEASE : ${CMAKE_CXX_FLAGS_RELEASE}")
+message("CMAKE_CXX_FLAGS_DEBUG : ${CMAKE_CXX_FLAGS_DEBUG}")
+message("HAVE_SYMENGINE_MPFR : ${HAVE_SYMENGINE_MPFR}")
+message("HAVE_SYMENGINE_MPC : ${HAVE_SYMENGINE_MPC}")
 
 message("Copying source of python wrappers into: ${CMAKE_CURRENT_BINARY_DIR}")
 file(COPY symengine/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/symengine)
