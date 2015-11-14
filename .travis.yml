@@ -67,26 +67,9 @@ matrix:
     - env: BUILD_TYPE="Debug" PYTHON_VERSION="2.7"
       compiler: clang
       os: osx
-      addons:
-        apt:
-          sources:
-          - ubuntu-toolchain-r-test
-          packages:
-          - clang
-          - libstdc++-4.8-dev
-          - libgmp-dev
-          - binutils-dev
     - env: BUILD_TYPE="Release" PYTHON_VERSION="2.7"
       compiler: clang
       os: osx
-      addons:
-        apt:
-          sources:
-          - ubuntu-toolchain-r-test
-          packages:
-          - clang
-          - libstdc++-4.8-dev
-          - libgmp-dev
     - env: BUILD_TYPE="Debug" PYTHON_VERSION="2.7" WITH_NUMPY="yes"
       compiler: gcc
       os: osx
