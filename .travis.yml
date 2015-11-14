@@ -38,13 +38,14 @@ env:
   - PYTHON_VERSION="2.7" WITH_MPC="yes"
   - PYTHON_VERSION="3.3" WITH_MPC="yes"
   - PYTHON_VERSION="3.4" WITH_MPFR="yes" WITH_NUMPY="yes"
+  - PYTHON_VERSION="3.5" WITH_MPFR="yes" WITH_NUMPY="yes"
 
 matrix:
   exclude:
     - compiler: clang
     - os: osx
   include:
-    - env: BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="2.7"
+    - env: BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="3.5"
       compiler: clang
       os: linux
     - env: BUILD_TYPE="Release" PYTHON_VERSION="2.7"
@@ -53,13 +54,13 @@ matrix:
     - env: BUILD_TYPE="Debug" PYTHON_VERSION="2.7"
       compiler: clang
       os: osx
-    - env: BUILD_TYPE="Release" PYTHON_VERSION="2.7"
+    - env: BUILD_TYPE="Release" PYTHON_VERSION="3.5"
       compiler: clang
       os: osx
     - env: BUILD_TYPE="Debug" PYTHON_VERSION="2.7" WITH_NUMPY="yes"
       compiler: gcc
       os: osx
-    - env: BUILD_TYPE="Release" PYTHON_VERSION="2.7"
+    - env: BUILD_TYPE="Release" PYTHON_VERSION="3.5"
       compiler: gcc
       os: osx
     - env: BUILD_TYPE="Release" WITH_SAGE="yes" WITH_MPC="yes"
