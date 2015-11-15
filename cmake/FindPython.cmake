@@ -10,6 +10,7 @@ FIND_PATH(PYTHON_INCLUDE_PATH Python.h
     NO_DEFAULT_PATH
     NO_SYSTEM_ENVIRONMENT_PATH
     )
+message(STATUS "Python include path: ${PYTHON_INCLUDE_PATH}")
 
 set(PYTHON_INSTALL_HEADER_PATH ${PYTHON_INCLUDE_PATH}/symengine
     CACHE BOOL "Python install headers path")
@@ -118,8 +119,8 @@ macro(ADD_PYTHON_LIBRARY name)
     ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set_target_properties(${name} PROPERTIES PREFIX "")
     set_target_properties(${name} PROPERTIES OUTPUT_NAME "${name}${PYTHON_EXTENSION_SOABI}")
-    target_link_libraries(${name} ${PYTHON_LIBRARY})
     IF(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+        target_link_libraries(${name} ${PYTHON_LIBRARY})
         set_target_properties(${name} PROPERTIES SUFFIX ".pyd")
     ENDIF()
 endmacro(ADD_PYTHON_LIBRARY)

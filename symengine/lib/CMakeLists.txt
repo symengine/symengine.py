@@ -5,7 +5,6 @@ set(SRC
 
 configure_file(config.pxi.in config.pxi)
 
-include_directories(BEFORE ${PYTHON_INCLUDE_PATH})
 include_directories(BEFORE ${python_wrapper_BINARY_DIR}/symengine/lib)
 add_subdirectory(symengine)
 
