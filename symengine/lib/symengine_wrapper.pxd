@@ -135,3 +135,6 @@ cdef class Log(Basic):
 
 cdef class PyFunctionClass(object):
     cdef RCP[const symengine.PyFunctionClass] thisptr
+
+cdef class PyModule(object):
+    cdef RCP[const symengine.PyModule] thisptr

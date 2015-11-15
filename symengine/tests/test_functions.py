@@ -97,6 +97,7 @@ def test_FunctionWrapper():
     x = symbols("x")
     e = x + sympy.loggamma(x)
     assert str(e) == "x + loggamma(x)"
+    assert isinstance(e, Add)
     assert e + sympy.loggamma(x) == x + 2*sympy.loggamma(x)
 
     f = e.subs({x : 10})
