@@ -1,6 +1,7 @@
-from symengine import (Integer, symbols, sin, cos, pi, E, I,
+from symengine import (Integer, symbols, sin, cos, pi, E, I, Add,
     function_symbol, DenseMatrix, sympify)
-
+from symengine.lib.symengine_wrapper import (PyNumber, PyFunction,
+    sage_module, wrap_sage_function)
 
 def test_sage_conversions():
     try:
@@ -81,6 +82,41 @@ def test_sage_conversions():
 
     # SympyConverter does not support converting the following
     # assert DenseMatrix(1, 2, [x1, y1]) == sympify(sage.matrix([[x, y]]))
+
+    # Sage Number
+    a = sage.Mod(2, 7)
+    b = PyNumber(a, sage_module)
+
+    a = a + 8
+    b = b + 8
+    assert isinstance(b, PyNumber)
+    assert b._sage_() == a
+
+    a = a + x
+    b = b + x
+    assert isinstance(b, Add)
+    assert b._sage_() == a
+
+    # Sage Function
+    e = x1 + wrap_sage_function(sage.log_gamma(x))
+    assert str(e) == "x + log_gamma(x)"
+    assert isinstance(e, Add)
+    assert e + wrap_sage_function(sage.log_gamma(x)) == x1 + 2*wrap_sage_function(sage.log_gamma(x))
+
+    f = e.subs({x1 : 10})
+    assert f == 10 + log(362880)
+
+    f = e.subs({x1 : 2})
+    assert f == 2
+
+    f = e.subs({x1 : 100});
+    v = f.n(53, real=True);
+    print(v)
+    assert abs(float(v) - 459.13420537) < 1e-7
+
+    f = e.diff(x1)
+    assert f == 1 + wrap_sage_function(sage.psi(x))
+
 
 # This string contains Sage doctests, that execute all the functions above.
 # When you add a new function, add it here as well.

@@ -882,6 +882,9 @@ cdef class PyFunctionClass(object):
         self.thisptr = symengine.make_rcp_PyFunctionClass(<PyObject*>(function), str(function).encode("utf-8"),
                                 <const RCP[const symengine.PyModule]>module.thisptr)
 
+# TODO: remove this once SymEngine conversions are available in Sage.
+def wrap_sage_function(func):
+    return PyFunction(func, func.operands(), func.operator(), sage_module)
 
 cdef class Abs(Function):
 
