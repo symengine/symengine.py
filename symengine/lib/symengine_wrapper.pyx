@@ -251,9 +251,9 @@ def sympify(a, raise_error=True):
             v.append(sympify(e, True))
         return v
     elif hasattr(a, '_symengine_'):
-        return a._symengine_()
+        return sympify(a._symengine_(), raise_error)
     elif hasattr(a, '_sympy_'):
-        return sympy2symengine(a._sympy_(), raise_error)
+        return sympify(a._sympy_(), raise_error)
     elif hasattr(a, 'pyobject'):
         return sympify(a.pyobject(), raise_error)
     return sympy2symengine(a, raise_error)
@@ -812,20 +812,24 @@ cdef RCP[const symengine.Number] sage_eval(PyObject* o1, long bits):
     cdef Number X = sympify((<object>o1).n(bits))
     return symengine.rcp_static_cast_Number(X.thisptr)
 
-cdef RCP[const symengine.Basic] py_diff(PyObject* o1, RCP[const symengine.Basic] symbol):
-    cdef Basic X = sympify((<object>o1).diff(c2py(symbol)))
+cdef RCP[const symengine.Basic] sage_diff(PyObject* o1, RCP[const symengine.Basic] symbol):
+    cdef Basic X = sympify((<object>o1).diff(c2py(symbol)._sage_()))
+    return X.thisptr
+
+cdef RCP[const symengine.Basic] sympy_diff(PyObject* o1, RCP[const symengine.Basic] symbol):
+    cdef Basic X = sympify((<object>o1).diff(c2py(symbol)._sympy_()))
     return X.thisptr
 
 def create_sympy_module():
     cdef PyModule s = PyModule.__new__(PyModule)
     s.thisptr = symengine.make_rcp_PyModule(&symengine_to_sympy, &pynumber_to_symengine, &sympy_eval,
-                                    &py_diff)
+                                    &sympy_diff)
     return s
 
 def create_sage_module():
     cdef PyModule s = PyModule.__new__(PyModule)
     s.thisptr = symengine.make_rcp_PyModule(&symengine_to_sage, &pynumber_to_symengine, &sage_eval,
-                                    &py_diff)
+                                    &sage_diff)
     return s
 
 sympy_module = create_sympy_module()

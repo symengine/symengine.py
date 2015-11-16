@@ -111,11 +111,12 @@ def test_sage_conversions():
 
     f = e.subs({x1 : 100});
     v = f.n(53, real=True);
-    print(v)
     assert abs(float(v) - 459.13420537) < 1e-7
 
     f = e.diff(x1)
-    assert f == 1 + wrap_sage_function(sage.psi(x))
+    # Enable this once symengine conversions are in sage as sage.psi is converted to a sympy
+    # function in `e.diff(x1)`
+    # assert f == 1 + wrap_sage_function(sage.psi(x))
 
 
 # This string contains Sage doctests, that execute all the functions above.
