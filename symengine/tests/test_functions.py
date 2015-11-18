@@ -1,4 +1,4 @@
-from symengine import Symbol, sin, cos, sqrt, Add, Mul, function_symbol, Integer, log, E
+from symengine import Symbol, sin, cos, sqrt, Add, Mul, function_symbol, Integer, log, E, symbols
 from symengine.lib.symengine_wrapper import Subs, Derivative
 
 def test_sin():
@@ -88,11 +88,31 @@ def test_Subs():
 
 def test_FunctionWrapper():
     import sympy
-    sympy.var("n, m, theta, phi")
+    n, m, theta, phi = sympy.symbols("n, m, theta, phi")
     r = sympy.Ynm(n, m, theta, phi)
     s = Integer(2)*r
     assert isinstance(s, Mul)
     assert isinstance(s.args[1]._sympy_(), sympy.Ynm)
+
+    x = symbols("x")
+    e = x + sympy.loggamma(x)
+    assert str(e) == "x + loggamma(x)"
+    assert isinstance(e, Add)
+    assert e + sympy.loggamma(x) == x + 2*sympy.loggamma(x)
+
+    f = e.subs({x : 10})
+    assert f == 10 + log(362880)
+
+    f = e.subs({x : 2})
+    assert f == 2
+
+    f = e.subs({x : 100});
+    v = f.n(53, real=True);
+    print(v)
+    assert abs(float(v) - 459.13420537) < 1e-7
+
+    f = e.diff(x)
+    assert f == 1 + sympy.polygamma(0, x)
 
 def test_log():
     x = Symbol("x")

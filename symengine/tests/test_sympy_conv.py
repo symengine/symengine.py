@@ -1,8 +1,9 @@
 from symengine import (Symbol, Integer, sympify, SympifyError, log,
         function_symbol, I, E, pi, exp, have_mpfr, have_mpc, DenseMatrix,
         sin, cos, tan, cot, csc, sec, asin, acos, atan, acot, acsc, asec,
-        sinh, cosh, tanh, coth, asinh, acosh, atanh, acoth)
-from symengine.lib.symengine_wrapper import Subs, Derivative, RealMPFR, ComplexMPC
+        sinh, cosh, tanh, coth, asinh, acosh, atanh, acoth, Add, Mul, Pow)
+from symengine.lib.symengine_wrapper import (Subs, Derivative, RealMPFR, ComplexMPC,
+        PyNumber)
 import sympy
 
 # Note: We test _sympy_() for SymEngine -> SymPy conversion, as those are methods
@@ -367,3 +368,40 @@ def test_log():
     assert log(x1, y) == log(x1, y1)
     assert log(x, y)._sympy_() == sympy.log(x1, y1)
     assert sympify(sympy.log(x1, y1)) == log(x, y)
+
+def test_pynumber():
+    a = sympy.FF(7)(3)
+    b = sympify(a)
+
+    assert isinstance(b, PyNumber)
+
+    a = a + 1
+    b = b + 1
+    assert isinstance(b, PyNumber)
+    assert b == a                  # Check equality via SymEngine
+    assert a == b                  # Check equality via SymPy
+
+    a = 1 - a
+    b = 1 - b
+    assert isinstance(b, PyNumber)
+    assert b == a                  # Check equality via SymEngine
+    assert a == b                  # Check equality via SymPy
+
+    a = 2 * a
+    b = 2 * b
+    assert isinstance(b, PyNumber)
+    assert b == a                  # Check equality via SymEngine
+    assert a == b                  # Check equality via SymPy
+
+    a = 2 / a
+    b = 2 / b
+    assert isinstance(b, PyNumber)
+    assert b == a                  # Check equality via SymEngine
+    assert a == b                  # Check equality via SymPy
+
+    x = Symbol("x")
+    b = x * sympy.FF(7)(3)
+    assert isinstance(b, Mul)
+
+    b = b / x
+    assert isinstance(b, PyNumber)

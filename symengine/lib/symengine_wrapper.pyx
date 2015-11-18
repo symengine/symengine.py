@@ -36,6 +36,8 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = Symbol.__new__(Symbol)
     elif (symengine.is_a_Constant(deref(o))):
         r = Constant.__new__(Constant)
+    elif (symengine.is_a_PyFunction(deref(o))):
+        r = PyFunction.__new__(PyFunction)
     elif (symengine.is_a_FunctionSymbol(deref(o))):
         r = FunctionSymbol.__new__(FunctionSymbol)
     elif (symengine.is_a_Abs(deref(o))):
@@ -44,8 +46,6 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = Derivative.__new__(Derivative)
     elif (symengine.is_a_Subs(deref(o))):
         r = Subs.__new__(Subs)
-    elif (symengine.is_a_FunctionWrapper(deref(o))):
-        r = FunctionWrapper.__new__(FunctionWrapper)
     elif (symengine.is_a_RealDouble(deref(o))):
         r = RealDouble.__new__(RealDouble)
     elif (symengine.is_a_ComplexDouble(deref(o))):
@@ -96,6 +96,8 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = ATanh.__new__(ATanh)
     elif (symengine.is_a_ACoth(deref(o))):
         r = ACoth.__new__(ACoth)
+    elif (symengine.is_a_PyNumber(deref(o))):
+        r = PyNumber.__new__(PyNumber)
     else:
         raise Exception("Unsupported SymEngine class.")
     r.thisptr = o
@@ -195,7 +197,7 @@ def sympy2symengine(a, raise_error=False):
         name = str(a.func)
         return function_symbol(name, *(a.args))
     elif isinstance(a, sympy.Function):
-        return FunctionWrapper(a)
+        return PyFunction(a, a.args, a.func, sympy_module)
     elif isinstance(a, sympy.Matrix):
         row, col = a.shape
         v = []
@@ -203,6 +205,9 @@ def sympy2symengine(a, raise_error=False):
             for e in r:
                 v.append(e)
         return DenseMatrix(row, col, v)
+    elif isinstance(a, sympy.polys.domains.modularinteger.ModularInteger):
+        return PyNumber(a, sympy_module)
+
     if raise_error:
         raise SympifyError("sympy2symengine: Cannot convert '%r' to a symengine type." % a)
 
@@ -246,10 +251,20 @@ def sympify(a, raise_error=True):
             v.append(sympify(e, True))
         return v
     elif hasattr(a, '_symengine_'):
-        return a._symengine_()
+        return sympify(a._symengine_(), raise_error)
     elif hasattr(a, '_sympy_'):
-        return sympy2symengine(a._sympy_(), raise_error)
+        return sympify(a._sympy_(), raise_error)
+    elif hasattr(a, 'pyobject'):
+        return sympify(a.pyobject(), raise_error)
     return sympy2symengine(a, raise_error)
+
+funcs = {}
+
+def get_function_class(function, module):
+    if not function in funcs:
+        funcs[function] = PyFunctionClass(function, module)
+    return funcs[function]
+
 
 cdef class Basic(object):
 
@@ -773,47 +788,107 @@ cdef class FunctionSymbol(Function):
         import sage.all as sage
         return sage.function(name, *s)
 
-cdef inline void SymPy_XDECREF(void* o):
-    Py_XDECREF(<PyObject*>o)
+cdef RCP[const symengine.Basic] pynumber_to_symengine(PyObject* o1):
+    cdef Basic X = sympify(<object>o1, False)
+    return X.thisptr
 
-cdef inline void SymPy_XINCREF(void* o):
-    Py_XINCREF(<PyObject*>o)
+cdef PyObject* symengine_to_sage(RCP[const symengine.Basic] o1):
+    import sage.all as sage
+    t = sage.SR(c2py(o1)._sage_())
+    Py_XINCREF(<PyObject*>t)
+    return <PyObject*>(t)
 
-cdef inline int SymPy_CMP(void* o1, void* o2):
-    return <int>PyObject_CallMethodObjArgs(<object>o1, "compare", <PyObject *>o2, NULL)
+cdef PyObject* symengine_to_sympy(RCP[const symengine.Basic] o1):
+    t = c2py(o1)._sympy_()
+    Py_XINCREF(<PyObject*>t)
+    return <PyObject*>(t)
 
-cdef class FunctionWrapper(FunctionSymbol):
+cdef RCP[const symengine.Number] sympy_eval(PyObject* o1, long bits):
+    prec = max(1, int(round(bits/3.3219280948873626)-1))
+    cdef Number X = sympify((<object>o1).n(prec))
+    return symengine.rcp_static_cast_Number(X.thisptr)
 
-    def __cinit__(self, sympy_function = None):
-        import sympy
-        if not isinstance(sympy_function, sympy.Function):
+cdef RCP[const symengine.Number] sage_eval(PyObject* o1, long bits):
+    cdef Number X = sympify((<object>o1).n(bits))
+    return symengine.rcp_static_cast_Number(X.thisptr)
+
+cdef RCP[const symengine.Basic] sage_diff(PyObject* o1, RCP[const symengine.Basic] symbol):
+    cdef Basic X = sympify((<object>o1).diff(c2py(symbol)._sage_()))
+    return X.thisptr
+
+cdef RCP[const symengine.Basic] sympy_diff(PyObject* o1, RCP[const symengine.Basic] symbol):
+    cdef Basic X = sympify((<object>o1).diff(c2py(symbol)._sympy_()))
+    return X.thisptr
+
+def create_sympy_module():
+    cdef PyModule s = PyModule.__new__(PyModule)
+    s.thisptr = symengine.make_rcp_PyModule(&symengine_to_sympy, &pynumber_to_symengine, &sympy_eval,
+                                    &sympy_diff)
+    return s
+
+def create_sage_module():
+    cdef PyModule s = PyModule.__new__(PyModule)
+    s.thisptr = symengine.make_rcp_PyModule(&symengine_to_sage, &pynumber_to_symengine, &sage_eval,
+                                    &sage_diff)
+    return s
+
+sympy_module = create_sympy_module()
+sage_module = create_sage_module()
+
+cdef class PyNumber(Number):
+    def __cinit__(self, obj = None, PyModule module = None):
+        if obj is None:
             return
-        cdef void* ptr
-        ptr = <void *>(sympy_function)
-        cdef string name = str(sympy_function.func).encode("utf-8")
-        cdef string hash_ = str(sympy_function.__hash__()).encode("utf-8")
-        cdef symengine.vec_basic v
-        cdef Basic arg_
-        for arg in sympy_function.args:
-            arg_ = sympify(arg)
-            v.push_back(arg_.thisptr)
-        SymPy_XINCREF(ptr)
-        self.thisptr = symengine.make_rcp_FunctionWrapper(ptr, name, hash_, v, &SymPy_XDECREF, &SymPy_CMP)
+        Py_XINCREF(<PyObject*>(obj))
+        self.thisptr = symengine.make_rcp_PyNumber(<PyObject*>(obj), <const RCP[const symengine.PyModule]>module.thisptr)
 
     def _sympy_(self):
-        cdef object pyobj
-        cdef RCP[const symengine.FunctionWrapper] X = \
-            symengine.rcp_static_cast_FunctionWrapper(self.thisptr)
-        pyobj = <object>(deref(X).get_object())
-        return pyobj
+        import sympy
+        return sympy.sympify(self.pyobject())
 
     def _sage_(self):
-        cdef object pyobj
-        cdef RCP[const symengine.FunctionWrapper] X = \
-            symengine.rcp_static_cast_FunctionWrapper(self.thisptr)
-        pyobj = <object>(deref(X).get_object())
-        return pyobj._sage_()
+        import sage.all as sage
+        return sage.SR(self.pyobject())
 
+    def pyobject(self):
+        return <object>deref(symengine.rcp_static_cast_PyNumber(self.thisptr)).get_py_object()
+
+
+cdef class PyFunction(FunctionSymbol):
+
+    def __cinit__(self, pyfunction = None, args = None, pyfunction_class=None, module=None):
+        if pyfunction is None:
+            return
+        cdef symengine.vec_basic v
+        cdef Basic arg_
+        for arg in args:
+            arg_ = sympify(arg, True)
+            v.push_back(arg_.thisptr)
+        cdef PyFunctionClass _pyfunction_class = get_function_class(pyfunction_class, module)
+        cdef PyObject* _pyfunction = <PyObject*>pyfunction
+        Py_XINCREF(_pyfunction)
+        self.thisptr = symengine.make_rcp_PyFunction(v, <const RCP[const symengine.PyFunctionClass]>(_pyfunction_class.thisptr), _pyfunction)
+
+    def _sympy_(self):
+        import sympy
+        return sympy.sympify(self.pyobject())
+
+    def _sage_(self):
+        import sage.all as sage
+        return sage.SR(self.pyobject())
+
+    def pyobject(self):
+        return <object>deref(symengine.rcp_static_cast_PyFunction(self.thisptr)).get_py_object()
+
+cdef class PyFunctionClass(object):
+
+    def __cinit__(self, function, PyModule module not None):
+        self.thisptr = symengine.make_rcp_PyFunctionClass(<PyObject*>(function), str(function).encode("utf-8"),
+                                <const RCP[const symengine.PyModule]>module.thisptr)
+
+# TODO: remove this once SymEngine conversions are available in Sage.
+def wrap_sage_function(func):
+    return PyFunction(func, func.operands(), func.operator(), sage_module)
 
 cdef class Abs(Function):
 

@@ -2,6 +2,7 @@ from libcpp cimport bool
 from libcpp.string cimport string
 from libcpp.map cimport map
 from libcpp.vector cimport vector
+from cpython.ref cimport PyObject
 
 include "config.pxi"
 
@@ -72,6 +73,8 @@ cdef extern from "<symengine/symengine_rcp.h>" namespace "SymEngine":
     RCP[const RealMPFR] rcp_static_cast_RealMPFR "SymEngine::rcp_static_cast<const SymEngine::RealMPFR>"(RCP[const Basic] &b) nogil
     RCP[const ComplexMPC] rcp_static_cast_ComplexMPC "SymEngine::rcp_static_cast<const SymEngine::ComplexMPC>"(RCP[const Basic] &b) nogil
     RCP[const Log] rcp_static_cast_Log "SymEngine::rcp_static_cast<const SymEngine::Log>"(RCP[const Basic] &b) nogil
+    RCP[const PyNumber] rcp_static_cast_PyNumber "SymEngine::rcp_static_cast<const SymEngine::PyNumber>"(RCP[const Basic] &b) nogil
+    RCP[const PyFunction] rcp_static_cast_PyFunction "SymEngine::rcp_static_cast<const SymEngine::PyFunction>"(RCP[const Basic] &b) nogil
     Ptr[RCP[Basic]] outArg(RCP[const Basic] &arg) nogil
     Ptr[RCP[Integer]] outArg_Integer "SymEngine::outArg<SymEngine::RCP<const SymEngine::Integer>>"(RCP[const Integer] &arg) nogil
 
@@ -129,12 +132,13 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_Abs "SymEngine::is_a<SymEngine::Abs>"(const Basic &b) nogil
     bool is_a_Derivative "SymEngine::is_a<SymEngine::Derivative>"(const Basic &b) nogil
     bool is_a_Subs "SymEngine::is_a<SymEngine::Subs>"(const Basic &b) nogil
-    bool is_a_FunctionWrapper "SymEngine::is_a<SymEngine::FunctionWrapper>"(const Basic &b) nogil
+    bool is_a_PyFunction "SymEngine::is_a<SymEngine::FunctionWrapper>"(const Basic &b) nogil
     bool is_a_RealDouble "SymEngine::is_a<SymEngine::RealDouble>"(const Basic &b) nogil
     bool is_a_ComplexDouble "SymEngine::is_a<SymEngine::ComplexDouble>"(const Basic &b) nogil
     bool is_a_RealMPFR "SymEngine::is_a<SymEngine::RealMPFR>"(const Basic &b) nogil
     bool is_a_ComplexMPC "SymEngine::is_a<SymEngine::ComplexMPC>"(const Basic &b) nogil
     bool is_a_Log "SymEngine::is_a<SymEngine::Log>"(const Basic &b) nogil
+    bool is_a_PyNumber "SymEngine::is_a<SymEngine::PyNumber>"(const Basic &b) nogil
 
     RCP[const Basic] expand(RCP[const Basic] &o) nogil except +
 
@@ -147,6 +151,18 @@ cdef extern from "<symengine/symbol.h>" namespace "SymEngine":
 cdef extern from "<symengine/number.h>" namespace "SymEngine":
     cdef cppclass Number(Basic):
         pass
+    cdef cppclass NumberWrapper(Basic):
+        pass
+
+cdef extern from "<symengine/pywrapper.h>" namespace "SymEngine":
+    cdef cppclass PyNumber(NumberWrapper):
+        PyObject* get_py_object()
+    cdef cppclass PyModule:
+        pass
+    cdef cppclass PyFunctionClass:
+        PyObject* call(const vec_basic &vec)
+    cdef cppclass PyFunction:
+        PyObject* get_py_object()
 
 cdef extern from "<symengine/integer.h>" namespace "SymEngine":
     cdef cppclass Integer(Number):
@@ -234,6 +250,14 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
             void (*dec_ref)(void *), int (*comp)(void *, void *)) nogil
     RCP[const Basic] make_rcp_RealDouble "SymEngine::make_rcp<const SymEngine::RealDouble>"(double x) nogil
     RCP[const Basic] make_rcp_ComplexDouble "SymEngine::make_rcp<const SymEngine::ComplexDouble>"(double complex x) nogil
+    RCP[const PyModule] make_rcp_PyModule "SymEngine::make_rcp<const SymEngine::PyModule>"(PyObject* (*) (RCP[const Basic] x), \
+            RCP[const Basic] (*)(PyObject*), RCP[const Number] (*)(PyObject*, long bits),
+            RCP[const Basic] (*)(PyObject*, RCP[const Basic])) nogil
+    RCP[const Basic] make_rcp_PyNumber "SymEngine::make_rcp<const SymEngine::PyNumber>"(PyObject*, const RCP[const PyModule] &x) nogil
+    RCP[const PyFunctionClass] make_rcp_PyFunctionClass "SymEngine::make_rcp<const SymEngine::PyFunctionClass>"(PyObject* pyobject,
+            string name, const RCP[const PyModule] &pymodule) nogil
+    RCP[const Basic] make_rcp_PyFunction "SymEngine::make_rcp<const SymEngine::PyFunction>" (const vec_basic &vec,
+            const RCP[const PyFunctionClass] &pyfunc_class, const PyObject* pyobject) nogil
 
 cdef extern from "<symengine/functions.h>" namespace "SymEngine":
     cdef RCP[const Basic] sin(RCP[const Basic] &arg) nogil except+
