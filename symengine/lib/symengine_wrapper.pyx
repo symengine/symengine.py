@@ -1,6 +1,6 @@
 from cython.operator cimport dereference as deref, preincrement as inc
 cimport symengine
-from symengine cimport RCP, set
+from symengine cimport RCP, set, map_basic_basic
 from libcpp cimport bool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -11,6 +11,7 @@ import cython
 import itertools
 from operator import mul
 from functools import reduce
+import collections
 
 
 include "config.pxi"
@@ -265,7 +266,28 @@ def get_function_class(function, module):
         funcs[function] = PyFunctionClass(function, module)
     return funcs[function]
 
-cdef class DictBasic(object):
+
+cdef class DictBasicIter(object):
+    cdef map_basic_basic.iterator begin
+    cdef map_basic_basic.iterator end
+
+    cdef init(self, map_basic_basic.iterator begin, map_basic_basic.iterator end):
+        self.begin = begin
+        self.end = end
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.begin != self.end:
+            obj = c2py(deref(self.begin).first)
+        else:
+            raise StopIteration
+        inc(self.begin)
+        return obj
+
+
+cdef class _DictBasic(object):
     cdef symengine.map_basic_basic c
 
     def __init__(self, tocopy = None):
@@ -281,7 +303,7 @@ cdef class DictBasic(object):
         return ret
 
     def add_dict(self, d):
-        cdef DictBasic D
+        cdef _DictBasic D
         if isinstance(d, DictBasic):
             D = d
             self.c.insert(D.c.begin(), D.c.end())
@@ -289,39 +311,29 @@ cdef class DictBasic(object):
             for key, value in d.iteritems():
                 self.add(key, value)
 
-    def __str__(self):
-        return self.as_dict().__str__()
-
-    def __repr__(self):
-        return self.as_dict().__repr__()
-
-    def copy(self):
-        return DictBasic(self)
-
     def add(self, key, value):
         cdef Basic K = sympify(key)
         cdef Basic V = sympify(value)
         cdef symengine.std_pair_rcp_const_basic_rcp_const_basic pair
         pair.first = K.thisptr
         pair.second = V.thisptr
-        self.c.insert(pair)
+        return self.c.insert(pair).second
 
-    def get(self, key):
-        cdef Basic K = sympify(key)
-        it = self.c.find(K.thisptr)
-        if it == self.c.end():
-            return None
-        else:
-            return c2py(deref(it).second)
+    def copy(self):
+        return DictBasic(self)
+
+    __copy__ = copy
 
     def __len__(self):
         return self.c.size()
 
     def __getitem__(self, key):
-        val = self.get(key)
-        if val == None:
+        cdef Basic K = sympify(key)
+        it = self.c.find(K.thisptr)
+        if it == self.c.end():
             raise KeyError(key)
-        return val
+        else:
+            return c2py(deref(it).second)
 
     def __setitem__(self, key, value):
         cdef Basic K = sympify(key)
@@ -335,10 +347,25 @@ cdef class DictBasic(object):
         cdef Basic K = sympify(key)
         self.c.erase(K.thisptr)
 
-    def has_key(self, key):
+    def __contains__(self, key):
         cdef Basic K = sympify(key)
         it = self.c.find(K.thisptr)
         return it != self.c.end()
+
+    def __iter__(self):
+        cdef DictBasicIter d = DictBasicIter()
+        d.init(self.c.begin(), self.c.end())
+        return d
+
+
+class DictBasic(_DictBasic, collections.MutableMapping):
+
+    def __str__(self):
+        return "{" + ", ".join(["%s: %s" % (str(key), str(value)) for key, value in self.items()]) + "}"
+
+    def __repr__(self):
+        return self.__str__()
+
 
 cdef class Basic(object):
 
@@ -438,7 +465,7 @@ cdef class Basic(object):
         return c2py(deref(self.thisptr).diff(X))
 
     def subs_dict(Basic self not None, subs_dict):
-        cdef DictBasic D
+        cdef _DictBasic D
         if isinstance(subs_dict, DictBasic):
           D = subs_dict
           return c2py(deref(self.thisptr).subs(D.c))

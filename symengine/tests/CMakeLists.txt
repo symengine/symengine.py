@@ -1,6 +1,7 @@
 set(PY_PATH ${PYTHON_INSTALL_PATH}/symengine/tests)
 install(FILES __init__.py
     test_arit.py
+    test_dict_basic.py
     test_eval.py
     test_functions.py
     test_integer.py
