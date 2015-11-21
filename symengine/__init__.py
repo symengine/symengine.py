@@ -13,6 +13,15 @@ if have_mpc:
 
 __version__ = "0.1.0.dev"
 
+def ascii_art():
+	print("""\
+	 _____           _____         _
+	|   __|_ _ _____|   __|___ ___|_|___ ___
+	|__   | | |     |   __|   | . | |   | -_|
+	|_____|_  |_|_|_|_____|_|_|_  |_|_|_|___|
+	      |___|               |___|
+	""")
+
 def test():
     import pytest, os
     return not pytest.cmdline.main(
