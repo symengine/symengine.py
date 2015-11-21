@@ -3,6 +3,11 @@ from os import getenv, path
 import subprocess
 import sys
 
+# Make sure the system has the right Python version.
+if sys.version_info[:2] < (2, 6):
+    print("SymEngine requires Python 2.6 or newer. Python %d.%d detected" % sys.version_info[:2])
+    sys.exit(-1)
+
 # use setuptools by default as per the official advice at:
 # packaging.python.org/en/latest/current.html#packaging-tool-recommendations
 use_setuptools = True
@@ -174,6 +179,7 @@ integration with SymPy.'''
 setup(name = "symengine",
       version = "0.1.0.dev",
       description = "Python library providing wrappers to SymEngine",
+      setup_requires = ['cython>=0.19.1'],
       long_description = "",
       author = "",
       author_email = "",
