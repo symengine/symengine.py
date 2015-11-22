@@ -145,4 +145,5 @@ cdef class _DictBasic(object):
 cdef class DictBasicIter(object):
     cdef map_basic_basic.iterator begin
     cdef map_basic_basic.iterator end
+    cdef init(self, map_basic_basic.iterator begin, map_basic_basic.iterator end)
 
