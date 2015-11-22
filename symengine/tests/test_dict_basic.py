@@ -1,12 +1,12 @@
 from symengine.utilities import raises
 
-from symengine import symbols, DictBasic, sin
+from symengine import symbols, DictBasic, sin, Integer
 
 def test_DictBasic():
     x, y, z = symbols("x y z")
-    d = DictBasic({x : 2, y: z})
+    d = DictBasic({x: 2, y: z})
 
-    assert str(d) == "{x: 2, y: z}"
+    assert str(d) == "{x: 2, y: z}" or str(d) == "{y: z, x: 2}"
     assert d[x] == 2
 
     raises(KeyError, lambda: d[2*z])
@@ -17,7 +17,7 @@ def test_DictBasic():
     assert d[2*z] == x
     if 2*z not in d:
         assert False
-    assert set(d.items()) == set([(2*z, x), (x, 2), (y, z)])
+    assert set(d.items()) == set([(2*z, x), (x, Integer(2)), (y, z)])
 
     del d[x]
     assert set(d.keys()) == set([2*z, y])
