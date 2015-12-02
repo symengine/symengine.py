@@ -523,9 +523,9 @@ cdef extern from "<symengine/ntheory.h>" namespace "SymEngine":
     RCP[const Integer] lcm(const Integer &a, const Integer &b) nogil
     void gcd_ext(const Ptr[RCP[Integer]] &g, const Ptr[RCP[Integer]] &s,
             const Ptr[RCP[Integer]] &t, const Integer &a, const Integer &b) nogil
-    RCP[const Integer] mod(const Integer &n, const Integer &d) nogil except +
+    RCP[const Integer] mod "SymEngine::mod_f"(const Integer &n, const Integer &d) nogil except +
     RCP[const Integer] quotient "SymEngine::quotient_f"(const Integer &n, const Integer &d) nogil except +
-    void quotient_mod (const Ptr[RCP[Integer]] &q, const Ptr[RCP[Integer]] &mod,
+    void quotient_mod "SymEngine::quotient_mod_f"(const Ptr[RCP[Integer]] &q, const Ptr[RCP[Integer]] &mod,
             const Integer &n, const Integer &d) nogil except +
     int mod_inverse(const Ptr[RCP[Integer]] &b, const Integer &a,
             const Integer &m) nogil

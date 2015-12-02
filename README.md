@@ -14,6 +14,9 @@ Install prerequisites.
     Cython      >= 0.19.1
     SymEngine   >= 0.1.0
 
+For SymEngine, only a specific commit (2e99fd8131da4c91fb8ef9d5eb5bcaaeb0f6a20c) is supported.
+Latest git master branch may not work as there may be breaking changes in SymEngine.
+
 Python wrappers can be installed by,
 
     python setup.py install
