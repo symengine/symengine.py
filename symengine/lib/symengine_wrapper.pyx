@@ -1,6 +1,6 @@
 from cython.operator cimport dereference as deref, preincrement as inc
 cimport symengine
-from symengine cimport RCP, set, map_basic_basic
+from symengine cimport RCP, set, pair, map_basic_basic, umap_short_basic, umap_short_basic_iterator, rcp_const_basic, std_pair_short_rcp_const_basic
 from libcpp cimport bool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -507,6 +507,37 @@ cdef class Basic(object):
 
     def _symbolic_(self, ring):
         return ring(self._sage_())
+
+def series(Basic ex, x=None, x0=0, n=6):
+    # TODO: check for x0 an infinity, see sympy/core/expr.py
+    # TODO: nonzero x0
+    # TODO: order term
+    syms = ex.free_symbols
+    if not syms:
+        return ex
+    if len(syms) > 1:
+        from sympy import series as sy_series
+        return sympy2symengine(sy_series(ex, x, x0, n))
+    if x is None:
+        x = list(syms)[0]
+    if not x in syms:
+        return ex
+
+    cdef Symbol symbol = sympify(x)
+    cdef RCP[const symengine.Symbol] X = symengine.rcp_static_cast_Symbol(symbol.thisptr)
+    cdef unsigned int N = n
+    #return sum(symbol**(p.first)*c2py(deref(p.second)) for p in symengine.series(self.thisptr, X, N))
+    cdef umap_short_basic umap = symengine.series(ex.thisptr, X, N)
+    cdef umap_short_basic_iterator iter = umap.begin()
+    cdef umap_short_basic_iterator iterend = umap.end()
+    cdef Basic coef
+    poly = 0
+    while iter != iterend:
+        coef = c2py(<symengine.RCP[const symengine.Basic]>(deref(iter).second))
+        m = symbol**(deref(iter).first)*coef
+        poly = poly + m
+        inc(iter)
+    return poly
 
 cdef class Symbol(Basic):
 
@@ -1975,7 +2006,6 @@ cdef size_t _size(n):
         return n.size
     except AttributeError:
         return len(n)  # e.g. array.array
-
 
 def _get_shape_nested(ndarr):
     # no checking of shape consistency is done

@@ -8,6 +8,7 @@ install(FILES __init__.py
     test_matrices.py
     test_ntheory.py
     test_sage.py
+    test_series_expansion.py
     test_subs.py
     test_symbol.py
     test_sympify.py
