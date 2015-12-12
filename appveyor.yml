@@ -62,8 +62,9 @@ install:
 - pip install nose pytest sympy
 - pip install --install-option="--no-cython-compile" cython
 
+- set /p commit=<symengine_version.txt
 - cd symengine-cpp
-- git checkout 2e99fd8131da4c91fb8ef9d5eb5bcaaeb0f6a20c
+- git checkout %commit%
 - mkdir build
 - cd build
 
