@@ -508,29 +508,46 @@ cdef class Basic(object):
     def _symbolic_(self, ring):
         return ring(self._sage_())
 
-def series(Basic ex, x=None, x0=0, n=6):
+def series(ex, x=None, x0=0, n=6, method='sympy'):
     # TODO: check for x0 an infinity, see sympy/core/expr.py
     # TODO: nonzero x0
     # TODO: order term
-    syms = ex.free_symbols
+    cdef Basic _ex = sympify(ex)
+    if method == 'sympy':
+        from sympy import series as sy_series
+        return sympy2symengine(sy_series(_ex, x, x0, n))
+    elif method == 'ring_series':
+        from sympy.polys.ring_series import rs_series
+        return sympy2symengine(rs_series(_ex, x, n).as_expr().subs(x,x-x0))
+    elif method != 'symengine':
+        raise ValueError('unknown method in series()')
+
+    syms = _ex.free_symbols
     if not syms:
-        return ex
+        return _ex
     if len(syms) > 1:
         from sympy import series as sy_series
-        return sympy2symengine(sy_series(ex, x, x0, n))
+        return sympy2symengine(sy_series(_ex, x, x0, n))
     if x is None:
         x = list(syms)[0]
     if not x in syms:
-        return ex
+        return _ex
 
     cdef Symbol symbol = sympify(x)
     cdef RCP[const symengine.Symbol] X = symengine.rcp_static_cast_Symbol(symbol.thisptr)
     cdef unsigned int N = n
-    #return sum(symbol**(p.first)*c2py(deref(p.second)) for p in symengine.series(self.thisptr, X, N))
-    cdef umap_short_basic umap = symengine.series(ex.thisptr, X, N)
-    cdef umap_short_basic_iterator iter = umap.begin()
-    cdef umap_short_basic_iterator iterend = umap.end()
+    cdef umap_short_basic umap
+    cdef umap_short_basic_iterator iter, iterend
     cdef Basic coef
+
+    try:
+        umap = symengine.series(_ex.thisptr, X, N)
+    except Exception:
+        from sympy import series as sy_series
+        return sympy2symengine(sy_series(_ex, x, x0, n))
+
+    iter = umap.begin()
+    iterend = umap.end()
     poly = 0
     while iter != iterend:
         coef = c2py(<symengine.RCP[const symengine.Basic]>(deref(iter).second))
