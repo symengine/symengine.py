@@ -515,10 +515,10 @@ def series(ex, x=None, x0=0, n=6, method='sympy'):
     cdef Basic _ex = sympify(ex)
     if method == 'sympy':
         from sympy import series as sy_series
-        return sympy2symengine(sy_series(_ex, x, x0, n))
+        return sy_series(_ex, x, x0, n)
     elif method == 'ring_series':
         from sympy.polys.ring_series import rs_series
-        return sympy2symengine(rs_series(_ex, x, n).as_expr().subs(x,x-x0))
+        return rs_series(_ex, x, n).as_expr().subs(x,x-x0)
     elif method != 'symengine':
         raise ValueError('unknown method in series()')
 
@@ -527,7 +527,7 @@ def series(ex, x=None, x0=0, n=6, method='sympy'):
         return _ex
     if len(syms) > 1:
         from sympy import series as sy_series
-        return sympy2symengine(sy_series(_ex, x, x0, n))
+        return sy_series(_ex, x, x0, n)
     if x is None:
         x = list(syms)[0]
     if not x in syms:
@@ -546,15 +546,16 @@ def series(ex, x=None, x0=0, n=6, method='sympy'):
         from sympy import series as sy_series
         return sympy2symengine(sy_series(_ex, x, x0, n))
 
+    from sympy import Add, O
     iter = umap.begin()
     iterend = umap.end()
     poly = 0
     while iter != iterend:
         coef = c2py(<symengine.RCP[const symengine.Basic]>(deref(iter).second))
         m = symbol**(deref(iter).first)*coef
-        poly = poly + m
+        poly = Add(poly, m)
         inc(iter)
-    return poly
+    return Add(poly, O(symbol**n))
 
 cdef class Symbol(Basic):
 
