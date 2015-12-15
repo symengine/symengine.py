@@ -512,13 +512,15 @@ def series(ex, x=None, x0=0, n=6, method='sympy'):
     # TODO: check for x0 an infinity, see sympy/core/expr.py
     # TODO: nonzero x0
     # TODO: order term
+    # underscored local vars are of symengine.py type
     cdef Basic _ex = sympify(ex)
+    cdef Symbol _x = sympify(x)
     if method == 'sympy':
         from sympy import series as sy_series
-        return sy_series(_ex, x, x0, n)
+        return sy_series(_ex._sympy_(), _x._sympy_(), x0, n)
     elif method == 'ring_series':
         from sympy.polys.ring_series import rs_series
-        return rs_series(_ex, x, n).as_expr().subs(x,x-x0)
+        return rs_series(_ex._sympy_(), _x._sympy_(), n).as_expr().subs(x,x-x0)
     elif method != 'symengine':
         raise ValueError('unknown method in series()')
 
@@ -527,14 +529,14 @@ def series(ex, x=None, x0=0, n=6, method='sympy'):
         return _ex
     if len(syms) > 1:
         from sympy import series as sy_series
-        return sy_series(_ex, x, x0, n)
-    if x is None:
-        x = list(syms)[0]
-    if not x in syms:
+        return sy_series(_ex._sympy_(), _x._sympy_(), x0, n)
+    if _x is None:
+        _x = list(syms)[0]
+
+    if not _x in syms:
         return _ex
 
-    cdef Symbol symbol = sympify(x)
-    cdef RCP[const symengine.Symbol] X = symengine.rcp_static_cast_Symbol(symbol.thisptr)
+    cdef RCP[const symengine.Symbol] X = symengine.rcp_static_cast_Symbol(_x.thisptr)
     cdef unsigned int N = n
     cdef umap_short_basic umap
     cdef umap_short_basic_iterator iter, iterend
@@ -544,18 +546,19 @@ def series(ex, x=None, x0=0, n=6, method='sympy'):
         umap = symengine.series(_ex.thisptr, X, N)
     except Exception:
         from sympy import series as sy_series
-        return sympy2symengine(sy_series(_ex, x, x0, n))
+        return sy_series(_ex._sympy_(), _x._sympy_(), x0, n)
 
-    from sympy import Add, O
+    from sympy import Add, Pow, O
     iter = umap.begin()
     iterend = umap.end()
     poly = 0
     while iter != iterend:
         coef = c2py(<symengine.RCP[const symengine.Basic]>(deref(iter).second))
-        m = symbol**(deref(iter).first)*coef
+        m = Pow(_x,(deref(iter).first))*coef
         poly = Add(poly, m)
         inc(iter)
-    return Add(poly, O(symbol**n))
+    return Add(poly, O(Pow(_x, n)))
+
 
 cdef class Symbol(Basic):
 
