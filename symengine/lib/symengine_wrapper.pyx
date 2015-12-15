@@ -508,7 +508,7 @@ cdef class Basic(object):
     def _symbolic_(self, ring):
         return ring(self._sage_())
 
-def series(ex, x=None, x0=0, n=6, method='sympy'):
+def series(ex, x=None, x0=0, n=6, method='sympy', removeO=False):
     # TODO: check for x0 an infinity, see sympy/core/expr.py
     # TODO: nonzero x0
     # TODO: order term
@@ -544,20 +544,22 @@ def series(ex, x=None, x0=0, n=6, method='sympy'):
 
     try:
         umap = symengine.series(_ex.thisptr, X, N)
-    except Exception:
+    except:
         from sympy import series as sy_series
         return sy_series(_ex._sympy_(), _x._sympy_(), x0, n)
 
-    from sympy import Add, Pow, O
+    from sympy import Add as sAdd, Pow as sPow, O as sO
     iter = umap.begin()
     iterend = umap.end()
     poly = 0
+    l = []
     while iter != iterend:
         coef = c2py(<symengine.RCP[const symengine.Basic]>(deref(iter).second))
-        m = Pow(_x,(deref(iter).first))*coef
-        poly = Add(poly, m)
+        l.append(sPow(_x,(deref(iter).first)) * coef)
         inc(iter)
-    return Add(poly, O(Pow(_x, n)))
+    if removeO is False:
+        l.append(sO(sPow(_x, n)))
+    return sAdd(*l)
 
 
 cdef class Symbol(Basic):
