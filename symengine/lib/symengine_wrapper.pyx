@@ -511,11 +511,21 @@ cdef class Basic(object):
 def series(ex, x=None, x0=0, n=6, method='sympy', removeO=False):
     # TODO: check for x0 an infinity, see sympy/core/expr.py
     # TODO: nonzero x0
-    # TODO: order term
     # underscored local vars are of symengine.py type
     cdef Basic _ex = sympify(ex)
-    cdef Symbol _x = sympify(x)
-    if method == 'sympy':
+    syms = _ex.free_symbols
+    if not syms:
+        return _ex
+
+    cdef Symbol _x
+    if x is None:
+        _x = list(syms)[0]
+    else:
+        _x = sympify(x)
+    if not _x in syms:
+        return _ex
+
+    if len(syms) > 1 or method == 'sympy':
         from sympy import series as sy_series
         return sy_series(_ex._sympy_(), _x._sympy_(), x0, n)
     elif method == 'ring_series':
@@ -523,18 +533,6 @@ def series(ex, x=None, x0=0, n=6, method='sympy', removeO=False):
         return rs_series(_ex._sympy_(), _x._sympy_(), n).as_expr().subs(x,x-x0)
     elif method != 'symengine':
         raise ValueError('unknown method in series()')
-
-    syms = _ex.free_symbols
-    if not syms:
-        return _ex
-    if len(syms) > 1:
-        from sympy import series as sy_series
-        return sy_series(_ex._sympy_(), _x._sympy_(), x0, n)
-    if _x is None:
-        _x = list(syms)[0]
-
-    if not _x in syms:
-        return _ex
 
     cdef RCP[const symengine.Symbol] X = symengine.rcp_static_cast_Symbol(_x.thisptr)
     cdef unsigned int N = n
@@ -544,7 +542,7 @@ def series(ex, x=None, x0=0, n=6, method='sympy', removeO=False):
 
     try:
         umap = symengine.series(_ex.thisptr, X, N)
-    except:
+    except RuntimeError:
         from sympy import series as sy_series
         return sy_series(_ex._sympy_(), _x._sympy_(), x0, n)
 
