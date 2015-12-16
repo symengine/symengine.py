@@ -29,16 +29,22 @@ if (MINGW AND (CMAKE_BUILD_TYPE STREQUAL "Release"))
     endif()
 endif()
 
-if(HAVE_SYMENGINE_MPC OR MPC_LIBRARY)
+if(MPC_LIBRARY)
     set(HAVE_SYMENGINE_MPC True)
 else()
     set(HAVE_SYMENGINE_MPC False)
 endif()
 
-if(HAVE_SYMENGINE_MPFR OR MPFR_LIBRARY)
+if(MPFR_LIBRARY)
     set(HAVE_SYMENGINE_MPFR True)
 else()
     set(HAVE_SYMENGINE_MPFR False)
+endif()
+
+if(PIRANHA_LIBRARY)
+    set(HAVE_SYMENGINE_PIRANHA True)
+else()
+    set(HAVE_SYMENGINE_PIRANHA False)
 endif()
 
 

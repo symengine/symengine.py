@@ -1671,6 +1671,7 @@ def eval_complex_double(x):
 
 have_mpfr = False
 have_mpc = False
+have_piranha = False
 
 IF HAVE_SYMENGINE_MPFR:
     have_mpfr = True
@@ -1687,6 +1688,9 @@ IF HAVE_SYMENGINE_MPC:
         cdef symengine.mpc_class a = symengine.mpc_class(prec)
         symengine.eval_mpc(a.get_mpc_t(), deref(X.thisptr), symengine.MPFR_RNDN)
         return c2py(<RCP[const symengine.Basic]>(symengine.complex_mpc(symengine.std_move_mpc(a))))
+
+IF HAVE_SYMENGINE_PIRANHA:
+    have_piranha = True
 
 def eval(x, long prec):
     if prec <= 53:
