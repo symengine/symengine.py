@@ -1,6 +1,6 @@
 from cython.operator cimport dereference as deref, preincrement as inc
 cimport symengine
-from symengine cimport RCP, set, map_basic_basic
+from symengine cimport RCP, set, pair, map_basic_basic, umap_short_basic, umap_short_basic_iterator, rcp_const_basic, std_pair_short_rcp_const_basic
 from libcpp cimport bool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -507,6 +507,58 @@ cdef class Basic(object):
 
     def _symbolic_(self, ring):
         return ring(self._sage_())
+
+def series(ex, x=None, x0=0, n=6, method='sympy', removeO=False):
+    # TODO: check for x0 an infinity, see sympy/core/expr.py
+    # TODO: nonzero x0
+    # underscored local vars are of symengine.py type
+    cdef Basic _ex = sympify(ex)
+    syms = _ex.free_symbols
+    if not syms:
+        return _ex
+
+    cdef Symbol _x
+    if x is None:
+        _x = list(syms)[0]
+    else:
+        _x = sympify(x)
+    if not _x in syms:
+        return _ex
+
+    if len(syms) > 1 or method == 'sympy':
+        from sympy import series as sy_series
+        return sy_series(_ex._sympy_(), _x._sympy_(), x0, n)
+    elif method == 'ring_series':
+        from sympy.polys.ring_series import rs_series
+        return rs_series(_ex._sympy_(), _x._sympy_(), n).as_expr().subs(x,x-x0)
+    elif method != 'symengine':
+        raise ValueError('unknown method in series()')
+
+    cdef RCP[const symengine.Symbol] X = symengine.rcp_static_cast_Symbol(_x.thisptr)
+    cdef unsigned int N = n
+    cdef umap_short_basic umap
+    cdef umap_short_basic_iterator iter, iterend
+    cdef Basic coef
+
+    try:
+        umap = symengine.series(_ex.thisptr, X, N)
+    except RuntimeError:
+        from sympy import series as sy_series
+        return sy_series(_ex._sympy_(), _x._sympy_(), x0, n)
+
+    from sympy import Add as sAdd, Pow as sPow, O as sO
+    iter = umap.begin()
+    iterend = umap.end()
+    poly = 0
+    l = []
+    while iter != iterend:
+        coef = c2py(<symengine.RCP[const symengine.Basic]>(deref(iter).second))
+        l.append(sPow(_x,(deref(iter).first)) * coef)
+        inc(iter)
+    if removeO is False:
+        l.append(sO(sPow(_x, n)))
+    return sAdd(*l)
+
 
 cdef class Symbol(Basic):
 
@@ -1619,6 +1671,7 @@ def eval_complex_double(x):
 
 have_mpfr = False
 have_mpc = False
+have_piranha = False
 
 IF HAVE_SYMENGINE_MPFR:
     have_mpfr = True
@@ -1635,6 +1688,9 @@ IF HAVE_SYMENGINE_MPC:
         cdef symengine.mpc_class a = symengine.mpc_class(prec)
         symengine.eval_mpc(a.get_mpc_t(), deref(X.thisptr), symengine.MPFR_RNDN)
         return c2py(<RCP[const symengine.Basic]>(symengine.complex_mpc(symengine.std_move_mpc(a))))
+
+IF HAVE_SYMENGINE_PIRANHA:
+    have_piranha = True
 
 def eval(x, long prec):
     if prec <= 53:
@@ -1975,7 +2031,6 @@ cdef size_t _size(n):
         return n.size
     except AttributeError:
         return len(n)  # e.g. array.array
-
 
 def _get_shape_nested(ndarr):
     # no checking of shape consistency is done

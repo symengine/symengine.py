@@ -3,7 +3,7 @@ from .lib.symengine_wrapper import (Symbol, Integer, sympify, SympifyError,
         have_mpfr, have_mpc, RealDouble, ComplexDouble, DenseMatrix,
         sin, cos, tan, cot, csc, sec, asin, acos, atan, acot, acsc, asec,
         sinh, cosh, tanh, coth, asinh, acosh, atanh, acoth, Lambdify,
-        LambdifyCSE, DictBasic)
+        LambdifyCSE, DictBasic, series)
 from .utilities import var, symbols
 
 if have_mpfr:

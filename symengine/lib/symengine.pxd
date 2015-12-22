@@ -41,6 +41,69 @@ cdef extern from "<set>" namespace "std":
         iterator begin() nogil
         iterator end() nogil
 
+cdef extern from "<unordered_map>" namespace "std" nogil:
+    cdef cppclass unordered_map[T, U]:
+        cppclass iterator:
+            pair[T, U]& operator*()
+            iterator operator++()
+            iterator operator--()
+            bint operator==(iterator)
+            bint operator!=(iterator)
+        cppclass reverse_iterator:
+            pair[T, U]& operator*()
+            iterator operator++()
+            iterator operator--()
+            bint operator==(reverse_iterator)
+            bint operator!=(reverse_iterator)
+        cppclass const_iterator(iterator):
+            pass
+        cppclass const_reverse_iterator(reverse_iterator):
+            pass
+        unordered_map() except +
+        unordered_map(unordered_map&) except +
+        #unordered_map(key_compare&)
+        U& operator[](T&)
+        #unordered_map& operator=(unordered_map&)
+        bint operator==(unordered_map&, unordered_map&)
+        bint operator!=(unordered_map&, unordered_map&)
+        bint operator<(unordered_map&, unordered_map&)
+        bint operator>(unordered_map&, unordered_map&)
+        bint operator<=(unordered_map&, unordered_map&)
+        bint operator>=(unordered_map&, unordered_map&)
+        U& at(T&)
+        iterator begin()
+        const_iterator const_begin "begin"()
+        void clear()
+        size_t count(T&)
+        bint empty()
+        iterator end()
+        const_iterator const_end "end"()
+        pair[iterator, iterator] equal_range(T&)
+        #pair[const_iterator, const_iterator] equal_range(key_type&)
+        void erase(iterator)
+        void erase(iterator, iterator)
+        size_t erase(T&)
+        iterator find(T&)
+        const_iterator const_find "find"(T&)
+        pair[iterator, bint] insert(pair[T, U]) # XXX pair[T,U]&
+        iterator insert(iterator, pair[T, U]) # XXX pair[T,U]&
+        #void insert(input_iterator, input_iterator)
+        #key_compare key_comp()
+        iterator lower_bound(T&)
+        const_iterator const_lower_bound "lower_bound"(T&)
+        size_t max_size()
+        reverse_iterator rbegin()
+        const_reverse_iterator const_rbegin "rbegin"()
+        reverse_iterator rend()
+        const_reverse_iterator const_rend "rend"()
+        size_t size()
+        void swap(unordered_map&)
+        iterator upper_bound(T&)
+        const_iterator const_upper_bound "upper_bound"(T&)
+        #value_compare value_comp()
+        void max_load_factor(float)
+        float max_load_factor()
+
 cdef extern from "<symengine/symengine_rcp.h>" namespace "SymEngine":
     cdef enum ENull:
         null
@@ -86,6 +149,10 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     # Cython has broken support for the following:
     # ctypedef map[RCP[const Basic], RCP[const Basic]] map_basic_basic
     # So instead we replicate the map features we need here
+    cdef cppclass std_pair_short_rcp_const_basic "std::pair<short, SymEngine::RCP<const SymEngine::Basic>>":
+        short first
+        RCP[const Basic] second
+
     cdef cppclass std_pair_rcp_const_basic_rcp_const_basic "std::pair<SymEngine::RCP<const SymEngine::Basic>, SymEngine::RCP<const SymEngine::Basic>>":
         RCP[const Basic] first
         RCP[const Basic] second
@@ -114,7 +181,6 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
         iterator insert(iterator, std_pair_rcp_const_basic_rcp_const_basic) except +
         void insert(iterator, iterator) except +
 
-
     ctypedef vector[RCP[Basic]] vec_basic "SymEngine::vec_basic"
     ctypedef vector[RCP[Integer]] vec_integer "SymEngine::vec_integer"
     ctypedef map[RCP[Integer], unsigned] map_integer_uint "SymEngine::map_integer_uint"
@@ -127,6 +193,9 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
         RCP[const Basic] diff(RCP[const Symbol] &x) nogil except +
         RCP[const Basic] subs(map_basic_basic &x) nogil except +
         vec_basic get_args() nogil
+    ctypedef RCP[const Basic] rcp_const_basic "SymEngine::RCP<const SymEngine::Basic>"
+    ctypedef unordered_map[short, rcp_const_basic] umap_short_basic "SymEngine::umap_short_basic"
+    ctypedef unordered_map[short, rcp_const_basic].iterator umap_short_basic_iterator "SymEngine::umap_short_basic::iterator"
 
     bool eq(const Basic &a, const Basic &b) nogil except +
     bool neq(const Basic &a, const Basic &b) nogil except +
@@ -172,7 +241,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_PyNumber "SymEngine::is_a<SymEngine::PyNumber>"(const Basic &b) nogil
 
     RCP[const Basic] expand(RCP[const Basic] &o) nogil except +
-
+    umap_short_basic series "SymEngine::series"(RCP[const Basic] &ex, RCP[const Symbol] &var, unsigned int prec) nogil except +
 
 cdef extern from "<symengine/symbol.h>" namespace "SymEngine":
     cdef cppclass Symbol(Basic):
