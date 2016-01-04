@@ -90,7 +90,7 @@ install:
   - export PYTHON_SOURCE_DIR=`pwd`
   - export TEST_CPP="no"
 
-  - git clone https://github.com/symengine/symengine symengine-cpp
+  - git clone https://github.com/certik/symengine symengine-cpp
   - cd symengine-cpp
   - export SOURCE_DIR=`pwd`
   - git checkout `cat ../symengine_version.txt`
@@ -104,7 +104,6 @@ install:
 
   # Build C++ library
   - cd symengine-cpp
-  - source bin/test_travis.sh
 
 script:
   # Build Python wrappers and test
