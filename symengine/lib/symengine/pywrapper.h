@@ -99,8 +99,6 @@ public:
     virtual RCP<const Number> pow(const Number &other) const;
     virtual RCP<const Number> rpow(const Number &other) const;
 
-    //! Differentiation w.r.t Symbol `x`
-    virtual RCP<const Basic> diff(const RCP<const Symbol> &x) const;
     virtual RCP<const Number> eval(long bits) const;
     virtual std::string __str__() const;
     virtual int compare(const Basic &o) const;
@@ -156,10 +154,6 @@ public:
     virtual RCP<const Basic> create(const vec_basic &x) const;
     //! Eval the number to bits precision and return a SymEngine::Number type
     virtual RCP<const Number> eval(long bits) const;
-    /*! Evaluate the derivative w.r.t. `x` by calling the callback function
-     *  of the module that this function belongs to.
-     * */
-    virtual RCP<const Basic> diff(const RCP<const Symbol> &x) const;
     virtual int compare(const Basic &o) const;
     virtual bool __eq__(const Basic &o) const;
     virtual std::size_t __hash__() const;
