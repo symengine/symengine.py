@@ -64,7 +64,6 @@ private:
     //! Python module that this object belongs to
     RCP<const PyModule> pymodule_;
 public:
-    IMPLEMENT_TYPEID(NUMBER_WRAPPER)
     PyNumber(PyObject* pyobject, const RCP<const PyModule> &pymodule);
     ~PyNumber() {
         Py_DECREF(pyobject_);
@@ -99,8 +98,6 @@ public:
     virtual RCP<const Number> pow(const Number &other) const;
     virtual RCP<const Number> rpow(const Number &other) const;
 
-    //! Differentiation w.r.t Symbol `x`
-    virtual RCP<const Basic> diff(const RCP<const Symbol> &x) const;
     virtual RCP<const Number> eval(long bits) const;
     virtual std::string __str__() const;
     virtual int compare(const Basic &o) const;
@@ -148,7 +145,6 @@ public:
     PyFunction(const vec_basic &vec, const RCP<const PyFunctionClass> &pyfunc_class,
                PyObject *pyobject);
     ~PyFunction();
-    IMPLEMENT_TYPEID(FUNCTIONWRAPPER)
 
     PyObject *get_py_object() const;
     RCP<const PyFunctionClass> get_pyfunction_class() const;
@@ -159,7 +155,7 @@ public:
     /*! Evaluate the derivative w.r.t. `x` by calling the callback function
      *  of the module that this function belongs to.
      * */
-    virtual RCP<const Basic> diff(const RCP<const Symbol> &x) const;
+    virtual RCP<const Basic> diff_impl(const RCP<const Symbol> &x) const;
     virtual int compare(const Basic &o) const;
     virtual bool __eq__(const Basic &o) const;
     virtual std::size_t __hash__() const;
