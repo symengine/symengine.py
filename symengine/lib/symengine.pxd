@@ -41,6 +41,17 @@ cdef extern from "<set>" namespace "std":
         iterator begin() nogil
         iterator end() nogil
 
+cdef extern from "<set>" namespace "std":
+    cdef cppclass multiset[T, U]:
+        cppclass iterator:
+            T& operator*()
+            iterator operator++() nogil
+            iterator operator--() nogil
+            bint operator==(iterator) nogil
+            bint operator!=(iterator) nogil
+        iterator begin() nogil
+        iterator end() nogil
+
 cdef extern from "<unordered_map>" namespace "std" nogil:
     cdef cppclass unordered_map[T, U]:
         cppclass iterator:
@@ -187,6 +198,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     cdef struct RCPIntegerKeyLess
     cdef struct RCPBasicKeyLess
     ctypedef set[RCP[const_Basic], RCPBasicKeyLess] set_basic "SymEngine::set_basic"
+    ctypedef multiset[RCP[const_Basic], RCPBasicKeyLess] multiset_basic "SymEngine::multiset_basic"
     cdef cppclass Basic:
         string __str__() nogil except +
         unsigned int hash() nogil except +
@@ -463,7 +475,7 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
     cdef cppclass Derivative(Basic):
         Derivative(const RCP[const Basic] &arg, const vec_basic &x) nogil
         RCP[const Basic] get_arg() nogil
-        vec_basic get_symbols() nogil
+        multiset_basic get_symbols() nogil
 
     cdef cppclass Subs(Basic):
         Subs(const RCP[const Basic] &arg, const map_basic_basic &x) nogil
