@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# Exit on error
+set -e
+# Echo each command
+set -x
+
 if [[ "${WITH_SAGE}" != "yes" ]]; then
     if [[ "${TRAVIS_OS_NAME}" != "osx" ]]; then
         wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh;
