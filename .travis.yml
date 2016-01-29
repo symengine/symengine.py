@@ -104,7 +104,7 @@ install:
 
   # Build C++ library
   - cd symengine-cpp
-  - source bin/test_travis.sh
+  - bin/test_travis.sh
 
 script:
   # Build Python wrappers and test
