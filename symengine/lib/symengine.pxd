@@ -41,6 +41,17 @@ cdef extern from "<set>" namespace "std":
         iterator begin() nogil
         iterator end() nogil
 
+    cdef cppclass multiset[T, U]:
+         cppclass iterator:
+             T& operator*()
+             iterator operator++() nogil
+             iterator operator--() nogil
+             bint operator==(iterator) nogil
+             bint operator!=(iterator) nogil
+         iterator begin() nogil
+         iterator end() nogil
+         iterator insert(T&) nogil
+
 cdef extern from "<unordered_map>" namespace "std" nogil:
     cdef cppclass unordered_map[T, U]:
         cppclass iterator:
@@ -187,6 +198,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     cdef struct RCPIntegerKeyLess
     cdef struct RCPBasicKeyLess
     ctypedef set[RCP[const_Basic], RCPBasicKeyLess] set_basic "SymEngine::set_basic"
+    ctypedef multiset[RCP[const_Basic], RCPBasicKeyLess] multiset_basic "SymEngine::multiset_basic"
     cdef cppclass Basic:
         string __str__() nogil except +
         unsigned int hash() nogil except +
@@ -194,8 +206,8 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
         RCP[const Basic] subs(map_basic_basic &x) nogil except +
         vec_basic get_args() nogil
     ctypedef RCP[const Basic] rcp_const_basic "SymEngine::RCP<const SymEngine::Basic>"
-    ctypedef unordered_map[short, rcp_const_basic] umap_short_basic "SymEngine::umap_short_basic"
-    ctypedef unordered_map[short, rcp_const_basic].iterator umap_short_basic_iterator "SymEngine::umap_short_basic::iterator"
+    ctypedef unordered_map[int, rcp_const_basic] umap_int_basic "SymEngine::umap_int_basic"
+    ctypedef unordered_map[int, rcp_const_basic].iterator umap_int_basic_iterator "SymEngine::umap_int_basic::iterator"
 
     bool eq(const Basic &a, const Basic &b) nogil except +
     bool neq(const Basic &a, const Basic &b) nogil except +
@@ -241,7 +253,6 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_PyNumber "SymEngine::is_a<SymEngine::PyNumber>"(const Basic &b) nogil
 
     RCP[const Basic] expand(RCP[const Basic] &o) nogil except +
-    umap_short_basic series "SymEngine::series"(RCP[const Basic] &ex, RCP[const Symbol] &var, unsigned int prec) nogil except +
 
 cdef extern from "<symengine/symbol.h>" namespace "SymEngine":
     cdef cppclass Symbol(Basic):
@@ -345,7 +356,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     RCP[const Basic] make_rcp_Integer "SymEngine::make_rcp<const SymEngine::Integer>"(int i) nogil
     RCP[const Basic] make_rcp_Integer "SymEngine::make_rcp<const SymEngine::Integer>"(mpz_class i) nogil
     RCP[const Basic] make_rcp_Subs "SymEngine::make_rcp<const SymEngine::Subs>"(const RCP[const Basic] &arg, const map_basic_basic &x) nogil
-    RCP[const Basic] make_rcp_Derivative "SymEngine::make_rcp<const SymEngine::Derivative>"(const RCP[const Basic] &arg, const vec_basic &x) nogil
+    RCP[const Basic] make_rcp_Derivative "SymEngine::make_rcp<const SymEngine::Derivative>"(const RCP[const Basic] &arg, const multiset_basic &x) nogil
     RCP[const Basic] make_rcp_FunctionWrapper "SymEngine::make_rcp<const SymEngine::FunctionWrapper>"(void* obj, string name, string hash_, const vec_basic &arg, \
             void (*dec_ref)(void *), int (*comp)(void *, void *)) nogil
     RCP[const Basic] make_rcp_RealDouble "SymEngine::make_rcp<const SymEngine::RealDouble>"(double x) nogil
@@ -463,7 +474,7 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
     cdef cppclass Derivative(Basic):
         Derivative(const RCP[const Basic] &arg, const vec_basic &x) nogil
         RCP[const Basic] get_arg() nogil
-        vec_basic get_symbols() nogil
+        multiset_basic get_symbols() nogil
 
     cdef cppclass Subs(Basic):
         Subs(const RCP[const Basic] &arg, const map_basic_basic &x) nogil
@@ -667,6 +678,14 @@ cdef extern from "<symengine/lambda_double.h>" namespace "SymEngine":
         LambdaComplexDoubleVisitor() nogil
         void init(const vec_basic &x, const Basic &b) nogil except +
         double complex call(const vector[double complex] &x) nogil except +
+
+cdef extern from "<symengine/series.h>" namespace "SymEngine":
+    cdef cppclass SeriesCoeffInterface:
+        rcp_const_basic as_basic() nogil except +
+        umap_int_basic as_dict() nogil except +
+        rcp_const_basic get_coeff(int) nogil except +
+    ctypedef RCP[const SeriesCoeffInterface] rcp_const_seriescoeffinterface "SymEngine::RCP<const SymEngine::SeriesCoeffInterface>"
+    rcp_const_seriescoeffinterface series "SymEngine::series"(RCP[const Basic] &ex, RCP[const Symbol] &var, unsigned int prec) nogil except +
 
 IF HAVE_SYMENGINE_MPFR:
     cdef extern from "<symengine/eval_mpfr.h>" namespace "SymEngine":
