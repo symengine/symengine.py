@@ -1,6 +1,6 @@
 from cython.operator cimport dereference as deref, preincrement as inc
 cimport symengine
-from symengine cimport RCP, set, pair, map_basic_basic, umap_short_basic, umap_short_basic_iterator, rcp_const_basic, std_pair_short_rcp_const_basic
+from symengine cimport RCP, set, pair, map_basic_basic, umap_int_basic, umap_int_basic_iterator, rcp_const_basic, std_pair_short_rcp_const_basic, rcp_const_seriescoeffinterface
 from libcpp cimport bool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -536,12 +536,12 @@ def series(ex, x=None, x0=0, n=6, method='sympy', removeO=False):
 
     cdef RCP[const symengine.Symbol] X = symengine.rcp_static_cast_Symbol(_x.thisptr)
     cdef unsigned int N = n
-    cdef umap_short_basic umap
-    cdef umap_short_basic_iterator iter, iterend
+    cdef umap_int_basic umap
+    cdef umap_int_basic_iterator iter, iterend
     cdef Basic coef
 
     try:
-        umap = symengine.series(_ex.thisptr, X, N)
+        umap = deref(symengine.series(_ex.thisptr, X, N)).as_dict()
     except RuntimeError:
         from sympy import series as sy_series
         return sy_series(_ex._sympy_(), _x._sympy_(), x0, n)
