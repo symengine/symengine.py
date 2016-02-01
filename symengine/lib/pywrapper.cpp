@@ -165,10 +165,6 @@ RCP<const Number> PyNumber::rpow(const Number &other) const {
     }
     return make_rcp<PyNumber>(result, pymodule_);
 }
-//! Differentiation w.r.t Symbol `x`
-RCP<const Basic> PyNumber::diff(const RCP<const Symbol> &x) const {
-    return zero;
-}
 
 RCP<const Number> PyNumber::eval(long bits) const {
     return pymodule_->eval_(pyobject_, bits);
@@ -250,7 +246,7 @@ RCP<const Number> PyFunction::eval(long bits) const {
     return pyfunction_class_->get_py_module()->eval_(pyobject_, bits);
 }
 
-RCP<const Basic> PyFunction::diff(const RCP<const Symbol> &s) const {
+RCP<const Basic> PyFunction::diff_impl(const RCP<const Symbol> &s) const {
     return pyfunction_class_->get_py_module()->diff_(pyobject_, s);
 }
 
