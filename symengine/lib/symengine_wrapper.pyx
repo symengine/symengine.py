@@ -577,6 +577,26 @@ cdef class Symbol(Basic):
         import sage.all as sage
         return sage.SR.symbol(str(deref(X).get_name().decode("utf-8")))
 
+
+def symarray(prefix, shape, **kwargs):
+    """ Creates an nd-array of symbols
+
+    Note that this function requires NumPy
+
+    Parameters
+    ----------
+    prefix: str
+    shape: tuple
+    Symbol: callable
+        (defualt :func:`Symbol`)
+    """
+    import numpy as np
+    arr = np.empty(shape, dtype=object)
+    for index in np.ndindex(shape):
+        arr[index] = Symbol('%s_%s' % (prefix, '_'.join(map(str, index))), **kwargs)
+    return arr
+
+
 cdef class Constant(Basic):
 
     def __cinit__(self, name = None):

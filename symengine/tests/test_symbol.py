@@ -1,4 +1,4 @@
-from symengine import Symbol, symbols
+from symengine import Symbol, symbols, symarray
 from symengine.utilities import raises
 
 
@@ -125,3 +125,14 @@ def test_symbols():
     raises(ValueError, lambda: symbols('a::'))
     raises(ValueError, lambda: symbols(':a:'))
     raises(ValueError, lambda: symbols('::a'))
+
+
+def test_symarray():
+    try:
+        import numpy as np
+    except ImportError:
+        return
+    x0, x1, x2 = arr = symarray('x', 3)
+    assert arr.shape == (3,)
+
+    assert symarray('y', (2, 3)).shape == (2, 3)
