@@ -1,11 +1,17 @@
 from symengine.utilities import raises
 
 from sympy import Symbol, Integer, sin, cos, exp, sqrt, E
-from symengine.lib.symengine_wrapper import series, have_piranha, Symbol as SESymbol
+from symengine.lib.symengine_wrapper import series, have_piranha, have_flint, Symbol as SESymbol
 
 def test_series_expansion():
-    if not have_piranha:
+    if have_piranha:
+        x = SESymbol('x')
+        ex = series(sin(1+x), x, n=10, method='symengine')
+        assert ex.coeff(x,7) == -cos(1)/5040
+
+    if not have_flint and not have_piranha:
         return
+
     x = Symbol('x')
     ex = series(1/(1-x), x, n=10, method='symengine')
     assert ex.coeff(x,9) == 1
