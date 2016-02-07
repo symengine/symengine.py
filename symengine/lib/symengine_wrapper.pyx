@@ -543,8 +543,7 @@ def series(ex, x=None, x0=0, n=6, method='sympy', removeO=False):
     try:
         umap = deref(symengine.series(_ex.thisptr, X, N)).as_dict()
     except RuntimeError:
-        from sympy import series as sy_series
-        return sy_series(_ex._sympy_(), _x._sympy_(), x0, n)
+        raise
 
     from sympy import Add as sAdd, Pow as sPow, O as sO
     iter = umap.begin()
