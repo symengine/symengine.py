@@ -540,10 +540,7 @@ def series(ex, x=None, x0=0, n=6, method='sympy', removeO=False):
     cdef umap_int_basic_iterator iter, iterend
     cdef Basic coef
 
-    try:
-        umap = deref(symengine.series(_ex.thisptr, X, N)).as_dict()
-    except RuntimeError:
-        raise
+    umap = deref(symengine.series(_ex.thisptr, X, N)).as_dict()
 
     from sympy import Add as sAdd, Pow as sPow, O as sO
     iter = umap.begin()
