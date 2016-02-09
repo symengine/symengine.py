@@ -1,10 +1,18 @@
 from cython.operator cimport dereference as deref, preincrement as inc
 cimport symengine
-from symengine cimport RCP, set
+from symengine cimport RCP, set, pair, map_basic_basic, umap_int_basic, umap_int_basic_iterator, rcp_const_basic, std_pair_short_rcp_const_basic, rcp_const_seriescoeffinterface
 from libcpp cimport bool
 from libcpp.string cimport string
+from libcpp.vector cimport vector
 from cpython cimport PyObject, Py_XINCREF, Py_XDECREF, \
     PyObject_CallMethodObjArgs
+from libc.string cimport memcpy
+import cython
+import itertools
+from operator import mul
+from functools import reduce
+import collections
+
 
 include "config.pxi"
 
@@ -29,6 +37,8 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = Symbol.__new__(Symbol)
     elif (symengine.is_a_Constant(deref(o))):
         r = Constant.__new__(Constant)
+    elif (symengine.is_a_PyFunction(deref(o))):
+        r = PyFunction.__new__(PyFunction)
     elif (symengine.is_a_FunctionSymbol(deref(o))):
         r = FunctionSymbol.__new__(FunctionSymbol)
     elif (symengine.is_a_Abs(deref(o))):
@@ -37,8 +47,6 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = Derivative.__new__(Derivative)
     elif (symengine.is_a_Subs(deref(o))):
         r = Subs.__new__(Subs)
-    elif (symengine.is_a_FunctionWrapper(deref(o))):
-        r = FunctionWrapper.__new__(FunctionWrapper)
     elif (symengine.is_a_RealDouble(deref(o))):
         r = RealDouble.__new__(RealDouble)
     elif (symengine.is_a_ComplexDouble(deref(o))):
@@ -89,6 +97,8 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = ATanh.__new__(ATanh)
     elif (symengine.is_a_ACoth(deref(o))):
         r = ACoth.__new__(ACoth)
+    elif (symengine.is_a_PyNumber(deref(o))):
+        r = PyNumber.__new__(PyNumber)
     else:
         raise Exception("Unsupported SymEngine class.")
     r.thisptr = o
@@ -120,7 +130,13 @@ def sympy2symengine(a, raise_error=False):
     elif isinstance(a, sympy.Rational):
         return Integer(a.p) / Integer(a.q)
     elif isinstance(a, sympy.Float):
-        return RealMPFR(str(a), a._prec)
+        IF HAVE_SYMENGINE_MPFR:
+            if a._prec > 53:
+                return RealMPFR(str(a), a._prec)
+            else:
+                return RealDouble(float(str(a)))
+        ELSE:
+            return RealDouble(float(str(a)))
     elif a is sympy.I:
         return I
     elif a is sympy.E:
@@ -182,7 +198,7 @@ def sympy2symengine(a, raise_error=False):
         name = str(a.func)
         return function_symbol(name, *(a.args))
     elif isinstance(a, sympy.Function):
-        return FunctionWrapper(a)
+        return PyFunction(a, a.args, a.func, sympy_module)
     elif isinstance(a, sympy.Matrix):
         row, col = a.shape
         v = []
@@ -190,6 +206,9 @@ def sympy2symengine(a, raise_error=False):
             for e in r:
                 v.append(e)
         return DenseMatrix(row, col, v)
+    elif isinstance(a, sympy.polys.domains.modularinteger.ModularInteger):
+        return PyNumber(a, sympy_module)
+
     if raise_error:
         raise SympifyError("sympy2symengine: Cannot convert '%r' to a symengine type." % a)
 
@@ -233,10 +252,117 @@ def sympify(a, raise_error=True):
             v.append(sympify(e, True))
         return v
     elif hasattr(a, '_symengine_'):
-        return a._symengine_()
+        return sympify(a._symengine_(), raise_error)
     elif hasattr(a, '_sympy_'):
-        return sympy2symengine(a._sympy_(), raise_error)
+        return sympify(a._sympy_(), raise_error)
+    elif hasattr(a, 'pyobject'):
+        return sympify(a.pyobject(), raise_error)
     return sympy2symengine(a, raise_error)
+
+funcs = {}
+
+def get_function_class(function, module):
+    if not function in funcs:
+        funcs[function] = PyFunctionClass(function, module)
+    return funcs[function]
+
+
+cdef class DictBasicIter(object):
+
+    cdef init(self, map_basic_basic.iterator begin, map_basic_basic.iterator end):
+        self.begin = begin
+        self.end = end
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.begin != self.end:
+            obj = c2py(deref(self.begin).first)
+        else:
+            raise StopIteration
+        inc(self.begin)
+        return obj
+
+
+cdef class _DictBasic(object):
+
+    def __init__(self, tocopy = None):
+        if tocopy != None:
+            self.add_dict(tocopy)
+
+    def as_dict(self):
+        ret = {}
+        it = self.c.begin()
+        while it != self.c.end():
+            ret[c2py(deref(it).first)] = c2py(deref(it).second)
+            inc(it)
+        return ret
+
+    def add_dict(self, d):
+        cdef _DictBasic D
+        if isinstance(d, DictBasic):
+            D = d
+            self.c.insert(D.c.begin(), D.c.end())
+        else:
+            for key, value in d.iteritems():
+                self.add(key, value)
+
+    def add(self, key, value):
+        cdef Basic K = sympify(key)
+        cdef Basic V = sympify(value)
+        cdef symengine.std_pair_rcp_const_basic_rcp_const_basic pair
+        pair.first = K.thisptr
+        pair.second = V.thisptr
+        return self.c.insert(pair).second
+
+    def copy(self):
+        return DictBasic(self)
+
+    __copy__ = copy
+
+    def __len__(self):
+        return self.c.size()
+
+    def __getitem__(self, key):
+        cdef Basic K = sympify(key)
+        it = self.c.find(K.thisptr)
+        if it == self.c.end():
+            raise KeyError(key)
+        else:
+            return c2py(deref(it).second)
+
+    def __setitem__(self, key, value):
+        cdef Basic K = sympify(key)
+        cdef Basic V = sympify(value)
+        self.c[K.thisptr] = V.thisptr
+
+    def clear(self):
+        self.clear()
+
+    def __delitem__(self, key):
+        cdef Basic K = sympify(key)
+        self.c.erase(K.thisptr)
+
+    def __contains__(self, key):
+        cdef Basic K = sympify(key)
+        it = self.c.find(K.thisptr)
+        return it != self.c.end()
+
+    def __iter__(self):
+        cdef DictBasicIter d = DictBasicIter()
+        d.init(self.c.begin(), self.c.end())
+        return d
+
+
+class DictBasic(_DictBasic, collections.MutableMapping):
+
+    def __str__(self):
+        return "{" + ", ".join(["%s: %s" % (str(key), str(value)) for key, value in self.items()]) + "}"
+
+    def __repr__(self):
+        return self.__str__()
+
 
 cdef class Basic(object):
 
@@ -254,20 +380,23 @@ cdef class Basic(object):
 
     def __add__(a, b):
         cdef Basic A = sympify(a, False)
-        cdef Basic B = sympify(b, False)
-        if A is None or B is None: return NotImplemented
+        B_ = sympify(b, False)
+        if A is None or B_ is None or isinstance(B_, MatrixBase): return NotImplemented
+        cdef Basic B = B_
         return c2py(symengine.add(A.thisptr, B.thisptr))
 
     def __sub__(a, b):
         cdef Basic A = sympify(a, False)
-        cdef Basic B = sympify(b, False)
-        if A is None or B is None: return NotImplemented
+        B_ = sympify(b, False)
+        if A is None or B_ is None or isinstance(B_, MatrixBase): return NotImplemented
+        cdef Basic B = B_
         return c2py(symengine.sub(A.thisptr, B.thisptr))
 
     def __mul__(a, b):
         cdef Basic A = sympify(a, False)
-        cdef Basic B = sympify(b, False)
-        if A is None or B is None: return NotImplemented
+        B_ = sympify(b, False)
+        if A is None or B_ is None or isinstance(B_, MatrixBase): return NotImplemented
+        cdef Basic B = B_
         return c2py(symengine.mul(A.thisptr, B.thisptr))
 
     def __truediv__(a, b):
@@ -310,12 +439,19 @@ cdef class Basic(object):
         return Basic._richcmp_(A, B, op)
 
     def _richcmp_(Basic A, Basic B, int op):
+        from sympy import Rel
         if (op == 2):
             return symengine.eq(deref(A.thisptr), deref(B.thisptr))
         elif (op == 3):
             return symengine.neq(deref(A.thisptr), deref(B.thisptr))
-        else:
-            return NotImplemented
+        elif (op == 0):
+            return Rel(A, B, '<')
+        elif (op == 1):
+            return Rel(A, B, '<=')
+        elif (op == 4):
+            return Rel(A, B, '>')
+        elif (op == 5):
+            return Rel(A, B, '>=')
 
     def expand(Basic self not None):
         return c2py(symengine.expand(self.thisptr))
@@ -326,6 +462,10 @@ cdef class Basic(object):
         return c2py(deref(self.thisptr).diff(X))
 
     def subs_dict(Basic self not None, subs_dict):
+        cdef _DictBasic D
+        if isinstance(subs_dict, DictBasic):
+          D = subs_dict
+          return c2py(deref(self.thisptr).subs(D.c))
         cdef symengine.map_basic_basic d
         cdef Basic K, V
         for k in subs_dict:
@@ -367,6 +507,58 @@ cdef class Basic(object):
 
     def _symbolic_(self, ring):
         return ring(self._sage_())
+
+def series(ex, x=None, x0=0, n=6, method='sympy', removeO=False):
+    # TODO: check for x0 an infinity, see sympy/core/expr.py
+    # TODO: nonzero x0
+    # underscored local vars are of symengine.py type
+    cdef Basic _ex = sympify(ex)
+    syms = _ex.free_symbols
+    if not syms:
+        return _ex
+
+    cdef Symbol _x
+    if x is None:
+        _x = list(syms)[0]
+    else:
+        _x = sympify(x)
+    if not _x in syms:
+        return _ex
+
+    if len(syms) > 1 or method == 'sympy':
+        from sympy import series as sy_series
+        return sy_series(_ex._sympy_(), _x._sympy_(), x0, n)
+    elif method == 'ring_series':
+        from sympy.polys.ring_series import rs_series
+        return rs_series(_ex._sympy_(), _x._sympy_(), n).as_expr().subs(x,x-x0)
+    elif method != 'symengine':
+        raise ValueError('unknown method in series()')
+
+    cdef RCP[const symengine.Symbol] X = symengine.rcp_static_cast_Symbol(_x.thisptr)
+    cdef unsigned int N = n
+    cdef umap_int_basic umap
+    cdef umap_int_basic_iterator iter, iterend
+    cdef Basic coef
+
+    try:
+        umap = deref(symengine.series(_ex.thisptr, X, N)).as_dict()
+    except RuntimeError:
+        from sympy import series as sy_series
+        return sy_series(_ex._sympy_(), _x._sympy_(), x0, n)
+
+    from sympy import Add as sAdd, Pow as sPow, O as sO
+    iter = umap.begin()
+    iterend = umap.end()
+    poly = 0
+    l = []
+    while iter != iterend:
+        coef = c2py(<symengine.RCP[const symengine.Basic]>(deref(iter).second))
+        l.append(sPow(_x,(deref(iter).first)) * coef)
+        inc(iter)
+    if removeO is False:
+        l.append(sO(sPow(_x, n)))
+    return sAdd(*l)
+
 
 cdef class Symbol(Basic):
 
@@ -750,47 +942,107 @@ cdef class FunctionSymbol(Function):
         import sage.all as sage
         return sage.function(name, *s)
 
-cdef inline void SymPy_XDECREF(void* o):
-    Py_XDECREF(<PyObject*>o)
+cdef RCP[const symengine.Basic] pynumber_to_symengine(PyObject* o1):
+    cdef Basic X = sympify(<object>o1, False)
+    return X.thisptr
 
-cdef inline void SymPy_XINCREF(void* o):
-    Py_XINCREF(<PyObject*>o)
+cdef PyObject* symengine_to_sage(RCP[const symengine.Basic] o1):
+    import sage.all as sage
+    t = sage.SR(c2py(o1)._sage_())
+    Py_XINCREF(<PyObject*>t)
+    return <PyObject*>(t)
 
-cdef inline int SymPy_CMP(void* o1, void* o2):
-    return <int>PyObject_CallMethodObjArgs(<object>o1, "compare", <PyObject *>o2, NULL)
+cdef PyObject* symengine_to_sympy(RCP[const symengine.Basic] o1):
+    t = c2py(o1)._sympy_()
+    Py_XINCREF(<PyObject*>t)
+    return <PyObject*>(t)
 
-cdef class FunctionWrapper(FunctionSymbol):
+cdef RCP[const symengine.Number] sympy_eval(PyObject* o1, long bits):
+    prec = max(1, int(round(bits/3.3219280948873626)-1))
+    cdef Number X = sympify((<object>o1).n(prec))
+    return symengine.rcp_static_cast_Number(X.thisptr)
 
-    def __cinit__(self, sympy_function = None):
-        import sympy
-        if not isinstance(sympy_function, sympy.Function):
+cdef RCP[const symengine.Number] sage_eval(PyObject* o1, long bits):
+    cdef Number X = sympify((<object>o1).n(bits))
+    return symengine.rcp_static_cast_Number(X.thisptr)
+
+cdef RCP[const symengine.Basic] sage_diff(PyObject* o1, RCP[const symengine.Basic] symbol):
+    cdef Basic X = sympify((<object>o1).diff(c2py(symbol)._sage_()))
+    return X.thisptr
+
+cdef RCP[const symengine.Basic] sympy_diff(PyObject* o1, RCP[const symengine.Basic] symbol):
+    cdef Basic X = sympify((<object>o1).diff(c2py(symbol)._sympy_()))
+    return X.thisptr
+
+def create_sympy_module():
+    cdef PyModule s = PyModule.__new__(PyModule)
+    s.thisptr = symengine.make_rcp_PyModule(&symengine_to_sympy, &pynumber_to_symengine, &sympy_eval,
+                                    &sympy_diff)
+    return s
+
+def create_sage_module():
+    cdef PyModule s = PyModule.__new__(PyModule)
+    s.thisptr = symengine.make_rcp_PyModule(&symengine_to_sage, &pynumber_to_symengine, &sage_eval,
+                                    &sage_diff)
+    return s
+
+sympy_module = create_sympy_module()
+sage_module = create_sage_module()
+
+cdef class PyNumber(Number):
+    def __cinit__(self, obj = None, PyModule module = None):
+        if obj is None:
             return
-        cdef void* ptr
-        ptr = <void *>(sympy_function)
-        cdef string name = str(sympy_function.func).encode("utf-8")
-        cdef string hash_ = str(sympy_function.__hash__()).encode("utf-8")
-        cdef symengine.vec_basic v
-        cdef Basic arg_
-        for arg in sympy_function.args:
-            arg_ = sympify(arg)
-            v.push_back(arg_.thisptr)
-        SymPy_XINCREF(ptr)
-        self.thisptr = symengine.make_rcp_FunctionWrapper(ptr, name, hash_, v, &SymPy_XDECREF, &SymPy_CMP)
+        Py_XINCREF(<PyObject*>(obj))
+        self.thisptr = symengine.make_rcp_PyNumber(<PyObject*>(obj), <const RCP[const symengine.PyModule]>module.thisptr)
 
     def _sympy_(self):
-        cdef object pyobj
-        cdef RCP[const symengine.FunctionWrapper] X = \
-            symengine.rcp_static_cast_FunctionWrapper(self.thisptr)
-        pyobj = <object>(deref(X).get_object())
-        return pyobj
+        import sympy
+        return sympy.sympify(self.pyobject())
 
     def _sage_(self):
-        cdef object pyobj
-        cdef RCP[const symengine.FunctionWrapper] X = \
-            symengine.rcp_static_cast_FunctionWrapper(self.thisptr)
-        pyobj = <object>(deref(X).get_object())
-        return pyobj._sage_()
+        import sage.all as sage
+        return sage.SR(self.pyobject())
 
+    def pyobject(self):
+        return <object>deref(symengine.rcp_static_cast_PyNumber(self.thisptr)).get_py_object()
+
+
+cdef class PyFunction(FunctionSymbol):
+
+    def __cinit__(self, pyfunction = None, args = None, pyfunction_class=None, module=None):
+        if pyfunction is None:
+            return
+        cdef symengine.vec_basic v
+        cdef Basic arg_
+        for arg in args:
+            arg_ = sympify(arg, True)
+            v.push_back(arg_.thisptr)
+        cdef PyFunctionClass _pyfunction_class = get_function_class(pyfunction_class, module)
+        cdef PyObject* _pyfunction = <PyObject*>pyfunction
+        Py_XINCREF(_pyfunction)
+        self.thisptr = symengine.make_rcp_PyFunction(v, <const RCP[const symengine.PyFunctionClass]>(_pyfunction_class.thisptr), _pyfunction)
+
+    def _sympy_(self):
+        import sympy
+        return sympy.sympify(self.pyobject())
+
+    def _sage_(self):
+        import sage.all as sage
+        return sage.SR(self.pyobject())
+
+    def pyobject(self):
+        return <object>deref(symengine.rcp_static_cast_PyFunction(self.thisptr)).get_py_object()
+
+cdef class PyFunctionClass(object):
+
+    def __cinit__(self, function, PyModule module not None):
+        self.thisptr = symengine.make_rcp_PyFunctionClass(<PyObject*>(function), str(function).encode("utf-8"),
+                                <const RCP[const symengine.PyModule]>module.thisptr)
+
+# TODO: remove this once SymEngine conversions are available in Sage.
+def wrap_sage_function(func):
+    return PyFunction(func, func.operands(), func.operator(), sage_module)
 
 cdef class Abs(Function):
 
@@ -810,22 +1062,22 @@ cdef class Derivative(Basic):
     def __cinit__(self, expr = None, symbols = None):
         if expr is None or symbols is None:
             return
-        cdef symengine.vec_basic vec
+        cdef symengine.multiset_basic m
         cdef Basic s_
         cdef Basic expr_ = sympify(expr, True)
         for s in symbols:
             s_ = sympify(s, True)
-            vec.push_back(s_.thisptr)
-        self.thisptr = symengine.make_rcp_Derivative(<const RCP[const symengine.Basic]>expr_.thisptr, vec)
+            m.insert(<RCP[symengine.const_Basic]>(s_.thisptr))
+        self.thisptr = symengine.make_rcp_Derivative(<const RCP[const symengine.Basic]>expr_.thisptr, m)
 
     def _sympy_(self):
         cdef RCP[const symengine.Derivative] X = \
             symengine.rcp_static_cast_Derivative(self.thisptr)
         arg = c2py(deref(X).get_arg())._sympy_()
-        cdef symengine.vec_basic Y = deref(X).get_symbols()
+        cdef symengine.multiset_basic Y = deref(X).get_symbols()
         s = []
-        for i in range(Y.size()):
-            s.append(c2py(<RCP[const symengine.Basic]>(Y[i]))._sympy_())
+        for i in Y:
+            s.append(c2py(<RCP[const symengine.Basic]>(i))._sympy_())
         import sympy
         return sympy.Derivative(arg, *s)
 
@@ -833,10 +1085,10 @@ cdef class Derivative(Basic):
         cdef RCP[const symengine.Derivative] X = \
             symengine.rcp_static_cast_Derivative(self.thisptr)
         arg = c2py(deref(X).get_arg())._sage_()
-        cdef symengine.vec_basic Y = deref(X).get_symbols()
+        cdef symengine.multiset_basic Y = deref(X).get_symbols()
         s = []
-        for i in range(Y.size()):
-            s.append(c2py(<RCP[const symengine.Basic]>(Y[i]))._sage_())
+        for i in Y:
+            s.append(c2py(<RCP[const symengine.Basic]>(i))._sage_())
         return arg.diff(*s)
 
 cdef class Subs(Basic):
@@ -919,7 +1171,7 @@ class NonSquareMatrixError(ShapeError):
 
 cdef class DenseMatrix(MatrixBase):
     """
-    Represents a dense matrix.
+    Represents a two-dimensional dense matrix.
 
     Examples
     ========
@@ -935,17 +1187,33 @@ cdef class DenseMatrix(MatrixBase):
     [3, 4]
     [5, 6]
 
+    >>> DenseMatrix([[1, 2], [3, 4], [5, 6]])
+    [1, 2]
+    [3, 4]
+    [5, 6]
+
     """
 
-    def __cinit__(self, row, col, v = None):
-        if v == None:
+    def __cinit__(self, row=None, col=None, v=None):
+        if row == None:
+            return
+        if v == None and col != None:
             self.thisptr = new symengine.DenseMatrix(row, col)
             return
+        if col == None:
+            v = row
+            row = len(v)
+            col = 1
         cdef symengine.vec_basic v_
         cdef Basic e_
         for e in v:
-            e_ = sympify(e, False)
-            if e_ is not None:
+            f = sympify(e)
+            try:
+                for e_ in f:
+                    v_.push_back(e_.thisptr)
+                col = len(f)
+            except TypeError:
+                e_ = f
                 v_.push_back(e_.thisptr)
 
         self.thisptr = new symengine.DenseMatrix(row, col, v_)
@@ -961,6 +1229,8 @@ cdef class DenseMatrix(MatrixBase):
         b = sympify(b)
         if isinstance(a, MatrixBase):
             if isinstance(b, MatrixBase):
+                if (a.shape != b.shape):
+                    raise ShapeError("Invalid shapes for matrix addition. Got %s %s" % (a.shape, b.shape))
                 return a.add_matrix(b)
             else:
                 return a.add_scalar(b)
@@ -972,11 +1242,29 @@ cdef class DenseMatrix(MatrixBase):
         b = sympify(b)
         if isinstance(a, MatrixBase):
             if isinstance(b, MatrixBase):
+                if (a.ncols() != b.nrows()):
+                    raise ShapeError("Invalid shapes for matrix multiplication. Got %s %s" % (a.shape, b.shape))
                 return a.mul_matrix(b)
             else:
                 return a.mul_scalar(b)
         else:
             return b.mul_scalar(a)
+
+    def __sub__(a, b):
+        a = sympify(a)
+        b = sympify(b)
+        if isinstance(a, MatrixBase):
+            if isinstance(b, MatrixBase):
+                if (a.shape != b.shape):
+                    raise ShapeError("Invalid shapes for matrix subtraction. Got %s %s" % (a.shape, b.shape))
+                return a.add_matrix(-b)
+            else:
+                return a.add_scalar(-b)
+        else:
+            return (-b).add_scalar(a)
+
+    def __neg__(self):
+        return self.mul_scalar(-1)
 
     def __getitem__(self, item):
         s = [0, 0, 0, 0]
@@ -1015,6 +1303,14 @@ cdef class DenseMatrix(MatrixBase):
 
     def ncols(self):
         return deref(self.thisptr).ncols()
+
+    property shape:
+        def __get__(self):
+            return (self.nrows(), self.ncols())
+
+    property size:
+        def __get__(self):
+            return self.nrows()*self.ncols()
 
     def _get_index(self, i, j):
         nr = self.nrows()
@@ -1203,6 +1499,29 @@ cdef class DenseMatrix(MatrixBase):
         import sage.all as sage
         return sage.Matrix(s)
 
+    def dump_real(self, double[::1] out):
+        cdef size_t ri, ci, nr, nc
+        if out.size < self.size:
+            raise ValueError("out parameter too short")
+        nr = self.nrows()
+        nc = self.ncols()
+        for ri in range(nr):
+            for ci in range(nc):
+                out[ri*nc + ci] = symengine.eval_double(deref(
+                    <symengine.RCP[const symengine.Basic]>(deref(self.thisptr).get(ri, ci))))
+
+    def dump_complex(self, double complex[::1] out):
+        cdef size_t ri, ci, nr, nc
+        if out.size < self.size:
+            raise ValueError("out parameter too short")
+        nr = self.nrows()
+        nc = self.ncols()
+        for ri in range(nr):
+            for ci in range(nc):
+                out[ri*nc + ci] = symengine.eval_complex_double(deref(
+                    <symengine.RCP[const symengine.Basic]>(deref(self.thisptr).get(ri, ci))))
+
+
 cdef class Sieve:
     @staticmethod
     def generate_primes(n):
@@ -1352,6 +1671,8 @@ def eval_complex_double(x):
 
 have_mpfr = False
 have_mpc = False
+have_piranha = False
+have_flint = False
 
 IF HAVE_SYMENGINE_MPFR:
     have_mpfr = True
@@ -1368,6 +1689,12 @@ IF HAVE_SYMENGINE_MPC:
         cdef symengine.mpc_class a = symengine.mpc_class(prec)
         symengine.eval_mpc(a.get_mpc_t(), deref(X.thisptr), symengine.MPFR_RNDN)
         return c2py(<RCP[const symengine.Basic]>(symengine.complex_mpc(symengine.std_move_mpc(a))))
+
+IF HAVE_SYMENGINE_PIRANHA:
+    have_piranha = True
+
+IF HAVE_SYMENGINE_FLINT:
+    have_flint = True
 
 def eval(x, long prec):
     if prec <= 53:
@@ -1701,6 +2028,375 @@ def powermod_list(a, b, m):
 def eval_double(basic):
     cdef Basic b = sympify(basic)
     return symengine.eval_double(deref(b.thisptr))
+
+
+cdef size_t _size(n):
+    try:
+        return n.size
+    except AttributeError:
+        return len(n)  # e.g. array.array
+
+def _get_shape_nested(ndarr):
+    # no checking of shape consistency is done
+    if isinstance(ndarr, (list, tuple)):
+        return (len(ndarr),) + _get_shape_nested(ndarr[0])
+    else:
+        return ()
+
+
+def get_shape(ndarr):
+    try:
+        return ndarr.shape
+    except AttributeError:
+        return _get_shape_nested(ndarr)
+
+
+def _nested_getitem(ndarr, indices):
+    if len(indices) == 0:
+        return ndarr
+    else:
+        return _nested_getitem(ndarr[indices[0]], indices[1:])
+
+
+def all_indices_from_shape(shape):
+    return itertools.product(*(range(dim) for dim in shape))
+
+
+def _ravel_nested(ndarr):
+    return [_nested_getitem(ndarr, indices) for indices in
+            all_indices_from_shape(get_shape(ndarr))]
+
+
+def ravel(ndarr):
+    try:
+        return ndarr.ravel()
+    except AttributeError:
+        return _ravel_nested(ndarr)
+
+
+def with_buffer(iterable, real=True):
+    """ if iterable supports the buffer interface: return iterable,
+        if not, return a cython.view.array object (which does) """
+    cdef double[::1] real_view
+    cdef double complex[::1] cmplx_view
+    if real:
+        try:
+            real_view = iterable
+        except (ValueError, TypeError):
+            real_view = cython.view.array(shape=(_size(iterable),),
+                                          itemsize=sizeof(double), format='d')
+            for i in range(_size(iterable)):
+                real_view[i] = iterable[i]
+            return real_view
+        else:
+            return iterable  # already supports memview
+    else:
+        try:
+            cmplx_view = iterable
+        except (ValueError, TypeError):
+            cmplx_view = cython.view.array(shape=(_size(iterable),),
+                                           itemsize=sizeof(double complex), format='Zd')
+            for i in range(_size(iterable)):
+                cmplx_view[i] = iterable[i]
+            return cmplx_view
+        else:
+            return iterable  # already supports memoryview
+
+
+ctypedef fused ValueType:
+    cython.doublecomplex
+    cython.double
+
+
+cdef class Lambdify(object):
+    """
+    Lambdify instances are callbacks that numerically evaluate their symbolic
+    expressions from user provided input (real or complex) into (possibly user
+    provided) output buffers (real or complex). Multidimensional data are
+    processed in their most cache-friendly way ("ravelled").
+
+    Parameters
+    ----------
+    args: iterable of Symbols
+    exprs: array_like of expressions
+        the shape of exprs is preserved
+
+    Returns
+    -------
+    callback instance with signature f(inp, out=None)
+
+    Examples
+    --------
+    >>> from symengine import var, Lambdify
+    >>> var('x y z')
+    >>> f = Lambdify([x, y, z], [x+y+z, x*y*z])
+    >>> f([2, 3, 4])
+    [ 9., 24.]
+    >>> out = np.array(2)
+    >>> f(x, out); out
+    [ 9., 24.]
+
+    """
+    cdef size_t inp_size, out_size
+    cdef tuple out_shape
+    cdef readonly bool real
+    cdef vector[symengine.LambdaRealDoubleVisitor] lambda_double
+    cdef vector[symengine.LambdaComplexDoubleVisitor] lambda_double_complex
+
+    def __cinit__(self, args, exprs, bool real=True):
+        cdef:
+            symengine.vec_basic args_
+            Basic e_
+            size_t ri, ci, nr, nc
+            symengine.MatrixBase *mtx
+            RCP[const symengine.Basic] b_
+            int idx = 0
+        self.real = real
+        self.out_shape = get_shape(exprs)
+        self.inp_size = _size(args)
+        self.out_size = reduce(mul, self.out_shape)
+
+        if isinstance(args, DenseMatrix):
+            nr = args.nrows()
+            nc = args.ncols()
+            mtx = (<DenseMatrix>args).thisptr
+            for ri in range(nr):
+                for ci in range(nc):
+                   args_.push_back(deref(mtx).get(ri, ci))
+        else:
+            for e in args:
+                e_ = sympify(e)
+                args_.push_back(e_.thisptr)
+
+        if self.real:
+            self.lambda_double.resize(self.out_size)
+        else:
+            self.lambda_double_complex.resize(self.out_size)
+
+        if isinstance(exprs, DenseMatrix):
+            nr = exprs.nrows()
+            nc = exprs.ncols()
+            mtx = (<DenseMatrix>exprs).thisptr
+            for ri in range(nr):
+                for ci in range(nc):
+                    b_ = deref(mtx).get(ri, ci)
+                    if real:
+                        self.lambda_double[ri*nc+ci].init(args_, deref(b_))
+                    else:
+                        self.lambda_double_complex[ri*nc+ci].init(args_, deref(b_))
+        else:
+            for e in ravel(exprs):
+                e_ = sympify(e)
+                if real:
+                    self.lambda_double[idx].init(args_, deref(e_.thisptr))
+                else:
+                    self.lambda_double_complex[idx].init(args_, deref(e_.thisptr))
+                idx += 1
+
+    cdef void _eval(self, ValueType[::1] inp, ValueType[::1] out):
+        cdef vector[ValueType] inp_
+        cdef size_t idx, ninp = inp.size, nout = out.size
+
+        if inp.size != self.inp_size:
+            raise ValueError("Size of inp incompatible with number of args.")
+        if out.size != self.out_size:
+            raise ValueError("Size of out incompatible with number of exprs.")
+
+        # Create the substitution "dict"
+        for idx in range(ninp):
+            inp_.push_back(inp[idx])
+
+        # Convert expr_subs to doubles write to out
+        if ValueType == cython.double:
+            self.as_real(inp_, out)
+        else:
+            self.as_complex(inp_, out)
+
+    @cython.wraparound(False)
+    @cython.boundscheck(False)
+    cdef void as_real(self, vector[double] &vec, double[::1] out) nogil:
+        cdef size_t i
+        for i in range(self.out_size):
+            out[i] = self.lambda_double[i].call(vec)
+
+    @cython.wraparound(False)
+    @cython.boundscheck(False)
+    cdef void as_complex(self, vector[double complex] &vec, double complex[::1] out) nogil:
+        cdef size_t i
+        for i in range(self.out_size):
+            out[i] = self.lambda_double_complex[i].call(vec)
+
+    # the two cpdef:ed methods below may use void return type
+    # once Cython 0.23 (from 2015) is acceptable as requirement.
+    cpdef unsafe_real(self, double[::1] inp, double[::1] out):
+        self._eval(inp, out)
+
+    cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out):
+        self._eval(inp, out)
+
+    def __call__(self, inp, out=None, use_numpy=None):
+        """
+        Parameters
+        ----------
+        inp: array_like
+            last dimension must be equal to number of arguments.
+        out: array_like or None (default)
+            Allows for for low-overhead use (output argument), if None:
+            an output container will be allocated (NumPy ndarray or
+            cython.view.array)
+        use_numpy: bool (default: None)
+            None -> use numpy if available
+        """
+        cdef cython.view.array tmp
+        cdef double[::1] real_out_view, real_inp_view
+        cdef double complex[::1] cmplx_out_view, cmplx_inp_view
+        cdef size_t nbroadcast = 1
+
+        try:
+            inp_shape = getattr(inp, 'shape', (len(inp),))
+        except TypeError:
+            inp = tuple(inp)
+            inp_shape = (len(inp),)
+
+        inp_size = reduce(mul, inp_shape)
+        if inp_size % self.inp_size != 0:
+            raise ValueError("Broadcasting failed")
+        nbroadcast = inp_size // self.inp_size
+        new_out_shape = ((nbroadcast,) if nbroadcast > 1 else ()) + self.out_shape
+        new_out_size = nbroadcast * self.out_size
+
+        if use_numpy is None:
+            try:
+                import numpy as np
+            except ImportError:
+                use_numpy = False  # we will use cython.view.array instead
+            else:
+                use_numpy = True
+        elif use_numpy is True:
+            import numpy as np
+
+        if use_numpy:
+            if isinstance(inp, DenseMatrix):
+                if self.real:
+                    arr = np.empty(inp_size, dtype=np.float64)
+                    inp.dump_real(arr)
+                    inp = arr
+                else:
+                    arr = np.empty(inp_size, dtype=np.complex128)
+                    inp.dump_complex(arr)
+                    inp = arr
+            else:
+                inp = np.ascontiguousarray(inp, dtype=np.float64 if
+                                           self.real else np.complex128)
+            if inp.ndim > 1:
+                inp = inp.ravel()
+        else:
+            inp = with_buffer(inp, self.real)
+
+        if out is None:
+            # allocate output container
+            if use_numpy:
+                nbroadcast = inp.size // self.inp_size
+                out = np.empty(new_out_size, dtype=np.float64 if
+                               self.real else np.complex128)
+            else:
+                if self.real:
+                    out = cython.view.array(shape=(new_out_size,),
+                                            itemsize=sizeof(double), format='d')
+                else:
+                    out = cython.view.array(shape=(new_out_size,),
+                                            itemsize=sizeof(double complex), format='Zd')
+            reshape_out = len(new_out_shape) > 1
+        else:
+            if use_numpy:
+                out = np.asarray(out, dtype=np.float64 if
+                                 self.real else np.complex128)  # copy if needed
+                if out.size < new_out_size:
+                    raise ValueError("Incompatible size of output argument")
+                if not out.flags['C_CONTIGUOUS']:
+                    raise ValueError("Output argument needs to be C-contiguous")
+                for idx, length in enumerate(out.shape[-len(self.out_shape)::-1]):
+                    if length < self.out_shape[-idx]:
+                        raise ValueError("Incompatible shape of output argument")
+                if out.dtype != np.float64:
+                    raise ValueError("Output argument dtype not float64: %s" % out.dtype)
+                if not out.flags['WRITEABLE']:
+                    raise ValueError("Output argument needs to be writeable")
+                if out.ndim > 1:
+                    out = out.ravel()
+                    reshape_out = True
+                else:
+                    # The user passed a 1-dimensional output argument,
+                    # we trust the user to do the right thing.
+                    reshape_out = False
+            else:
+                out = with_buffer(out, self.real)
+                reshape_out = False  # only reshape if we allocated.
+        for idx in range(nbroadcast):
+            if self.real:
+                real_inp_view = inp  # slicing cython.view.array does not give a memview
+                real_out_view = out
+                self.unsafe_real(real_inp_view[idx*self.inp_size:(idx+1)*self.inp_size],
+                                 real_out_view[idx*self.out_size:(idx+1)*self.out_size])
+            else:
+                complex_inp_view = inp
+                complex_out_view = out
+                self.unsafe_complex(complex_inp_view[idx*self.inp_size:(idx+1)*self.inp_size],
+                                    complex_out_view[idx*self.out_size:(idx+1)*self.out_size])
+
+        if use_numpy and reshape_out:
+            out = out.reshape(new_out_shape)
+        elif reshape_out:
+            if self.real:
+                tmp = cython.view.array(shape=new_out_shape,
+                                        itemsize=sizeof(double), format='d')
+                real_out_view = out
+                memcpy(<double *>tmp.data, &real_out_view[0],
+                       sizeof(double)*new_out_size)
+                out = tmp
+            else:
+                tmp = cython.view.array(shape=new_out_shape,
+                                        itemsize=sizeof(double complex), format='Zd')
+                cmplx_out_view = tmp
+                memcpy(<double complex*>tmp.data, &cmplx_out_view[0],
+                       sizeof(double complex)*new_out_size)
+                out = tmp
+        return out
+
+
+def LambdifyCSE(args, exprs, real=True, cse=None, concatenate=None):
+    """
+    Analogous with Lambdify but performs common subexpression elimination
+    internally. See docstring of Lambdify.
+
+    Parameters
+    ----------
+    args: iterable of symbols
+    exprs: iterable of expressions (with symbols from args)
+    real: bool (default: True)
+    cse: callback (default: None)
+        defaults to sympy.cse (see SymPy documentation)
+    concatenate: callback (default: numpy.concatenate)
+        Examples when not using numpy:
+        ``lambda tup: tup[0]+list(tup[1])``
+        ``lambda tup: tup[0]+array.array('d', tup[1])``
+    """
+    if cse is None:
+        from sympy import cse
+    if concatenate is None:
+        from numpy import concatenate
+    subs, new_exprs = cse(exprs)
+    cse_symbs, cse_exprs = zip(*subs)
+    lmb = Lambdify(tuple(args) + cse_symbs, new_exprs, real=real)
+    cse_lambda = Lambdify(args, cse_exprs, real=real)
+
+    def cb(inp, out=None, **kwargs):
+        cse_vals = cse_lambda(inp, **kwargs)
+        new_inp = concatenate((inp, cse_vals))
+        return lmb(new_inp, out, **kwargs)
+
+    return cb
+
 
 # Turn on nice stacktraces:
 symengine.print_stack_on_segfault()

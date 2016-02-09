@@ -3,6 +3,11 @@ from os import getenv, path
 import subprocess
 import sys
 
+# Make sure the system has the right Python version.
+if sys.version_info[:2] < (2, 6):
+    print("SymEngine requires Python 2.6 or newer. Python %d.%d detected" % sys.version_info[:2])
+    sys.exit(-1)
+
 # use setuptools by default as per the official advice at:
 # packaging.python.org/en/latest/current.html#packaging-tool-recommendations
 use_setuptools = True
@@ -28,24 +33,19 @@ if not use_setuptools:
     from distutils.core import setup
     from distutils.command.install import install as _install
 
-cmake_opts = [("PYTHON_BIN", sys.executable)]
+cmake_opts = [("PYTHON_BIN", sys.executable), ("CMAKE_INSTALL_RPATH_USE_LINK_PATH", "yes")]
+cmake_generator = [None]
+cmake_build_type = ["Release"]
 
 def process_opts(opts):
     return ['-D'+'='.join(o) for o in opts]
-
-def cmake_build():
-    cmake_cmd = ["cmake", path.dirname(path.realpath(__file__))]
-    cmake_cmd.extend(process_opts(cmake_opts))
-    if subprocess.call(cmake_cmd) != 0:
-        raise EnvironmentError("error calling cmake")
-
-    if subprocess.call("make") != 0:
-        raise EnvironmentError("error calling make")
 
 class BuildWithCmake(_build):
     _build_opts = _build.user_options
     user_options = [
         ('symengine-dir=', None, 'path to symengine installation or build directory'),
+        ('generator=', None, 'cmake build generator'),
+        ('build-type=', None, 'build type: Release or Debug'),
         ('define=', 'D',
          'options to cmake <var>:<type>=<value>')
     ]
@@ -55,6 +55,8 @@ class BuildWithCmake(_build):
         _build.initialize_options(self)
         self.define = None
         self.symengine_dir = None
+        self.generator = None
+        self.build_type = "Release"
 
     def finalize_options(self):
         _build.finalize_options(self)
@@ -68,10 +70,44 @@ class BuildWithCmake(_build):
                            for s in defines]
             cmake_opts.extend(self.define)
         if self.symengine_dir:
-            cmake_opts.extend(['SymEngine_DIR', self.symengine_dir])
+            cmake_opts.extend([('SymEngine_DIR', self.symengine_dir)])
+
+        if self.generator:
+            cmake_generator[0] = self.generator
+
+        cmake_build_type[0] = self.build_type
+
+    def cmake_build(self):
+        dir = path.dirname(path.realpath(__file__))
+        cmake_cmd = ["cmake", dir, "-DCMAKE_BUILD_TYPE=" + cmake_build_type[0]]
+        cmake_cmd.extend(process_opts(cmake_opts))
+        if not path.exists("CMakeCache.txt"):
+            cmake_cmd.extend(self.get_generator())
+        if subprocess.call(cmake_cmd) != 0:
+            raise EnvironmentError("error calling cmake")
+
+        if subprocess.call(["cmake", "--build", ".", "--config", cmake_build_type[0]]) != 0:
+            raise EnvironmentError("error building project")
+
+    def get_generator(self):
+        if cmake_generator[0]:
+            return ["-G", cmake_generator[0]]
+        else:
+            import platform, sys
+            if (platform.system() == "Windows"):
+                compiler = str(self.compiler).lower()
+                if ("msys" in compiler):
+                    return ["-G", "MSYS Makefiles"]
+                elif ("mingw" in compiler):
+                    return ["-G", "MinGW Makefiles"]
+                elif sys.maxsize > 2**32:
+                    return ["-G", "Visual Studio 14 2015 Win64"]
+                else:
+                    return ["-G", "Visual Studio 14 2015"]
+            return []
 
     def run(self):
-        cmake_build()
+        self.cmake_build()
         # can't use super() here because _build is an old style class in 2.7
         _build.run(self)
 
@@ -79,6 +115,8 @@ class InstallWithCmake(_install):
     _install_opts = _install.user_options
     user_options = [
         ('symengine-dir=', None, 'path to symengine installation or build directory'),
+        ('generator=', None, 'cmake build generator'),
+        ('build-type=', None, 'build type: Release or Debug'),
         ('define=', 'D',
          'options to cmake <var>:<type>=<value>')
     ]
@@ -88,6 +126,8 @@ class InstallWithCmake(_install):
         _install.initialize_options(self)
         self.define = None
         self.symengine_dir = None
+        self.generator = None
+        self.build_type = "Release"
 
     def finalize_options(self):
         _install.finalize_options(self)
@@ -103,9 +143,33 @@ class InstallWithCmake(_install):
         if self.symengine_dir:
             cmake_opts.extend([('SymEngine_DIR', self.symengine_dir)])
 
+        if self.generator:
+            cmake_generator[0] = self.generator
+
+        cmake_build_type[0] = self.build_type
+        cmake_opts.extend([('PYTHON_INSTALL_PATH', self.install_platlib)])
+        cmake_opts.extend([('PYTHON_INSTALL_HEADER_PATH', self.install_headers)])
+
+    def cmake_install(self):
+        dir = path.dirname(path.realpath(__file__))
+        cmake_cmd = ["cmake", dir]
+        cmake_cmd.extend(process_opts(cmake_opts))
+
+        # CMake has to be called here to update PYTHON_INSTALL_PATH
+        # if build and install were called separately by the user
+        if subprocess.call(cmake_cmd) != 0:
+            raise EnvironmentError("error calling cmake")
+
+        if subprocess.call(["cmake", "--build", ".", "--config", cmake_build_type[0], "--target", "install"]) != 0:
+            raise EnvironmentError("error installing")
+
+        import compileall
+        compileall.compile_dir(path.join(self.install_platlib, "symengine"))
+
     def run(self):
         # can't use super() here because _install is an old style class in 2.7
         _install.run(self)
+        self.cmake_install()
 
 long_description = '''
 SymEngine is a standalone fast C++ symbolic manipulation library.
@@ -116,11 +180,10 @@ setup(name = "symengine",
       description = "Python library providing wrappers to SymEngine",
       long_description = long_description,
       author = "SymPy development team",
-      author_email = "sympy@googlegroups.com",
+      author_email = "symengine@googlegroups.com",
+      setup_requires = ['cython>=0.19.1'],
       license = "MIT",
       url = "https://github.com/sympy/symengine",
-      packages=['symengine', 'symengine.lib', 'symengine.tests'],
-      package_data= {'symengine' : ['lib/symengine_wrapper.so']},
       cmdclass={
           'build' : BuildWithCmake,
           'install' : InstallWithCmake,
@@ -136,5 +199,6 @@ setup(name = "symengine",
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         ]
     )

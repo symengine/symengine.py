@@ -1,5 +1,5 @@
 cimport symengine
-from symengine cimport RCP
+from symengine cimport RCP, map_basic_basic
 
 cdef class Basic(object):
     cdef RCP[const symengine.Basic] thisptr
@@ -26,6 +26,9 @@ cdef class RealMPFR(Number):
     pass
 
 cdef class ComplexMPC(Number):
+    pass
+
+cdef class PyNumber(Number):
     pass
 
 cdef class Add(Basic):
@@ -109,7 +112,7 @@ cdef class ACoth(HyperbolicFunction):
 cdef class FunctionSymbol(Function):
     pass
 
-cdef class FunctionWrapper(FunctionSymbol):
+cdef class PyFunction(FunctionSymbol):
     pass
 
 cdef class Abs(Function):
@@ -129,3 +132,18 @@ cdef class DenseMatrix(MatrixBase):
 
 cdef class Log(Basic):
     pass
+
+cdef class PyFunctionClass(object):
+    cdef RCP[const symengine.PyFunctionClass] thisptr
+
+cdef class PyModule(object):
+    cdef RCP[const symengine.PyModule] thisptr
+
+cdef class _DictBasic(object):
+    cdef map_basic_basic c
+
+cdef class DictBasicIter(object):
+    cdef map_basic_basic.iterator begin
+    cdef map_basic_basic.iterator end
+    cdef init(self, map_basic_basic.iterator begin, map_basic_basic.iterator end)
+

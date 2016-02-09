@@ -38,6 +38,8 @@ def test_var():
     # check return value
     assert v == [d, e, fg]
 
+
+def test_var_global_namespace():
     # see if var() really injects into global namespace
     raises(NameError, lambda: z1)
     _make_z1()
