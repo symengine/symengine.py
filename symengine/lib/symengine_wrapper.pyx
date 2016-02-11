@@ -1668,6 +1668,7 @@ def eval_complex_double(x):
 have_mpfr = False
 have_mpc = False
 have_piranha = False
+have_flint = False
 
 IF HAVE_SYMENGINE_MPFR:
     have_mpfr = True
@@ -1687,6 +1688,9 @@ IF HAVE_SYMENGINE_MPC:
 
 IF HAVE_SYMENGINE_PIRANHA:
     have_piranha = True
+
+IF HAVE_SYMENGINE_FLINT:
+    have_flint = True
 
 def eval(x, long prec):
     if prec <= 53:
