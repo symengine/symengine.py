@@ -242,6 +242,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_ACoth "SymEngine::is_a<SymEngine::ACoth>"(const Basic &b) nogil
     bool is_a_FunctionSymbol "SymEngine::is_a<SymEngine::FunctionSymbol>"(const Basic &b) nogil
     bool is_a_Abs "SymEngine::is_a<SymEngine::Abs>"(const Basic &b) nogil
+    bool is_a_Gamma "SymEngine::is_a<SymEngine::Gamma>"(const Basic &b) nogil
     bool is_a_Derivative "SymEngine::is_a<SymEngine::Derivative>"(const Basic &b) nogil
     bool is_a_Subs "SymEngine::is_a<SymEngine::Subs>"(const Basic &b) nogil
     bool is_a_PyFunction "SymEngine::is_a<SymEngine::FunctionWrapper>"(const Basic &b) nogil
@@ -393,6 +394,7 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
     cdef RCP[const Basic] acoth(RCP[const Basic] &arg) nogil except+
     cdef RCP[const Basic] function_symbol(string name, const vec_basic &arg) nogil except+
     cdef RCP[const Basic] abs(RCP[const Basic] &arg) nogil except+
+    cdef RCP[const Basic] gamma(RCP[const Basic] &arg) nogil except+
 
     cdef cppclass Function(Basic):
         pass
@@ -484,6 +486,9 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
 
     cdef cppclass Abs(Function):
         RCP[const Basic] get_arg() nogil
+
+    cdef cppclass Gamma(Function):
+        pass
 
 IF HAVE_SYMENGINE_MPFR:
     cdef extern from "mpfr.h":

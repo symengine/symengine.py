@@ -43,6 +43,8 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = FunctionSymbol.__new__(FunctionSymbol)
     elif (symengine.is_a_Abs(deref(o))):
         r = Abs.__new__(Abs)
+    elif (symengine.is_a_Gamma(deref(o))):
+        r = Gamma.__new__(Gamma)
     elif (symengine.is_a_Derivative(deref(o))):
         r = Derivative.__new__(Derivative)
     elif (symengine.is_a_Subs(deref(o))):
@@ -190,6 +192,8 @@ def sympy2symengine(a, raise_error=False):
         return log(a.args[0])
     elif isinstance(a, sympy.Abs):
         return abs(sympy2symengine(a.args[0], True))
+    elif isinstance(a, sympy.gamma):
+        return gamma(a.args[0])
     elif isinstance(a, sympy.Derivative):
         return Derivative(a.expr, a.variables)
     elif isinstance(a, sympy.Subs):
@@ -1656,6 +1660,10 @@ def log(x, y = None):
         return c2py(symengine.log(X.thisptr))
     cdef Basic Y = sympify(y)
     return c2py(symengine.log(X.thisptr, Y.thisptr))
+
+def gamma(x):
+    cdef Basic X = sympify(x)
+    return c2py(symengine.gamma(X.thisptr))
 
 def eval_double(x):
     cdef Basic X = sympify(x)
