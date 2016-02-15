@@ -1044,6 +1044,20 @@ cdef class PyFunctionClass(object):
 def wrap_sage_function(func):
     return PyFunction(func, func.operands(), func.operator(), sage_module)
 
+cdef class Gamma(Function):
+
+    def _sympy_(self):
+        import sympy
+        cdef RCP[const symengine.Gamma] X = symengine.rcp_static_cast_Gamma(self.thisptr)
+        arg = c2py(<RCP[const symengine.Basic]>(deref(X).get_args()[0]))
+        return sympy.gamma(arg._sympy_())
+
+    def _sage_(self):
+        import sage.all as sage
+        cdef RCP[const symengine.Gamma] X = symengine.rcp_static_cast_Gamma(self.thisptr)
+        arg = c2py(<RCP[const symengine.Basic]>(deref(X).get_args()[0]))
+        return sage.gamma(arg._sage_())
+
 cdef class Abs(Function):
 
     def _sympy_(self):

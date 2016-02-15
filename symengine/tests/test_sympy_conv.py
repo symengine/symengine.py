@@ -314,6 +314,13 @@ def test_exp():
     assert sympify(e1) == e2
     assert e1 == e2._sympy_()
 
+def test_gamma():
+    x = Symbol("x")
+    e1 = sympy.gamma(sympy.Symbol("x"))
+    e2 = gamma(x)
+    assert sympify(e1) == e2
+    assert e1 == e2._sympy_()
+
 def test_constants():
     assert sympify(sympy.E) == E
     assert sympy.E == E._sympy_()
