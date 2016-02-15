@@ -489,7 +489,7 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
         RCP[const Basic] get_arg() nogil
 
     cdef cppclass Gamma(Function):
-        RCP[const Basic] get_arg() nogil
+        pass
 
 IF HAVE_SYMENGINE_MPFR:
     cdef extern from "mpfr.h":

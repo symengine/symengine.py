@@ -1,5 +1,5 @@
 from symengine import (Symbol, Integer, sympify, SympifyError, log,
-        function_symbol, I, E, pi, exp, have_mpfr, have_mpc, DenseMatrix,
+        function_symbol, I, E, pi, exp, gamma, have_mpfr, have_mpc, DenseMatrix,
         sin, cos, tan, cot, csc, sec, asin, acos, atan, acot, acsc, asec,
         sinh, cosh, tanh, coth, asinh, acosh, atanh, acoth, Add, Mul, Pow)
 from symengine.lib.symengine_wrapper import (Subs, Derivative, RealMPFR, ComplexMPC,
