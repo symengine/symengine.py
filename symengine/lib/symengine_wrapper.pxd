@@ -118,6 +118,9 @@ cdef class PyFunction(FunctionSymbol):
 cdef class Abs(Function):
     pass
 
+cdef class Gamma(Function):
+    pass
+
 cdef class Derivative(Basic):
     pass
 

@@ -1,5 +1,5 @@
 from symengine import (Symbol, Integer, sympify, SympifyError, log,
-        function_symbol, I, E, pi, exp, have_mpfr, have_mpc, DenseMatrix,
+        function_symbol, I, E, pi, exp, gamma, have_mpfr, have_mpc, DenseMatrix,
         sin, cos, tan, cot, csc, sec, asin, acos, atan, acot, acsc, asec,
         sinh, cosh, tanh, coth, asinh, acosh, atanh, acoth, Add, Mul, Pow)
 from symengine.lib.symengine_wrapper import (Subs, Derivative, RealMPFR, ComplexMPC,
@@ -311,6 +311,13 @@ def test_exp():
 
     e1 = sympy.exp(sympy.Symbol("x")).diff(sympy.Symbol("x"))
     e2 = exp(x).diff(x)
+    assert sympify(e1) == e2
+    assert e1 == e2._sympy_()
+
+def test_gamma():
+    x = Symbol("x")
+    e1 = sympy.gamma(sympy.Symbol("x"))
+    e2 = gamma(x)
     assert sympify(e1) == e2
     assert e1 == e2._sympy_()
 
