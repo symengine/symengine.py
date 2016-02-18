@@ -108,7 +108,6 @@ def test_FunctionWrapper():
 
     f = e.subs({x : 100});
     v = f.n(53, real=True);
-    print(v)
     assert abs(float(v) - 459.13420537) < 1e-7
 
     f = e.diff(x)
