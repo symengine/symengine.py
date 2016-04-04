@@ -601,6 +601,10 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
         DenseMatrix &x) nogil
     void jacobian "SymEngine::jacobian"(const DenseMatrix &A,
             const DenseMatrix &x, DenseMatrix &result) nogil
+    void eye (DenseMatrix &A, unsigned N, unsigned M, int k) nogil
+    void diag(DenseMatrix &A, vec_basic &v, int k) nogil
+    void ones(DenseMatrix &A, unsigned rows, unsigned cols) nogil
+    void zeros(DenseMatrix &A, unsigned rows, unsigned cols) nogil
 
 cdef extern from "<symengine/ntheory.h>" namespace "SymEngine":
     int probab_prime_p(const Integer &a, int reps)
