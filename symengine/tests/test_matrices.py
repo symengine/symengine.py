@@ -48,8 +48,12 @@ def test_get_item():
     assert A[1:3, 0] == DenseMatrix(2, 1, [4, 7])
     assert A[1:3, 1:] == DenseMatrix(2, 2, [5, 6, 8, 9])
     assert A[1:3, :1] == DenseMatrix(2, 1, [4, 7])
-    assert A[1:] == DenseMatrix(2, 3, [4, 5, 6, 7, 8, 9])
-    assert A[-2:] == DenseMatrix(2, 3, [4, 5, 6, 7, 8, 9])
+    assert A[0, 0:] == DenseMatrix(1, 3, [1, 2, 3])
+    assert A[2, :] == DenseMatrix(1, 3, [7, 8, 9])
+    assert A[:2, -2:] == DenseMatrix(2, 2, [2, 3, 5, 6])
+    assert A[1:, :3] == DenseMatrix(2, 3, [4, 5, 6, 7, 8, 9])
+    assert A[1:] == [2, 3, 4, 5, 6, 7, 8, 9]
+    assert A[-2:] == [8, 9]
 
     raises(IndexError, lambda: A[-10])
     raises(IndexError, lambda: A[9])
@@ -65,8 +69,16 @@ def test_set_item():
     A[-2] = 3
     A[-2, -1] = 1
 
-    B = DenseMatrix(3, 3, [1, 2, 7, 4, 5, 1, 7, 3, 8])
-    assert A == B
+    assert A == DenseMatrix(3, 3, [1, 2, 7, 4, 5, 1, 7, 3, 8])
+
+    A[0, :] = [10, 11, 12]
+    assert A == DenseMatrix(3, 3, [10, 11, 12, 4, 5, 1, 7, 3, 8])
+
+    A[:, 1] = [13, 14, 15]
+    assert A == DenseMatrix(3, 3, [10, 13, 12, 4, 14, 1, 7, 15, 8])
+
+    A[0::2, :] = [[1, 2, 3], [4, 5, 6]]
+    assert A == DenseMatrix(3, 3, [1, 2, 3, 4, 14, 1, 4, 5, 6])
 
 def test_set():
     i7 = Integer(7)
@@ -200,14 +212,6 @@ def test_transpose():
     A = DenseMatrix(2, 2, [1, 2, 2, 1])
 
     assert A.transpose() == A
-
-def test_submatrix():
-    A = DenseMatrix(3, 3, [1, 2, 3, 4, 5, 6, 7, 8, 9])
-
-    assert A.submatrix(0, 0, 0, 2) == DenseMatrix(1, 3, [1, 2, 3])
-    assert A.submatrix(2, 2, 0, 2) == DenseMatrix(1, 3, [7, 8, 9])
-    assert A.submatrix(0, 1, 1, 2) == DenseMatrix(2, 2, [2, 3, 5, 6])
-    assert A.submatrix(1, 2, 0, 2) == DenseMatrix(2, 3, [4, 5, 6, 7, 8, 9])
 
 def test_LU():
     A = DenseMatrix(3, 3, [1, 3, 5, 2, 5, 6, 8, 3, 1]);
