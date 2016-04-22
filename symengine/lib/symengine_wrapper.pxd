@@ -133,7 +133,7 @@ cdef class MatrixBase(object):
 cdef class DenseMatrix(MatrixBase):
     pass
 
-cdef class Log(Basic):
+cdef class Log(Function):
     pass
 
 cdef class PyFunctionClass(object):

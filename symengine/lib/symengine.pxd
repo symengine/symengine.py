@@ -203,9 +203,9 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     cdef cppclass Basic:
         string __str__() nogil except +
         unsigned int hash() nogil except +
-        RCP[const Basic] diff(RCP[const Symbol] &x) nogil except +
         RCP[const Basic] subs(map_basic_basic &x) nogil except +
         vec_basic get_args() nogil
+        int __cmp__(const Basic &o) nogil
     ctypedef RCP[const Basic] rcp_const_basic "SymEngine::RCP<const SymEngine::Basic>"
     ctypedef unordered_map[int, rcp_const_basic] umap_int_basic "SymEngine::umap_int_basic"
     ctypedef unordered_map[int, rcp_const_basic].iterator umap_int_basic_iterator "SymEngine::umap_int_basic::iterator"
@@ -255,6 +255,9 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_PyNumber "SymEngine::is_a<SymEngine::PyNumber>"(const Basic &b) nogil
 
     RCP[const Basic] expand(RCP[const Basic] &o) nogil except +
+
+cdef extern from "<symengine/derivative.h>" namespace "SymEngine":
+    RCP[const Basic] diff "SymEngine::sdiff"(RCP[const Basic] &arg, RCP[const Basic] &x) nogil except +
 
 cdef extern from "<symengine/symbol.h>" namespace "SymEngine":
     cdef cppclass Symbol(Basic):
@@ -324,6 +327,7 @@ cdef extern from "<symengine/constants.h>" namespace "SymEngine":
 cdef extern from "<symengine/add.h>" namespace "SymEngine":
     cdef RCP[const Basic] add(RCP[const Basic] &a, RCP[const Basic] &b) nogil except+
     cdef RCP[const Basic] sub(RCP[const Basic] &a, RCP[const Basic] &b) nogil except+
+    cdef RCP[const Basic] add(const vec_basic &a) nogil except+
 
     cdef cppclass Add(Basic):
         void as_two_terms(const Ptr[RCP[Basic]] &a, const Ptr[RCP[Basic]] &b)
@@ -332,6 +336,7 @@ cdef extern from "<symengine/mul.h>" namespace "SymEngine":
     cdef RCP[const Basic] mul(RCP[const Basic] &a, RCP[const Basic] &b) nogil except+
     cdef RCP[const Basic] div(RCP[const Basic] &a, RCP[const Basic] &b) nogil except+
     cdef RCP[const Basic] neg(RCP[const Basic] &a) nogil except+
+    cdef RCP[const Basic] mul(const vec_basic &a) nogil except+
 
     cdef cppclass Mul(Basic):
         void as_two_terms(const Ptr[RCP[Basic]] &a, const Ptr[RCP[Basic]] &b)
@@ -571,11 +576,10 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
         void add_scalar(const RCP[const Basic] &k, MatrixBase &result) nogil
         void mul_scalar(const RCP[const Basic] &k, MatrixBase &result) nogil
         void transpose(MatrixBase &result) nogil
-        void submatrix(unsigned row_start,
-                        unsigned row_end,
-                        unsigned col_start,
-                        unsigned col_end,
-                        MatrixBase &result) nogil
+        void submatrix(MatrixBase &result,
+                       unsigned row_start, unsigned col_start,
+                       unsigned row_end, unsigned col_end,
+                       unsigned row_step, unsigned col_step) nogil
         void LU(MatrixBase &L, MatrixBase &U) nogil
         void LDL(MatrixBase &L, MatrixBase &D) nogil
         void LU_solve(const MatrixBase &b, MatrixBase &x) nogil
@@ -599,8 +603,14 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
         const DenseMatrix &b, DenseMatrix &x) nogil
     void LDL_solve "SymEngine::LDL_solve"(const DenseMatrix &A, const DenseMatrix &b,
         DenseMatrix &x) nogil
-    void jacobian "SymEngine::jacobian"(const DenseMatrix &A,
-            const DenseMatrix &x, DenseMatrix &result) nogil
+    void jacobian "SymEngine::sjacobian"(const DenseMatrix &A,
+            const DenseMatrix &x, DenseMatrix &result) nogil except +
+    void diff "SymEngine::sdiff"(const DenseMatrix &A,
+            RCP[const Basic] &x, DenseMatrix &result) nogil except +
+    void eye (DenseMatrix &A, unsigned N, unsigned M, int k) nogil
+    void diag(DenseMatrix &A, vec_basic &v, int k) nogil
+    void ones(DenseMatrix &A, unsigned rows, unsigned cols) nogil
+    void zeros(DenseMatrix &A, unsigned rows, unsigned cols) nogil
 
 cdef extern from "<symengine/ntheory.h>" namespace "SymEngine":
     int probab_prime_p(const Integer &a, int reps)

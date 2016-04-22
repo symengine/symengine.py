@@ -1,6 +1,8 @@
+from Cython.Build.Inline import RuntimeCompiledFunction
+
 from cython.operator cimport dereference as deref, preincrement as inc
 cimport symengine
-from symengine cimport RCP, set, pair, map_basic_basic, umap_int_basic, umap_int_basic_iterator, rcp_const_basic, std_pair_short_rcp_const_basic, rcp_const_seriescoeffinterface
+from symengine cimport RCP, pair, map_basic_basic, umap_int_basic, umap_int_basic_iterator, rcp_const_basic, std_pair_short_rcp_const_basic, rcp_const_seriescoeffinterface
 from libcpp cimport bool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -119,14 +121,12 @@ def sympy2symengine(a, raise_error=False):
     if isinstance(a, sympy.Symbol):
         return Symbol(a.name)
     elif isinstance(a, sympy.Mul):
-        x, y = a.as_two_terms()
-        return sympy2symengine(x, True) * sympy2symengine(y, True)
+        return mul(*[sympy2symengine(x, raise_error) for x in a.args])
     elif isinstance(a, sympy.Add):
-        x, y = a.as_two_terms()
-        return sympy2symengine(x, True) + sympy2symengine(y, True)
+        return add(*[sympy2symengine(x, raise_error) for x in a.args])
     elif isinstance(a, (sympy.Pow, sympy.exp)):
         x, y = a.as_base_exp()
-        return sympy2symengine(x, True) ** sympy2symengine(y, True)
+        return sympy2symengine(x, raise_error) ** sympy2symengine(y, raise_error)
     elif isinstance(a, sympy.Integer):
         return Integer(a.p)
     elif isinstance(a, sympy.Rational):
@@ -191,7 +191,7 @@ def sympy2symengine(a, raise_error=False):
     elif isinstance(a, sympy.log):
         return log(a.args[0])
     elif isinstance(a, sympy.Abs):
-        return abs(sympy2symengine(a.args[0], True))
+        return abs(sympy2symengine(a.args[0], raise_error))
     elif isinstance(a, sympy.gamma):
         return gamma(a.args[0])
     elif isinstance(a, sympy.Derivative):
@@ -461,9 +461,8 @@ cdef class Basic(object):
         return c2py(symengine.expand(self.thisptr))
 
     def diff(Basic self not None, x):
-        cdef Symbol symbol = sympify(x)
-        cdef RCP[const symengine.Symbol] X = symengine.rcp_static_cast_Symbol(symbol.thisptr)
-        return c2py(deref(self.thisptr).diff(X))
+        cdef Basic s = sympify(x)
+        return c2py(symengine.diff(self.thisptr, s.thisptr))
 
     def subs_dict(Basic self not None, subs_dict):
         cdef _DictBasic D
@@ -509,8 +508,64 @@ cdef class Basic(object):
         cdef symengine.set_basic _set = symengine.free_symbols(deref(self.thisptr))
         return {c2py(<RCP[const symengine.Basic]>(elem)) for elem in _set}
 
+    @property
+    def is_Atom(self):
+        return False
+
+    @property
+    def is_Symbol(self):
+        return False
+
+    @property
+    def is_Function(self):
+        return False
+
+    @property
+    def is_Add(self):
+        return False
+
+    @property
+    def is_Mul(self):
+        return False
+
+    @property
+    def is_Pow(self):
+        return False
+
+    @property
+    def is_Number(self):
+        return False
+
+    @property
+    def is_Float(self):
+        return False
+
+    @property
+    def is_Rational(self):
+        return False
+
+    @property
+    def is_Integer(self):
+        return False
+
+    @property
+    def is_Derivative(self):
+        return False
+
+    @property
+    def is_Matrix(self):
+        return False
+
     def _symbolic_(self, ring):
         return ring(self._sage_())
+
+    def atoms(self, *types):
+        s = set()
+        if (isinstance(self, types)):
+            s.add(self)
+        for arg in self.args:
+            s.update(arg.atoms(*types))
+        return s
 
 def series(ex, x=None, x0=0, n=6, method='sympy', removeO=False):
     # TODO: check for x0 an infinity, see sympy/core/expr.py
@@ -577,6 +632,9 @@ cdef class Symbol(Basic):
         import sage.all as sage
         return sage.SR.symbol(str(deref(X).get_name().decode("utf-8")))
 
+    @property
+    def is_Symbol(self):
+        return True
 
 def symarray(prefix, shape, **kwargs):
     """ Creates an nd-array of symbols
@@ -623,9 +681,19 @@ cdef class Constant(Basic):
             raise Exception("Unknown Constant")
 
 cdef class Number(Basic):
-    pass
+    @property
+    def is_Atom(self):
+        return True
+
+    @property
+    def is_Number(self):
+        return True
 
 cdef class Integer(Number):
+
+    @property
+    def is_Integer(self):
+        return True
 
     def __cinit__(self, i = None):
         if i is None:
@@ -712,6 +780,10 @@ cdef class Integer(Number):
 
 cdef class RealDouble(Number):
 
+    @property
+    def is_Float(self):
+        return True
+
     def __cinit__(self, i = None):
         if i is None:
             return
@@ -753,6 +825,11 @@ cdef class ComplexDouble(Number):
         return self.real_part()._sage_() + sage.I * self.imaginary_part()._sage_()
 
 cdef class RealMPFR(Number):
+
+    @property
+    def is_Float(self):
+        return True
+
     IF HAVE_SYMENGINE_MPFR:
         def __cinit__(self, i = None, long prec = 53, unsigned base = 10):
             if i is None:
@@ -815,6 +892,10 @@ cdef class ComplexMPC(Number):
 
 cdef class Rational(Number):
 
+    @property
+    def is_Rational(self):
+        return True
+
     def get_num_den(self):
         cdef RCP[const symengine.Integer] _num, _den
         symengine.get_num_den(deref(symengine.rcp_static_cast_Rational(self.thisptr)),
@@ -851,11 +932,13 @@ cdef class Complex(Number):
 
 cdef class Add(Basic):
 
+    @property
+    def is_Add(self):
+        return True
+
     def _sympy_(self):
-        cdef RCP[const symengine.Add] X = symengine.rcp_static_cast_Add(self.thisptr)
-        cdef RCP[const symengine.Basic] a, b
-        deref(X).as_two_terms(symengine.outArg(a), symengine.outArg(b))
-        return c2py(a)._sympy_() + c2py(b)._sympy_()
+        from sympy import Add
+        return Add(*self.args)
 
     def _sage_(self):
         cdef RCP[const symengine.Add] X = symengine.rcp_static_cast_Add(self.thisptr)
@@ -863,13 +946,18 @@ cdef class Add(Basic):
         deref(X).as_two_terms(symengine.outArg(a), symengine.outArg(b))
         return c2py(a)._sage_() + c2py(b)._sage_()
 
+    def func(self, *values):
+        return add(*values)
+
 cdef class Mul(Basic):
 
+    @property
+    def is_Mul(self):
+        return True
+
     def _sympy_(self):
-        cdef RCP[const symengine.Mul] X = symengine.rcp_static_cast_Mul(self.thisptr)
-        cdef RCP[const symengine.Basic] a, b
-        deref(X).as_two_terms(symengine.outArg(a), symengine.outArg(b))
-        return c2py(a)._sympy_() * c2py(b)._sympy_()
+        from sympy import Mul
+        return Mul(*self.args)
 
     def _sage_(self):
         cdef RCP[const symengine.Mul] X = symengine.rcp_static_cast_Mul(self.thisptr)
@@ -877,7 +965,14 @@ cdef class Mul(Basic):
         deref(X).as_two_terms(symengine.outArg(a), symengine.outArg(b))
         return c2py(a)._sage_() * c2py(b)._sage_()
 
+    def func(self, *values):
+        return mul(*values)
+
 cdef class Pow(Basic):
+
+    @property
+    def is_Pow(self):
+        return True
 
     def _sympy_(self):
         cdef RCP[const symengine.Pow] X = symengine.rcp_static_cast_Pow(self.thisptr)
@@ -891,7 +986,10 @@ cdef class Pow(Basic):
         exp = c2py(deref(X).get_exp())
         return base._sage_() ** exp._sage_()
 
-cdef class Log(Basic):
+    def func(self, *values):
+        return sympify(values[0]) ** sympify(values[1])
+
+cdef class Log(Function):
 
     def _sympy_(self):
         import sympy
@@ -906,7 +1004,14 @@ cdef class Log(Basic):
         return sage.log(arg._sage_())
 
 cdef class Function(Basic):
-    pass
+
+    @property
+    def is_Function(self):
+        return True
+
+    def func(self, *values):
+        import sys
+        return getattr(sys.modules[__name__], self.__class__.__name__.lower())(*values)
 
 cdef class TrigFunction(Function):
     def get_arg(self):
@@ -936,12 +1041,17 @@ cdef class HyperbolicFunction(Function):
 
 cdef class FunctionSymbol(Function):
 
-    def _sympy_(self):
+    def get_name(self):
         cdef RCP[const symengine.FunctionSymbol] X = \
             symengine.rcp_static_cast_FunctionSymbol(self.thisptr)
         name = deref(X).get_name().decode("utf-8")
         # In Python 2.7, function names cannot be unicode:
-        name = str(name)
+        return str(name)
+
+    def _sympy_(self):
+        cdef RCP[const symengine.FunctionSymbol] X = \
+            symengine.rcp_static_cast_FunctionSymbol(self.thisptr)
+        name = self.get_name()
         cdef symengine.vec_basic Y = deref(X).get_args()
         s = []
         for i in range(Y.size()):
@@ -952,15 +1062,24 @@ cdef class FunctionSymbol(Function):
     def _sage_(self):
         cdef RCP[const symengine.FunctionSymbol] X = \
             symengine.rcp_static_cast_FunctionSymbol(self.thisptr)
-        name = deref(X).get_name().decode("utf-8")
-        # In Python 2.7, function names cannot be unicode:
-        name = str(name)
+        name = self.get_name()
         cdef symengine.vec_basic Y = deref(X).get_args()
         s = []
         for i in range(Y.size()):
             s.append(c2py(<RCP[const symengine.Basic]>(Y[i]))._sage_())
         import sage.all as sage
         return sage.function(name, *s)
+
+    def func(self, *values):
+        name = self.get_name()
+        return function_symbol(name, *values)
+
+class UndefFunction(object):
+    def __init__(self, name):
+        self.name = name
+
+    def __call__(self, *values):
+        return function_symbol(self.name, *values)
 
 cdef RCP[const symengine.Basic] pynumber_to_symengine(PyObject* o1):
     cdef Basic X = sympify(<object>o1, False)
@@ -1093,6 +1212,10 @@ cdef class Abs(Function):
 
 cdef class Derivative(Basic):
 
+    @property
+    def is_Derivative(self):
+        return True
+
     def __cinit__(self, expr = None, symbols = None):
         if expr is None or symbols is None:
             return
@@ -1166,6 +1289,10 @@ cdef class Subs(Basic):
 
 cdef class MatrixBase:
 
+    @property
+    def is_Matrix(self):
+        return True
+
     def __richcmp__(a, b, int op):
         A = sympify(a, False)
         B = sympify(b, False)
@@ -1175,7 +1302,7 @@ cdef class MatrixBase:
             elif (op == 3):
                 return True
             return NotImplemented
-        return MatrixBase._richcmp_(A, B, op)
+        return A._richcmp_(B, op)
 
     def _richcmp_(MatrixBase A, MatrixBase B, int op):
         if (op == 2):
@@ -1190,6 +1317,10 @@ cdef class MatrixBase:
 
     def _symbolic_(self, ring):
         return ring(self._sage_())
+
+    # TODO: fix this
+    def __hash__(self):
+        return 0
 
 class MatrixError(Exception):
     pass
@@ -1229,28 +1360,51 @@ cdef class DenseMatrix(MatrixBase):
     """
 
     def __cinit__(self, row=None, col=None, v=None):
-        if row == None:
+        if row is None:
+            self.thisptr = new symengine.DenseMatrix(0, 0)
             return
-        if v == None and col != None:
+        if v is None and col is not None:
             self.thisptr = new symengine.DenseMatrix(row, col)
             return
-        if col == None:
+        if col is None:
             v = row
-            row = len(v)
-            col = 1
+            row = 0
         cdef symengine.vec_basic v_
+        cdef DenseMatrix A
         cdef Basic e_
+        #TODO: Add a constructor to DenseMatrix in C++
+        if (isinstance(v, DenseMatrix)):
+            matrix_to_vec(v, v_)
+            if col is None:
+                row = v.nrows()
+                col = v.ncols()
+            self.thisptr = new symengine.DenseMatrix(row, col, v_)
+            return
         for e in v:
             f = sympify(e)
+            if isinstance(f, DenseMatrix):
+                matrix_to_vec(f, v_)
+                if col is None:
+                    row = row + f.nrows()
+                continue
             try:
                 for e_ in f:
                     v_.push_back(e_.thisptr)
-                col = len(f)
+                if col is None:
+                    row = row + 1
             except TypeError:
                 e_ = f
                 v_.push_back(e_.thisptr)
-
-        self.thisptr = new symengine.DenseMatrix(row, col, v_)
+                if col is None:
+                    row = row + 1
+        if (row == 0):
+            if (v_.size() != 0):
+                self.thisptr = new symengine.DenseMatrix(0, 0, v_)
+                raise ValueError("sizes don't match.")
+            else:
+                self.thisptr = new symengine.DenseMatrix(0, 0, v_)
+        else:
+            self.thisptr = new symengine.DenseMatrix(row, v_.size() / row, v_)
 
     def __repr__(self):
         return self.__str__()
@@ -1263,6 +1417,10 @@ cdef class DenseMatrix(MatrixBase):
         b = sympify(b)
         if isinstance(a, MatrixBase):
             if isinstance(b, MatrixBase):
+                if (a.shape == (0, 0)):
+                    return b
+                if (b.shape == (0, 0)):
+                    return a
                 if (a.shape != b.shape):
                     raise ShapeError("Invalid shapes for matrix addition. Got %s %s" % (a.shape, b.shape))
                 return a.add_matrix(b)
@@ -1301,42 +1459,110 @@ cdef class DenseMatrix(MatrixBase):
         return self.mul_scalar(-1)
 
     def __getitem__(self, item):
-        s = [0, 0, 0, 0]
         if isinstance(item, slice):
-            #TODO: support step in slice
-            s[0], s[1] = self._get_slice(item)
-            s[2], s[3] = 0, self.ncols() - 1
+            if (self.ncols() == 0 or self.nrows() == 0):
+                return []
+            return [self.get(i // self.ncols(), i % self.ncols()) for i in range(*item.indices(len(self)))]
         elif isinstance(item, int):
-            return self.get(item // self.nrows(), item % self.nrows())
+            return self.get(item // self.ncols(), item % self.ncols())
         elif isinstance(item, tuple):
             if isinstance(item[0], int) and isinstance(item[1], int):
                 return self.get(item[0], item[1])
             else:
+                s = [0, 0, 0, 0, 0, 0]
                 for i in (0, 1):
                     if isinstance(item[i], slice):
-                        s[2*i], s[2*i+1] = self._get_slice(item[i])
+                        s[i], s[i+2], s[i+4] = item[i].indices(self.nrows() if i == 0 else self.ncols())
                     else:
-                        s[2*i], s[2*i+1] = item[i], item[i]
+                        s[i], s[i+2], s[i+4] = item[i], item[i] + 1, 1
+                if (s[0] < 0 or s[0] > self.rows or s[0] >= s[2] or s[2] < 0 or s[2] > self.rows):
+                    raise IndexError
+                if (s[1] < 0 or s[1] > self.cols or s[1] >= s[3] or s[3] < 0 or s[3] > self.cols):
+                    raise IndexError
+                return self._submatrix(*s)
         else:
             raise NotImplementedError
-        return self.submatrix(*s)
 
     def __setitem__(self, key, value):
+        cdef unsigned k, l
         if isinstance(key, int):
-            self.set(key // self.nrows(), key % self.ncols(), value)
-            return
+            self.set(key // self.ncols(), key % self.ncols(), value)
+        elif isinstance(key, slice):
+            k = 0
+            for i in range(*key.indices(len(self))):
+                self.set(i // self.ncols(), i % self.ncols(), value[k])
+                k = k + 1
         elif isinstance(key, tuple):
-            if isinstance(key[0], int) and isinstance(key[1], int):
-                self.set(key[0], key[1], value)
-                return
-            #TODO: support slicing
-        raise NotImplementedError
+            if isinstance(key[0], int):
+                if isinstance(key[1], int):
+                    self.set(key[0], key[1], value)
+                else:
+                    k = 0
+                    for i in range(*key[1].indices(self.cols)):
+                        self.set(key[0], i, value[k])
+                        k = k + 1
+            else:
+                if isinstance(key[1], int):
+                    k = 0
+                    for i in range(*key[0].indices(self.rows)):
+                        self.set(i, key[1], value[k])
+                        k = k + 1
+                else:
+                    k = 0
+                    for i in range(*key[0].indices(self.rows)):
+                        l = 0
+                        for j in range(*key[1].indices(self.cols)):
+                            try:
+                                self.set(i, j, value[k, l])
+                            except TypeError:
+                                self.set(i, j, value[k][l])
+                            l = l + 1
+                        k = k + 1
+        else:
+            raise NotImplementedError
+
+    def row_join(self, rhs):
+        cdef DenseMatrix o = sympify(rhs)
+        if self.rows != o.rows:
+            raise ShapeError("`self` and `rhs` must have the same number of rows.")
+        cdef DenseMatrix result = zeros(self.rows, self.cols + o.cols)
+        for i in range(self.rows):
+            for j in range(self.cols):
+                result[i, j] = self[i, j]
+        for i in range(o.rows):
+            for j in range(o.cols):
+                result[i, j + self.cols] = o[i, j]
+        return result
+
+    def col_join(self, bott):
+        cdef DenseMatrix o = sympify(bott)
+        if self.cols != o.cols:
+            raise ShapeError("`self` and `rhs` must have the same number of columns.")
+        cdef DenseMatrix result = zeros(self.rows + o.rows, self.cols)
+        for i in range(self.rows):
+            for j in range(self.cols):
+                result[i, j] = self[i, j]
+        for i in range(o.rows):
+            for j in range(o.cols):
+                result[i + self.rows, j] = o[i, j]
+        return result
+
+    @property
+    def rows(self):
+        return self.nrows()
+
+    @property
+    def cols(self):
+        return self.ncols()
 
     def nrows(self):
         return deref(self.thisptr).nrows()
 
     def ncols(self):
         return deref(self.thisptr).ncols()
+
+    def __len__(self):
+        return self.nrows() * self.ncols()
 
     property shape:
         def __get__(self):
@@ -1357,16 +1583,6 @@ cdef class DenseMatrix(MatrixBase):
             raise IndexError
         if j < 0 or j >= nc:
             raise IndexError
-        return i, j
-
-    def _get_slice(self, slice):
-        i = slice.start
-        if i is None:
-            i = 0
-        if slice.stop is None:
-            j = self.ncols() - 1
-        else:
-            j = slice.stop - 1
         return i, j
 
     def get(self, i, j):
@@ -1437,14 +1653,40 @@ cdef class DenseMatrix(MatrixBase):
         deref(self.thisptr).transpose(deref(result.thisptr))
         return result
 
-    def submatrix(self, r_i, r_j, c_i, c_j):
-        r_i, c_i = self._get_index(r_i, c_i)
-        r_j, c_j = self._get_index(r_j, c_j)
-        return self._submatrix(r_i, r_j, c_i, c_j)
+    @property
+    def T(self):
+        return self.transpose()
 
-    def _submatrix(self, r_i, r_j, c_i, c_j):
-        result = DenseMatrix(r_j - r_i + 1, c_j - c_i + 1)
-        deref(self.thisptr).submatrix(r_i, r_j, c_i, c_j, deref(result.thisptr))
+    def applyfunc(self, f):
+        out = DenseMatrix(self)
+        for i in range(out.nrows()):
+            for j in range(out.ncols()):
+                e_ = out._set(i, j, f(out._get(i, j)))
+        return out
+
+    def diff(self, x):
+        cdef Basic x_ = sympify(x)
+        R = DenseMatrix(self.rows, self.cols)
+        symengine.diff(<const symengine.DenseMatrix &>deref(self.thisptr),
+                x_.thisptr, <symengine.DenseMatrix &>deref(R.thisptr))
+        return R
+
+    #TODO: implement this in C++
+    def subs(self, subs_dict):
+        return self.applyfunc(lambda y: y.subs(subs_dict))
+
+    @property
+    def free_symbols(self):
+        s = set()
+        for i in range(self.nrows()):
+            for j in range(self.ncols()):
+                s.update(self._get(i, j).free_symbols)
+        return s
+
+    def _submatrix(self, unsigned r_i, unsigned c_i, unsigned r_j, unsigned c_j, unsigned r_s=1, unsigned c_s=1):
+        r_j, c_j = r_j - 1, c_j - 1
+        result = DenseMatrix(((r_j - r_i) // r_s) + 1, ((c_j - c_i) // c_s) + 1)
+        deref(self.thisptr).submatrix(deref(result.thisptr), r_i, c_i, r_j, c_j, r_s, c_s)
         return result
 
     def LU(self):
@@ -1483,6 +1725,18 @@ cdef class DenseMatrix(MatrixBase):
 
         return x
 
+    def LUsolve(self, b):
+        b_ = sympify(b)
+        L, U = self.LU()
+        x = []
+        cdef DenseMatrix x_col, b_col
+        for i in range(b_.cols):
+            x_col = DenseMatrix(b_.rows, 1)
+            b_col = b_[:, i]
+            deref(self.thisptr).LU_solve(deref(b_col.thisptr), deref(x_col.thisptr))
+            x.append(x_col.T)
+        return DenseMatrix(x).T
+
     def FFLU(self):
         L = DenseMatrix(self.nrows(), self.ncols())
         U = DenseMatrix(self.nrows(), self.ncols(), [0]*self.nrows()*self.ncols())
@@ -1505,7 +1759,7 @@ cdef class DenseMatrix(MatrixBase):
 
     def jacobian(self, x):
         cdef DenseMatrix x_ = sympify(x)
-        R = DenseMatrix(self.nrows(), x.nrows(), [0]*self.nrows()*x.nrows())
+        R = DenseMatrix(self.nrows(), x.nrows())
         symengine.jacobian(<const symengine.DenseMatrix &>deref(self.thisptr),
                 <const symengine.DenseMatrix &>deref(x_.thisptr),
                 <symengine.DenseMatrix &>deref(R.thisptr))
@@ -1555,6 +1809,70 @@ cdef class DenseMatrix(MatrixBase):
                 out[ri*nc + ci] = symengine.eval_complex_double(deref(
                     <symengine.RCP[const symengine.Basic]>(deref(self.thisptr).get(ri, ci))))
 
+    def __iter__(self):
+        return DenseMatrixIter(self)
+
+    def as_mutable(self):
+        return self
+
+    def tolist(self):
+        return self[:]
+
+class DenseMatrixIter(object):
+
+    def __init__(self, d):
+        self.curr = -1
+        self.d = d
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        self.curr = self.curr + 1
+        if (self.curr < self.d.rows * self.d.cols):
+            return self.d._get(self.curr // self.d.cols, self.curr % self.d.cols)
+        else:
+            raise StopIteration
+
+    next = __next__
+
+Matrix = DenseMatrix
+
+cdef matrix_to_vec(DenseMatrix d, symengine.vec_basic& v):
+    cdef Basic e_
+    for i in range(d.nrows()):
+        for j in range(d.ncols()):
+            e_ = d._get(i, j)
+            v.push_back(e_.thisptr)
+
+def eye(n):
+    d = DenseMatrix(n, n)
+    symengine.eye(deref(symengine.static_cast_DenseMatrix(d.thisptr)), n, n, 0)
+    return d
+
+def diag(*values):
+    d = DenseMatrix(len(values), len(values))
+    cdef symengine.vec_basic V
+    cdef Basic B
+    for b in values:
+        B = sympify(b)
+        V.push_back(B.thisptr)
+    symengine.diag(deref(symengine.static_cast_DenseMatrix(d.thisptr)), V, 0)
+    return d
+
+def ones(rows, cols = None):
+    if cols is None:
+        cols = rows
+    d = DenseMatrix(rows, cols)
+    symengine.ones(deref(symengine.static_cast_DenseMatrix(d.thisptr)), rows, cols)
+    return d
+
+def zeros(rows, cols = None):
+    if cols is None:
+        cols = rows
+    d = DenseMatrix(rows, cols)
+    symengine.zeros(deref(symengine.static_cast_DenseMatrix(d.thisptr)), rows, cols)
+    return d
 
 cdef class Sieve:
     @staticmethod
@@ -1590,6 +1908,28 @@ cdef class Sieve_iterator:
 I = c2py(symengine.I)
 E = c2py(symengine.E)
 pi = c2py(symengine.pi)
+
+def diff(ex, x):
+    return sympify(ex).diff(x)
+
+def expand(x):
+    return sympify(x).expand()
+
+def add(*values):
+    cdef symengine.vec_basic v_
+    cdef Basic e
+    for e_ in values:
+        e = sympify(e_)
+        v_.push_back(e.thisptr)
+    return c2py(symengine.add(v_))
+
+def mul(*values):
+    cdef symengine.vec_basic v_
+    cdef Basic e
+    for e_ in values:
+        e = sympify(e_)
+        v_.push_back(e.thisptr)
+    return c2py(symengine.mul(v_))
 
 def sin(x):
     cdef Basic X = sympify(x)

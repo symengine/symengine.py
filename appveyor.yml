@@ -60,7 +60,7 @@ install:
 
 - set PATH=C:\Python%PYTHON_VERSION%;C:\Python%PYTHON_VERSION%\Scripts;%PATH%
 - pip install nose pytest sympy
-- pip install --install-option="--no-cython-compile" cython
+- pip install --install-option="--no-cython-compile" cython==0.23
 
 - set /p commit=<symengine_version.txt
 - cd symengine-cpp
