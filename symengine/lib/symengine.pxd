@@ -256,6 +256,9 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
 
     RCP[const Basic] expand(RCP[const Basic] &o) nogil except +
 
+cdef extern from "<symengine/subs.h>" namespace "SymEngine":
+    RCP[const Basic] msubs (RCP[const Basic] &x, const map_basic_basic &x) nogil
+
 cdef extern from "<symengine/derivative.h>" namespace "SymEngine":
     RCP[const Basic] diff "SymEngine::sdiff"(RCP[const Basic] &arg, RCP[const Basic] &x) nogil except +
 
