@@ -489,6 +489,23 @@ cdef class Basic(object):
             raise TypeError("subs() takes one or two arguments (%d given)" % \
                     len(args))
 
+    def msubs(Basic self not None, *args):
+        if len(args) == 2:
+            arg = {args[0]: args[1]}
+        else:
+            arg = args[0]
+        cdef _DictBasic D
+        if isinstance(arg, DictBasic):
+          D = arg
+          return c2py(symengine.msubs(self.thisptr, D.c))
+        cdef symengine.map_basic_basic d
+        cdef Basic K, V
+        for k in arg:
+            K = sympify(k)
+            V = sympify(arg[k])
+            d[K.thisptr] = V.thisptr
+        return c2py(symengine.msubs(self.thisptr, d))
+
     def n(self, prec = 53, real = False):
         if real:
             return eval_real(self, prec)

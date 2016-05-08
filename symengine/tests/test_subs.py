@@ -36,3 +36,10 @@ def test_f():
     assert e.subs({f: y}) == (x+y)**3
     e = e.expand()
     assert e.subs({f: y}) == ((x+y)**3).expand()
+
+def test_msubs():
+    x = Symbol("x")
+    y = Symbol("y")
+    f = function_symbol("f", x)
+    assert f.msubs({f: y}) == y
+    assert f.diff(x).msubs({f: y}) == f.diff(x)
