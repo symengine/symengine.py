@@ -698,8 +698,9 @@ cdef class Integer(Number):
     def __cinit__(self, i = None):
         if i is None:
             return
+        i = int(i)
         cdef int i_
-        cdef symengine.mpz_class i__
+        cdef symengine.integer_class i__
         cdef string tmp
         try:
             # Try to convert "i" to int
@@ -709,7 +710,7 @@ cdef class Integer(Number):
             # Too big, need to use mpz
             int_ok = False
             tmp = str(i).encode("utf-8")
-            i__ = symengine.mpz_class(tmp, 10)
+            i__ = symengine.integer_class(tmp, 10)
         # Note: all other exceptions are left intact
         if int_ok:
             self.thisptr = symengine.make_rcp_Integer(i_)

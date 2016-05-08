@@ -11,11 +11,12 @@ def test_integer_long():
     assert str(i) == "123434444444444444444"
 
 def test_integer_string():
-    raises(TypeError, lambda: Integer("133"))
+    assert Integer("133") == 133
 
 def test_smallfloat_valid():
     i = Integer(7.5)
     assert str(i) == "7"
 
-def test_bigfloat_invalid():
-    raises(ValueError, lambda: Integer(13333333333333333.5))
+def test_bigfloat_valid():
+    i = Integer(13333333333333334.5)
+    assert str(i) == "13333333333333334"
