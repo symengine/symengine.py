@@ -489,6 +489,8 @@ cdef class Basic(object):
             raise TypeError("subs() takes one or two arguments (%d given)" % \
                     len(args))
 
+    xreplace = subs
+
     def msubs(Basic self not None, *args):
         if len(args) == 2:
             arg = {args[0]: args[1]}
