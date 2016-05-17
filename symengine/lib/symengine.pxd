@@ -7,7 +7,7 @@ from libcpp.pair cimport pair
 
 include "config.pxi"
 
-cdef extern from 'gmpxx.h':
+cdef extern from 'symengine/mp_class.h' namespace "SymEngine":
     ctypedef unsigned long mp_limb_t
     ctypedef struct __mpz_struct:
         pass
@@ -16,17 +16,18 @@ cdef extern from 'gmpxx.h':
     ctypedef __mpz_struct mpz_t[1]
     ctypedef __mpq_struct mpq_t[1]
 
-    cdef cppclass mpz_class:
-        mpz_class()
-        mpz_class(int i)
-        mpz_class(mpz_class)
-        mpz_class(mpz_t)
-        mpz_class(const string &s, int base) except +
-        mpz_t get_mpz_t()
-    cdef cppclass mpq_class:
-        mpq_class()
-        mpq_class(mpq_t)
-        mpq_t get_mpq_t()
+    cdef cppclass integer_class:
+        integer_class()
+        integer_class(int i)
+        integer_class(integer_class)
+        integer_class(mpz_t)
+        integer_class(const string &s, int base) except +
+    mpz_t get_mpz_t(integer_class &a)
+    const mpz_t get_mpz_t(const integer_class &a)
+    cdef cppclass rational_class:
+        rational_class()
+        rational_class(mpq_t)
+    const mpq_t get_mpq_t(const rational_class &a)
 
 cdef extern from "<set>" namespace "std":
 # Cython's libcpp.set does not support two template arguments to set.
@@ -286,16 +287,16 @@ cdef extern from "<symengine/pywrapper.h>" namespace "SymEngine":
 cdef extern from "<symengine/integer.h>" namespace "SymEngine":
     cdef cppclass Integer(Number):
         Integer(int i) nogil
-        Integer(mpz_class i) nogil
+        Integer(integer_class i) nogil
         int compare(const Basic &o) nogil
-        mpz_class as_mpz() nogil
+        integer_class as_mpz() nogil
     cdef RCP[const Integer] integer(int i) nogil
-    cdef RCP[const Integer] integer(mpz_class i) nogil
+    cdef RCP[const Integer] integer(integer_class i) nogil
 
 cdef extern from "<symengine/rational.h>" namespace "SymEngine":
     cdef cppclass Rational(Number):
-        mpq_class as_mpq() nogil
-    cdef RCP[const Number] from_mpq "SymEngine::Rational::from_mpq"(mpq_class) nogil
+        rational_class as_mpq() nogil
+    cdef RCP[const Number] from_mpq "SymEngine::Rational::from_mpq"(rational_class r) nogil
     cdef void get_num_den(const Rational &rat, const Ptr[RCP[Integer]] &num,
                      const Ptr[RCP[Integer]] &den) nogil
 
@@ -364,7 +365,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     RCP[const Basic] make_rcp_Symbol "SymEngine::make_rcp<const SymEngine::Symbol>"(string name) nogil
     RCP[const Basic] make_rcp_Constant "SymEngine::make_rcp<const SymEngine::Constant>"(string name) nogil
     RCP[const Basic] make_rcp_Integer "SymEngine::make_rcp<const SymEngine::Integer>"(int i) nogil
-    RCP[const Basic] make_rcp_Integer "SymEngine::make_rcp<const SymEngine::Integer>"(mpz_class i) nogil
+    RCP[const Basic] make_rcp_Integer "SymEngine::make_rcp<const SymEngine::Integer>"(integer_class i) nogil
     RCP[const Basic] make_rcp_Subs "SymEngine::make_rcp<const SymEngine::Subs>"(const RCP[const Basic] &arg, const map_basic_basic &x) nogil
     RCP[const Basic] make_rcp_Derivative "SymEngine::make_rcp<const SymEngine::Derivative>"(const RCP[const Basic] &arg, const multiset_basic &x) nogil
     RCP[const Basic] make_rcp_FunctionWrapper "SymEngine::make_rcp<const SymEngine::FunctionWrapper>"(void* obj, string name, string hash_, const vec_basic &arg, \
@@ -678,7 +679,7 @@ cdef extern from "<symengine/visitor.h>" namespace "SymEngine":
     set_basic free_symbols(const Basic &b) nogil except +
 
 cdef extern from "<utility>" namespace "std":
-    cdef mpz_class std_move_mpz "std::move" (mpz_class) nogil
+    cdef integer_class std_move_mpz "std::move" (integer_class) nogil
     IF HAVE_SYMENGINE_MPFR:
         cdef mpfr_class std_move_mpfr "std::move" (mpfr_class) nogil
     IF HAVE_SYMENGINE_MPC:
