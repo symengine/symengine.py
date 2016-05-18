@@ -43,3 +43,10 @@ def test_msubs():
     f = function_symbol("f", x)
     assert f.msubs({f: y}) == y
     assert f.diff(x).msubs({f: y}) == f.diff(x)
+
+def test_xreplace()
+    x = Symbol("x")
+    y = Symbol("y")
+    f = sin(cos(x))
+    assert f.xreplace({x: y}) == sin(cos(y))
+
