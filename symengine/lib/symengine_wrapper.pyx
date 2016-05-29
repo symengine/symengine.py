@@ -1,5 +1,3 @@
-from Cython.Build.Inline import RuntimeCompiledFunction
-
 from cython.operator cimport dereference as deref, preincrement as inc
 cimport symengine
 from symengine cimport RCP, pair, map_basic_basic, umap_int_basic, umap_int_basic_iterator, rcp_const_basic, std_pair_short_rcp_const_basic, rcp_const_seriescoeffinterface
