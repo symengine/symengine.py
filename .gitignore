@@ -21,6 +21,7 @@ symengine/lib/symengine_wrapper.cpp
 
 # Config Files
 symengine/lib/config.pxi
+symengine/version.py
 
 # Python build files
 build*

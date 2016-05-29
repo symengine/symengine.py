@@ -1,0 +1,5 @@
+version = @VERSION@
+release = @ISRELEASED@
+
+if not release:
+    version = version + '.dev'

@@ -62,6 +62,14 @@ message("HAVE_SYMENGINE_MPC : ${HAVE_SYMENGINE_MPC}")
 message("HAVE_SYMENGINE_PIRANHA : ${HAVE_SYMENGINE_PIRANHA}")
 message("HAVE_SYMENGINE_FLINT : ${HAVE_SYMENGINE_FLINT}")
 
+set(MAJOR 0)
+set(MINOR 1)
+set(MICRO 0)
+set(ISRELEASED False)
+set(VERSION '${MAJOR}.${MINOR}.${MICRO}')
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/symengine/version.py.in ${CMAKE_CURRENT_BINARY_DIR}/symengine/version.py)
+
 message("Copying source of python wrappers into: ${CMAKE_CURRENT_BINARY_DIR}")
 file(COPY symengine/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/symengine)
 
