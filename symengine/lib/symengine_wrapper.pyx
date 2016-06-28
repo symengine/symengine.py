@@ -1431,47 +1431,47 @@ cdef class DenseMatrix(MatrixBase):
         return deref(self.thisptr).__str__().decode("utf-8")
 
     def __add__(a, b):
-        a = sympify(a)
-        b = sympify(b)
-        if isinstance(a, MatrixBase):
-            if isinstance(b, MatrixBase):
-                if (a.shape == (0, 0)):
-                    return b
-                if (b.shape == (0, 0)):
-                    return a
-                if (a.shape != b.shape):
-                    raise ShapeError("Invalid shapes for matrix addition. Got %s %s" % (a.shape, b.shape))
-                return a.add_matrix(b)
-            else:
-                return a.add_scalar(b)
-        else:
-            return b.add_scalar(a)
+        a = sympify(a, False)
+        b = sympify(b, False)
+        if not isinstance(a, MatrixBase) or not isinstance(b, MatrixBase):
+            return NotImplemented
+        cdef MatrixBase a_ = a
+        cdef MatrixBase b_ = b
+        if (a_.shape == (0, 0)):
+            return b_
+        if (b_.shape == (0, 0)):
+            return a_
+        if (a_.shape != b_.shape):
+            raise ShapeError("Invalid shapes for matrix addition. Got %s %s" % (a_.shape, b_.shape))
+        return a_.add_matrix(b_)
 
     def __mul__(a, b):
-        a = sympify(a)
-        b = sympify(b)
+        a = sympify(a, False)
+        b = sympify(b, False)
         if isinstance(a, MatrixBase):
             if isinstance(b, MatrixBase):
                 if (a.ncols() != b.nrows()):
                     raise ShapeError("Invalid shapes for matrix multiplication. Got %s %s" % (a.shape, b.shape))
                 return a.mul_matrix(b)
-            else:
+            elif isinstance(b, Basic):
                 return a.mul_scalar(b)
-        else:
+            else:
+                return NotImplemented
+        elif isinstance(a, Basic):
             return b.mul_scalar(a)
+        else:
+            return NotImplemented
 
     def __sub__(a, b):
-        a = sympify(a)
-        b = sympify(b)
-        if isinstance(a, MatrixBase):
-            if isinstance(b, MatrixBase):
-                if (a.shape != b.shape):
-                    raise ShapeError("Invalid shapes for matrix subtraction. Got %s %s" % (a.shape, b.shape))
-                return a.add_matrix(-b)
-            else:
-                return a.add_scalar(-b)
-        else:
-            return (-b).add_scalar(a)
+        a = sympify(a, False)
+        b = sympify(b, False)
+        if not isinstance(a, MatrixBase) or not isinstance(b, MatrixBase):
+            return NotImplemented
+        cdef MatrixBase a_ = a
+        cdef MatrixBase b_ = b
+        if (a_.shape != b_.shape):
+            raise ShapeError("Invalid shapes for matrix subtraction. Got %s %s" % (a.shape, b.shape))
+        return a_.add_matrix(-b_)
 
     def __neg__(self):
         return self.mul_scalar(-1)
