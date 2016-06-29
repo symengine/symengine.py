@@ -48,7 +48,7 @@ def test_quotient_mod_error():
 
 def test_mod_inverse():
     mod_inverse(2, 7) == 4
-    mod_inverse(3, 0) == None
+    mod_inverse(0, 3) == None
     mod_inverse(4, 6) == None
 
 def test_crt():
