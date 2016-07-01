@@ -204,7 +204,6 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     cdef cppclass Basic:
         string __str__() nogil except +
         unsigned int hash() nogil except +
-        RCP[const Basic] subs(map_basic_basic &x) nogil except +
         vec_basic get_args() nogil
         int __cmp__(const Basic &o) nogil
     ctypedef RCP[const Basic] rcp_const_basic "SymEngine::RCP<const SymEngine::Basic>"
@@ -259,6 +258,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
 
 cdef extern from "<symengine/subs.h>" namespace "SymEngine":
     RCP[const Basic] msubs (RCP[const Basic] &x, const map_basic_basic &x) nogil
+    RCP[const Basic] ssubs (RCP[const Basic] &x, const map_basic_basic &x) nogil
 
 cdef extern from "<symengine/derivative.h>" namespace "SymEngine":
     RCP[const Basic] diff "SymEngine::sdiff"(RCP[const Basic] &arg, RCP[const Basic] &x) nogil except +
@@ -599,6 +599,8 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
     DenseMatrix* static_cast_DenseMatrix "static_cast<SymEngine::DenseMatrix*>"(const MatrixBase *a)
     void inverse_FFLU "SymEngine::inverse_fraction_free_LU"(const DenseMatrix &A,
         DenseMatrix &B) nogil
+    void pivoted_LU (const DenseMatrix &A, DenseMatrix &L, DenseMatrix &U, vector[int] &P) nogil
+    void pivoted_LU_solve (const DenseMatrix &A, const DenseMatrix &b, DenseMatrix &x) nogil
     void inverse_GJ "SymEngine::inverse_gauss_jordan"(const DenseMatrix &A,
         DenseMatrix &B) nogil
     void FFLU_solve "SymEngine::fraction_free_LU_solve"(const DenseMatrix &A,
@@ -611,10 +613,10 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
             const DenseMatrix &x, DenseMatrix &result) nogil except +
     void diff "SymEngine::sdiff"(const DenseMatrix &A,
             RCP[const Basic] &x, DenseMatrix &result) nogil except +
-    void eye (DenseMatrix &A, unsigned N, unsigned M, int k) nogil
+    void eye (DenseMatrix &A, int k) nogil
     void diag(DenseMatrix &A, vec_basic &v, int k) nogil
-    void ones(DenseMatrix &A, unsigned rows, unsigned cols) nogil
-    void zeros(DenseMatrix &A, unsigned rows, unsigned cols) nogil
+    void ones(DenseMatrix &A) nogil
+    void zeros(DenseMatrix &A) nogil
 
 cdef extern from "<symengine/ntheory.h>" namespace "SymEngine":
     int probab_prime_p(const Integer &a, int reps)
