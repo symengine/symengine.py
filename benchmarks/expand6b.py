@@ -5,9 +5,9 @@ sys.path.append("..")
 import os
 from timeit import default_timer as clock
 if os.environ.get("USE_SYMENGINE"):
-    from symengine import symbols, expand
+    from symengine import symbols, expand, sin
 else:
-    from sympy import symbols, expand
+    from sympy import symbols, expand, sin
 
 def run_benchmark(n):
     a0 = symbols("a0")

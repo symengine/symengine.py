@@ -172,9 +172,9 @@ def test_add_scalar():
 
     i5 = Integer(5)
     assert A.add_scalar(i5) == DenseMatrix(2, 2, [6, 7, 8, 9])
-    assert A + 5 == DenseMatrix(2, 2, [6, 7, 8, 9])
-    assert 5 + A == DenseMatrix(2, 2, [6, 7, 8, 9])
-    assert a + A == DenseMatrix(2, 2, [a + 1, a + 2, a + 3, a + 4])
+    
+    raises(TypeError, lambda: A + 5)
+    raises(TypeError, lambda: 5 + A)
 
 def test_mul_scalar():
     A = DenseMatrix(2, 2, [1, 2, 3, 4])
@@ -197,12 +197,12 @@ def test_sub():
     A = DenseMatrix(2, 2, [1, 2, 3, 4])
     B = DenseMatrix(2, 2, [0, -1, -2, -3])
     a = Symbol("a")
-    assert A - 5 == DenseMatrix(2, 2, [-4, -3, -2, -1])
-    assert a - A == DenseMatrix(2, 2, [a - 1, a - 2, a - 3, a - 4])
     assert A - B == DenseMatrix(2, 2, [1, 3, 5, 7])
 
     C = DenseMatrix(2, 1, [1, 2])
     raises(ShapeError, lambda: A - C)
+    raises(TypeError, lambda: A - 5)
+    raises(TypeError, lambda: 5 - A)
 
 def test_transpose():
     A = DenseMatrix(3, 3, [1, 2, 3, 4, 5, 6, 7, 8, 9])
