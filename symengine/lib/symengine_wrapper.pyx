@@ -1923,9 +1923,17 @@ cdef class Sieve_iterator:
         else:
             return n
 
+
 I = c2py(symengine.I)
 E = c2py(symengine.E)
 pi = c2py(symengine.pi)
+
+def module_cleanup():
+    global I, E, pi, sympy_module, sage_module
+    del I, E, pi, sympy_module, sage_module
+
+import atexit
+atexit.register(module_cleanup)
 
 def diff(ex, x):
     return sympify(ex).diff(x)
