@@ -677,7 +677,7 @@ cdef extern from "<symengine/ntheory.h>" namespace "SymEngine":
         unsigned next_prime() nogil
 
 cdef extern from "<symengine/visitor.h>" namespace "SymEngine":
-    bool has_symbol(const Basic &b, const RCP[const Symbol] &x) nogil except +
+    bool has_symbol(const Basic &b, const Symbol &x) nogil except +
     set_basic free_symbols(const Basic &b) nogil except +
 
 cdef extern from "<utility>" namespace "std":
