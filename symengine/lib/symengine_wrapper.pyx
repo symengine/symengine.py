@@ -2830,6 +2830,14 @@ def LambdifyCSE(args, exprs, real=True, cse=None, concatenate=None):
 
     return cb
 
+def has_symbol(obj, symbol=None):
+    cdef Basic b = sympify(obj)
+    cdef Symbol s = sympify(symbol)
+    if (not symbol):
+        return not b.free_symbols.empty()
+    else:
+        return symengine.has_symbol(deref(b.thisptr),
+                deref(symengine.rcp_static_cast_Symbol(s.thisptr)))
 
 # Turn on nice stacktraces:
 symengine.print_stack_on_segfault()
