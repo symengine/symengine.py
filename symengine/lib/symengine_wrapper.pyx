@@ -1,6 +1,6 @@
 from cython.operator cimport dereference as deref, preincrement as inc
 cimport symengine
-from symengine cimport RCP, pair, map_basic_basic, umap_int_basic, umap_int_basic_iterator, rcp_const_basic, std_pair_short_rcp_const_basic, rcp_const_seriescoeffinterface
+from symengine cimport RCP, pair, map_basic_basic, umap_int_basic, umap_int_basic_iterator, umap_basic_num, umap_basic_num_iterator, rcp_const_basic, std_pair_short_rcp_const_basic, rcp_const_seriescoeffinterface
 from libcpp cimport bool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -592,6 +592,11 @@ cdef class Basic(object):
     def simplify(self, *args, **kwargs):
         return sympify(self._sympy_().simplify(*args, **kwargs))
 
+    def as_coefficients_dict(self):
+        d = collections.defaultdict(int)
+        d[self] = 1
+        return d
+
 def series(ex, x=None, x0=0, n=6, method='sympy', removeO=False):
     # TODO: check for x0 an infinity, see sympy/core/expr.py
     # TODO: nonzero x0
@@ -978,6 +983,21 @@ cdef class Add(Basic):
     def func(self, *values):
         return add(*values)
 
+    def as_coefficients_dict(self):
+        cdef RCP[const symengine.Add] X = symengine.rcp_static_cast_Add(self.thisptr)
+        cdef umap_basic_num umap
+        cdef umap_basic_num_iterator iter, iterend
+        d = collections.defaultdict(int)
+        d[Integer(1)] = c2py(<RCP[const symengine.Basic]>(deref(X).get_coef()))
+        umap = deref(X).get_dict()
+        iter = umap.begin()
+        iterend = umap.end()
+        while iter != iterend:
+            d[c2py(<RCP[const symengine.Basic]>(deref(iter).first))] =\
+                    c2py(<RCP[const symengine.Basic]>(deref(iter).second))
+            inc(iter)
+        return d
+
 cdef class Mul(Basic):
 
     @property
@@ -996,6 +1016,17 @@ cdef class Mul(Basic):
 
     def func(self, *values):
         return mul(*values)
+
+    def as_coefficients_dict(self):
+        cdef RCP[const symengine.Mul] X = symengine.rcp_static_cast_Mul(self.thisptr)
+        cdef RCP[const symengine.Integer] one = symengine.integer(1)
+        cdef map_basic_basic dict = deref(X).get_dict()
+        d = collections.defaultdict(int)
+        d[c2py(<RCP[const symengine.Basic]>symengine.mul_from_dict(\
+                symengine.rcp_static_cast_Number_Int(one),
+                symengine.std_move_map_basic_basic(dict)))] =\
+                c2py(<RCP[const symengine.Basic]>deref(X).get_coef())
+        return d
 
 cdef class Pow(Basic):
 

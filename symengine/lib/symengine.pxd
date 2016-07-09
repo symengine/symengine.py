@@ -134,6 +134,7 @@ cdef extern from "<symengine/symengine_rcp.h>" namespace "SymEngine":
     RCP[const Rational] rcp_static_cast_Rational "SymEngine::rcp_static_cast<const SymEngine::Rational>"(RCP[const Basic] &b) nogil
     RCP[const Complex] rcp_static_cast_Complex "SymEngine::rcp_static_cast<const SymEngine::Complex>"(RCP[const Basic] &b) nogil
     RCP[const Number] rcp_static_cast_Number "SymEngine::rcp_static_cast<const SymEngine::Number>"(RCP[const Basic] &b) nogil
+    const RCP[const Number] rcp_static_cast_Number_Int "SymEngine::rcp_static_cast<const SymEngine::Number>"(RCP[const Integer] &b) nogil
     RCP[const Add] rcp_static_cast_Add "SymEngine::rcp_static_cast<const SymEngine::Add>"(RCP[const Basic] &b) nogil
     RCP[const Mul] rcp_static_cast_Mul "SymEngine::rcp_static_cast<const SymEngine::Mul>"(RCP[const Basic] &b) nogil
     RCP[const Pow] rcp_static_cast_Pow "SymEngine::rcp_static_cast<const SymEngine::Pow>"(RCP[const Basic] &b) nogil
@@ -207,8 +208,11 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
         vec_basic get_args() nogil
         int __cmp__(const Basic &o) nogil
     ctypedef RCP[const Basic] rcp_const_basic "SymEngine::RCP<const SymEngine::Basic>"
+    ctypedef RCP[const Number] rcp_const_number "SymEngine::RCP<const SymEngine::Number>"
     ctypedef unordered_map[int, rcp_const_basic] umap_int_basic "SymEngine::umap_int_basic"
     ctypedef unordered_map[int, rcp_const_basic].iterator umap_int_basic_iterator "SymEngine::umap_int_basic::iterator"
+    ctypedef unordered_map[rcp_const_basic, rcp_const_number] umap_basic_num "SymEngine::umap_basic_num"
+    ctypedef unordered_map[rcp_const_basic, rcp_const_number].iterator umap_basic_num_iterator "SymEngine::umap_basic_num::iterator"
 
     bool eq(const Basic &a, const Basic &b) nogil except +
     bool neq(const Basic &a, const Basic &b) nogil except +
@@ -335,6 +339,8 @@ cdef extern from "<symengine/add.h>" namespace "SymEngine":
 
     cdef cppclass Add(Basic):
         void as_two_terms(const Ptr[RCP[Basic]] &a, const Ptr[RCP[Basic]] &b)
+        RCP[const Number] get_coef()
+        const umap_basic_num &get_dict()
 
 cdef extern from "<symengine/mul.h>" namespace "SymEngine":
     cdef RCP[const Basic] mul(RCP[const Basic] &a, RCP[const Basic] &b) nogil except+
@@ -344,6 +350,9 @@ cdef extern from "<symengine/mul.h>" namespace "SymEngine":
 
     cdef cppclass Mul(Basic):
         void as_two_terms(const Ptr[RCP[Basic]] &a, const Ptr[RCP[Basic]] &b)
+        RCP[const Number] get_coef()
+        const map_basic_basic &get_dict()
+    cdef RCP[const Mul] mul_from_dict "SymEngine::Mul::from_dict"(const RCP[const Number] &coef, map_basic_basic &&d) nogil
 
 cdef extern from "<symengine/pow.h>" namespace "SymEngine":
     cdef RCP[const Basic] pow(RCP[const Basic] &a, RCP[const Basic] &b) nogil except+
@@ -686,6 +695,7 @@ cdef extern from "<utility>" namespace "std":
         cdef mpfr_class std_move_mpfr "std::move" (mpfr_class) nogil
     IF HAVE_SYMENGINE_MPC:
         cdef mpc_class std_move_mpc "std::move" (mpc_class) nogil
+    cdef map_basic_basic std_move_map_basic_basic "std::move" (map_basic_basic) nogil
 
 cdef extern from "<symengine/eval_double.h>" namespace "SymEngine":
     double eval_double(const Basic &b) nogil except +

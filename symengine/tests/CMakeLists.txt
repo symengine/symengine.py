@@ -3,6 +3,7 @@ install(FILES __init__.py
     test_arit.py
     test_dict_basic.py
     test_eval.py
+    test_expr.py
     test_functions.py
     test_integer.py
     test_matrices.py
