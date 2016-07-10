@@ -4,7 +4,7 @@ from symengine.utilities import raises
 def test_as_coefficients_dict():
     x = Symbol('x')
     y = Symbol('y')
-    check = [x, y, x*y, 1]
+    check = [x, y, x*y, Integer(1)]
     assert [(3*x + 2*x + y + 3).as_coefficients_dict()[i] for i in check] == \
         [5, 1, 0, 3]
     assert [(3*x*y).as_coefficients_dict()[i] for i in check] == \
