@@ -2489,11 +2489,6 @@ def powermod_list(a, b, m):
         s.append(c2py(<RCP[const symengine.Basic]>(v[i])))
     return s
 
-def eval_double(basic):
-    cdef Basic b = sympify(basic)
-    return symengine.eval_double(deref(b.thisptr))
-
-
 cdef size_t _size(n):
     try:
         return n.size
