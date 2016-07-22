@@ -672,14 +672,17 @@ cdef class Symbol(Basic):
 def symarray(prefix, shape, **kwargs):
     """ Creates an nd-array of symbols
 
-    Note that this function requires NumPy
-
     Parameters
     ----------
     prefix: str
     shape: tuple
-    Symbol: callable
-        (defualt :func:`Symbol`)
+    \*\*kwargs:
+        Passed on to :class:`Symbol`.
+
+    Notes
+    -----
+    This function requires NumPy.
+
     """
     import numpy as np
     arr = np.empty(shape, dtype=object)
@@ -2721,14 +2724,14 @@ cdef class Lambdify(object):
         except TypeError:
             inp = tuple(inp)
             inp_shape = (len(inp),)
-
         inp_size = reduce(mul, inp_shape)
         if inp_size % self.inp_size != 0:
             raise ValueError("Broadcasting failed")
         nbroadcast = inp_size // self.inp_size
-        new_out_shape = ((nbroadcast,) if nbroadcast > 1 else ()) + self.out_shape
+        if nbroadcast > 1 and self.inp_size == 1 and inp_shape[-1] != 1:  # Implicit reshape
+            inp_shape = inp_shape + (1,)
+        new_out_shape = inp_shape[:-1] + self.out_shape
         new_out_size = nbroadcast * self.out_size
-
         if use_numpy is None:
             try:
                 import numpy as np

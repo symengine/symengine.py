@@ -155,6 +155,21 @@ def test_broadcast():
     assert np.allclose(dists, 1)
 
 
+def test_broadcast_multiple_extra_dimensions():
+    if not HAVE_NUMPY:  # nosetests work-around
+        return
+    inp = np.arange(12.).reshape((4, 3, 1))
+    x = se.symbols('x')
+    cb = se.Lambdify([x], [x**2, x**3])
+    assert np.allclose(cb([inp[0, 2]]), [4, 8])
+    out = cb(inp)
+    assert out.shape == (4, 3, 2)
+    assert abs(out[2, 1, 0] - 7**2) < 1e-14
+    assert abs(out[2, 1, 1] - 7**3) < 1e-14
+    assert abs(out[-1, -1, 0] - 11**2) < 1e-14
+    assert abs(out[-1, -1, 1] - 11**3) < 1e-14
+
+
 def _get_cse_exprs():
     import sympy as sp
     args = x, y = sp.symbols('x y')
@@ -272,6 +287,18 @@ def test_2dim_Matrix_broadcast_numpy():
 
 
 #@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+def test_2dim_Matrix_broadcast_multiple_extra_dim():
+    if not HAVE_NUMPY:  # nosetests work-around
+        return
+    l, check = _get_1_to_2by3_matrix()
+    inp = np.arange(1, 4*5*6+1).reshape((4, 5, 6))
+    out = l(inp)
+    assert out.shape == (4, 5, 6, 2, 3)
+    for i, j, k in itertools.product(range(4), range(5), range(6)):
+        check(out[i, j, k, ...], (inp[i, j, k],))
+
+
+#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_jacobian():
     if not HAVE_NUMPY:  # nosetests work-around
         return
@@ -285,6 +312,26 @@ def test_jacobian():
     lmb(inp, out)
     assert np.allclose(out, [[3 * X**2 * Y, X**3],
                              [Y + 1, X + 1]])
+
+
+#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+def test_jacobian__broadcast():
+    if not HAVE_NUMPY:  # nosetests work-around
+        return
+    x, y = se.symbols('x, y')
+    args = se.DenseMatrix(2, 1, [x, y])
+    v = se.DenseMatrix(2, 1, [x**3 * y, (x+1)*(y+1)])
+    jac = v.jacobian(args)
+    lmb = se.Lambdify(args, jac)
+    out = np.empty((3, 2, 2))
+    inp0 = 7, 11
+    inp1 = 8, 13
+    inp2 = 5, 9
+    inp = np.array([inp0, inp1, inp2])
+    lmb(inp, out)
+    for idx, (X, Y) in enumerate([inp0, inp1, inp2]):
+        assert np.allclose(out[idx, ...], [[3 * X**2 * Y, X**3],
+                                           [Y + 1, X + 1]])
 
 
 #@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
