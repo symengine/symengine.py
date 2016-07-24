@@ -16,5 +16,6 @@ install(FILES __init__.py
     test_sympy_conv.py
     test_var.py
     test_lambdify.py
+    test_sympy_compat.py
     DESTINATION ${PY_PATH}
     )
