@@ -1,5 +1,5 @@
 from symengine.sympy_compat import (Integer, Rational, S, Basic, Add, Mul,
-    Pow, symbols, Symbol, log, sin)
+    Pow, symbols, Symbol, log, sin, zeros)
 
 def test_Integer():
     i = Integer(5)
@@ -43,10 +43,13 @@ def test_sin():
     i = sin(x)
     assert isinstance(i, sin)
 
-def test_sin():
+def test_log():
     x, y = symbols("x y")
     i = log(x, y)
     assert isinstance(i, Mul)
     i = log(x)
     assert isinstance(i, log)
+
+def test_zeros():
+    assert zeros(3, c=2).shape == (3, 2)
 

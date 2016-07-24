@@ -1938,17 +1938,17 @@ def diag(*values):
     symengine.diag(deref(symengine.static_cast_DenseMatrix(d.thisptr)), V, 0)
     return d
 
-def ones(rows, cols = None):
-    if cols is None:
-        cols = rows
-    d = DenseMatrix(rows, cols)
+def ones(r, c = None):
+    if c is None:
+        c = r
+    d = DenseMatrix(r, c)
     symengine.ones(deref(symengine.static_cast_DenseMatrix(d.thisptr)))
     return d
 
-def zeros(rows, cols = None):
-    if cols is None:
-        cols = rows
-    d = DenseMatrix(rows, cols)
+def zeros(r, c = None):
+    if c is None:
+        c = r
+    d = DenseMatrix(r, c)
     symengine.zeros(deref(symengine.static_cast_DenseMatrix(d.thisptr)))
     return d
 
