@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import (absolute_import, division, print_function)
 
+from symengine.utilities import raises
+
 import array
 import cmath
 from functools import reduce
@@ -111,6 +113,38 @@ def test_array_out():
     check(out2)
     out2[:] = -1
     assert np.allclose(out1[:], [-1]*len(exprs))
+
+
+#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires NumPy')
+def test_numpy_array_out_exceptions():
+    if not HAVE_NUMPY:  # nosetests work-around
+        return
+    import numpy as np
+    args, exprs, inp, check = _get_array()
+    lmb = se.Lambdify(args, exprs)
+
+    all_right = np.empty(len(exprs))
+    lmb(inp, all_right)
+
+    too_short = np.empty(len(exprs) - 1)
+    raises(ValueError, lambda: (lmb(inp, too_short)))
+
+    wrong_dtype = np.empty(len(exprs), dtype=int)
+    raises(TypeError, lambda: (lmb(inp, wrong_dtype)))
+
+    read_only = np.empty(len(exprs))
+    read_only.flags['WRITEABLE'] = False
+    raises(ValueError, lambda: (lmb(inp, read_only)))
+
+    all_right_broadcast = np.empty((2, len(exprs)))
+    inp_bcast = [[1, 2, 3], [4, 5, 6]]
+    lmb(np.array(inp_bcast), all_right_broadcast)
+
+    f_contig_broadcast = np.empty((2, len(exprs)), order='F')
+    raises(ValueError, lambda: (lmb(inp_bcast, f_contig_broadcast)))
+
+    improper_bcast = np.empty((3, len(exprs)))
+    raises(ValueError, lambda: (lmb(inp_bcast, improper_bcast)))
 
 
 def test_array_out_no_numpy():

@@ -2771,8 +2771,8 @@ cdef class Lambdify(object):
             reshape_out = len(new_out_shape) > 1
         else:
             if use_numpy:
-                out = np.asarray(out, dtype=np.float64 if
-                                 self.real else np.complex128)  # copy if needed
+                if out.dtype != (np.float64 if self.real else np.complex128):
+                    raise TypeError("Output array is of incorrect type")
                 if out.size < new_out_size:
                     raise ValueError("Incompatible size of output argument")
                 if not out.flags['C_CONTIGUOUS']:
@@ -2780,8 +2780,6 @@ cdef class Lambdify(object):
                 for idx, length in enumerate(out.shape[-len(self.out_shape)::-1]):
                     if length < self.out_shape[-idx]:
                         raise ValueError("Incompatible shape of output argument")
-                if out.dtype != np.float64:
-                    raise ValueError("Output argument dtype not float64: %s" % out.dtype)
                 if not out.flags['WRITEABLE']:
                     raise ValueError("Output argument needs to be writeable")
                 if out.ndim > 1:
