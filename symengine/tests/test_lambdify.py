@@ -3,9 +3,10 @@ from __future__ import (absolute_import, division, print_function)
 
 import array
 import cmath
+from functools import reduce
 import itertools
 import math
-import operator
+from operator import add, mul
 import sys
 
 try:
@@ -459,3 +460,27 @@ def test_complex_2():
     lmb = se.Lambdify([x], [3 + x - 1j], real=False)
     assert abs(lmb([11+13j])[0] -
                (14 + 12j)) < 1e-15
+
+
+def test_more_than_255_args():
+    # SymPy's lambdify can handle at most 255 arguments
+    # this is a proof of concept that this limitation does
+    # not affect SymEngine's Lambdify class
+    if not HAVE_NUMPY:  # nosetests work-around
+        return
+    import numpy as np
+    n = 257
+    x = se.symarray('x', n)
+    p, q, r = 17, 42, 13
+    terms = [i*s for i, s in enumerate(x, p)]
+    exprs = [reduce(add, terms), r + x[0], -99]
+    callback = se.Lambdify(x, exprs)
+    input_arr = np.arange(q, q + n*n).reshape((n, n))
+    out = callback(input_arr)
+    ref = np.empty((n, 3))
+    coeffs = np.arange(p, p + n)
+    for i in range(n):
+        ref[i, 0] = coeffs.dot(np.arange(q + n*i, q + n*(i+1)))
+        ref[i, 1] = q + n*i + r
+    ref[:, 2] = -99
+    assert np.allclose(out, ref)
