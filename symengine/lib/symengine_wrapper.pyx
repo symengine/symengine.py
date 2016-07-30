@@ -2770,7 +2770,12 @@ cdef class Lambdify(object):
             reshape_out = len(new_out_shape) > 1
         else:
             if use_numpy:
-                if out.dtype != (np.float64 if self.real else np.complex128):
+                try:
+                    out_dtype = out.dtype
+                except AttributeError:
+                    out = np.asarray(out)
+                    out_dtype = out.dtype
+                if out_dtype != (np.float64 if self.real else np.complex128):
                     raise TypeError("Output array is of incorrect type")
                 if out.size < new_out_size:
                     raise ValueError("Incompatible size of output argument")
