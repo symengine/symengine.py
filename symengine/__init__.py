@@ -4,7 +4,7 @@ from .lib.symengine_wrapper import (Symbol, Integer, sympify, SympifyError,
         sin, cos, tan, cot, csc, sec, asin, acos, atan, acot, acsc, asec,
         sinh, cosh, tanh, coth, asinh, acosh, atanh, acoth, Lambdify,
         LambdifyCSE, DictBasic, series, symarray, diff, zeros, eye, diag,
-        ones, zeros, expand, has_symbol, UndefFunction)
+        ones, zeros, add, expand, has_symbol, UndefFunction)
 from .utilities import var, symbols
 
 if have_mpfr:

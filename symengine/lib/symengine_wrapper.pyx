@@ -2575,7 +2575,7 @@ cdef class Lambdify(object):
     Lambdify instances are callbacks that numerically evaluate their symbolic
     expressions from user provided input (real or complex) into (possibly user
     provided) output buffers (real or complex). Multidimensional data are
-    processed in their most cache-friendly way ("ravelled").
+    processed in their most cache-friendly way (i.e. "ravelled").
 
     Parameters
     ----------
@@ -2758,7 +2758,6 @@ cdef class Lambdify(object):
         if out is None:
             # allocate output container
             if use_numpy:
-                nbroadcast = inp.size // self.args_size
                 out = np.empty(new_out_size, dtype=np.float64 if
                                self.real else np.complex128)
             else:

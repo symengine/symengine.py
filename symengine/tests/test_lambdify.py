@@ -5,10 +5,8 @@ from symengine.utilities import raises
 
 import array
 import cmath
-from functools import reduce
 import itertools
 import math
-from operator import add, mul
 import sys
 
 try:
@@ -507,7 +505,7 @@ def test_more_than_255_args():
     x = se.symarray('x', n)
     p, q, r = 17, 42, 13
     terms = [i*s for i, s in enumerate(x, p)]
-    exprs = [reduce(add, terms), r + x[0], -99]
+    exprs = [se.add(*terms), r + x[0], -99]
     callback = se.Lambdify(x, exprs)
     input_arr = np.arange(q, q + n*n).reshape((n, n))
     out = callback(input_arr)
