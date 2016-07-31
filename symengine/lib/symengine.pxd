@@ -156,6 +156,8 @@ cdef extern from "<symengine/symengine_rcp.h>" namespace "SymEngine":
     RCP[const BooleanAtom] rcp_static_cast_BooleanAtom "SymEngine::rcp_static_cast<const SymEngine::BooleanAtom>"(RCP[const Basic] &b) nogil
     RCP[const PyNumber] rcp_static_cast_PyNumber "SymEngine::rcp_static_cast<const SymEngine::PyNumber>"(RCP[const Basic] &b) nogil
     RCP[const PyFunction] rcp_static_cast_PyFunction "SymEngine::rcp_static_cast<const SymEngine::PyFunction>"(RCP[const Basic] &b) nogil
+    RCP[const Boolean] rcp_static_cast_Boolean "SymEngine::rcp_static_cast<const SymEngine::Boolean>"(RCP[const Basic] &b) nogil
+    RCP[const Set] rcp_static_cast_Set "SymEngine::rcp_static_cast<const SymEngine::Set>"(RCP[const Basic] &b) nogil
     Ptr[RCP[Basic]] outArg(RCP[const Basic] &arg) nogil
     Ptr[RCP[Integer]] outArg_Integer "SymEngine::outArg<SymEngine::RCP<const SymEngine::Integer>>"(RCP[const Integer] &arg) nogil
 
@@ -292,7 +294,9 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_Floor "SymEngine::is_a<SymEngine::Floor>"(const Basic &b) nogil
     bool is_a_Ceiling "SymEngine::is_a<SymEngine::Ceiling>"(const Basic &b) nogil
     bool is_a_Conjugate "SymEngine::is_a<SymEngine::Conjugate>"(const Basic &b) nogil
-
+    bool is_a_Interval "SymEngine::is_a<SymEngine::Interval>"(const Basic &b) nogil
+    bool is_a_Piecewise "SymEngine::is_a<SymEngine::Piecewise>"(const Basic &b) nogil
+    bool is_a_Contains "SymEngine::is_a<SymEngine::Contains>"(const Basic &b) nogil
     RCP[const Basic] expand(RCP[const Basic] &o) nogil except +
 
 cdef extern from "<symengine/subs.h>" namespace "SymEngine":
@@ -385,7 +389,7 @@ cdef extern from "<symengine/constants.h>" namespace "SymEngine":
     RCP[const Basic] Inf
     RCP[const Basic] ComplexInf
     RCP[const Basic] Nan
-  
+
 cdef extern from "<symengine/infinity.h>" namespace "SymEngine":
     cdef cppclass Infty(Number):
         pass
@@ -883,6 +887,10 @@ cdef extern from "<symengine/logic.h>" namespace "SymEngine":
         pass
     cdef cppclass StrictLessThan(Relational):
         pass
+    cdef cppclass Piecewise(Basic):
+        pass
+    cdef cppclass Contains(Boolean):
+        pass
 
     RCP[const Basic] boolTrue
     RCP[const Basic] boolFalse
@@ -894,6 +902,11 @@ cdef extern from "<symengine/logic.h>" namespace "SymEngine":
     cdef RCP[const Boolean] Gt(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
     cdef RCP[const Boolean] Le(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
     cdef RCP[const Boolean] Lt(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
+    ctypedef Boolean const_Boolean "const SymEngine::Boolean"
+    ctypedef vector[pair[RCP[const_Basic], RCP[const_Boolean]]] PiecewiseVec;
+    cdef RCP[const Basic] piecewise(PiecewiseVec vec) nogil except +
+    cdef RCP[const Boolean] contains(RCP[const Basic] &expr,
+                                     RCP[const Set] &set) nogil
 
 cdef extern from "<utility>" namespace "std":
     cdef integer_class std_move_mpz "std::move" (integer_class) nogil
@@ -902,6 +915,7 @@ cdef extern from "<utility>" namespace "std":
     IF HAVE_SYMENGINE_MPC:
         cdef mpc_class std_move_mpc "std::move" (mpc_class) nogil
     cdef map_basic_basic std_move_map_basic_basic "std::move" (map_basic_basic) nogil
+    cdef PiecewiseVec std_move_PiecewiseVec "std::move" (PiecewiseVec) nogil
 
 cdef extern from "<symengine/eval_double.h>" namespace "SymEngine":
     double eval_double(const Basic &b) nogil except +
@@ -944,3 +958,11 @@ cdef extern from "<symengine/parser.h>" namespace "SymEngine":
 
 cdef extern from "<symengine/codegen.h>" namespace "SymEngine":
     string ccode(const Basic &x) nogil except +
+
+cdef extern from "<symengine/sets.h>" namespace "SymEngine":
+    cdef cppclass Set(Basic):
+        RCP[const Set] set_intersection(RCP[const Set] &o) nogil except +
+        RCP[const Set] set_union(RCP[const Set] &o) nogil except +
+    cdef cppclass Interval(Set):
+        pass
+    cdef RCP[const Basic] interval(RCP[const Number] &start, RCP[const Number] &end, bool l, bool r) nogil
