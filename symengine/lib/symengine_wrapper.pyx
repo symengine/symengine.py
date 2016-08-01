@@ -4212,7 +4212,6 @@ def to_contains(relational):
     else:
         raise ValueError('Unsupported Relational: {}'.format(relational.__class__.__name__))
 
-
 def piecewise(*v):
     cdef symengine.PiecewiseVec vec
     cdef pair[RCP[symengine.const_Basic], RCP[symengine.const_Boolean]] p
@@ -4243,6 +4242,9 @@ def contains(expr, sset):
     cdef RCP[const symengine.Set] s = symengine.rcp_static_cast_Set(sset_.thisptr)
     return c2py(<RCP[const symengine.Basic]>symengine.contains(expr_.thisptr, s))
 
+def ccode(expr):
+    cdef Basic expr_ = sympify(expr)
+    return symengine.ccode(deref(expr_.thisptr))
 
 # Turn on nice stacktraces:
 symengine.print_stack_on_segfault()
