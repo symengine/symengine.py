@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import (absolute_import, division, print_function)
 
+from symengine.utilities import raises
+
 import array
 import cmath
 import itertools
 import math
-import operator
 import sys
 
 try:
@@ -110,6 +111,38 @@ def test_array_out():
     check(out2)
     out2[:] = -1
     assert np.allclose(out1[:], [-1]*len(exprs))
+
+
+#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires NumPy')
+def test_numpy_array_out_exceptions():
+    if not HAVE_NUMPY:  # nosetests work-around
+        return
+    import numpy as np
+    args, exprs, inp, check = _get_array()
+    lmb = se.Lambdify(args, exprs)
+
+    all_right = np.empty(len(exprs))
+    lmb(inp, all_right)
+
+    too_short = np.empty(len(exprs) - 1)
+    raises(ValueError, lambda: (lmb(inp, too_short)))
+
+    wrong_dtype = np.empty(len(exprs), dtype=int)
+    raises(TypeError, lambda: (lmb(inp, wrong_dtype)))
+
+    read_only = np.empty(len(exprs))
+    read_only.flags['WRITEABLE'] = False
+    raises(ValueError, lambda: (lmb(inp, read_only)))
+
+    all_right_broadcast = np.empty((2, len(exprs)))
+    inp_bcast = [[1, 2, 3], [4, 5, 6]]
+    lmb(np.array(inp_bcast), all_right_broadcast)
+
+    f_contig_broadcast = np.empty((2, len(exprs)), order='F')
+    raises(ValueError, lambda: (lmb(inp_bcast, f_contig_broadcast)))
+
+    improper_bcast = np.empty((3, len(exprs)))
+    raises(ValueError, lambda: (lmb(inp_bcast, improper_bcast)))
 
 
 def test_array_out_no_numpy():
@@ -459,3 +492,27 @@ def test_complex_2():
     lmb = se.Lambdify([x], [3 + x - 1j], real=False)
     assert abs(lmb([11+13j])[0] -
                (14 + 12j)) < 1e-15
+
+
+def test_more_than_255_args():
+    # SymPy's lambdify can handle at most 255 arguments
+    # this is a proof of concept that this limitation does
+    # not affect SymEngine's Lambdify class
+    if not HAVE_NUMPY:  # nosetests work-around
+        return
+    import numpy as np
+    n = 257
+    x = se.symarray('x', n)
+    p, q, r = 17, 42, 13
+    terms = [i*s for i, s in enumerate(x, p)]
+    exprs = [se.add(*terms), r + x[0], -99]
+    callback = se.Lambdify(x, exprs)
+    input_arr = np.arange(q, q + n*n).reshape((n, n))
+    out = callback(input_arr)
+    ref = np.empty((n, 3))
+    coeffs = np.arange(p, p + n)
+    for i in range(n):
+        ref[i, 0] = coeffs.dot(np.arange(q + n*i, q + n*(i+1)))
+        ref[i, 1] = q + n*i + r
+    ref[:, 2] = -99
+    assert np.allclose(out, ref)

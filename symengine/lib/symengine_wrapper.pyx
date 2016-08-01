@@ -2575,7 +2575,7 @@ cdef class Lambdify(object):
     Lambdify instances are callbacks that numerically evaluate their symbolic
     expressions from user provided input (real or complex) into (possibly user
     provided) output buffers (real or complex). Multidimensional data are
-    processed in their most cache-friendly way ("ravelled").
+    processed in their most cache-friendly way (i.e. "ravelled").
 
     Parameters
     ----------
@@ -2599,7 +2599,7 @@ cdef class Lambdify(object):
     [ 9., 24.]
 
     """
-    cdef size_t inp_size, out_size
+    cdef size_t args_size, out_size
     cdef tuple out_shape
     cdef readonly bool real
     cdef vector[symengine.LambdaRealDoubleVisitor] lambda_double
@@ -2615,7 +2615,7 @@ cdef class Lambdify(object):
             int idx = 0
         self.real = real
         self.out_shape = get_shape(exprs)
-        self.inp_size = _size(args)
+        self.args_size = _size(args)
         self.out_size = reduce(mul, self.out_shape)
 
         if isinstance(args, DenseMatrix):
@@ -2659,7 +2659,7 @@ cdef class Lambdify(object):
         cdef vector[ValueType] inp_
         cdef size_t idx, ninp = inp.size, nout = out.size
 
-        if inp.size != self.inp_size:
+        if inp.size != self.args_size:
             raise ValueError("Size of inp incompatible with number of args.")
         if out.size != self.out_size:
             raise ValueError("Size of out incompatible with number of exprs.")
@@ -2720,10 +2720,10 @@ cdef class Lambdify(object):
             inp = tuple(inp)
             inp_shape = (len(inp),)
         inp_size = reduce(mul, inp_shape)
-        if inp_size % self.inp_size != 0:
+        if inp_size % self.args_size != 0:
             raise ValueError("Broadcasting failed")
-        nbroadcast = inp_size // self.inp_size
-        if nbroadcast > 1 and self.inp_size == 1 and inp_shape[-1] != 1:  # Implicit reshape
+        nbroadcast = inp_size // self.args_size
+        if nbroadcast > 1 and self.args_size == 1 and inp_shape[-1] != 1:  # Implicit reshape
             inp_shape = inp_shape + (1,)
         new_out_shape = inp_shape[:-1] + self.out_shape
         new_out_size = nbroadcast * self.out_size
@@ -2758,7 +2758,6 @@ cdef class Lambdify(object):
         if out is None:
             # allocate output container
             if use_numpy:
-                nbroadcast = inp.size // self.inp_size
                 out = np.empty(new_out_size, dtype=np.float64 if
                                self.real else np.complex128)
             else:
@@ -2771,8 +2770,13 @@ cdef class Lambdify(object):
             reshape_out = len(new_out_shape) > 1
         else:
             if use_numpy:
-                out = np.asarray(out, dtype=np.float64 if
-                                 self.real else np.complex128)  # copy if needed
+                try:
+                    out_dtype = out.dtype
+                except AttributeError:
+                    out = np.asarray(out)
+                    out_dtype = out.dtype
+                if out_dtype != (np.float64 if self.real else np.complex128):
+                    raise TypeError("Output array is of incorrect type")
                 if out.size < new_out_size:
                     raise ValueError("Incompatible size of output argument")
                 if not out.flags['C_CONTIGUOUS']:
@@ -2780,8 +2784,6 @@ cdef class Lambdify(object):
                 for idx, length in enumerate(out.shape[-len(self.out_shape)::-1]):
                     if length < self.out_shape[-idx]:
                         raise ValueError("Incompatible shape of output argument")
-                if out.dtype != np.float64:
-                    raise ValueError("Output argument dtype not float64: %s" % out.dtype)
                 if not out.flags['WRITEABLE']:
                     raise ValueError("Output argument needs to be writeable")
                 if out.ndim > 1:
@@ -2798,12 +2800,12 @@ cdef class Lambdify(object):
             if self.real:
                 real_inp_view = inp  # slicing cython.view.array does not give a memview
                 real_out_view = out
-                self.unsafe_real(real_inp_view[idx*self.inp_size:(idx+1)*self.inp_size],
+                self.unsafe_real(real_inp_view[idx*self.args_size:(idx+1)*self.args_size],
                                  real_out_view[idx*self.out_size:(idx+1)*self.out_size])
             else:
                 complex_inp_view = inp
                 complex_out_view = out
-                self.unsafe_complex(complex_inp_view[idx*self.inp_size:(idx+1)*self.inp_size],
+                self.unsafe_complex(complex_inp_view[idx*self.args_size:(idx+1)*self.args_size],
                                     complex_out_view[idx*self.out_size:(idx+1)*self.out_size])
 
         if use_numpy and reshape_out:
