@@ -769,3 +769,7 @@ cdef extern from "<symengine/sets.h>" namespace "SymEngine":
         pass
     cdef RCP[const Basic] interval(RCP[const Number] &start, RCP[const Number] &end, bool l, bool r) nogil
 
+
+cdef extern from "<symengine/codegen.h>" namespace "SymEngine":
+    string ccode(const Basic &x) nogil except +
+
