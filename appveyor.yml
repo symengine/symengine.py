@@ -44,6 +44,8 @@ install:
 
 - if [%COMPILER%]==[MinGW] set PATH=C:\MinGW\bin;%PATH%
 - if [%COMPILER%]==[MinGW] mingw-get update
+# workaround for https://github.com/appveyor/ci/issues/996
+- if [%COMPILER%]==[MinGW] mingw-get upgrade mingw32-libstdc++
 - if [%COMPILER%]==[MinGW] mingw-get install mingw32-gmp
 
 - if [%COMPILER%]==[MinGW-w64] set PATH=C:\mingw64\bin;%PATH%
