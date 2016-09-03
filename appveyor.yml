@@ -90,7 +90,7 @@ build_script:
 test_script:
 - if not [%COMPILER%]==[MSVC15] nosetests
 - mkdir empty && cd empty
-- python %PYTHON_SOURCE_DIR%\bin\test_python.py
+- if [%COMPILER%]==[MinGW] if [%BUILD_TYPE%]==[RELEASE] python %PYTHON_SOURCE_DIR%\bin\test_python.py
 
 # Enable this to be able to login to the build worker. You can use the
 # `remmina` program in Ubuntu, use the login information that the line below
