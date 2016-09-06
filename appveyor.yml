@@ -16,19 +16,19 @@ environment:
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
       PLATFORM: "x64"
-      PYTHON_VERSION: 27-x64
+      PYTHON_VERSION: 35-x64
     - BUILD_TYPE: "Debug"
       COMPILER: MinGW
       PYTHON_VERSION: 27
     - BUILD_TYPE: "Release"
       COMPILER: MinGW
-      PYTHON_VERSION: 34
+      PYTHON_VERSION: 35
     - BUILD_TYPE: "Release"
       COMPILER: MinGW-w64
       PYTHON_VERSION: 27-x64
     - BUILD_TYPE: "Debug"
       COMPILER: MinGW-w64
-      PYTHON_VERSION: 27-x64
+      PYTHON_VERSION: 35-x64
 
 install:
 - set PYTHON_SOURCE_DIR=%CD%
@@ -44,6 +44,8 @@ install:
 
 - if [%COMPILER%]==[MinGW] set PATH=C:\MinGW\bin;%PATH%
 - if [%COMPILER%]==[MinGW] mingw-get update
+# workaround for https://github.com/appveyor/ci/issues/996
+- if [%COMPILER%]==[MinGW] mingw-get upgrade mingw32-libstdc++
 - if [%COMPILER%]==[MinGW] mingw-get install mingw32-gmp
 
 - if [%COMPILER%]==[MinGW-w64] set PATH=C:\mingw64\bin;%PATH%
@@ -88,7 +90,7 @@ build_script:
 test_script:
 - if not [%COMPILER%]==[MSVC15] nosetests
 - mkdir empty && cd empty
-- python %PYTHON_SOURCE_DIR%\bin\test_python.py
+- if [%COMPILER%]==[MinGW] if [%BUILD_TYPE%]==[RELEASE] python %PYTHON_SOURCE_DIR%\bin\test_python.py
 
 # Enable this to be able to login to the build worker. You can use the
 # `remmina` program in Ubuntu, use the login information that the line below

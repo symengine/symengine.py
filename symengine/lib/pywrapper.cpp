@@ -27,7 +27,7 @@ PyNumber::PyNumber(PyObject* pyobject, const RCP<const PyModule> &pymodule) :
         pyobject_(pyobject), pymodule_(pymodule) {
 }
 
-std::size_t PyNumber::__hash__() const {
+hash_t PyNumber::__hash__() const {
     return PyObject_Hash(pyobject_);
 }
 
@@ -210,7 +210,7 @@ int PyFunctionClass::compare(const PyFunctionClass &x) const {
     return PyObject_RichCompareBool(pyobject_, x.pyobject_, Py_LT) == 1 ? 1 : -1;
 }
 
-std::size_t PyFunctionClass::hash() const {
+hash_t PyFunctionClass::hash() const {
     if (hash_ == 0)
         hash_ = PyObject_Hash(pyobject_);
     return hash_;
@@ -250,7 +250,7 @@ RCP<const Basic> PyFunction::diff_impl(const RCP<const Symbol> &s) const {
     return pyfunction_class_->get_py_module()->diff_(pyobject_, s);
 }
 
-std::size_t PyFunction::__hash__() const {
+hash_t PyFunction::__hash__() const {
     return PyObject_Hash(pyobject_);
 }
 

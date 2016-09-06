@@ -102,7 +102,7 @@ public:
     virtual std::string __str__() const;
     virtual int compare(const Basic &o) const;
     virtual bool __eq__(const Basic &o) const;
-    virtual std::size_t __hash__() const;
+    virtual hash_t __hash__() const;
 };
 
 /*! Class to represent the parent class for a PyFunction. Stores
@@ -117,7 +117,7 @@ private:
     //! Name of the function
     std::string name_;
     //! Hash of the python function
-    mutable size_t hash_;
+    mutable hash_t hash_;
     //! PyModule that this python function belongs to
     RCP<const PyModule> pymodule_;
 public:
@@ -129,7 +129,7 @@ public:
     PyObject* call(const vec_basic &vec) const;
     bool __eq__(const PyFunctionClass &x) const;
     int compare(const PyFunctionClass &x) const;
-    std::size_t hash() const;
+    hash_t hash() const;
 };
 
 /*! Class to represent the parent class for a PyFunction. Stores
@@ -158,7 +158,7 @@ public:
     virtual RCP<const Basic> diff_impl(const RCP<const Symbol> &x) const;
     virtual int compare(const Basic &o) const;
     virtual bool __eq__(const Basic &o) const;
-    virtual std::size_t __hash__() const;
+    virtual hash_t __hash__() const;
 };
 
 }
