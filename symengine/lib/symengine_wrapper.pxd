@@ -136,6 +136,28 @@ cdef class DenseMatrix(MatrixBase):
 cdef class Log(Function):
     pass
 
+cdef class Infinity(Number):
+    pass
+
+cdef class Piecewise(Basic):
+    pass
+
+cdef class Boolean(Basic):
+    pass
+
+cdef class BooleanAtom(Boolean):
+    pass
+
+cdef class Contains(Boolean):
+    pass
+
+cdef class Set(Basic):
+    pass
+
+cdef class Interval(Set):
+    pass
+
+
 cdef class PyFunctionClass(object):
     cdef RCP[const symengine.PyFunctionClass] thisptr
 
