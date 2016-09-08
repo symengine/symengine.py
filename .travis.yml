@@ -16,16 +16,20 @@ addons:
     - libmpc-dev
     - binutils-dev
     - g++-4.7
+
 env:
+  global:
+    - secure: "b+fS4EkSfk+z+6Gk114TmbEA4O3okYq2GgK7sRc2B1zxx0wjCLKQqtwZRawlGbDocO94zpaCEVugMChAd4hqsEQio02YKSvQH2RWq03FYl4Uqs287p/UDW5sZzhwM0D5fhWgdncNfVExdRbbdAFbGjHlZIYnEgr8bcHU7WsbnBbpESsB3dslFFjLG9VzX2Bm1jcDNpZTHzveU1XxMecIJ1JQjBhJoXmZiySgancqkQeGitOqq/e0yKyc8clLCyynVRtgHfR5IPaBYqnG0j2jULtjj8xAjX7TZTU6oI7RJ6SD09tj+6LpmSq6EDEdkIaDuT6r++Yx6yCBuEl6h+n94dIcRPMAIyNW7FtW4/AtCk4JCkC1RlB+omcpDg2uZL9lwMRaYsBvY6eaIAIdCwWU7VC+ixBaOCxllIDjQTby9iO++EOHNzX6A8mUaYVT8Vh5vkRzAhc6VTJgk0TfzaViwRYvib7qD4dIovKp4byhHS/fGImN3jGU3ZQO9fb6S/DdPeXj+PlCdme3yK+0M+faLsb8tBeJHZaQqiyB2onZOJ5cSl/sqSU+DXXCtN30uj+Vpceedv71NZx2cKYw4c64dzbdNlYd/RDk1JyaKK1drtyMXcPsEV26egbsM+jrzVR9NjdlX6eqB6GISrlgOkGkaYfdBJH/9Pzv5oRmoIER2b8="
+
   ## All these variables are sent into the bin/test_travis.sh script. See this
   ## script to know how they are used. Most of them are just passed to cmake,
   ## so if they are not set, cmake will use a default value. For the rest, the
   ## bin/test_travis.sh script usually checks for either "yes" or "no" in an if
   ## statement, so if the variable is not set, the other if branch will get
   ## executed.
-
+  matrix:
   ## Out of tree builds (default):
-  - BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="2.7"
+  - BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="2.7" TRIGGER_FEEDSTOCK="yes"
 
   ## In-tree builds (we just check a few configurations to make sure they work):
   # Debug build with Python 2.7:
