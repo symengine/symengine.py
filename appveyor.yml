@@ -17,12 +17,12 @@ environment:
       COMPILER: MSVC15
       PLATFORM: "x64"
       PYTHON_VERSION: 35-x64
-    - BUILD_TYPE: "Debug"
-      COMPILER: MinGW
-      PYTHON_VERSION: 27
-    - BUILD_TYPE: "Release"
-      COMPILER: MinGW
-      PYTHON_VERSION: 35
+#    - BUILD_TYPE: "Debug"
+#      COMPILER: MinGW
+#      PYTHON_VERSION: 27
+#    - BUILD_TYPE: "Release"
+#      COMPILER: MinGW
+#      PYTHON_VERSION: 35
     - BUILD_TYPE: "Release"
       COMPILER: MinGW-w64
       PYTHON_VERSION: 27-x64
