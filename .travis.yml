@@ -87,6 +87,8 @@ matrix:
           - lrzip
 
 install:
+  # Workaround till symengine C++ repo's script is fixed
+  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew uninstall cmake; fi
   - export PYTHON_SOURCE_DIR=`pwd`
   - export TEST_CPP="no"
 
