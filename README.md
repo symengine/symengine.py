@@ -7,10 +7,22 @@ a fast C++ symbolic manipulation library.
 
 ## Installation
 
+### Ubuntu package manager
+
+    add-apt-repository ppa:symengine/ppa
+    apt-get update
+    apt-get install python-symengine
+
+### Conda package manager
+
+    conda install python-symengine -c symengine -c conda-forge
+
+### Build from source
+
 Install prerequisites.
 
     CMake       >= 2.8.7
-    Python2     >= 2.6      or Python3 >= 3.3
+    Python2     >= 2.7      or Python3 >= 3.3
     Cython      >= 0.19.1   and != 0.24
     SymEngine   >= 0.1.0
 
