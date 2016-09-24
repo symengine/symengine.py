@@ -11,7 +11,7 @@ a fast C++ symbolic manipulation library.
 
     add-apt-repository ppa:symengine/ppa
     apt-get update
-    apt-get install python-symengine
+    apt-get install python-symengine        # or python3-symengine if using python3
 
 ### Conda package manager
 
