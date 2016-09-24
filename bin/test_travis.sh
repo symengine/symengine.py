@@ -20,3 +20,9 @@ fi
 if [[ "${WITH_SAGE}" == "yes" ]]; then
     sage -t $PYTHON_SOURCE_DIR/symengine/tests/test_sage.py
 fi
+
+if [[ "${TRIGGER_FEEDSTOCK}" == "yes" ]]; then
+    cd $PYTHON_SOURCE_DIR
+    ./bin/trigger_feedstock.sh
+fi
+

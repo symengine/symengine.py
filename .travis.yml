@@ -16,16 +16,20 @@ addons:
     - libmpc-dev
     - binutils-dev
     - g++-4.7
+
 env:
+  global:
+    - secure: "jkvObuYjs4oT0bbUzLOtKLPkD2AVt/c4ZOS2qNkStC8dwtLpcYd4tLn1S07PCMYzCLL/DGvp6J8IKmzhQV7a/Yl/wVySTNBFnPecjku8Spf1UqdJbrJa8Ln/nxnajFyc2Q7QnKj8s4sguN1GRY7Jdylp9l7XgebjGwVrpKXIR+JqiSAhxkEyMmWklzu80m+BOTep0xTY/E9fFMCznQFM96jTSjq9vFxCAzToOpP3EFQyBjhDkPNQvaI3KYcBabe5DQs0wMvLEboxDEGYG+Y4ijp1d8JFmWZgzU1nQm++n8WG/Igz8rF6Asy7fHeE2/sexQf0LEqtTFtSmJFFnn6vJdn+6JOB05ARbdXc2KKzP81BCCjhPIH/KNQNMpD6p7KfXhthM0np/dxBRDlCh+6kDiuei+798YSJ63Svdr+lmg4weuxWRQh7D2lmXTcygWSW4iafCgK+D0lekg239HKcvDXPx352obM/HAz7tUiIaiOvHNlKlVL7bbHDhKWyaduAHB9jVnAIvcDWjumwyOaIPPLQL1JsL8Tha1H5uUPYWYjfNjjqk57pXq1YPUFoyiylViqX1eTWypwkXFKFJCWb6IhuW32OKEYACXJLZm7zui/qvIKiNn7PNGBxtrW/rvpvVAM94yQNhlmjxiu4/V74D0/9Oh90cPGFtoocbj5MT98="
+
   ## All these variables are sent into the bin/test_travis.sh script. See this
   ## script to know how they are used. Most of them are just passed to cmake,
   ## so if they are not set, cmake will use a default value. For the rest, the
   ## bin/test_travis.sh script usually checks for either "yes" or "no" in an if
   ## statement, so if the variable is not set, the other if branch will get
   ## executed.
-
+  matrix:
   ## Out of tree builds (default):
-  - BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="2.7"
+  - BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="2.7" TRIGGER_FEEDSTOCK="yes"
 
   ## In-tree builds (we just check a few configurations to make sure they work):
   # Debug build with Python 2.7:
@@ -115,3 +119,12 @@ script:
 
 notifications:
   email: false
+
+deploy:
+  provider: pypi
+  user: isuruf
+  password:
+    secure: "HsVXENZjVg05Mce5Ts6iG292Ch03YHETto/512Nu1R8xeRWeerMZpumBE2X0WPrDBuV/zLMlf/jc8rN6EX9GEGaBxTPwFq5tNRTFjShUcmSxWLWPVgF7fYm1+pPjkzODOTIHPkJB00nw22DUuF2kg/gCm7uZeaGNsBELNpKPJyRv9ShxOLqOxK+WR5QQw+xMmmq+ugsc1/kjnxuczcUs/dXyYfFrw9nrKD8qUPeyEsaea1jUxDIVLBtaxnwbmhtw+GPE5tH+5Q/Y8mA7epw5Znj47W+WxfF/sdtBt31m9KNmMcISYpvUHpcju/gTUAeRBU0Ln04teR6iMHUcQJerM0T61uZCNCoYQv1A9oVKA3NO1Gb6in8BqoR+wZB2po+g8U3x+nKGxJrFNekm9zAhs7yQEYnP6C9ekUpe+73qi6I6fzMB71sMJa6SegYL99z+UW6zjhIesf6nX43U+954pN7FsrIzkdTHW67YrBfKr8PEZ0VPxJzokWTPkYO5Qkvjp1TNyFBsV2DS5qpMMYHYxNDbxj5elYZxPt+bvRbtmMdS4p2ze5DVWEQbwW+jZydBoccH6uAhjXkFRil9/5LAJmwfIYcBrF6RkZu1VhSSIULhtOqtA7psSSBSprqyhPsvs8l13PUs92SogXCrYFfHgNR6J8UM3iiP0yooeV6Z+gw="
+  on:
+    condition: $TRIGGER_FEEDSTOCK = yes
+    tags: true
