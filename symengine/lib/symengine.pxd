@@ -121,7 +121,7 @@ cdef extern from "<symengine/symengine_rcp.h>" namespace "SymEngine":
         null
 
     cdef cppclass RCP[T]:
-        T& operator*() nogil except +
+        T& operator*() nogil
         # Not yet supported in Cython:
 #        RCP[T]& operator=(RCP[T] &r_ptr) nogil except +
         void reset() nogil except +
