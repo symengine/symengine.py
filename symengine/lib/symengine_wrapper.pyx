@@ -2538,8 +2538,8 @@ def with_buffer(iterable, real=True):
         try:
             real_view = iterable
         except (ValueError, TypeError):
-            real_view = cython.view.array(shape=(_size(iterable),),
-                                          itemsize=sizeof(double), format='d')
+            real_view = cython.view.array((_size(iterable),),
+                                          sizeof(double), format='d')
             for i in range(_size(iterable)):
                 real_view[i] = iterable[i]
             return real_view
@@ -2549,8 +2549,8 @@ def with_buffer(iterable, real=True):
         try:
             cmplx_view = iterable
         except (ValueError, TypeError):
-            cmplx_view = cython.view.array(shape=(_size(iterable),),
-                                           itemsize=sizeof(double complex), format='Zd')
+            cmplx_view = cython.view.array((_size(iterable),),
+                                           sizeof(double complex), format='Zd')
             for i in range(_size(iterable)):
                 cmplx_view[i] = iterable[i]
             return cmplx_view
@@ -2755,11 +2755,11 @@ cdef class Lambdify(object):
                                self.real else np.complex128)
             else:
                 if self.real:
-                    out = cython.view.array(shape=(new_out_size,),
-                                            itemsize=sizeof(double), format='d')
+                    out = cython.view.array((new_out_size,),
+                                            sizeof(double), format='d')
                 else:
-                    out = cython.view.array(shape=(new_out_size,),
-                                            itemsize=sizeof(double complex), format='Zd')
+                    out = cython.view.array((new_out_size,),
+                                            sizeof(double complex), format='Zd')
             reshape_out = len(new_out_shape) > 1
         else:
             if use_numpy:
@@ -2805,15 +2805,15 @@ cdef class Lambdify(object):
             out = out.reshape(new_out_shape)
         elif reshape_out:
             if self.real:
-                tmp = cython.view.array(shape=new_out_shape,
-                                        itemsize=sizeof(double), format='d')
+                tmp = cython.view.array(new_out_shape,
+                                        sizeof(double), format='d')
                 real_out_view = out
                 memcpy(<double *>tmp.data, &real_out_view[0],
                        sizeof(double)*new_out_size)
                 out = tmp
             else:
-                tmp = cython.view.array(shape=new_out_shape,
-                                        itemsize=sizeof(double complex), format='Zd')
+                tmp = cython.view.array(new_out_shape,
+                                        sizeof(double complex), format='Zd')
                 cmplx_out_view = tmp
                 memcpy(<double complex*>tmp.data, &cmplx_out_view[0],
                        sizeof(double complex)*new_out_size)
