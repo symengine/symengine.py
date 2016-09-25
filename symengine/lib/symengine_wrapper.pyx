@@ -1026,7 +1026,7 @@ cdef class Mul(Basic):
         cdef map_basic_basic dict = deref(X).get_dict()
         d = collections.defaultdict(int)
         d[c2py(<RCP[const symengine.Basic]>symengine.mul_from_dict(\
-                symengine.rcp_static_cast_Number_Int(one),
+                <RCP[const symengine.Number]>(one),
                 symengine.std_move_map_basic_basic(dict)))] =\
                 c2py(<RCP[const symengine.Basic]>deref(X).get_coef())
         return d
@@ -1196,7 +1196,7 @@ cdef class PyNumber(Number):
         if obj is None:
             return
         Py_XINCREF(<PyObject*>(obj))
-        self.thisptr = symengine.make_rcp_PyNumber(<PyObject*>(obj), <const RCP[const symengine.PyModule]>module.thisptr)
+        self.thisptr = symengine.make_rcp_PyNumber(<PyObject*>(obj), module.thisptr)
 
     def _sympy_(self):
         import sympy
@@ -1223,7 +1223,7 @@ cdef class PyFunction(FunctionSymbol):
         cdef PyFunctionClass _pyfunction_class = get_function_class(pyfunction_class, module)
         cdef PyObject* _pyfunction = <PyObject*>pyfunction
         Py_XINCREF(_pyfunction)
-        self.thisptr = symengine.make_rcp_PyFunction(v, <const RCP[const symengine.PyFunctionClass]>(_pyfunction_class.thisptr), _pyfunction)
+        self.thisptr = symengine.make_rcp_PyFunction(v, _pyfunction_class.thisptr, _pyfunction)
 
     def _sympy_(self):
         import sympy
@@ -1240,7 +1240,7 @@ cdef class PyFunctionClass(object):
 
     def __cinit__(self, function, PyModule module not None):
         self.thisptr = symengine.make_rcp_PyFunctionClass(<PyObject*>(function), str(function).encode("utf-8"),
-                                <const RCP[const symengine.PyModule]>module.thisptr)
+                                module.thisptr)
 
 # TODO: remove this once SymEngine conversions are available in Sage.
 def wrap_sage_function(func):
@@ -1288,7 +1288,7 @@ cdef class Derivative(Basic):
         for s in symbols:
             s_ = sympify(s, True)
             m.insert(<RCP[symengine.const_Basic]>(s_.thisptr))
-        self.thisptr = symengine.make_rcp_Derivative(<const RCP[const symengine.Basic]>expr_.thisptr, m)
+        self.thisptr = symengine.make_rcp_Derivative(expr_.thisptr, m)
 
     def _sympy_(self):
         cdef RCP[const symengine.Derivative] X = \
@@ -1324,7 +1324,7 @@ cdef class Subs(Basic):
             v_ = sympify(v, True)
             p_ = sympify(p, True)
             m[v_.thisptr] = p_.thisptr
-        self.thisptr = symengine.make_rcp_Subs(<const RCP[const symengine.Basic]>expr_.thisptr, m)
+        self.thisptr = symengine.make_rcp_Subs(expr_.thisptr, m)
 
     def _sympy_(self):
         cdef RCP[const symengine.Subs] X = symengine.rcp_static_cast_Subs(self.thisptr)
@@ -1664,7 +1664,7 @@ cdef class DenseMatrix(MatrixBase):
         # No error checking is done
         cdef Basic e_ = sympify(e)
         if e_ is not None:
-            deref(self.thisptr).set(i, j, <const RCP[const symengine.Basic] &>(e_.thisptr))
+            deref(self.thisptr).set(i, j, e_.thisptr)
 
     def det(self):
         if self.nrows() != self.ncols():
@@ -1702,13 +1702,13 @@ cdef class DenseMatrix(MatrixBase):
     def add_scalar(self, k):
         cdef Basic k_ = sympify(k)
         result = DenseMatrix(self.nrows(), self.ncols())
-        deref(self.thisptr).add_scalar(<const RCP[const symengine.Basic] &>(k_.thisptr), deref(result.thisptr))
+        deref(self.thisptr).add_scalar(k_.thisptr, deref(result.thisptr))
         return result
 
     def mul_scalar(self, k):
         cdef Basic k_ = sympify(k)
         result = DenseMatrix(self.nrows(), self.ncols())
-        deref(self.thisptr).mul_scalar(<const RCP[const symengine.Basic] &>(k_.thisptr), deref(result.thisptr))
+        deref(self.thisptr).mul_scalar(k_.thisptr, deref(result.thisptr))
         return result
 
     def transpose(self):
@@ -2392,12 +2392,12 @@ def primitive_root_list(n):
 def totient(n):
     cdef Integer _n = sympify(n)
     cdef RCP[const symengine.Integer] m = symengine.rcp_static_cast_Integer(_n.thisptr)
-    return c2py(<RCP[const symengine.Basic]>symengine.totient(<const RCP[const symengine.Integer]>m))
+    return c2py(<RCP[const symengine.Basic]>symengine.totient(m))
 
 def carmichael(n):
     cdef Integer _n = sympify(n)
     cdef RCP[const symengine.Integer] m = symengine.rcp_static_cast_Integer(_n.thisptr)
-    return c2py(<RCP[const symengine.Basic]>symengine.carmichael(<const RCP[const symengine.Integer]>m))
+    return c2py(<RCP[const symengine.Basic]>symengine.carmichael(m))
 
 def multiplicative_order(a, n):
     cdef Integer _n = sympify(n)
@@ -2406,7 +2406,7 @@ def multiplicative_order(a, n):
     cdef RCP[const symengine.Integer] a1 = symengine.rcp_static_cast_Integer(_a.thisptr)
     cdef RCP[const symengine.Integer] o
     cdef bool c = symengine.multiplicative_order(symengine.outArg_Integer(o),
-        <const RCP[const symengine.Integer]>a1, <const RCP[const symengine.Integer]>n1)
+        a1, n1)
     if not c:
         return None
     return c2py(<RCP[const symengine.Basic]>o)
@@ -2437,9 +2437,7 @@ def nthroot_mod(a, n, m):
     cdef RCP[const symengine.Integer] n1 = symengine.rcp_static_cast_Integer(_n.thisptr)
     cdef RCP[const symengine.Integer] a1 = symengine.rcp_static_cast_Integer(_a.thisptr)
     cdef RCP[const symengine.Integer] m1 = symengine.rcp_static_cast_Integer(_m.thisptr)
-    cdef bool ret_val = symengine.nthroot_mod(symengine.outArg_Integer(root),
-        <const RCP[const symengine.Integer]>a1, <const RCP[const symengine.Integer]>n1,
-        <const RCP[const symengine.Integer]>m1)
+    cdef bool ret_val = symengine.nthroot_mod(symengine.outArg_Integer(root), a1, n1, m1)
     if not ret_val:
         return None
     return c2py(<RCP[const symengine.Basic]>root)
@@ -2452,8 +2450,7 @@ def nthroot_mod_list(a, n, m):
     cdef RCP[const symengine.Integer] n1 = symengine.rcp_static_cast_Integer(_n.thisptr)
     cdef RCP[const symengine.Integer] a1 = symengine.rcp_static_cast_Integer(_a.thisptr)
     cdef RCP[const symengine.Integer] m1 = symengine.rcp_static_cast_Integer(_m.thisptr)
-    symengine.nthroot_mod_list(root_list, <const RCP[const symengine.Integer]>a1,
-        <const RCP[const symengine.Integer]>n1, <const RCP[const symengine.Integer]>m1)
+    symengine.nthroot_mod_list(root_list, a1, n1, m1)
     s = []
     for i in range(root_list.size()):
         s.append(c2py(<RCP[const symengine.Basic]>(root_list[i])))
@@ -2468,9 +2465,7 @@ def powermod(a, b, m):
     cdef RCP[const symengine.Number] b1 = symengine.rcp_static_cast_Number(_b.thisptr)
     cdef RCP[const symengine.Integer] root
 
-    cdef bool ret_val = symengine.powermod(symengine.outArg_Integer(root),
-        <const RCP[const symengine.Integer]>a1, <const RCP[const symengine.Number]>b1,
-        <const RCP[const symengine.Integer]>m1)
+    cdef bool ret_val = symengine.powermod(symengine.outArg_Integer(root), a1, b1, m1)
     if ret_val == 0:
         return None
     return c2py(<RCP[const symengine.Basic]>root)
@@ -2484,9 +2479,7 @@ def powermod_list(a, b, m):
     cdef RCP[const symengine.Number] b1 = symengine.rcp_static_cast_Number(_b.thisptr)
     cdef symengine.vec_integer v
 
-    symengine.powermod_list(v,
-        <const RCP[const symengine.Integer]>a1, <const RCP[const symengine.Number]>b1,
-        <const RCP[const symengine.Integer]>m1)
+    symengine.powermod_list(v, a1, b1, m1)
     s = []
     for i in range(v.size()):
         s.append(c2py(<RCP[const symengine.Basic]>(v[i])))

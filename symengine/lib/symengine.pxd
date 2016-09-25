@@ -134,7 +134,6 @@ cdef extern from "<symengine/symengine_rcp.h>" namespace "SymEngine":
     RCP[const Rational] rcp_static_cast_Rational "SymEngine::rcp_static_cast<const SymEngine::Rational>"(RCP[const Basic] &b) nogil
     RCP[const Complex] rcp_static_cast_Complex "SymEngine::rcp_static_cast<const SymEngine::Complex>"(RCP[const Basic] &b) nogil
     RCP[const Number] rcp_static_cast_Number "SymEngine::rcp_static_cast<const SymEngine::Number>"(RCP[const Basic] &b) nogil
-    const RCP[const Number] rcp_static_cast_Number_Int "SymEngine::rcp_static_cast<const SymEngine::Number>"(RCP[const Integer] &b) nogil
     RCP[const Add] rcp_static_cast_Add "SymEngine::rcp_static_cast<const SymEngine::Add>"(RCP[const Basic] &b) nogil
     RCP[const Mul] rcp_static_cast_Mul "SymEngine::rcp_static_cast<const SymEngine::Mul>"(RCP[const Basic] &b) nogil
     RCP[const Pow] rcp_static_cast_Pow "SymEngine::rcp_static_cast<const SymEngine::Pow>"(RCP[const Basic] &b) nogil
@@ -352,7 +351,7 @@ cdef extern from "<symengine/mul.h>" namespace "SymEngine":
         void as_two_terms(const Ptr[RCP[Basic]] &a, const Ptr[RCP[Basic]] &b)
         RCP[const Number] get_coef()
         const map_basic_basic &get_dict()
-    cdef RCP[const Mul] mul_from_dict "SymEngine::Mul::from_dict"(const RCP[const Number] &coef, map_basic_basic &&d) nogil
+    cdef RCP[const Mul] mul_from_dict "SymEngine::Mul::from_dict"(RCP[const Number] coef, map_basic_basic &&d) nogil
 
 cdef extern from "<symengine/pow.h>" namespace "SymEngine":
     cdef RCP[const Basic] pow(RCP[const Basic] &a, RCP[const Basic] &b) nogil except+
@@ -375,8 +374,8 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     RCP[const Basic] make_rcp_Constant "SymEngine::make_rcp<const SymEngine::Constant>"(string name) nogil
     RCP[const Basic] make_rcp_Integer "SymEngine::make_rcp<const SymEngine::Integer>"(int i) nogil
     RCP[const Basic] make_rcp_Integer "SymEngine::make_rcp<const SymEngine::Integer>"(integer_class i) nogil
-    RCP[const Basic] make_rcp_Subs "SymEngine::make_rcp<const SymEngine::Subs>"(const RCP[const Basic] &arg, const map_basic_basic &x) nogil
-    RCP[const Basic] make_rcp_Derivative "SymEngine::make_rcp<const SymEngine::Derivative>"(const RCP[const Basic] &arg, const multiset_basic &x) nogil
+    RCP[const Basic] make_rcp_Subs "SymEngine::make_rcp<const SymEngine::Subs>"(RCP[const Basic] arg, const map_basic_basic &x) nogil
+    RCP[const Basic] make_rcp_Derivative "SymEngine::make_rcp<const SymEngine::Derivative>"(RCP[const Basic] arg, const multiset_basic &x) nogil
     RCP[const Basic] make_rcp_FunctionWrapper "SymEngine::make_rcp<const SymEngine::FunctionWrapper>"(void* obj, string name, string hash_, const vec_basic &arg, \
             void (*dec_ref)(void *), int (*comp)(void *, void *)) nogil
     RCP[const Basic] make_rcp_RealDouble "SymEngine::make_rcp<const SymEngine::RealDouble>"(double x) nogil
@@ -384,11 +383,11 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     RCP[const PyModule] make_rcp_PyModule "SymEngine::make_rcp<const SymEngine::PyModule>"(PyObject* (*) (RCP[const Basic] x), \
             RCP[const Basic] (*)(PyObject*), RCP[const Number] (*)(PyObject*, long bits),
             RCP[const Basic] (*)(PyObject*, RCP[const Basic])) nogil
-    RCP[const Basic] make_rcp_PyNumber "SymEngine::make_rcp<const SymEngine::PyNumber>"(PyObject*, const RCP[const PyModule] &x) nogil
+    RCP[const Basic] make_rcp_PyNumber "SymEngine::make_rcp<const SymEngine::PyNumber>"(PyObject*, RCP[const PyModule] x) nogil
     RCP[const PyFunctionClass] make_rcp_PyFunctionClass "SymEngine::make_rcp<const SymEngine::PyFunctionClass>"(PyObject* pyobject,
-            string name, const RCP[const PyModule] &pymodule) nogil
+            string name, RCP[const PyModule] pymodule) nogil
     RCP[const Basic] make_rcp_PyFunction "SymEngine::make_rcp<const SymEngine::PyFunction>" (const vec_basic &vec,
-            const RCP[const PyFunctionClass] &pyfunc_class, const PyObject* pyobject) nogil
+            RCP[const PyFunctionClass] pyfunc_class, const PyObject* pyobject) nogil
 
 cdef extern from "<symengine/functions.h>" namespace "SymEngine":
     cdef RCP[const Basic] sin(RCP[const Basic] &arg) nogil except+
@@ -579,15 +578,15 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
         const unsigned nrows() nogil
         const unsigned ncols() nogil
         RCP[const Basic] get(unsigned i, unsigned j) nogil
-        RCP[const Basic] set(unsigned i, unsigned j, const RCP[const Basic] &e) nogil
+        RCP[const Basic] set(unsigned i, unsigned j, RCP[const Basic] e) nogil
         string __str__() nogil except+
         bool eq(const MatrixBase &) nogil
         RCP[const Basic] det() nogil
         void inv(MatrixBase &)
         void add_matrix(const MatrixBase &other, MatrixBase &result) nogil
         void mul_matrix(const MatrixBase &other, MatrixBase &result) nogil
-        void add_scalar(const RCP[const Basic] &k, MatrixBase &result) nogil
-        void mul_scalar(const RCP[const Basic] &k, MatrixBase &result) nogil
+        void add_scalar(RCP[const Basic] k, MatrixBase &result) nogil
+        void mul_scalar(RCP[const Basic] k, MatrixBase &result) nogil
         void transpose(MatrixBase &result) nogil
         void submatrix(MatrixBase &result,
                        unsigned row_start, unsigned col_start,
@@ -662,21 +661,21 @@ cdef extern from "<symengine/ntheory.h>" namespace "SymEngine":
     RCP[const Number] bernoulli(unsigned long n) nogil except +
     bool primitive_root(const Ptr[RCP[Integer]] &g, const Integer &n) nogil
     void primitive_root_list(vec_integer &roots, const Integer &n) nogil
-    RCP[const Integer] totient(const RCP[const Integer] &n) nogil
-    RCP[const Integer] carmichael(const RCP[const Integer] &n) nogil
-    bool multiplicative_order(const Ptr[RCP[Integer]] &o, const RCP[const Integer] &a,
-            const RCP[const Integer] &n) nogil
+    RCP[const Integer] totient(RCP[const Integer] n) nogil
+    RCP[const Integer] carmichael(RCP[const Integer] n) nogil
+    bool multiplicative_order(const Ptr[RCP[Integer]] &o, RCP[const Integer] a,
+            RCP[const Integer] n) nogil
     int legendre(const Integer &a, const Integer &n) nogil
     int jacobi(const Integer &a, const Integer &n) nogil
     int kronecker(const Integer &a, const Integer &n) nogil
-    void nthroot_mod_list(vec_integer &roots, const RCP[const Integer] &n,
-            const RCP[const Integer] &a, const RCP[const Integer] &m) nogil
-    bool nthroot_mod(const Ptr[RCP[Integer]] &root, const RCP[const Integer] &n,
-            const RCP[const Integer] &a, const RCP[const Integer] &m) nogil
-    bool powermod(const Ptr[RCP[Integer]] &powm, const RCP[const Integer] &a,
-            const RCP[const Number] &b, const RCP[const Integer] &m) nogil
-    void powermod_list(vec_integer &powm, const RCP[const Integer] &a,
-            const RCP[const Number] &b, const RCP[const Integer] &m) nogil
+    void nthroot_mod_list(vec_integer &roots, RCP[const Integer] n,
+            RCP[const Integer] a, RCP[const Integer] m) nogil
+    bool nthroot_mod(const Ptr[RCP[Integer]] &root, RCP[const Integer] n,
+            RCP[const Integer] a, RCP[const Integer] m) nogil
+    bool powermod(const Ptr[RCP[Integer]] &powm, RCP[const Integer] a,
+            RCP[const Number] b, RCP[const Integer] m) nogil
+    void powermod_list(vec_integer &powm, RCP[const Integer] a,
+            RCP[const Number] b, RCP[const Integer] m) nogil
 
     void sieve_generate_primes "SymEngine::Sieve::generate_primes"(vector[unsigned] &primes, unsigned limit) nogil
 
