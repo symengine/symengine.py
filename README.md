@@ -24,9 +24,9 @@ Install prerequisites.
     CMake       >= 2.8.7
     Python2     >= 2.7      or Python3 >= 3.3
     Cython      >= 0.19.1
-    SymEngine   >= 0.1.0
+    SymEngine   >= 0.2.0
 
-For SymEngine, only a specific commit (see symengine_version.txt) is supported.
+For SymEngine, only a specific commit/tag (see symengine_version.txt) is supported.
 Latest git master branch may not work as there may be breaking changes in SymEngine.
 
 Python wrappers can be installed by,
