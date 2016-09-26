@@ -38,8 +38,7 @@ env:
   - PYTHON_VERSION="2.7" BUILD_SHARED_LIBS="yes"
 
   # These test the setup.py file
-  - PYTHON_VERSION="2.6" WITH_MPFR="yes" INTEGER_CLASS="gmp"
-  - PYTHON_VERSION="2.7" WITH_MPC="yes"
+  - PYTHON_VERSION="2.7" WITH_MPFR="yes" INTEGER_CLASS="gmp"
   - PYTHON_VERSION="3.3" WITH_MPC="yes"
   - PYTHON_VERSION="3.4" WITH_MPFR="yes" WITH_NUMPY="yes"
   - PYTHON_VERSION="3.5" WITH_MPFR="yes" WITH_NUMPY="yes"

@@ -4,8 +4,8 @@ import subprocess
 import sys
 
 # Make sure the system has the right Python version.
-if sys.version_info[:2] < (2, 6):
-    print("SymEngine requires Python 2.6 or newer. Python %d.%d detected" % sys.version_info[:2])
+if sys.version_info[:2] < (2, 7):
+    print("SymEngine requires Python 2.7 or newer. Python %d.%d detected" % sys.version_info[:2])
     sys.exit(-1)
 
 # use setuptools by default as per the official advice at:
@@ -177,7 +177,7 @@ Optional thin Python wrappers (SymEngine) allow easy usage from Python and
 integration with SymPy and Sage.'''
 
 setup(name = "symengine",
-      version="0.1.0.dev",
+      version="0.2.0",
       description = "Python library providing wrappers to SymEngine",
       setup_requires = ['cython>=0.19.1'],
       long_description = long_description,
@@ -196,7 +196,6 @@ setup(name = "symengine",
         'Topic :: Scientific/Engineering',
         'Topic :: Scientific/Engineering :: Mathematics',
         'Topic :: Scientific/Engineering :: Physics',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
