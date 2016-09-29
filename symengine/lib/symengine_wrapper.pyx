@@ -365,6 +365,21 @@ class DictBasic(_DictBasic, collections.MutableMapping):
     def __repr__(self):
         return self.__str__()
 
+def get_dict(*args):
+    if len(args) == 2:
+        arg = {args[0]: args[1]}
+    elif len(args) == 1:
+        arg = args[0]
+    else:
+        raise TypeError("subs/msubs takes one or two arguments (%d given)" % \
+                len(args))
+    if isinstance(arg, DictBasic):
+        return arg
+    cdef _DictBasic D = DictBasic()
+    for k, v in arg.items():
+        D.add(k, v)
+    return D
+
 
 cdef class Basic(object):
 
@@ -467,49 +482,24 @@ cdef class Basic(object):
         cdef Basic s = sympify(x)
         return c2py(symengine.diff(self.thisptr, s.thisptr))
 
+    #TODO: deprecate this
     def subs_dict(Basic self not None, subs_dict):
-        cdef _DictBasic D
-        if isinstance(subs_dict, DictBasic):
-          D = subs_dict
-          return c2py(symengine.ssubs(self.thisptr, D.c))
-        cdef symengine.map_basic_basic d
-        cdef Basic K, V
-        for k in subs_dict:
-            K = sympify(k)
-            V = sympify(subs_dict[k])
-            d[K.thisptr] = V.thisptr
-        return c2py(symengine.ssubs(self.thisptr, d))
+        cdef _DictBasic D = get_dict(*args)
+        return c2py(symengine.msubs(self.thisptr, D.c))
 
+    #TODO: deprecate this
     def subs_oldnew(Basic self not None, old, new):
         return self.subs_dict({old: new})
 
     def subs(Basic self not None, *args):
-        if len(args) == 1:
-            return self.subs_dict(args[0])
-        elif len(args) == 2:
-            return self.subs_oldnew(args[0], args[1])
-        else:
-            raise TypeError("subs() takes one or two arguments (%d given)" % \
-                    len(args))
+        cdef _DictBasic D = get_dict(*args)
+        return c2py(symengine.msubs(self.thisptr, D.c))
 
     xreplace = subs
 
     def msubs(Basic self not None, *args):
-        if len(args) == 2:
-            arg = {args[0]: args[1]}
-        else:
-            arg = args[0]
-        cdef _DictBasic D
-        if isinstance(arg, DictBasic):
-          D = arg
-          return c2py(symengine.msubs(self.thisptr, D.c))
-        cdef symengine.map_basic_basic d
-        cdef Basic K, V
-        for k in arg:
-            K = sympify(k)
-            V = sympify(arg[k])
-            d[K.thisptr] = V.thisptr
-        return c2py(symengine.msubs(self.thisptr, d))
+        cdef _DictBasic D = get_dict(*args)
+        return c2py(symengine.msubs(self.thisptr, D.c))
 
     def n(self, prec = 53, real = False):
         if real:
@@ -1721,14 +1711,20 @@ cdef class DenseMatrix(MatrixBase):
         return self.transpose()
 
     def _applyfunc(self, f):
-        for i in range(self.nrows()):
-            for j in range(self.ncols()):
-                e_ = self._set(i, j, f(self._get(i, j)))
+        cdef int nr = self.nrows()
+        cdef int nc = self.ncols()
+        for i in range(nr):
+            for j in range(nc):
+                self._set(i, j, f(self._get(i, j)))
 
     def applyfunc(self, f):
-        out = DenseMatrix(self)
+        cdef DenseMatrix out = DenseMatrix(self)
         out._applyfunc(f)
         return out
+
+    def msubs(self, *args):
+        cdef _DictBasic D = get_dict(*args)
+        return self.applyfunc(lambda x: x.msubs(D))
 
     def diff(self, x):
         cdef Basic x_ = sympify(x)
@@ -1738,8 +1734,10 @@ cdef class DenseMatrix(MatrixBase):
         return R
 
     #TODO: implement this in C++
-    def subs(self, subs_dict):
-        return self.applyfunc(lambda y: y.subs(subs_dict))
+    def subs(self, *args):
+        cdef _DictBasic D = get_dict(*args)
+        return self.applyfunc(lambda x: x.subs(D))
+
 
     @property
     def free_symbols(self):
