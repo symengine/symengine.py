@@ -6,7 +6,7 @@ sys.path = ["../sympy", "../pydy", "../symengine.py"] + sys.path
 import sympy
 import symengine
 import pydy
-from pydy.models import n_link_pendulum_on_cart
+from sympy.physics.mechanics.models import n_link_pendulum_on_cart
 
 print(sympy.__file__)
 print(symengine.__file__)
