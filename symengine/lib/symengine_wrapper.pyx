@@ -483,7 +483,7 @@ cdef class Basic(object):
         return c2py(symengine.diff(self.thisptr, s.thisptr))
 
     #TODO: deprecate this
-    def subs_dict(Basic self not None, subs_dict):
+    def subs_dict(Basic self not None, *args):
         cdef _DictBasic D = get_dict(*args)
         return c2py(symengine.msubs(self.thisptr, D.c))
 
