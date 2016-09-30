@@ -12,7 +12,7 @@ import itertools
 from operator import mul
 from functools import reduce
 import collections
-
+import warnings
 
 include "config.pxi"
 
@@ -366,6 +366,12 @@ class DictBasic(_DictBasic, collections.MutableMapping):
         return self.__str__()
 
 def get_dict(*args):
+    """
+    Returns a DictBasic instance from args. Inputs can be,
+        1. a DictBasic
+        2. a Python dictionary
+        3. two args old, new
+    """
     if len(args) == 2:
         arg = {args[0]: args[1]}
     elif len(args) == 1:
@@ -482,18 +488,17 @@ cdef class Basic(object):
         cdef Basic s = sympify(x)
         return c2py(symengine.diff(self.thisptr, s.thisptr))
 
-    #TODO: deprecate this
     def subs_dict(Basic self not None, *args):
-        cdef _DictBasic D = get_dict(*args)
-        return c2py(symengine.msubs(self.thisptr, D.c))
+        warnings.warn("subs_dict() is deprecated. Use subs() instead", DeprecationWarning)
+        return self.subs(*args)
 
-    #TODO: deprecate this
     def subs_oldnew(Basic self not None, old, new):
-        return self.subs_dict({old: new})
+        warnings.warn("subs_oldnew() is deprecated. Use subs() instead", DeprecationWarning)
+        return self.subs({old: new})
 
     def subs(Basic self not None, *args):
         cdef _DictBasic D = get_dict(*args)
-        return c2py(symengine.msubs(self.thisptr, D.c))
+        return c2py(symengine.ssubs(self.thisptr, D.c))
 
     xreplace = subs
 
