@@ -5,8 +5,8 @@ set -e
 # Echo each command
 set -x
 
-# Build and install python wrappers
-python setup.py install --symengine-dir=$our_install_dir
+# Build inplace so that nosetests can be run inside source directory
+python setup.py install build_ext --inplace --symengine-dir=$our_install_dir
 
 # Test python wrappers
 if [[ "${WITH_SAGE}" != "yes" ]]; then
