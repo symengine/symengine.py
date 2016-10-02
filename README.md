@@ -35,12 +35,13 @@ Python wrappers can be installed by,
 
 Additional options to setup.py are
 
-    python setup.py install build
+    python setup.py install build_ext
         --symengine-dir=/path/to/symengine/install/dir          # Path to SymEngine install directory or build directory
         --compiler=mingw32|msvc|cygwin                          # Select the compiler for Windows
         --generator=cmake-generator                             # CMake Generator
         --build-type=Release|Debug                              # Set build-type for multi-configuration generators like MSVC
         --define="var1=value1;var2=value2"                      # Give options to CMake
+        --inplace                                               # Build the extension in source tree
 
 Standard options to setup.py like `--user`, `--prefix` can be used to configure install location
 

@@ -1,5 +1,6 @@
 from __future__ import print_function
-from os import getenv, path
+from os import getenv, path, makedirs
+import os
 import subprocess
 import sys
 
@@ -20,6 +21,7 @@ if use_distutils is not None:
         print("Value {} for USE_DISTUTILS treated as False".\
               format(use_distutils))
 
+from distutils.command.build_ext import build_ext as _build_ext
 from distutils.command.build import build as _build
 
 if use_setuptools:
@@ -40,26 +42,37 @@ cmake_build_type = ["Release"]
 def process_opts(opts):
     return ['-D'+'='.join(o) for o in opts]
 
+def get_build_dir(dist):
+    source_dir = path.dirname(path.realpath(__file__))
+    build = dist.get_command_obj('build')
+    build_ext = dist.get_command_obj('build_ext')
+    return source_dir if build_ext.inplace else build.build_platlib
+
+global_user_options = [
+    ('symengine-dir=', None, 'path to symengine installation or build directory'),
+    ('generator=', None, 'cmake build generator'),
+    ('build-type=', None, 'build type: Release or Debug'),
+    ('define=', 'D',
+     'options to cmake <var>:<type>=<value>'),
+]
+
 class BuildWithCmake(_build):
-    _build_opts = _build.user_options
-    user_options = [
-        ('symengine-dir=', None, 'path to symengine installation or build directory'),
-        ('generator=', None, 'cmake build generator'),
-        ('build-type=', None, 'build type: Release or Debug'),
-        ('define=', 'D',
-         'options to cmake <var>:<type>=<value>')
-    ]
+    sub_commands = [('build_ext', None)]
+
+class BuildExtWithCmake(_build_ext):
+    _build_opts = _build_ext.user_options
+    user_options = list(global_user_options)
     user_options.extend(_build_opts)
 
     def initialize_options(self):
-        _build.initialize_options(self)
+        _build_ext.initialize_options(self)
         self.define = None
         self.symengine_dir = None
         self.generator = None
         self.build_type = "Release"
 
     def finalize_options(self):
-        _build.finalize_options(self)
+        _build_ext.finalize_options(self)
         # The argument parsing will result in self.define being a string, but
         # it has to be a list of 2-tuples.
         # Multiple symbols can be separated with semi-colons.
@@ -78,15 +91,22 @@ class BuildWithCmake(_build):
         cmake_build_type[0] = self.build_type
 
     def cmake_build(self):
-        dir = path.dirname(path.realpath(__file__))
-        cmake_cmd = ["cmake", dir, "-DCMAKE_BUILD_TYPE=" + cmake_build_type[0]]
+        source_dir = path.dirname(path.realpath(__file__))
+        build_dir = get_build_dir(self.distribution)
+        if not path.exists(build_dir):
+            makedirs(build_dir)
+        if build_dir != source_dir and path.exists("CMakeCache.txt"):
+            os.remove("CMakeCache.txt")
+
+        cmake_cmd = ["cmake", source_dir, "-DCMAKE_BUILD_TYPE=" + cmake_build_type[0]]
         cmake_cmd.extend(process_opts(cmake_opts))
-        if not path.exists("CMakeCache.txt"):
+        if not path.exists(path.join(build_dir, "CMakeCache.txt")):
             cmake_cmd.extend(self.get_generator())
-        if subprocess.call(cmake_cmd) != 0:
+        if subprocess.call(cmake_cmd, cwd=build_dir) != 0:
             raise EnvironmentError("error calling cmake")
 
-        if subprocess.call(["cmake", "--build", ".", "--config", cmake_build_type[0]]) != 0:
+        if subprocess.call(["cmake", "--build", ".", "--config", cmake_build_type[0]],
+                cwd=build_dir) != 0:
             raise EnvironmentError("error building project")
 
     def get_generator(self):
@@ -108,25 +128,17 @@ class BuildWithCmake(_build):
 
     def run(self):
         self.cmake_build()
-        # can't use super() here because _build is an old style class in 2.7
-        _build.run(self)
+        # can't use super() here because _build_ext is an old style class in 2.7
+        _build_ext.run(self)
 
 class InstallWithCmake(_install):
     _install_opts = _install.user_options
-    user_options = [
-        ('symengine-dir=', None, 'path to symengine installation or build directory'),
-        ('generator=', None, 'cmake build generator'),
-        ('build-type=', None, 'build type: Release or Debug'),
-        ('define=', 'D',
-         'options to cmake <var>:<type>=<value>')
-    ]
+    user_options = list(global_user_options)
     user_options.extend(_install_opts)
 
     def initialize_options(self):
         _install.initialize_options(self)
         self.define = None
-        self.symengine_dir = None
-        self.generator = None
         self.build_type = "Release"
 
     def finalize_options(self):
@@ -140,27 +152,24 @@ class InstallWithCmake(_install):
                            tuple(ss.strip() for ss in s.split('='))
                            for s in defines]
             cmake_opts.extend(self.define)
-        if self.symengine_dir:
-            cmake_opts.extend([('SymEngine_DIR', self.symengine_dir)])
-
-        if self.generator:
-            cmake_generator[0] = self.generator
 
         cmake_build_type[0] = self.build_type
         cmake_opts.extend([('PYTHON_INSTALL_PATH', self.install_platlib)])
         cmake_opts.extend([('PYTHON_INSTALL_HEADER_PATH', self.install_headers)])
 
     def cmake_install(self):
-        dir = path.dirname(path.realpath(__file__))
-        cmake_cmd = ["cmake", dir]
+        source_dir = path.dirname(path.realpath(__file__))
+        build_dir = get_build_dir(self.distribution)
+        cmake_cmd = ["cmake", source_dir]
         cmake_cmd.extend(process_opts(cmake_opts))
 
         # CMake has to be called here to update PYTHON_INSTALL_PATH
         # if build and install were called separately by the user
-        if subprocess.call(cmake_cmd) != 0:
+        if subprocess.call(cmake_cmd, cwd=build_dir) != 0:
             raise EnvironmentError("error calling cmake")
 
-        if subprocess.call(["cmake", "--build", ".", "--config", cmake_build_type[0], "--target", "install"]) != 0:
+        if subprocess.call(["cmake", "--build", ".", "--config", cmake_build_type[0], "--target", "install"],
+                cwd=build_dir) != 0:
             raise EnvironmentError("error installing")
 
         import compileall
@@ -187,6 +196,7 @@ setup(name = "symengine",
       url = "https://github.com/symengine/symengine.py",
       cmdclass={
           'build' : BuildWithCmake,
+          'build_ext' : BuildExtWithCmake,
           'install' : InstallWithCmake,
           },
       classifiers=[
