@@ -741,12 +741,12 @@ cdef class Integer(Number):
             # Too big, need to use mpz
             int_ok = False
             tmp = str(i).encode("utf-8")
-            i__ = symengine.integer_class(tmp, 10)
+            i__ = symengine.integer_class(tmp)
         # Note: all other exceptions are left intact
         if int_ok:
-            self.thisptr = symengine.make_rcp_Integer(i_)
+            self.thisptr = <RCP[const symengine.Basic]>symengine.integer(i_)
         else:
-            self.thisptr = symengine.make_rcp_Integer(i__)
+            self.thisptr = <RCP[const symengine.Basic]>symengine.integer(i__)
 
     def __hash__(self):
         return deref(self.thisptr).hash()
