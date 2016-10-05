@@ -139,6 +139,8 @@ class InstallWithCmake(_install):
     def initialize_options(self):
         _install.initialize_options(self)
         self.define = None
+        self.symengine_dir = None
+        self.generator = None
         self.build_type = "Release"
 
     def finalize_options(self):
