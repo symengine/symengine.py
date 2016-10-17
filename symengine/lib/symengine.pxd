@@ -703,12 +703,18 @@ cdef extern from "<symengine/eval_double.h>" namespace "SymEngine":
 cdef extern from "<symengine/lambda_double.h>" namespace "SymEngine":
     cdef cppclass LambdaRealDoubleVisitor:
         LambdaRealDoubleVisitor() nogil
-        void init(const vec_basic &x, const Basic &b) nogil except +
-        double call(const vector[double] &x) nogil except +
+        void init(const vec_basic &x, const vec_basic &b) nogil except +
+        double call(double *r, const double *x) nogil except +
     cdef cppclass LambdaComplexDoubleVisitor:
         LambdaComplexDoubleVisitor() nogil
-        void init(const vec_basic &x, const Basic &b) nogil except +
-        double complex call(const vector[double complex] &x) nogil except +
+        void init(const vec_basic &x, const vec_basic &b) nogil except +
+        double complex call(double complex *r, const double complex *x) nogil except +
+
+cdef extern from "<symengine/llvm_double.h>" namespace "SymEngine":
+    cdef cppclass LLVMDoubleVisitor:
+        LLVMDoubleVisitor() nogil
+        void init(const vec_basic &x, const vec_basic &b) nogil except +
+        double call(double *r, const double *x) nogil except +
 
 cdef extern from "<symengine/series.h>" namespace "SymEngine":
     cdef cppclass SeriesCoeffInterface:
