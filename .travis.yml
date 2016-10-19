@@ -56,6 +56,7 @@ matrix:
           sources:
           - ubuntu-toolchain-r-test
           - boost-latest
+          - george-edison55-precise-backports
           packages:
           - libgmp-dev
           - libmpfr-dev
@@ -63,6 +64,8 @@ matrix:
           - libboost-serialization1.55-dev
           - libboost-iostreams1.55-dev
           - g++-4.8
+          - cmake
+          - cmake-data
     - env: BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="3.5"
       compiler: clang
       os: linux
@@ -90,8 +93,6 @@ matrix:
           - lrzip
 
 install:
-  # Workaround till symengine C++ repo's script is fixed
-  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then brew uninstall cmake; fi
   - export PYTHON_SOURCE_DIR=`pwd`
   - export TEST_CPP="no"
 
