@@ -2845,17 +2845,22 @@ def LambdifyCSE(args, exprs, real=True, cse=None, concatenate=None):
         from sympy import cse
     if concatenate is None:
         from numpy import concatenate
-    subs, new_exprs = cse(exprs)
-    cse_symbs, cse_exprs = zip(*subs)
-    lmb = Lambdify(tuple(args) + cse_symbs, new_exprs, real=real)
-    cse_lambda = Lambdify(args, cse_exprs, real=real)
+    from sympy import sympify as ssympify
+    subs, new_exprs = cse([ssympify(expr) for expr in exprs])
+    if subs:
+        cse_symbs, cse_exprs = zip(*subs)
+        lmb = Lambdify(tuple(args) + cse_symbs, new_exprs, real=real)
+        cse_lambda = Lambdify(args, cse_exprs, real=real)
 
-    def cb(inp, out=None, **kwargs):
-        cse_vals = cse_lambda(inp, **kwargs)
-        new_inp = concatenate((inp, cse_vals))
-        return lmb(new_inp, out, **kwargs)
+        def cb(inp, out=None, **kwargs):
+            cse_vals = cse_lambda(inp, **kwargs)
+            new_inp = concatenate((inp, cse_vals))
+            return lmb(new_inp, out, **kwargs)
 
-    return cb
+        return cb
+    else:
+        return Lambdify(args, exprs, real=real)
+
 
 def has_symbol(obj, symbol=None):
     cdef Basic b = sympify(obj)
