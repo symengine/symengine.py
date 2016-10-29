@@ -2598,8 +2598,8 @@ cdef class Lambdify(object):
     cdef size_t args_size, out_size
     cdef tuple out_shape
     cdef readonly bool real
-    cdef symengine.LambdaRealDoubleVisitor lambda_double
-    cdef symengine.LambdaComplexDoubleVisitor lambda_double_complex
+    cdef vector[symengine.LambdaRealDoubleVisitor] lambda_double
+    cdef vector[symengine.LambdaComplexDoubleVisitor] lambda_double_complex
 
     def __cinit__(self, args, exprs, bool real=True):
         cdef:
@@ -2641,9 +2641,11 @@ cdef class Lambdify(object):
                 outs_.push_back(e_.thisptr)
 
         if real:
-            self.lambda_double.init(args_, outs_)
+            self.lambda_double.resize(1)
+            self.lambda_double[0].init(args_, outs_)
         else:
-            self.lambda_double_complex.init(args_, outs_)
+            self.lambda_double_complex.resize(1)
+            self.lambda_double_complex[0].init(args_, outs_)
 
 
     cdef void _eval(self, ValueType[::1] inp, ValueType[::1] out):
@@ -2656,9 +2658,9 @@ cdef class Lambdify(object):
 
         # Convert expr_subs to doubles write to out
         if ValueType == cython.double:
-            self.lambda_double.call(&out[0], &inp[0])
+            self.lambda_double[0].call(&out[0], &inp[0])
         else:
-            self.lambda_double_complex.call(&out[0], &inp[0])
+            self.lambda_double_complex[0].call(&out[0], &inp[0])
 
     # the two cpdef:ed methods below may use void return type
     # once Cython 0.23 (from 2015) is acceptable as requirement.
