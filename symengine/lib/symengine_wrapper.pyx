@@ -2604,6 +2604,7 @@ cdef class Lambdify(object):
     def __cinit__(self, args, exprs, bool real=True):
         cdef:
             symengine.vec_basic args_
+            symengine.vec_basic outs_
             Basic e_
             size_t ri, ci, nr, nc
             symengine.MatrixBase *mtx
@@ -2626,11 +2627,6 @@ cdef class Lambdify(object):
                 e_ = sympify(e)
                 args_.push_back(e_.thisptr)
 
-        if self.real:
-            self.lambda_double.resize(self.out_size)
-        else:
-            self.lambda_double_complex.resize(self.out_size)
-
         if isinstance(exprs, DenseMatrix):
             nr = exprs.nrows()
             nc = exprs.ncols()
@@ -2638,21 +2634,21 @@ cdef class Lambdify(object):
             for ri in range(nr):
                 for ci in range(nc):
                     b_ = deref(mtx).get(ri, ci)
-                    if real:
-                        self.lambda_double[ri*nc+ci].init(args_, deref(b_))
-                    else:
-                        self.lambda_double_complex[ri*nc+ci].init(args_, deref(b_))
+                    outs_.push_back(b_)
         else:
             for e in ravel(exprs):
                 e_ = sympify(e)
-                if real:
-                    self.lambda_double[idx].init(args_, deref(e_.thisptr))
-                else:
-                    self.lambda_double_complex[idx].init(args_, deref(e_.thisptr))
-                idx += 1
+                outs_.push_back(e_.thisptr)
+
+        if real:
+            self.lambda_double.resize(1)
+            self.lambda_double[0].init(args_, outs_)
+        else:
+            self.lambda_double_complex.resize(1)
+            self.lambda_double_complex[0].init(args_, outs_)
+
 
     cdef void _eval(self, ValueType[::1] inp, ValueType[::1] out):
-        cdef vector[ValueType] inp_
         cdef size_t idx, ninp = inp.size, nout = out.size
 
         if inp.size != self.args_size:
@@ -2660,29 +2656,11 @@ cdef class Lambdify(object):
         if out.size != self.out_size:
             raise ValueError("Size of out incompatible with number of exprs.")
 
-        # Create the substitution "dict"
-        for idx in range(ninp):
-            inp_.push_back(inp[idx])
-
         # Convert expr_subs to doubles write to out
         if ValueType == cython.double:
-            self.as_real(inp_, out)
+            self.lambda_double[0].call(&out[0], &inp[0])
         else:
-            self.as_complex(inp_, out)
-
-    @cython.wraparound(False)
-    @cython.boundscheck(False)
-    cdef void as_real(self, vector[double] &vec, double[::1] out) nogil:
-        cdef size_t i
-        for i in range(self.out_size):
-            out[i] = self.lambda_double[i].call(vec)
-
-    @cython.wraparound(False)
-    @cython.boundscheck(False)
-    cdef void as_complex(self, vector[double complex] &vec, double complex[::1] out) nogil:
-        cdef size_t i
-        for i in range(self.out_size):
-            out[i] = self.lambda_double_complex[i].call(vec)
+            self.lambda_double_complex[0].call(&out[0], &inp[0])
 
     # the two cpdef:ed methods below may use void return type
     # once Cython 0.23 (from 2015) is acceptable as requirement.
