@@ -50,6 +50,15 @@ def test_Lambdify():
     assert allclose(l(range(n, n+len(args))),
                     [3*n+3, n**2, -1/(n+2), n*(n+1)*(n+2)])
 
+def test_Lambdify_LLVM():
+    if not se.have_llvm:
+        return
+    n = 7
+    args = x, y, z = se.symbols('x y z')
+    l = se.Lambdify(args, [x+y+z, x**2, (x-y)/z, x*y*z], llvm=True)
+    assert allclose(l(range(n, n+len(args))),
+                    [3*n+3, n**2, -1/(n+2), n*(n+1)*(n+2)])
+
 
 def _get_2_to_2by2_numpy():
     args = x, y = se.symbols('x y')
