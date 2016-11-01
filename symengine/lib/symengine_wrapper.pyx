@@ -2143,6 +2143,7 @@ have_mpfr = False
 have_mpc = False
 have_piranha = False
 have_flint = False
+have_llvm = False
 
 IF HAVE_SYMENGINE_MPFR:
     have_mpfr = True
@@ -2165,6 +2166,9 @@ IF HAVE_SYMENGINE_PIRANHA:
 
 IF HAVE_SYMENGINE_FLINT:
     have_flint = True
+
+IF HAVE_SYMENGINE_LLVM:
+    have_llvm = True
 
 def eval(x, long prec):
     if prec <= 53:
@@ -2566,7 +2570,7 @@ ctypedef fused ValueType:
     cython.double
 
 
-cdef class Lambdify(object):
+cdef class _Lambdify(object):
     """
     Lambdify instances are callbacks that numerically evaluate their symbolic
     expressions from user provided input (real or complex) into (possibly user
@@ -2598,22 +2602,21 @@ cdef class Lambdify(object):
     cdef size_t args_size, out_size
     cdef tuple out_shape
     cdef readonly bool real
-    cdef vector[symengine.LambdaRealDoubleVisitor] lambda_double
-    cdef vector[symengine.LambdaComplexDoubleVisitor] lambda_double_complex
 
     def __cinit__(self, args, exprs, bool real=True):
-        cdef:
-            symengine.vec_basic args_
-            symengine.vec_basic outs_
-            Basic e_
-            size_t ri, ci, nr, nc
-            symengine.MatrixBase *mtx
-            RCP[const symengine.Basic] b_
-            int idx = 0
         self.real = real
         self.out_shape = get_shape(exprs)
         self.args_size = _size(args)
         self.out_size = reduce(mul, self.out_shape)
+
+
+    def __init__(self, args, exprs, bool real=True):
+        cdef:
+            Basic e_
+            size_t ri, ci, nr, nc
+            symengine.MatrixBase *mtx
+            RCP[const symengine.Basic] b_
+            symengine.vec_basic args_, outs_
 
         if isinstance(args, DenseMatrix):
             nr = args.nrows()
@@ -2640,35 +2643,32 @@ cdef class Lambdify(object):
                 e_ = sympify(e)
                 outs_.push_back(e_.thisptr)
 
-        if real:
-            self.lambda_double.resize(1)
-            self.lambda_double[0].init(args_, outs_)
-        else:
-            self.lambda_double_complex.resize(1)
-            self.lambda_double_complex[0].init(args_, outs_)
+        self._init(args_, outs_)
 
+    cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_):
+        raise ValueError("Not supported")
 
-    cdef void _eval(self, ValueType[::1] inp, ValueType[::1] out):
-        cdef size_t idx, ninp = inp.size, nout = out.size
+    cdef void _eval_real(self, double[::1] inp, double[::1] out):
+        raise ValueError("Not supported")
 
-        if inp.size != self.args_size:
-            raise ValueError("Size of inp incompatible with number of args.")
-        if out.size != self.out_size:
-            raise ValueError("Size of out incompatible with number of exprs.")
-
-        # Convert expr_subs to doubles write to out
-        if ValueType == cython.double:
-            self.lambda_double[0].call(&out[0], &inp[0])
-        else:
-            self.lambda_double_complex[0].call(&out[0], &inp[0])
+    cdef void _eval_complex(self, double complex[::1] inp, double complex[::1] out):
+        raise ValueError("Not supported")
 
     # the two cpdef:ed methods below may use void return type
     # once Cython 0.23 (from 2015) is acceptable as requirement.
     cpdef unsafe_real(self, double[::1] inp, double[::1] out):
-        self._eval(inp, out)
+        if inp.size != self.args_size:
+            raise ValueError("Size of inp incompatible with number of args.")
+        if out.size != self.out_size:
+            raise ValueError("Size of out incompatible with number of exprs.")
+        self._eval_real(inp, out)
 
     cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out):
-        self._eval(inp, out)
+        if inp.size != self.args_size:
+            raise ValueError("Size of inp incompatible with number of args.")
+        if out.size != self.out_size:
+            raise ValueError("Size of out incompatible with number of exprs.")
+        self._eval_complex(inp, out)
 
     def __call__(self, inp, out=None, use_numpy=None):
         """
@@ -2712,18 +2712,16 @@ cdef class Lambdify(object):
             import numpy as np
 
         if use_numpy:
+            numpy_dtype = np.float64 if self.real else np.complex128
             if isinstance(inp, DenseMatrix):
+                arr = np.empty(inp_size, dtype=numpy_dtype)
                 if self.real:
-                    arr = np.empty(inp_size, dtype=np.float64)
                     inp.dump_real(arr)
-                    inp = arr
                 else:
-                    arr = np.empty(inp_size, dtype=np.complex128)
                     inp.dump_complex(arr)
-                    inp = arr
+                inp = arr
             else:
-                inp = np.ascontiguousarray(inp, dtype=np.float64 if
-                                           self.real else np.complex128)
+                inp = np.ascontiguousarray(inp, dtype=numpy_dtype)
             if inp.ndim > 1:
                 inp = inp.ravel()
         else:
@@ -2732,8 +2730,7 @@ cdef class Lambdify(object):
         if out is None:
             # allocate output container
             if use_numpy:
-                out = np.empty(new_out_size, dtype=np.float64 if
-                               self.real else np.complex128)
+                out = np.empty(new_out_size, dtype=numpy_dtype)
             else:
                 if self.real:
                     out = cython.view.array((new_out_size,),
@@ -2749,7 +2746,7 @@ cdef class Lambdify(object):
                 except AttributeError:
                     out = np.asarray(out)
                     out_dtype = out.dtype
-                if out_dtype != (np.float64 if self.real else np.complex128):
+                if out_dtype != numpy_dtype:
                     raise TypeError("Output array is of incorrect type")
                 if out.size < new_out_size:
                     raise ValueError("Incompatible size of output argument")
@@ -2801,6 +2798,45 @@ cdef class Lambdify(object):
                 out = tmp
         return out
 
+cdef class LambdaDouble(_Lambdify):
+
+    cdef vector[symengine.LambdaRealDoubleVisitor] lambda_double
+    cdef vector[symengine.LambdaComplexDoubleVisitor] lambda_double_complex
+
+    cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_):
+        if self.real:
+            self.lambda_double.resize(1)
+            self.lambda_double[0].init(args_, outs_)
+        else:
+            self.lambda_double_complex.resize(1)
+            self.lambda_double_complex[0].init(args_, outs_)
+
+    cdef void _eval_real(self, double[::1] inp, double[::1] out):
+        self.lambda_double[0].call(&out[0], &inp[0])
+
+    cdef void _eval_complex(self, double complex[::1] inp, double complex[::1] out):
+        self.lambda_double_complex[0].call(&out[0], &inp[0])
+
+
+IF HAVE_SYMENGINE_LLVM:
+    cdef class LLVMDouble(_Lambdify):
+
+        cdef vector[symengine.LLVMDoubleVisitor] lambda_double
+
+        cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_):
+            self.lambda_double.resize(1)
+            self.lambda_double[0].init(args_, outs_)
+
+        cdef void _eval_real(self, double[::1] inp, double[::1] out):
+            self.lambda_double[0].call(&out[0], &inp[0])
+
+
+def Lambdify(args, exprs, bool real=True, bool llvm=False):
+    IF HAVE_SYMENGINE_LLVM:
+        if llvm:
+            return LLVMDouble(args, exprs, real)
+
+    return LambdaDouble(args, exprs, real)
 
 def LambdifyCSE(args, exprs, real=True, cse=None, concatenate=None):
     """

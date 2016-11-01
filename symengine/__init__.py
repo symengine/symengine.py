@@ -1,6 +1,7 @@
 from .lib.symengine_wrapper import (Symbol, Integer, sympify, SympifyError,
         Add, Mul, Pow, exp, log, gamma, sqrt, function_symbol, I, E, pi,
-        have_mpfr, have_mpc, RealDouble, ComplexDouble, DenseMatrix, Matrix,
+        have_mpfr, have_mpc, have_flint, have_piranha, have_llvm,
+        RealDouble, ComplexDouble, DenseMatrix, Matrix,
         sin, cos, tan, cot, csc, sec, asin, acos, atan, acot, acsc, asec,
         sinh, cosh, tanh, coth, asinh, acosh, atanh, acoth, Lambdify,
         LambdifyCSE, DictBasic, series, symarray, diff, zeros, eye, diag,
