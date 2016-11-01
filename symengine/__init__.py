@@ -14,7 +14,7 @@ if have_mpfr:
 if have_mpc:
     from .lib.symengine_wrapper import ComplexMPC
 
-__version__ = "0.1.0.dev"
+__version__ = "0.2.1.dev"
 
 def test():
     import pytest, os
