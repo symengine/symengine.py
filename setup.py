@@ -188,7 +188,7 @@ Optional thin Python wrappers (SymEngine) allow easy usage from Python and
 integration with SymPy and Sage.'''
 
 setup(name = "symengine",
-      version="0.2.0",
+      version="0.2.1.dev",
       description = "Python library providing wrappers to SymEngine",
       setup_requires = ['cython>=0.19.1'],
       long_description = long_description,

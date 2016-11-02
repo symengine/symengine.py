@@ -46,7 +46,18 @@ def allclose(vec1, vec2, rtol=1e-13, atol=1e-13):
 def test_Lambdify():
     n = 7
     args = x, y, z = se.symbols('x y z')
-    l = se.Lambdify(args, [x+y+z, x**2, (x-y)/z, x*y*z])
+    l = se.Lambdify(args, [x+y+z, x**2, (x-y)/z, x*y*z], backend='lambda')
+    assert allclose(l(range(n, n+len(args))),
+                    [3*n+3, n**2, -1/(n+2), n*(n+1)*(n+2)])
+
+def test_Lambdify_LLVM():
+    n = 7
+    args = x, y, z = se.symbols('x y z')
+    if not se.have_llvm:
+        raises(ValueError, lambda: se.Lambdify(args, [x+y+z, x**2, (x-y)/z, x*y*z],
+                                                      backend='llvm'))
+        return
+    l = se.Lambdify(args, [x+y+z, x**2, (x-y)/z, x*y*z], backend='llvm')
     assert allclose(l(range(n, n+len(args))),
                     [3*n+3, n**2, -1/(n+2), n*(n+1)*(n+2)])
 
