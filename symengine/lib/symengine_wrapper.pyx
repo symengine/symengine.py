@@ -2831,10 +2831,13 @@ IF HAVE_SYMENGINE_LLVM:
             self.lambda_double[0].call(&out[0], &inp[0])
 
 
-def Lambdify(args, exprs, bool real=True, bool llvm=False):
-    IF HAVE_SYMENGINE_LLVM:
-        if llvm:
+def Lambdify(args, exprs, bool real=True, backend="lambda"):
+    if backend == "llvm":
+        IF HAVE_SYMENGINE_LLVM:
             return LLVMDouble(args, exprs, real)
+        ELSE:
+            raise ValueError("""llvm backend is chosen, but symengine is not compiled
+                                with llvm support.""")
 
     return LambdaDouble(args, exprs, real)
 
