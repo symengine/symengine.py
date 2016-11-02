@@ -2648,27 +2648,27 @@ cdef class _Lambdify(object):
     cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_):
         raise ValueError("Not supported")
 
-    cdef void _eval_real(self, double[::1] inp, double[::1] out):
+    cpdef unsafe_real(self, double[::1] inp, double[::1] out):
         raise ValueError("Not supported")
 
-    cdef void _eval_complex(self, double complex[::1] inp, double complex[::1] out):
+    cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out):
         raise ValueError("Not supported")
 
     # the two cpdef:ed methods below may use void return type
     # once Cython 0.23 (from 2015) is acceptable as requirement.
-    cpdef unsafe_real(self, double[::1] inp, double[::1] out):
+    cpdef eval_real(self, double[::1] inp, double[::1] out):
         if inp.size != self.args_size:
             raise ValueError("Size of inp incompatible with number of args.")
         if out.size != self.out_size:
             raise ValueError("Size of out incompatible with number of exprs.")
-        self._eval_real(inp, out)
+        self.unsafe_real(inp, out)
 
-    cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out):
+    cpdef eval_complex(self, double complex[::1] inp, double complex[::1] out):
         if inp.size != self.args_size:
             raise ValueError("Size of inp incompatible with number of args.")
         if out.size != self.out_size:
             raise ValueError("Size of out incompatible with number of exprs.")
-        self._eval_complex(inp, out)
+        self.unsafe_complex(inp, out)
 
     def __call__(self, inp, out=None, use_numpy=None):
         """
@@ -2811,10 +2811,10 @@ cdef class LambdaDouble(_Lambdify):
             self.lambda_double_complex.resize(1)
             self.lambda_double_complex[0].init(args_, outs_)
 
-    cdef void _eval_real(self, double[::1] inp, double[::1] out):
+    cpdef unsafe_real(self, double[::1] inp, double[::1] out):
         self.lambda_double[0].call(&out[0], &inp[0])
 
-    cdef void _eval_complex(self, double complex[::1] inp, double complex[::1] out):
+    cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out):
         self.lambda_double_complex[0].call(&out[0], &inp[0])
 
 
@@ -2827,7 +2827,7 @@ IF HAVE_SYMENGINE_LLVM:
             self.lambda_double.resize(1)
             self.lambda_double[0].init(args_, outs_)
 
-        cdef void _eval_real(self, double[::1] inp, double[::1] out):
+        cpdef unsafe_real(self, double[::1] inp, double[::1] out):
             self.lambda_double[0].call(&out[0], &inp[0])
 
 
