@@ -2580,8 +2580,10 @@ cdef class _Lambdify(object):
     Parameters
     ----------
     args: iterable of Symbols
-    exprs: array_like of expressions
+    \*exprs: array_like of expressions
         the shape of exprs is preserved
+    real : bool
+        Whether datatype is ``double`` (``double complex`` otherwise).
 
     Returns
     -------
@@ -2599,18 +2601,22 @@ cdef class _Lambdify(object):
     [ 9., 24.]
 
     """
-    cdef size_t args_size, out_size
-    cdef tuple out_shape
+    cdef size_t args_size, tot_out_size
+    cdef list out_shapes
+    cdef vector[int] out_sizes, accum_out_sizes
     cdef readonly bool real
+    cdef readonly int n_exprs
 
-    def __cinit__(self, args, exprs, bool real=True):
+    def __cinit__(self, args, *exprs, bool real=True):
         self.real = real
-        self.out_shape = get_shape(exprs)
+        self.out_shapes = [get_shape(expr) for expr in exprs]
+        self.n_exprs = len(exprs)
         self.args_size = _size(args)
-        self.out_size = reduce(mul, self.out_shape)
+        self.out_sizes = [reduce(mul, shape) for shape in self.out_shapes]
+        self.accum_out_sizes = [sum(self.out_sizes[:i]) for i in range(self.n_exprs + 1)]
+        self.tot_out_size = sum(self.out_sizes)
 
-
-    def __init__(self, args, exprs, bool real=True):
+    def __init__(self, args, *exprs, bool real=True):
         cdef:
             Basic e_
             size_t ri, ci, nr, nc
@@ -2618,30 +2624,22 @@ cdef class _Lambdify(object):
             RCP[const symengine.Basic] b_
             symengine.vec_basic args_, outs_
 
-        if isinstance(args, DenseMatrix):
-            nr = args.nrows()
-            nc = args.ncols()
-            mtx = (<DenseMatrix>args).thisptr
-            for ri in range(nr):
-                for ci in range(nc):
-                   args_.push_back(deref(mtx).get(ri, ci))
-        else:
-            for e in args:
-                e_ = sympify(e)
-                args_.push_back(e_.thisptr)
-
-        if isinstance(exprs, DenseMatrix):
-            nr = exprs.nrows()
-            nc = exprs.ncols()
-            mtx = (<DenseMatrix>exprs).thisptr
-            for ri in range(nr):
-                for ci in range(nc):
-                    b_ = deref(mtx).get(ri, ci)
-                    outs_.push_back(b_)
-        else:
-            for e in ravel(exprs):
-                e_ = sympify(e)
-                outs_.push_back(e_.thisptr)
+        for e in args:
+            e_ = sympify(e)
+            args_.push_back(e_.thisptr)
+        for curr_expr in exprs:
+            if isinstance(curr_expr, DenseMatrix):
+                nr = curr_expr.nrows()
+                nc = curr_expr.ncols()
+                mtx = (<DenseMatrix>curr_expr).thisptr
+                for ri in range(nr):
+                    for ci in range(nc):
+                        b_ = deref(mtx).get(ri, ci)
+                        outs_.push_back(b_)
+            else:
+                for e in ravel(curr_expr):
+                    e_ = sympify(e)
+                    outs_.push_back(e_.thisptr)
 
         self._init(args_, outs_)
 
@@ -2659,14 +2657,14 @@ cdef class _Lambdify(object):
     cpdef eval_real(self, double[::1] inp, double[::1] out):
         if inp.size != self.args_size:
             raise ValueError("Size of inp incompatible with number of args.")
-        if out.size != self.out_size:
+        if out.size != self.tot_out_size:
             raise ValueError("Size of out incompatible with number of exprs.")
         self.unsafe_real(inp, out)
 
     cpdef eval_complex(self, double complex[::1] inp, double complex[::1] out):
         if inp.size != self.args_size:
             raise ValueError("Size of inp incompatible with number of args.")
-        if out.size != self.out_size:
+        if out.size != self.tot_out_size:
             raise ValueError("Size of out incompatible with number of exprs.")
         self.unsafe_complex(inp, out)
 
@@ -2677,11 +2675,18 @@ cdef class _Lambdify(object):
         inp: array_like
             last dimension must be equal to number of arguments.
         out: array_like or None (default)
-            Allows for for low-overhead use (output argument), if None:
-            an output container will be allocated (NumPy ndarray or
-            cython.view.array)
+            Allows for for low-overhead use (output argument, must be contiguous).
+            If ``None``: an output container will be allocated (NumPy ndarray or
+            cython.view.array). If ``len(exprs) > 0`` output is found in the corresponding
+            order. Note that ``out`` is not reshaped.
         use_numpy: bool (default: None)
             None -> use numpy if available
+
+        Returns
+        -------
+        If ``len(exprs) == 1``: ``numpy.ndarray`` or ``cython.view.array``, otherwise
+        a tuple of such.
+
         """
         cdef cython.view.array tmp
         cdef double[::1] real_out_view, real_inp_view
@@ -2693,14 +2698,15 @@ cdef class _Lambdify(object):
         except TypeError:
             inp = tuple(inp)
             inp_shape = (len(inp),)
-        inp_size = reduce(mul, inp_shape)
+        inp_size = long(reduce(mul, inp_shape))
         if inp_size % self.args_size != 0:
             raise ValueError("Broadcasting failed")
         nbroadcast = inp_size // self.args_size
         if nbroadcast > 1 and self.args_size == 1 and inp_shape[-1] != 1:  # Implicit reshape
             inp_shape = inp_shape + (1,)
-        new_out_shape = inp_shape[:-1] + self.out_shape
-        new_out_size = nbroadcast * self.out_size
+        new_out_shapes = [inp_shape[:-1] + out_shape for out_shape in self.out_shapes]
+        new_out_sizes = [nbroadcast*out_size for out_size in self.out_sizes]
+        new_tot_out_size = nbroadcast * self.tot_out_size
         if use_numpy is None:
             try:
                 import numpy as np
@@ -2730,16 +2736,17 @@ cdef class _Lambdify(object):
         if out is None:
             # allocate output container
             if use_numpy:
-                out = np.empty(new_out_size, dtype=numpy_dtype)
+                out = np.empty(new_tot_out_size, dtype=numpy_dtype)
             else:
                 if self.real:
-                    out = cython.view.array((new_out_size,),
+                    out = cython.view.array((new_tot_out_size,),
                                             sizeof(double), format='d')
                 else:
-                    out = cython.view.array((new_out_size,),
+                    out = cython.view.array((new_tot_out_size,),
                                             sizeof(double complex), format='Zd')
-            reshape_out = len(new_out_shape) > 1
+            reshape_outs = len(new_out_shapes[0]) > 1
         else:
+            reshape_outs = False
             if use_numpy:
                 try:
                     out_dtype = out.dtype
@@ -2748,55 +2755,63 @@ cdef class _Lambdify(object):
                     out_dtype = out.dtype
                 if out_dtype != numpy_dtype:
                     raise TypeError("Output array is of incorrect type")
-                if out.size < new_out_size:
+                if out.size < new_tot_out_size:
                     raise ValueError("Incompatible size of output argument")
                 if not out.flags['C_CONTIGUOUS']:
                     raise ValueError("Output argument needs to be C-contiguous")
-                for idx, length in enumerate(out.shape[-len(self.out_shape)::-1]):
-                    if length < self.out_shape[-idx]:
-                        raise ValueError("Incompatible shape of output argument")
+                if self.n_exprs == 1:
+                    for idx, length in enumerate(out.shape[-len(self.out_shapes[0])::-1]):
+                        if length < self.out_shapes[0][-idx]:
+                            raise ValueError("Incompatible shape of output argument")
                 if not out.flags['WRITEABLE']:
                     raise ValueError("Output argument needs to be writeable")
                 if out.ndim > 1:
                     out = out.ravel()
-                    reshape_out = True
-                else:
-                    # The user passed a 1-dimensional output argument,
-                    # we trust the user to do the right thing.
-                    reshape_out = False
             else:
                 out = with_buffer(out, self.real)
-                reshape_out = False  # only reshape if we allocated.
         for idx in range(nbroadcast):
             if self.real:
                 real_inp_view = inp  # slicing cython.view.array does not give a memview
                 real_out_view = out
                 self.unsafe_real(real_inp_view[idx*self.args_size:(idx+1)*self.args_size],
-                                 real_out_view[idx*self.out_size:(idx+1)*self.out_size])
+                                 real_out_view[idx*self.tot_out_size:(idx+1)*self.tot_out_size])
             else:
                 complex_inp_view = inp
                 complex_out_view = out
                 self.unsafe_complex(complex_inp_view[idx*self.args_size:(idx+1)*self.args_size],
-                                    complex_out_view[idx*self.out_size:(idx+1)*self.out_size])
+                                    complex_out_view[idx*self.tot_out_size:(idx+1)*self.tot_out_size])
 
-        if use_numpy and reshape_out:
-            out = out.reshape(new_out_shape)
-        elif reshape_out:
-            if self.real:
-                tmp = cython.view.array(new_out_shape,
-                                        sizeof(double), format='d')
-                real_out_view = out
-                memcpy(<double *>tmp.data, &real_out_view[0],
-                       sizeof(double)*new_out_size)
-                out = tmp
-            else:
-                tmp = cython.view.array(new_out_shape,
-                                        sizeof(double complex), format='Zd')
-                cmplx_out_view = tmp
-                memcpy(<double complex*>tmp.data, &cmplx_out_view[0],
-                       sizeof(double complex)*new_out_size)
-                out = tmp
-        return out
+        if use_numpy and reshape_outs:
+            out = out.reshape((nbroadcast, self.tot_out_size))
+            result = [out[:, self.accum_out_sizes[idx]:self.accum_out_sizes[idx+1]].reshape(new_out_shapes[idx])
+                      for idx in range(self.n_exprs)]
+        elif reshape_outs:
+            result = []
+            for idx in range(self.n_exprs):
+                if self.real:
+                    tmp = cython.view.array(new_out_shapes[idx],
+                                            sizeof(double), format='d')
+                    real_out_view = out
+                    memcpy(<double *>tmp.data, &real_out_view[self.accum_out_sizes[idx]],
+                           sizeof(double)*new_out_sizes[idx])
+                    result.append(tmp)
+                else:
+                    tmp = cython.view.array(new_out_shapes[idx],
+                                            sizeof(double complex), format='Zd')
+                    cmplx_out_view = out
+                    memcpy(<double complex*>tmp.data, &cmplx_out_view[self.accum_out_sizes[idx]],
+                           sizeof(double complex)*new_out_sizes[idx])
+                    result.append(tmp)
+        else:
+            result = [out]
+
+        if self.n_exprs == 1:
+            result = result[0]
+        else:
+            result = tuple(result)
+
+        return result
+
 
 cdef class LambdaDouble(_Lambdify):
 
@@ -2831,17 +2846,18 @@ IF HAVE_SYMENGINE_LLVM:
             self.lambda_double[0].call(&out[0], &inp[0])
 
 
-def Lambdify(args, exprs, bool real=True, backend="lambda"):
+def Lambdify(args, *exprs, bool real=True, backend="lambda"):
     if backend == "llvm":
         IF HAVE_SYMENGINE_LLVM:
-            return LLVMDouble(args, exprs, real)
+            return LLVMDouble(args, *exprs, real=real)
         ELSE:
             raise ValueError("""llvm backend is chosen, but symengine is not compiled
                                 with llvm support.""")
 
-    return LambdaDouble(args, exprs, real)
+    return LambdaDouble(args, *exprs, real=real)
 
-def LambdifyCSE(args, exprs, real=True, cse=None, concatenate=None):
+
+def LambdifyCSE(args, *exprs, real=True, cse=None, concatenate=None):
     """
     Analogous with Lambdify but performs common subexpression elimination
     internally. See docstring of Lambdify.
@@ -2863,10 +2879,23 @@ def LambdifyCSE(args, exprs, real=True, cse=None, concatenate=None):
     if concatenate is None:
         from numpy import concatenate
     from sympy import sympify as ssympify
-    subs, new_exprs = cse([ssympify(expr) for expr in exprs])
+    flat_exprs = list(itertools.chain(*map(ravel, exprs)))
+    subs, flat_new_exprs = cse([ssympify(expr) for expr in flat_exprs])
     if subs:
         cse_symbs, cse_exprs = zip(*subs)
-        lmb = Lambdify(tuple(args) + cse_symbs, new_exprs, real=real)
+        new_exprs = []
+        n_taken = 0
+        for expr in exprs:
+            shape = get_shape(exprs)
+            size = long(reduce(mul, shape))
+            if len(shape) == 1:
+                new_exprs.append(flat_new_exprs[n_taken:n_taken+size])
+            elif len(shape) == 2:
+                new_exprs.append(DenseMatrix(shape[0], shape[1], flat_new_exprs[n_taken:n_taken+size]))
+            else:
+                raise NotImplementedError("n-dimensional output not yet supported.")
+            n_taken += size
+        lmb = Lambdify(tuple(args) + cse_symbs, *new_exprs, real=real)
         cse_lambda = Lambdify(args, cse_exprs, real=real)
 
         def cb(inp, out=None, **kwargs):
@@ -2876,7 +2905,7 @@ def LambdifyCSE(args, exprs, real=True, cse=None, concatenate=None):
 
         return cb
     else:
-        return Lambdify(args, exprs, real=real)
+        return Lambdify(args, *exprs, real=real)
 
 
 def has_symbol(obj, symbol=None):

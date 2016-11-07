@@ -527,3 +527,33 @@ def test_more_than_255_args():
         ref[i, 1] = q + n*i + r
     ref[:, 2] = -99
     assert np.allclose(out, ref)
+
+
+def _Lambdify_heterogeneous_output(Lambdify):
+    if not HAVE_NUMPY:  # nosetests work-around
+        return
+    x, y = se.symbols('x, y')
+    args = se.DenseMatrix(2, 1, [x, y])
+    v = se.DenseMatrix(2, 1, [x**3 * y, (x+1)*(y+1)])
+    jac = v.jacobian(args)
+    exprs = [jac, x+y, v, x*y]
+    lmb = se.Lambdify(args, exprs)
+    inp0 = 7, 11
+    inp1 = 8, 13
+    inp2 = 5, 9
+    inp = np.array([inp0, inp1, inp2])
+    o_j, o_xpy, o_v, o_xty = lmb(inp, out)
+    for idx, (X, Y) in enumerate([inp0, inp1, inp2]):
+        assert np.allclose(o_j[idx, ...], [[3 * X**2 * Y, X**3],
+                                           [Y + 1, X + 1]])
+        assert np.allclose(o_xpy[idx, ...], [X+Y])
+        assert np.allclose(o_v[idx, ...], [X**3 * Y, (X+1)*(Y+1)])
+        assert np.allclose(o_xty[idx, ...], [X*Y])
+
+
+def test_Lambdify_heterogeneous_output():
+    _Lambdify_heterogeneous_output(se.Lambdify)
+
+
+def test_LambdifyCSE_heterogeneous_output():
+    _Lambdify_heterogeneous_output(se.LambdifyCSE)
