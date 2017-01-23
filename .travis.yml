@@ -110,6 +110,9 @@ install:
   - export PYTHON_SOURCE_DIR=`pwd`
   - export TEST_CPP="no"
 
+  # Setup travis for Python wrappers
+  - source bin/install_travis.sh
+
   - git clone https://github.com/symengine/symengine symengine-cpp
   - cd symengine-cpp
   - export SOURCE_DIR=`pwd`
@@ -118,12 +121,8 @@ install:
   # Setup travis for C++ library
   - if [[ "${WITH_SAGE}" != "yes" ]]; then source bin/install_travis.sh; fi
 
-  # Setup travis for Python wrappers
-  - cd $PYTHON_SOURCE_DIR
-  - source bin/install_travis.sh
-
   # Build C++ library
-  - cd symengine-cpp
+  - cd $PYTHON_SOURCE_DIR/symengine-cpp
   - bin/test_travis.sh
 
 script:
