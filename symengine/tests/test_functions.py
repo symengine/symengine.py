@@ -80,7 +80,7 @@ def test_abs_diff():
 def test_Subs():
     x = Symbol("x")
     y = Symbol("y")
-    _x = Symbol("_x")
+    _x = Symbol("_xi_1")
     f = function_symbol("f", 2*x)
     assert f.diff(x) == 2 * Subs(Derivative(function_symbol("f", _x), [_x]), [_x], [2 * x])
     assert Subs(Derivative(function_symbol("f", x, y), [x]), [x, y], [_x, x]) \

@@ -742,7 +742,7 @@ cdef class Number(Basic):
 
     @property
     def is_nonpositive(self):
-        return not (self.is_complex or self.is_nonpositive)
+        return not (self.is_complex or self.is_positive)
 
     @property
     def is_complex(self):
