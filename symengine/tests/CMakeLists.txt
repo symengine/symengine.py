@@ -5,7 +5,7 @@ install(FILES __init__.py
     test_eval.py
     test_expr.py
     test_functions.py
-    test_integer.py
+    test_number.py
     test_matrices.py
     test_ntheory.py
     test_sage.py
