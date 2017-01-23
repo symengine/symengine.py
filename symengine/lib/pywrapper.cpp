@@ -63,6 +63,10 @@ bool PyNumber::is_negative() const {
 bool PyNumber::is_positive() const {
     return PyObject_RichCompareBool(pyobject_, pymodule_->get_zero(), Py_GT) == 1;
 }
+//! \return true if complex
+bool PyNumber::is_complex() const {
+    return false;
+}
 
 //! Addition
 RCP<const Number> PyNumber::add(const Number &other) const {
