@@ -80,6 +80,8 @@ public:
     virtual bool is_negative() const;
     //! \return true if positive
     virtual bool is_positive() const;
+    //! \return true if complex
+    virtual bool is_complex() const;
     //! return true if the number is an exact representation
     //  false if the number is an approximation
     virtual bool is_exact() const { return true; };

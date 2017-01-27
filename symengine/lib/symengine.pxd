@@ -273,6 +273,10 @@ cdef extern from "<symengine/symbol.h>" namespace "SymEngine":
 
 cdef extern from "<symengine/number.h>" namespace "SymEngine":
     cdef cppclass Number(Basic):
+        bool is_positive() nogil
+        bool is_negative() nogil
+        bool is_zero() nogil
+        bool is_complex() nogil
         pass
     cdef cppclass NumberWrapper(Basic):
         pass

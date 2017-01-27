@@ -720,6 +720,34 @@ cdef class Number(Basic):
     def is_Number(self):
         return True
 
+    @property
+    def is_positive(self):
+        return deref(symengine.rcp_static_cast_Number(self.thisptr)).is_positive()
+
+    @property
+    def is_negative(self):
+        return deref(symengine.rcp_static_cast_Number(self.thisptr)).is_negative()
+
+    @property
+    def is_zero(self):
+        return deref(symengine.rcp_static_cast_Number(self.thisptr)).is_zero()
+
+    @property
+    def is_nonzero(self):
+        return not (self.is_complex or self.is_zero)
+
+    @property
+    def is_nonnegative(self):
+        return not (self.is_complex or self.is_negative)
+
+    @property
+    def is_nonpositive(self):
+        return not (self.is_complex or self.is_positive)
+
+    @property
+    def is_complex(self):
+        return deref(symengine.rcp_static_cast_Number(self.thisptr)).is_complex()
+
 cdef class Integer(Number):
 
     @property
