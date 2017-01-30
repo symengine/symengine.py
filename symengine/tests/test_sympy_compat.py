@@ -53,3 +53,6 @@ def test_log():
 def test_zeros():
     assert zeros(3, c=2).shape == (3, 2)
 
+def test_has_functions_module():
+    import symengine.sympy_compat as sp
+    assert sp.functions.sin(0) == 0
