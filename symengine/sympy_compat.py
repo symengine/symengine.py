@@ -4,7 +4,7 @@ from .compatibility import with_metaclass
 from .lib.symengine_wrapper import (Symbol, sympify, sympify as S,
         SympifyError, sqrt, I, E, pi, Matrix, Derivative, exp,
         Lambdify as lambdify, symarray, diff, zeros, eye, diag, ones, zeros,
-        expand, FunctionSymbol as AppliedUndef)
+        expand, Subs, FunctionSymbol as AppliedUndef)
 
 
 class BasicMeta(type):
