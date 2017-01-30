@@ -690,6 +690,7 @@ cdef extern from "<symengine/ntheory.h>" namespace "SymEngine":
 
 cdef extern from "<symengine/visitor.h>" namespace "SymEngine":
     bool has_symbol(const Basic &b, const Symbol &x) nogil except +
+    RCP[const Basic] coeff(const Basic &b, const Basic &x, const Basic &n) nogil except +
     set_basic free_symbols(const Basic &b) nogil except +
 
 cdef extern from "<utility>" namespace "std":
