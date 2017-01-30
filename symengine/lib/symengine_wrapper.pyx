@@ -13,6 +13,7 @@ from operator import mul
 from functools import reduce
 import collections
 import warnings
+from sympy import Rel
 
 include "config.pxi"
 
@@ -462,7 +463,6 @@ cdef class Basic(object):
         return Basic._richcmp_(A, B, op)
 
     def _richcmp_(Basic A, Basic B, int op):
-        from sympy import Rel
         if (op == 2):
             return symengine.eq(deref(A.thisptr), deref(B.thisptr))
         elif (op == 3):
