@@ -956,6 +956,14 @@ cdef class Rational(Number):
     def is_Rational(self):
         return True
 
+    @property
+    def p(self):
+        return self.get_num_den()[0]
+
+    @property
+    def q(self):
+        return self.get_num_den()[1]
+
     def get_num_den(self):
         cdef RCP[const symengine.Integer] _num, _den
         symengine.get_num_den(deref(symengine.rcp_static_cast_Rational(self.thisptr)),

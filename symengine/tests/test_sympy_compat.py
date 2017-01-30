@@ -11,6 +11,8 @@ def test_Rational():
     i = S(1)/2
     assert isinstance(i, Rational)
     assert isinstance(i, Basic)
+    assert i.p == 1
+    assert i.q == 2
 
 def test_Add():
     x, y = symbols("x y")
