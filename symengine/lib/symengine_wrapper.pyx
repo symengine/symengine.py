@@ -661,8 +661,13 @@ cdef class Symbol(Basic):
         import sage.all as sage
         return sage.SR.symbol(str(deref(X).get_name().decode("utf-8")))
 
+    @property
     def name(self):
         return self.__str__()
+
+    @property
+    def is_Atom(self):
+        return True
 
     @property
     def is_Symbol(self):
