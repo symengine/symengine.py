@@ -387,7 +387,7 @@ def get_dict(*args):
     return D
 
 
-cdef tuple vec_basic_to_tuple(symengine.vec_basic vec):
+cdef tuple vec_basic_to_tuple(symengine.vec_basic& vec):
     result = []
     for i in range(vec.size()):
         result.append(c2py(<RCP[const symengine.Basic]>(vec[i])))
@@ -1321,7 +1321,8 @@ cdef class Derivative(Basic):
 
     @property
     def expr(self):
-        return self.args[0]
+        cdef RCP[const symengine.Derivative] X = symengine.rcp_static_cast_Derivative(self.thisptr)
+        return c2py(deref(X).get_arg())
 
     @property
     def variables(self):
@@ -1376,17 +1377,20 @@ cdef class Subs(Basic):
 
     @property
     def expr(self):
-        return self.args[0]
+        cdef RCP[const symengine.Subs] me = symengine.rcp_static_cast_Subs(self.thisptr)
+        return c2py(deref(me).get_arg())
 
     @property
     def variables(self):
         cdef RCP[const symengine.Subs] me = symengine.rcp_static_cast_Subs(self.thisptr)
-        return vec_basic_to_tuple(deref(me).get_variables())
+        cdef symengine.vec_basic variables = deref(me).get_variables()
+        return vec_basic_to_tuple(variables)
 
     @property
     def point(self):
         cdef RCP[const symengine.Subs] me = symengine.rcp_static_cast_Subs(self.thisptr)
-        return vec_basic_to_tuple(deref(me).get_point())
+        cdef symengine.vec_basic point = deref(me).get_point()
+        return vec_basic_to_tuple(point)
 
     def _sympy_(self):
         cdef RCP[const symengine.Subs] X = symengine.rcp_static_cast_Subs(self.thisptr)
