@@ -13,7 +13,6 @@ from operator import mul
 from functools import reduce
 import collections
 import warnings
-from sympy import Rel
 
 include "config.pxi"
 
@@ -467,7 +466,8 @@ cdef class Basic(object):
             return symengine.eq(deref(A.thisptr), deref(B.thisptr))
         elif (op == 3):
             return symengine.neq(deref(A.thisptr), deref(B.thisptr))
-        elif (op == 0):
+        from sympy import Rel
+        if (op == 0):
             return Rel(A, B, '<')
         elif (op == 1):
             return Rel(A, B, '<=')
