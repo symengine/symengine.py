@@ -121,6 +121,9 @@ cdef class Abs(Function):
 cdef class Gamma(Function):
     pass
 
+cdef class ATan2(Function):
+    pass
+
 cdef class Derivative(Basic):
     pass
 

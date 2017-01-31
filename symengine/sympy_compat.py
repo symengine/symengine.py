@@ -240,6 +240,12 @@ class acoth(_RegisteredFunction):
         return symengine.acoth(a)
 
 
+class atan2(_RegisteredFunction):
+    _classes = (symengine.ATan2,)
+
+    def __new__(cls, a, b):
+        return symengine.atan2(a, b)
+
 '''
 for i in ("""Sin Cos Tan Gamma Cot Csc Sec ASin ACos ATan
           ACot ACsc ASec Sinh Cosh Tanh Coth ASinh ACosh ATanh
