@@ -90,10 +90,11 @@ def test_Subs():
     assert Subs(Derivative(function_symbol("f", x, y), [x]), [x, y], [_x, x]) \
                 == Subs(Derivative(function_symbol("f", x, y), [x]), [y, x], [x, _x])
 
-    s = Subs(function_symbol("f", _x), [_x], [x])
-    assert s.expr == function_symbol("f", _x)
-    assert s.variables == (_x,)
-    assert s.point == (x,)
+    s = f.diff(x)/2
+    _xi_1 = Symbol("_xi_1")
+    assert s.expr == Derivative(function_symbol("f", _xi_1), [_xi_1])
+    assert s.variables == (_xi_1,)
+    assert s.point == (2*x,)
 
 def test_FunctionWrapper():
     import sympy
