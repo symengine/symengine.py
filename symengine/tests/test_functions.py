@@ -56,6 +56,10 @@ def test_derivative():
     assert f.diff(x).diff(y) == function_symbol("f", x, y).diff(x).diff(y)
     assert f.diff(Symbol("z")) == 0
 
+    s = Derivative(function_symbol("f", x), [x])
+    assert s.expr == function_symbol("f", x)
+    assert s.variables == (x,)
+
 def test_abs():
     x = Symbol("x")
     e = abs(x)
@@ -85,6 +89,11 @@ def test_Subs():
     assert f.diff(x) == 2 * Subs(Derivative(function_symbol("f", _x), [_x]), [_x], [2 * x])
     assert Subs(Derivative(function_symbol("f", x, y), [x]), [x, y], [_x, x]) \
                 == Subs(Derivative(function_symbol("f", x, y), [x]), [y, x], [x, _x])
+
+    s = Subs(function_symbol("f", _x), [_x], [x])
+    assert s.expr == function_symbol("f", _x)
+    assert s.variables == (_x,)
+    assert s.point == (x,)
 
 def test_FunctionWrapper():
     import sympy

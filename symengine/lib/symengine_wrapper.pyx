@@ -387,6 +387,13 @@ def get_dict(*args):
     return D
 
 
+cdef tuple vec_basic_to_tuple(symengine.vec_basic vec):
+    result = []
+    for i in range(vec.size()):
+        result.append(c2py(<RCP[const symengine.Basic]>(vec[i])))
+    return tuple(result)
+
+
 cdef class Basic(object):
 
     def __str__(self):
@@ -514,11 +521,8 @@ cdef class Basic(object):
 
     @property
     def args(self):
-        cdef symengine.vec_basic Y = deref(self.thisptr).get_args()
-        s = []
-        for i in range(Y.size()):
-            s.append(c2py(<RCP[const symengine.Basic]>(Y[i])))
-        return tuple(s)
+        cdef symengine.vec_basic args = deref(self.thisptr).get_args()
+        return vec_basic_to_tuple(args)
 
     @property
     def free_symbols(self):
@@ -1310,6 +1314,14 @@ cdef class Derivative(Basic):
     def is_Derivative(self):
         return True
 
+    @property
+    def expr(self):
+        return self.args[0]
+
+    @property
+    def variables(self):
+        return self.args[1:]
+
     def __cinit__(self, expr = None, symbols = None):
         if expr is None or symbols is None:
             return
@@ -1356,6 +1368,20 @@ cdef class Subs(Basic):
             p_ = sympify(p, True)
             m[v_.thisptr] = p_.thisptr
         self.thisptr = symengine.make_rcp_Subs(expr_.thisptr, m)
+
+    @property
+    def expr(self):
+        return self.args[0]
+
+    @property
+    def variables(self):
+        cdef RCP[const symengine.Subs] me = symengine.rcp_static_cast_Subs(self.thisptr)
+        return vec_basic_to_tuple(deref(me).get_variables())
+
+    @property
+    def point(self):
+        cdef RCP[const symengine.Subs] me = symengine.rcp_static_cast_Subs(self.thisptr)
+        return vec_basic_to_tuple(deref(me).get_point())
 
     def _sympy_(self):
         cdef RCP[const symengine.Subs] X = symengine.rcp_static_cast_Subs(self.thisptr)
