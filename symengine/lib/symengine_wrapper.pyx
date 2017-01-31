@@ -846,6 +846,14 @@ cdef class Integer(Number):
     def __float__(self):
         return float(str(self))
 
+    @property
+    def p(self):
+        return int(self)
+
+    @property
+    def q(self):
+        return 1
+
 
 cdef class RealDouble(Number):
 

@@ -6,6 +6,8 @@ def test_Integer():
     assert isinstance(i, Integer)
     assert isinstance(i, Rational)
     assert isinstance(i, Basic)
+    assert i.p == 5
+    assert i.q == 1
 
 def test_Rational():
     i = S(1)/2
