@@ -94,19 +94,21 @@ install:
   - export TEST_CPP="no"
   - export MAKEFLAGS="-j2"
 
-  # Setup travis for Python wrappers
-  - source bin/install_travis.sh
-
   - git clone https://github.com/symengine/symengine symengine-cpp
   - cd symengine-cpp
   - export SOURCE_DIR=`pwd`
   - git checkout `cat ../symengine_version.txt`
+  - cd ..
+
+  # Setup travis for Python wrappers
+  - source bin/install_travis.sh
 
   # Setup travis for C++ library
+  - cd $SOURCE_DIR
   - if [[ "${WITH_SAGE}" != "yes" ]]; then source bin/install_travis.sh; fi
 
   # Build C++ library
-  - cd $PYTHON_SOURCE_DIR/symengine-cpp
+  - cd $SOURCE_DIR
   - bin/test_travis.sh
   - unset MAKEFLAGS
 
