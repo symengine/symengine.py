@@ -387,6 +387,13 @@ def get_dict(*args):
     return D
 
 
+cdef tuple vec_basic_to_tuple(symengine.vec_basic& vec):
+    result = []
+    for i in range(vec.size()):
+        result.append(c2py(<RCP[const symengine.Basic]>(vec[i])))
+    return tuple(result)
+
+
 cdef class Basic(object):
 
     def __str__(self):
@@ -514,11 +521,8 @@ cdef class Basic(object):
 
     @property
     def args(self):
-        cdef symengine.vec_basic Y = deref(self.thisptr).get_args()
-        s = []
-        for i in range(Y.size()):
-            s.append(c2py(<RCP[const symengine.Basic]>(Y[i])))
-        return tuple(s)
+        cdef symengine.vec_basic args = deref(self.thisptr).get_args()
+        return vec_basic_to_tuple(args)
 
     @property
     def free_symbols(self):
@@ -657,8 +661,13 @@ cdef class Symbol(Basic):
         import sage.all as sage
         return sage.SR.symbol(str(deref(X).get_name().decode("utf-8")))
 
+    @property
     def name(self):
         return self.__str__()
+
+    @property
+    def is_Atom(self):
+        return True
 
     @property
     def is_Symbol(self):
@@ -837,6 +846,14 @@ cdef class Integer(Number):
     def __float__(self):
         return float(str(self))
 
+    @property
+    def p(self):
+        return int(self)
+
+    @property
+    def q(self):
+        return 1
+
 
 cdef class RealDouble(Number):
 
@@ -955,6 +972,14 @@ cdef class Rational(Number):
     @property
     def is_Rational(self):
         return True
+
+    @property
+    def p(self):
+        return self.get_num_den()[0]
+
+    @property
+    def q(self):
+        return self.get_num_den()[1]
 
     def get_num_den(self):
         cdef RCP[const symengine.Integer] _num, _den
@@ -1302,6 +1327,15 @@ cdef class Derivative(Basic):
     def is_Derivative(self):
         return True
 
+    @property
+    def expr(self):
+        cdef RCP[const symengine.Derivative] X = symengine.rcp_static_cast_Derivative(self.thisptr)
+        return c2py(deref(X).get_arg())
+
+    @property
+    def variables(self):
+        return self.args[1:]
+
     def __cinit__(self, expr = None, symbols = None):
         if expr is None or symbols is None:
             return
@@ -1348,6 +1382,23 @@ cdef class Subs(Basic):
             p_ = sympify(p, True)
             m[v_.thisptr] = p_.thisptr
         self.thisptr = symengine.make_rcp_Subs(expr_.thisptr, m)
+
+    @property
+    def expr(self):
+        cdef RCP[const symengine.Subs] me = symengine.rcp_static_cast_Subs(self.thisptr)
+        return c2py(deref(me).get_arg())
+
+    @property
+    def variables(self):
+        cdef RCP[const symengine.Subs] me = symengine.rcp_static_cast_Subs(self.thisptr)
+        cdef symengine.vec_basic variables = deref(me).get_variables()
+        return vec_basic_to_tuple(variables)
+
+    @property
+    def point(self):
+        cdef RCP[const symengine.Subs] me = symengine.rcp_static_cast_Subs(self.thisptr)
+        cdef symengine.vec_basic point = deref(me).get_point()
+        return vec_basic_to_tuple(point)
 
     def _sympy_(self):
         cdef RCP[const symengine.Subs] X = symengine.rcp_static_cast_Subs(self.thisptr)

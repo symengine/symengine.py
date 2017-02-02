@@ -4,6 +4,7 @@ from symengine.utilities import raises
 
 def test_symbol():
     x = Symbol("x")
+    assert x.name == "x"
     assert str(x) == "x"
     assert str(x) != "y"
     assert repr(x) == str(x)
