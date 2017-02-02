@@ -99,6 +99,8 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = ATanh.__new__(ATanh)
     elif (symengine.is_a_ACoth(deref(o))):
         r = ACoth.__new__(ACoth)
+    elif (symengine.is_a_ATan2(deref(o))):
+        r = ATan2.__new__(ATan2)
     elif (symengine.is_a_PyNumber(deref(o))):
         r = PyNumber.__new__(PyNumber)
     else:
@@ -169,6 +171,8 @@ def sympy2symengine(a, raise_error=False):
             return acsc(a.args[0])
         elif isinstance(a, sympy.asec):
             return asec(a.args[0])
+        elif isinstance(a, sympy.atan2):
+            return atan2(*a.args)
     elif isinstance(a, sympy.functions.elementary.hyperbolic.HyperbolicFunction):
         if isinstance(a, sympy.sinh):
             return sinh(a.args[0])
@@ -2209,6 +2213,11 @@ def log(x, y = None):
 def gamma(x):
     cdef Basic X = sympify(x)
     return c2py(symengine.gamma(X.thisptr))
+
+def atan2(x, y):
+    cdef Basic X = sympify(x)
+    cdef Basic Y = sympify(y)
+    return c2py(symengine.atan2(X.thisptr, Y.thisptr))
 
 def eval_double(x):
     cdef Basic X = sympify(x)
