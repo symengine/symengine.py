@@ -1,7 +1,7 @@
 from .lib import symengine_wrapper as symengine
 from .utilities import var, symbols
 from .compatibility import with_metaclass
-from .lib.symengine_wrapper import (Symbol, sympify, sympify as S,
+from .lib.symengine_wrapper import (sympify, sympify as S,
         SympifyError, sqrt, I, E, pi, Matrix, Derivative, exp,
         Lambdify as lambdify, symarray, diff, zeros, eye, diag, ones, zeros,
         expand, Subs, FunctionSymbol as AppliedUndef)
@@ -18,19 +18,23 @@ class Basic(with_metaclass(BasicMeta, object)):
 
 
 class Number(Basic):
-    _classes = (symengine.Number,) + Basic._classes
+    _classes = (symengine.Number,)
+    pass
+
+class Symbol(symengine.PySymbol, Basic):
+    _classes = (symengine.Symbol,)
     pass
 
 
 class Rational(Number):
-    _classes = (symengine.Rational,) + Number._classes
+    _classes = (symengine.Rational, symengine.Integer)
 
     def __new__(cls, num, den = 1):
         return symengine.Integer(num) / den
 
 
 class Integer(Rational):
-    _classes = (symengine.Integer,) + Rational._classes
+    _classes = (symengine.Integer,)
 
     def __new__(cls, i):
         return symengine.Integer(i)
