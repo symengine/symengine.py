@@ -130,6 +130,7 @@ cdef extern from "<symengine/symengine_rcp.h>" namespace "SymEngine":
         T& operator*() nogil except +
 
     RCP[const Symbol] rcp_static_cast_Symbol "SymEngine::rcp_static_cast<const SymEngine::Symbol>"(RCP[const Basic] &b) nogil
+    RCP[const PySymbol] rcp_static_cast_PySymbol "SymEngine::rcp_static_cast<const SymEngine::PySymbol>"(RCP[const Basic] &b) nogil
     RCP[const Integer] rcp_static_cast_Integer "SymEngine::rcp_static_cast<const SymEngine::Integer>"(RCP[const Basic] &b) nogil
     RCP[const Rational] rcp_static_cast_Rational "SymEngine::rcp_static_cast<const SymEngine::Rational>"(RCP[const Basic] &b) nogil
     RCP[const Complex] rcp_static_cast_Complex "SymEngine::rcp_static_cast<const SymEngine::Complex>"(RCP[const Basic] &b) nogil
@@ -257,6 +258,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_Log "SymEngine::is_a<SymEngine::Log>"(const Basic &b) nogil
     bool is_a_PyNumber "SymEngine::is_a<SymEngine::PyNumber>"(const Basic &b) nogil
     bool is_a_ATan2 "SymEngine::is_a<SymEngine::ATan2>"(const Basic &b) nogil
+    bool is_a_PySymbol "SymEngine::is_a_sub<SymEngine::PySymbol>"(const Basic &b) nogil
 
     RCP[const Basic] expand(RCP[const Basic] &o) nogil except +
 
@@ -290,6 +292,11 @@ cdef extern from "<symengine/pywrapper.h>" namespace "SymEngine":
     cdef cppclass PyFunctionClass:
         PyObject* call(const vec_basic &vec)
     cdef cppclass PyFunction:
+        PyObject* get_py_object()
+
+cdef extern from "<symengine/pywrapper.h>" namespace "SymEngine":
+    cdef cppclass PySymbol(Symbol):
+        PySymbol(string name, PyObject* pyobj)
         PyObject* get_py_object()
 
 cdef extern from "<symengine/integer.h>" namespace "SymEngine":
@@ -376,6 +383,7 @@ cdef extern from "<symengine/pow.h>" namespace "SymEngine":
 cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     # We need to specialize these for our classes:
     RCP[const Basic] make_rcp_Symbol "SymEngine::make_rcp<const SymEngine::Symbol>"(string name) nogil
+    RCP[const Basic] make_rcp_PySymbol "SymEngine::make_rcp<const SymEngine::PySymbol>"(string name, PyObject * pyobj) nogil
     RCP[const Basic] make_rcp_Constant "SymEngine::make_rcp<const SymEngine::Constant>"(string name) nogil
     RCP[const Basic] make_rcp_Integer "SymEngine::make_rcp<const SymEngine::Integer>"(int i) nogil
     RCP[const Basic] make_rcp_Integer "SymEngine::make_rcp<const SymEngine::Integer>"(integer_class i) nogil

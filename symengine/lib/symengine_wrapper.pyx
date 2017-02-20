@@ -34,6 +34,8 @@ cdef c2py(RCP[const symengine.Basic] o):
     elif (symengine.is_a_Complex(deref(o))):
         r = Complex.__new__(Complex)
     elif (symengine.is_a_Symbol(deref(o))):
+        if (symengine.is_a_PySymbol(deref(o))):
+            return <object>(deref(symengine.rcp_static_cast_PySymbol(o)).get_py_object())
         r = Symbol.__new__(Symbol)
     elif (symengine.is_a_Constant(deref(o))):
         r = Constant.__new__(Constant)
@@ -650,10 +652,19 @@ def series(ex, x=None, x0=0, n=6, method='sympy', removeO=False):
 
 cdef class Symbol(Basic):
 
+    """
+    Symbol is a class to store a symbolic variable with a given name.
+
+    Note: Subclassing `Symbol` will not work properly. Use `PySymbol`
+          which is a subclass of `Symbol` for subclassing.
+    """
     def __cinit__(self, name = None):
         if name is None:
             return
         self.thisptr = symengine.make_rcp_Symbol(name.encode("utf-8"))
+
+    def __init__(self, name = None):
+        return
 
     def _sympy_(self):
         cdef RCP[const symengine.Symbol] X = symengine.rcp_static_cast_Symbol(self.thisptr)
@@ -676,6 +687,15 @@ cdef class Symbol(Basic):
     @property
     def is_Symbol(self):
         return True
+
+
+cdef class PySymbol(Symbol):
+    def __init__(self, name, *args, **kwargs):
+        super(PySymbol, self).__init__(name)
+        if name is None:
+            return
+        self.thisptr = symengine.make_rcp_PySymbol(name.encode("utf-8"), <PyObject*>self)
+
 
 def symarray(prefix, shape, **kwargs):
     """ Creates an nd-array of symbols
