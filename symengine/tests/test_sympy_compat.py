@@ -73,7 +73,7 @@ def test_has_functions_module():
     import symengine.sympy_compat as sp
     assert sp.functions.sin(0) == 0
 
-def subclass_symbol():
+def test_subclass_symbol():
     # Subclass of Symbol with an extra attribute
     class Wrapper(Symbol):
         def __new__(cls, name, extra_attribute):
