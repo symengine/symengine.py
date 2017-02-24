@@ -130,6 +130,9 @@ cdef class PyFunction(FunctionSymbol):
 cdef class Abs(Function):
     pass
 
+cdef class Max(Function):
+    pass
+
 cdef class Gamma(Function):
     pass
 

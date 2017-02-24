@@ -45,6 +45,8 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = FunctionSymbol.__new__(FunctionSymbol)
     elif (symengine.is_a_Abs(deref(o))):
         r = Abs.__new__(Abs)
+    elif (symengine.is_a_Max(deref(o))):
+        r = Max.__new__(Max)
     elif (symengine.is_a_Gamma(deref(o))):
         r = Gamma.__new__(Gamma)
     elif (symengine.is_a_Derivative(deref(o))):
@@ -208,6 +210,8 @@ def sympy2symengine(a, raise_error=False):
         return log(a.args[0])
     elif isinstance(a, sympy.Abs):
         return abs(sympy2symengine(a.args[0], raise_error))
+    elif isinstance(a, sympy.Max):
+        return max(*a.args)
     elif isinstance(a, sympy.gamma):
         return gamma(a.args[0])
     elif isinstance(a, sympy.Derivative):
@@ -1392,6 +1396,27 @@ cdef class Abs(Function):
         arg = c2py(deref(X).get_arg())._sage_()
         return abs(arg)
 
+cdef class Max(Function):
+
+    def _sympy_(self):
+        cdef RCP[const symengine.Max] X = \
+            symengine.rcp_static_cast_Max(self.thisptr)
+        cdef symengine.vec_basic Y = deref(X).get_args()
+        s = []
+        for i in range(Y.size()):
+            s.append(c2py(<RCP[const symengine.Basic]>(Y[i]))._sympy_())
+        import sympy
+        return sympy.Max(*s)
+
+    def _sage_(self):
+        import sage.all as sage
+        cdef RCP[const symengine.Max] X = \
+            symengine.rcp_static_cast_Max(self.thisptr)
+        cdef symengine.vec_basic Y = deref(X).get_args()
+        s = []
+        for i in range(Y.size()):
+            s.append(c2py(<RCP[const symengine.Basic]>(Y[i]))._sage_())
+        return sage.max(*s)
 
 cdef class Derivative(Basic):
 
@@ -2303,6 +2328,14 @@ def log(x, y = None):
         return c2py(symengine.log(X.thisptr))
     cdef Basic Y = _sympify(y)
     return c2py(symengine.log(X.thisptr, Y.thisptr))
+
+def max(*args):
+    cdef symengine.vec_basic v
+    cdef Basic e_
+    for e in args:
+        e_ = sympify(e)
+        v.push_back(e_.thisptr)
+    return c2py(symengine.max(v))
 
 def gamma(x):
     cdef Basic X = _sympify(x)
