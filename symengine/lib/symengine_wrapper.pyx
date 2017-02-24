@@ -585,12 +585,15 @@ cdef class Basic(object):
         return ring(self._sage_())
 
     def atoms(self, *types):
-        s = set()
-        if (isinstance(self, types)):
-            s.add(self)
-        for arg in self.args:
-            s.update(arg.atoms(*types))
-        return s
+        if types:
+            s = set()
+            if (isinstance(self, types)):
+                s.add(self)
+            for arg in self.args:
+                s.update(arg.atoms(*types))
+            return s
+        else:
+            return self.free_symbols
 
     def simplify(self, *args, **kwargs):
         return sympify(self._sympy_().simplify(*args, **kwargs))
@@ -1969,12 +1972,15 @@ cdef class DenseMatrix(MatrixBase):
         return self[:]
 
     def atoms(self, *types):
-        s = set()
-        if (isinstance(self, types)):
-            s.add(self)
-        for arg in self.tolist():
-            s.update(arg.atoms(*types))
-        return s
+        if types:
+            s = set()
+            if (isinstance(self, types)):
+                s.add(self)
+            for arg in self.tolist():
+                s.update(arg.atoms(*types))
+            return s
+        else:
+           return self.free_symbols
 
     def simplify(self, *args, **kwargs):
         return self._applyfunc(lambda x : x.simplify(*args, **kwargs))
