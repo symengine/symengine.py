@@ -46,9 +46,9 @@ cdef c2py(RCP[const symengine.Basic] o):
     elif (symengine.is_a_Abs(deref(o))):
         r = Abs.__new__(Abs)
     elif (symengine.is_a_Max(deref(o))):
-        r = Max.__new__(Max)
+        r = _Max.__new__(_Max)
     elif (symengine.is_a_Min(deref(o))):
-        r = Min.__new__(Min)
+        r = _Min.__new__(_Min)
     elif (symengine.is_a_Gamma(deref(o))):
         r = Gamma.__new__(Gamma)
     elif (symengine.is_a_Derivative(deref(o))):
@@ -213,9 +213,9 @@ def sympy2symengine(a, raise_error=False):
     elif isinstance(a, sympy.Abs):
         return abs(sympy2symengine(a.args[0], raise_error))
     elif isinstance(a, sympy.Max):
-        return max(*a.args)
+        return _max(*a.args)
     elif isinstance(a, sympy.Min):
-        return min(*a.args)
+        return _min(*a.args)
     elif isinstance(a, sympy.gamma):
         return gamma(a.args[0])
     elif isinstance(a, sympy.Derivative):
@@ -1400,7 +1400,11 @@ cdef class Abs(Function):
         arg = c2py(deref(X).get_arg())._sage_()
         return abs(arg)
 
-cdef class Max(Function):
+cdef class _Max(Function):
+    '''
+    Class named as such to prevent namespace issues with
+    Python's min. Import as Min for aesthetics.
+    '''
 
     def _sympy_(self):
         cdef RCP[const symengine.Max] X = \
@@ -1422,7 +1426,11 @@ cdef class Max(Function):
             s.append(c2py(<RCP[const symengine.Basic]>(Y[i]))._sage_())
         return sage.max(*s)
 
-cdef class Min(Function):
+cdef class _Min(Function):
+    '''
+    Class named as such to prevent namespace issues with
+    Python's min. Import as Min for aesthetics.
+    '''
 
     def _sympy_(self):
         cdef RCP[const symengine.Min] X = \
@@ -2355,7 +2363,7 @@ def log(x, y = None):
     cdef Basic Y = _sympify(y)
     return c2py(symengine.log(X.thisptr, Y.thisptr))
 
-def max(*args):
+def _max(*args):
     cdef symengine.vec_basic v
     cdef Basic e_
     for e in args:
@@ -2363,7 +2371,7 @@ def max(*args):
         v.push_back(e_.thisptr)
     return c2py(symengine.max(v))
 
-def min(*args):
+def _min(*args):
     cdef symengine.vec_basic v
     cdef Basic e_
     for e in args:

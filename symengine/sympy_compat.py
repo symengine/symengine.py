@@ -151,6 +151,20 @@ class tan(_RegisteredFunction):
         return symengine.tan(a)
 
 
+class Max(Basic):
+    _classes = (symengine._Max,)
+
+    def __new__(cls, *args):
+        return symengine._max(*args)
+
+
+class Min(Basic):
+    _classes = (symengine._Min,)
+
+    def __new__(cls, *args):
+        return symengine._min(*args)
+
+
 class gamma(_RegisteredFunction):
     _classes = (symengine.Gamma,)
 
