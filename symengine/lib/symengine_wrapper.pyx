@@ -47,6 +47,8 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = Abs.__new__(Abs)
     elif (symengine.is_a_Max(deref(o))):
         r = Max.__new__(Max)
+    elif (symengine.is_a_Min(deref(o))):
+        r = Min.__new__(Min)
     elif (symengine.is_a_Gamma(deref(o))):
         r = Gamma.__new__(Gamma)
     elif (symengine.is_a_Derivative(deref(o))):
@@ -212,6 +214,8 @@ def sympy2symengine(a, raise_error=False):
         return abs(sympy2symengine(a.args[0], raise_error))
     elif isinstance(a, sympy.Max):
         return max(*a.args)
+    elif isinstance(a, sympy.Min):
+        return min(*a.args)
     elif isinstance(a, sympy.gamma):
         return gamma(a.args[0])
     elif isinstance(a, sympy.Derivative):
@@ -1418,6 +1422,28 @@ cdef class Max(Function):
             s.append(c2py(<RCP[const symengine.Basic]>(Y[i]))._sage_())
         return sage.max(*s)
 
+cdef class Min(Function):
+
+    def _sympy_(self):
+        cdef RCP[const symengine.Min] X = \
+            symengine.rcp_static_cast_Min(self.thisptr)
+        cdef symengine.vec_basic Y = deref(X).get_args()
+        s = []
+        for i in range(Y.size()):
+            s.append(c2py(<RCP[const symengine.Basic]>(Y[i]))._sympy_())
+        import sympy
+        return sympy.Min(*s)
+
+    def _sage_(self):
+        import sage.all as sage
+        cdef RCP[const symengine.Min] X = \
+            symengine.rcp_static_cast_Min(self.thisptr)
+        cdef symengine.vec_basic Y = deref(X).get_args()
+        s = []
+        for i in range(Y.size()):
+            s.append(c2py(<RCP[const symengine.Basic]>(Y[i]))._sage_())
+        return sage.min(*s)
+
 cdef class Derivative(Basic):
 
     @property
@@ -2336,6 +2362,14 @@ def max(*args):
         e_ = sympify(e)
         v.push_back(e_.thisptr)
     return c2py(symengine.max(v))
+
+def min(*args):
+    cdef symengine.vec_basic v
+    cdef Basic e_
+    for e in args:
+        e_ = sympify(e)
+        v.push_back(e_.thisptr)
+    return c2py(symengine.min(v))
 
 def gamma(x):
     cdef Basic X = _sympify(x)

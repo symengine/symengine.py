@@ -133,6 +133,9 @@ cdef class Abs(Function):
 cdef class Max(Function):
     pass
 
+cdef class Min(Function):
+    pass
+
 cdef class Gamma(Function):
     pass
 
