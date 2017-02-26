@@ -256,6 +256,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_ComplexMPC "SymEngine::is_a<SymEngine::ComplexMPC>"(const Basic &b) nogil
     bool is_a_Log "SymEngine::is_a<SymEngine::Log>"(const Basic &b) nogil
     bool is_a_PyNumber "SymEngine::is_a<SymEngine::PyNumber>"(const Basic &b) nogil
+    bool is_a_ATan2 "SymEngine::is_a<SymEngine::ATan2>"(const Basic &b) nogil
 
     RCP[const Basic] expand(RCP[const Basic] &o) nogil except +
 
@@ -273,6 +274,10 @@ cdef extern from "<symengine/symbol.h>" namespace "SymEngine":
 
 cdef extern from "<symengine/number.h>" namespace "SymEngine":
     cdef cppclass Number(Basic):
+        bool is_positive() nogil
+        bool is_negative() nogil
+        bool is_zero() nogil
+        bool is_complex() nogil
         pass
     cdef cppclass NumberWrapper(Basic):
         pass
@@ -413,6 +418,7 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
     cdef RCP[const Basic] function_symbol(string name, const vec_basic &arg) nogil except+
     cdef RCP[const Basic] abs(RCP[const Basic] &arg) nogil except+
     cdef RCP[const Basic] gamma(RCP[const Basic] &arg) nogil except+
+    cdef RCP[const Basic] atan2(RCP[const Basic] &num, RCP[const Basic] &den) nogil except+
 
     cdef cppclass Function(Basic):
         pass
@@ -506,6 +512,9 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
         RCP[const Basic] get_arg() nogil
 
     cdef cppclass Gamma(Function):
+        pass
+
+    cdef cppclass ATan2(Function):
         pass
 
 IF HAVE_SYMENGINE_MPFR:

@@ -99,6 +99,8 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = ATanh.__new__(ATanh)
     elif (symengine.is_a_ACoth(deref(o))):
         r = ACoth.__new__(ACoth)
+    elif (symengine.is_a_ATan2(deref(o))):
+        r = ATan2.__new__(ATan2)
     elif (symengine.is_a_PyNumber(deref(o))):
         r = PyNumber.__new__(PyNumber)
     else:
@@ -169,6 +171,8 @@ def sympy2symengine(a, raise_error=False):
             return acsc(a.args[0])
         elif isinstance(a, sympy.asec):
             return asec(a.args[0])
+        elif isinstance(a, sympy.atan2):
+            return atan2(*a.args)
     elif isinstance(a, sympy.functions.elementary.hyperbolic.HyperbolicFunction):
         if isinstance(a, sympy.sinh):
             return sinh(a.args[0])
@@ -387,6 +391,13 @@ def get_dict(*args):
     return D
 
 
+cdef tuple vec_basic_to_tuple(symengine.vec_basic& vec):
+    result = []
+    for i in range(vec.size()):
+        result.append(c2py(<RCP[const symengine.Basic]>(vec[i])))
+    return tuple(result)
+
+
 cdef class Basic(object):
 
     def __str__(self):
@@ -462,12 +473,12 @@ cdef class Basic(object):
         return Basic._richcmp_(A, B, op)
 
     def _richcmp_(Basic A, Basic B, int op):
-        from sympy import Rel
         if (op == 2):
             return symengine.eq(deref(A.thisptr), deref(B.thisptr))
         elif (op == 3):
             return symengine.neq(deref(A.thisptr), deref(B.thisptr))
-        elif (op == 0):
+        from sympy import Rel
+        if (op == 0):
             return Rel(A, B, '<')
         elif (op == 1):
             return Rel(A, B, '<=')
@@ -514,11 +525,8 @@ cdef class Basic(object):
 
     @property
     def args(self):
-        cdef symengine.vec_basic Y = deref(self.thisptr).get_args()
-        s = []
-        for i in range(Y.size()):
-            s.append(c2py(<RCP[const symengine.Basic]>(Y[i])))
-        return tuple(s)
+        cdef symengine.vec_basic args = deref(self.thisptr).get_args()
+        return vec_basic_to_tuple(args)
 
     @property
     def free_symbols(self):
@@ -577,12 +585,15 @@ cdef class Basic(object):
         return ring(self._sage_())
 
     def atoms(self, *types):
-        s = set()
-        if (isinstance(self, types)):
-            s.add(self)
-        for arg in self.args:
-            s.update(arg.atoms(*types))
-        return s
+        if types:
+            s = set()
+            if (isinstance(self, types)):
+                s.add(self)
+            for arg in self.args:
+                s.update(arg.atoms(*types))
+            return s
+        else:
+            return self.free_symbols
 
     def simplify(self, *args, **kwargs):
         return sympify(self._sympy_().simplify(*args, **kwargs))
@@ -657,8 +668,13 @@ cdef class Symbol(Basic):
         import sage.all as sage
         return sage.SR.symbol(str(deref(X).get_name().decode("utf-8")))
 
+    @property
     def name(self):
         return self.__str__()
+
+    @property
+    def is_Atom(self):
+        return True
 
     @property
     def is_Symbol(self):
@@ -719,6 +735,34 @@ cdef class Number(Basic):
     @property
     def is_Number(self):
         return True
+
+    @property
+    def is_positive(self):
+        return deref(symengine.rcp_static_cast_Number(self.thisptr)).is_positive()
+
+    @property
+    def is_negative(self):
+        return deref(symengine.rcp_static_cast_Number(self.thisptr)).is_negative()
+
+    @property
+    def is_zero(self):
+        return deref(symengine.rcp_static_cast_Number(self.thisptr)).is_zero()
+
+    @property
+    def is_nonzero(self):
+        return not (self.is_complex or self.is_zero)
+
+    @property
+    def is_nonnegative(self):
+        return not (self.is_complex or self.is_negative)
+
+    @property
+    def is_nonpositive(self):
+        return not (self.is_complex or self.is_positive)
+
+    @property
+    def is_complex(self):
+        return deref(symengine.rcp_static_cast_Number(self.thisptr)).is_complex()
 
 cdef class Integer(Number):
 
@@ -808,6 +852,14 @@ cdef class Integer(Number):
 
     def __float__(self):
         return float(str(self))
+
+    @property
+    def p(self):
+        return int(self)
+
+    @property
+    def q(self):
+        return 1
 
 
 cdef class RealDouble(Number):
@@ -927,6 +979,14 @@ cdef class Rational(Number):
     @property
     def is_Rational(self):
         return True
+
+    @property
+    def p(self):
+        return self.get_num_den()[0]
+
+    @property
+    def q(self):
+        return self.get_num_den()[1]
 
     def get_num_den(self):
         cdef RCP[const symengine.Integer] _num, _den
@@ -1274,6 +1334,15 @@ cdef class Derivative(Basic):
     def is_Derivative(self):
         return True
 
+    @property
+    def expr(self):
+        cdef RCP[const symengine.Derivative] X = symengine.rcp_static_cast_Derivative(self.thisptr)
+        return c2py(deref(X).get_arg())
+
+    @property
+    def variables(self):
+        return self.args[1:]
+
     def __cinit__(self, expr = None, symbols = None):
         if expr is None or symbols is None:
             return
@@ -1320,6 +1389,23 @@ cdef class Subs(Basic):
             p_ = sympify(p, True)
             m[v_.thisptr] = p_.thisptr
         self.thisptr = symengine.make_rcp_Subs(expr_.thisptr, m)
+
+    @property
+    def expr(self):
+        cdef RCP[const symengine.Subs] me = symengine.rcp_static_cast_Subs(self.thisptr)
+        return c2py(deref(me).get_arg())
+
+    @property
+    def variables(self):
+        cdef RCP[const symengine.Subs] me = symengine.rcp_static_cast_Subs(self.thisptr)
+        cdef symengine.vec_basic variables = deref(me).get_variables()
+        return vec_basic_to_tuple(variables)
+
+    @property
+    def point(self):
+        cdef RCP[const symengine.Subs] me = symengine.rcp_static_cast_Subs(self.thisptr)
+        cdef symengine.vec_basic point = deref(me).get_point()
+        return vec_basic_to_tuple(point)
 
     def _sympy_(self):
         cdef RCP[const symengine.Subs] X = symengine.rcp_static_cast_Subs(self.thisptr)
@@ -1886,12 +1972,15 @@ cdef class DenseMatrix(MatrixBase):
         return self[:]
 
     def atoms(self, *types):
-        s = set()
-        if (isinstance(self, types)):
-            s.add(self)
-        for arg in self.tolist():
-            s.update(arg.atoms(*types))
-        return s
+        if types:
+            s = set()
+            if (isinstance(self, types)):
+                s.add(self)
+            for arg in self.tolist():
+                s.update(arg.atoms(*types))
+            return s
+        else:
+           return self.free_symbols
 
     def simplify(self, *args, **kwargs):
         return self._applyfunc(lambda x : x.simplify(*args, **kwargs))
@@ -2130,6 +2219,11 @@ def log(x, y = None):
 def gamma(x):
     cdef Basic X = sympify(x)
     return c2py(symengine.gamma(X.thisptr))
+
+def atan2(x, y):
+    cdef Basic X = sympify(x)
+    cdef Basic Y = sympify(y)
+    return c2py(symengine.atan2(X.thisptr, Y.thisptr))
 
 def eval_double(x):
     cdef Basic X = sympify(x)

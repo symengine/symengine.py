@@ -119,6 +119,15 @@ def test_args():
     assert (2*x**2).args == (2, x**2)
     assert set((2*x**2*y).args) == set((Integer(2), x**2, y))
 
+def test_atoms():
+    x = Symbol("x")
+    y = Symbol("y")
+    z = Symbol("z")
+    assert (x**2).atoms() == set([x])
+    assert (x**2).atoms(Symbol) == set([x])
+    assert (x ** y + z).atoms() == set([x, y, z])
+    assert (x**y + z).atoms(Symbol) == set([x, y, z])
+
 def test_free_symbols():
     x = Symbol("x")
     y = Symbol("y")

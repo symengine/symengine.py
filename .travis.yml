@@ -11,9 +11,6 @@ addons:
     sources:
     - ubuntu-toolchain-r-test
     packages:
-    - libgmp-dev
-    - libmpfr-dev
-    - libmpc-dev
     - binutils-dev
     - g++-4.7
 
@@ -55,17 +52,9 @@ matrix:
         apt:
           sources:
           - ubuntu-toolchain-r-test
-          - boost-latest
-          - george-edison55-precise-backports
           packages:
-          - libgmp-dev
-          - libmpfr-dev
           - binutils-dev
-          - libboost-serialization1.55-dev
-          - libboost-iostreams1.55-dev
           - g++-4.8
-          - cmake
-          - cmake-data
     - env: BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="3.5" WITH_LLVM="yes"
       compiler: clang
       os: linux
@@ -73,16 +62,10 @@ matrix:
         apt:
           sources:
           - ubuntu-toolchain-r-test
-          - llvm-toolchain-precise-3.8
-          - george-edison55-precise-backports
           packages:
           - clang
           - libstdc++-4.8-dev
-          - libgmp-dev
           - binutils-dev
-          - llvm-3.8-dev
-          - cmake
-          - cmake-data
     - env: BUILD_TYPE="Release" PYTHON_VERSION="2.7"
       compiler: clang
       os: linux
@@ -109,22 +92,25 @@ matrix:
 install:
   - export PYTHON_SOURCE_DIR=`pwd`
   - export TEST_CPP="no"
+  - export MAKEFLAGS="-j2"
 
   - git clone https://github.com/symengine/symengine symengine-cpp
   - cd symengine-cpp
   - export SOURCE_DIR=`pwd`
   - git checkout `cat ../symengine_version.txt`
-
-  # Setup travis for C++ library
-  - if [[ "${WITH_SAGE}" != "yes" ]]; then source bin/install_travis.sh; fi
+  - cd ..
 
   # Setup travis for Python wrappers
-  - cd $PYTHON_SOURCE_DIR
   - source bin/install_travis.sh
 
+  # Setup travis for C++ library
+  - cd $SOURCE_DIR
+  - if [[ "${WITH_SAGE}" != "yes" ]]; then source bin/install_travis.sh; fi
+
   # Build C++ library
-  - cd symengine-cpp
+  - cd $SOURCE_DIR
   - bin/test_travis.sh
+  - unset MAKEFLAGS
 
 script:
   # Build Python wrappers and test
