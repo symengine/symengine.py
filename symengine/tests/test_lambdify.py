@@ -43,6 +43,14 @@ def allclose(vec1, vec2, rtol=1e-13, atol=1e-13):
     return True
 
 
+def test_get_shape():
+    get_shape = se.lib.symengine_wrapper.get_shape
+    assert get_shape([1]) == (1,)
+    assert get_shape([1, 1, 1]) == (3,)
+    assert get_shape([[1], [1], [1]]) == (3, 1)
+    assert get_shape([[1, 1, 1]]) == (1, 3)
+
+
 def test_Lambdify():
     n = 7
     args = x, y, z = se.symbols('x y z')
@@ -536,19 +544,19 @@ def _Lambdify_heterogeneous_output(Lambdify):
     args = se.DenseMatrix(2, 1, [x, y])
     v = se.DenseMatrix(2, 1, [x**3 * y, (x+1)*(y+1)])
     jac = v.jacobian(args)
-    exprs = [jac, x+y, v, x*y]
-    lmb = se.Lambdify(args, exprs)
+    exprs = [jac, x+y, v, (x+1)*(y+1)]
+    lmb = se.Lambdify(args, *exprs)
     inp0 = 7, 11
     inp1 = 8, 13
     inp2 = 5, 9
     inp = np.array([inp0, inp1, inp2])
-    o_j, o_xpy, o_v, o_xty = lmb(inp, out)
+    o_j, o_xpy, o_v, o_xty = lmb(inp)
     for idx, (X, Y) in enumerate([inp0, inp1, inp2]):
         assert np.allclose(o_j[idx, ...], [[3 * X**2 * Y, X**3],
                                            [Y + 1, X + 1]])
         assert np.allclose(o_xpy[idx, ...], [X+Y])
-        assert np.allclose(o_v[idx, ...], [X**3 * Y, (X+1)*(Y+1)])
-        assert np.allclose(o_xty[idx, ...], [X*Y])
+        assert np.allclose(o_v[idx, ...], [[X**3 * Y], [(X+1)*(Y+1)]])
+        assert np.allclose(o_xty[idx, ...], [(X+1)*(Y+1)])
 
 
 def test_Lambdify_heterogeneous_output():

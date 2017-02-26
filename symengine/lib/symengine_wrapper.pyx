@@ -2706,7 +2706,7 @@ cdef class _Lambdify(object):
         self.out_shapes = [get_shape(expr) for expr in exprs]
         self.n_exprs = len(exprs)
         self.args_size = _size(args)
-        self.out_sizes = [reduce(mul, shape) for shape in self.out_shapes]
+        self.out_sizes = [reduce(mul, shape or (1,)) for shape in self.out_shapes]
         self.accum_out_sizes = [sum(self.out_sizes[:i]) for i in range(self.n_exprs + 1)]
         self.tot_out_size = sum(self.out_sizes)
 
@@ -2980,7 +2980,7 @@ def LambdifyCSE(args, *exprs, real=True, cse=None, concatenate=None):
         new_exprs = []
         n_taken = 0
         for expr in exprs:
-            shape = get_shape(exprs)
+            shape = get_shape(expr)
             size = long(reduce(mul, shape))
             if len(shape) == 1:
                 new_exprs.append(flat_new_exprs[n_taken:n_taken+size])
@@ -2991,7 +2991,6 @@ def LambdifyCSE(args, *exprs, real=True, cse=None, concatenate=None):
             n_taken += size
         lmb = Lambdify(tuple(args) + cse_symbs, *new_exprs, real=real)
         cse_lambda = Lambdify(args, cse_exprs, real=real)
-
         def cb(inp, out=None, **kwargs):
             cse_vals = cse_lambda(inp, **kwargs)
             new_inp = concatenate((inp, cse_vals))
