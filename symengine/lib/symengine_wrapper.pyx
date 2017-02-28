@@ -605,7 +605,15 @@ cdef class Basic(object):
         d[self] = 1
         return d
 
-def series(ex, x=None, x0=0, n=6, method='sympy', removeO=False):
+    def coeff(self, x, n=1):
+        cdef Symbol _x = sympify(x)
+        cdef Basic _n = sympify(n)
+        return c2py(symengine.coeff(deref(self.thisptr), deref(_x.thisptr), deref(_n.thisptr)))
+
+    def has(self, *symbols):
+        return any([has_symbol(self, symbol) for symbol in symbols])
+
+def series(ex, x=None, x0=0, n=6, as_deg_coef_pair=False):
     # TODO: check for x0 an infinity, see sympy/core/expr.py
     # TODO: nonzero x0
     # underscored local vars are of symengine.py type
@@ -622,35 +630,31 @@ def series(ex, x=None, x0=0, n=6, method='sympy', removeO=False):
     if not _x in syms:
         return _ex
 
-    if len(syms) > 1 or method == 'sympy':
-        from sympy import series as sy_series
-        return sy_series(_ex._sympy_(), _x._sympy_(), x0, n)
-    elif method == 'ring_series':
-        from sympy.polys.ring_series import rs_series
-        return rs_series(_ex._sympy_(), _x._sympy_(), n).as_expr().subs(x,x-x0)
-    elif method != 'symengine':
-        raise ValueError('unknown method in series()')
+    if x0 != 0:
+        _ex = _ex.subs({_x: _x + x0})
 
     cdef RCP[const symengine.Symbol] X = symengine.rcp_static_cast_Symbol(_x.thisptr)
-    cdef unsigned int N = n
     cdef umap_int_basic umap
     cdef umap_int_basic_iterator iter, iterend
-    cdef Basic coef
 
-    umap = deref(symengine.series(_ex.thisptr, X, N)).as_dict()
+    if not as_deg_coef_pair:
+        b = c2py(<symengine.RCP[const symengine.Basic]>deref(symengine.series(_ex.thisptr, X, n)).as_basic())
+        if x0 != 0:
+            b = b.subs({_x: _x - x0})
+        return b
 
-    from sympy import Add as sAdd, Pow as sPow, O as sO
+    umap = deref(symengine.series(_ex.thisptr, X, n)).as_dict()
+
     iter = umap.begin()
     iterend = umap.end()
     poly = 0
     l = []
     while iter != iterend:
-        coef = c2py(<symengine.RCP[const symengine.Basic]>(deref(iter).second))
-        l.append(sPow(_x,(deref(iter).first)) * coef)
+        l.append([deref(iter).first, c2py(<symengine.RCP[const symengine.Basic]>(deref(iter).second))])
         inc(iter)
-    if removeO is False:
-        l.append(sO(sPow(_x, n)))
-    return sAdd(*l)
+    if as_deg_coef_pair:
+        return l
+    return add(*l)
 
 
 cdef class Symbol(Basic):
