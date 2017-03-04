@@ -1408,17 +1408,6 @@ cdef class Derivative(Basic):
     def variables(self):
         return self.args[1:]
 
-    def __cinit__(self, expr = None, symbols = None):
-        if expr is None or symbols is None:
-            return
-        cdef symengine.multiset_basic m
-        cdef Basic s_
-        cdef Basic expr_ = _sympify(expr, True)
-        for s in symbols:
-            s_ = _sympify(s, True)
-            m.insert(<RCP[symengine.const_Basic]>(s_.thisptr))
-        self.thisptr = symengine.make_rcp_Derivative(expr_.thisptr, m)
-
     def _sympy_(self):
         cdef RCP[const symengine.Derivative] X = \
             symengine.rcp_static_cast_Derivative(self.thisptr)
