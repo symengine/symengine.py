@@ -211,7 +211,7 @@ def sympy2symengine(a, raise_error=False):
     elif isinstance(a, sympy.gamma):
         return gamma(a.args[0])
     elif isinstance(a, sympy.Derivative):
-        return Derivative(a.expr, a.variables)
+        return diff(a.expr, a.variables)
     elif isinstance(a, sympy.Subs):
         return Subs(a.expr, a.variables, a.point)
     elif isinstance(a, sympy_AppliedUndef):
