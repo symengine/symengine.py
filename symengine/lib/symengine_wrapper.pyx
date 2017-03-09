@@ -16,6 +16,9 @@ import warnings
 
 include "config.pxi"
 
+IF HAVE_CYSIGNALS:
+    include "cysignals/signals.pxi"
+
 class SympifyError(Exception):
     pass
 
@@ -223,7 +226,11 @@ def sympy2symengine(a, raise_error=False):
         row, col = a.shape
         v = []
         for r in a.tolist():
+            IF HAVE_CYSIGNALS:
+                sig_check()
             for e in r:
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 v.append(e)
         return DenseMatrix(row, col, v)
     elif isinstance(a, sympy.polys.domains.modularinteger.ModularInteger):
@@ -269,11 +276,15 @@ def sympify(a, raise_error=True):
     elif isinstance(a, tuple):
         v = []
         for e in a:
+            IF HAVE_CYSIGNALS:
+                sig_check()
             v.append(sympify(e, True))
         return tuple(v)
     elif isinstance(a, list):
         v = []
         for e in a:
+            IF HAVE_CYSIGNALS:
+                sig_check()
             v.append(sympify(e, True))
         return v
     elif hasattr(a, '_symengine_'):
@@ -320,6 +331,8 @@ cdef class _DictBasic(object):
         ret = {}
         it = self.c.begin()
         while it != self.c.end():
+            IF HAVE_CYSIGNALS:
+                sig_check()
             ret[c2py(deref(it).first)] = c2py(deref(it).second)
             inc(it)
         return ret
@@ -331,6 +344,8 @@ cdef class _DictBasic(object):
             self.c.insert(D.c.begin(), D.c.end())
         else:
             for key, value in d.iteritems():
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 self.add(key, value)
 
     def add(self, key, value):
@@ -406,6 +421,8 @@ def get_dict(*args):
         return arg
     cdef _DictBasic D = DictBasic()
     for k, v in arg.items():
+        IF HAVE_CYSIGNALS:
+            sig_check()
         D.add(k, v)
     return D
 
@@ -413,6 +430,8 @@ def get_dict(*args):
 cdef tuple vec_basic_to_tuple(symengine.vec_basic& vec):
     result = []
     for i in range(vec.size()):
+        IF HAVE_CYSIGNALS:
+            sig_check()
         result.append(c2py(<RCP[const symengine.Basic]>(vec[i])))
     return tuple(result)
 
@@ -609,6 +628,8 @@ cdef class Basic(object):
             if (isinstance(self, types)):
                 s.add(self)
             for arg in self.args:
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 s.update(arg.atoms(*types))
             return s
         else:
@@ -667,6 +688,8 @@ def series(ex, x=None, x0=0, n=6, as_deg_coef_pair=False):
     poly = 0
     l = []
     while iter != iterend:
+        IF HAVE_CYSIGNALS:
+            sig_check()
         l.append([deref(iter).first, c2py(<symengine.RCP[const symengine.Basic]>(deref(iter).second))])
         inc(iter)
     if as_deg_coef_pair:
@@ -739,6 +762,8 @@ def symarray(prefix, shape, **kwargs):
     import numpy as np
     arr = np.empty(shape, dtype=object)
     for index in np.ndindex(shape):
+        IF HAVE_CYSIGNALS:
+            sig_check()
         arr[index] = Symbol('%s_%s' % (prefix, '_'.join(map(str, index))), **kwargs)
     return arr
 
@@ -1092,6 +1117,8 @@ cdef class Add(Basic):
         iter = umap.begin()
         iterend = umap.end()
         while iter != iterend:
+            IF HAVE_CYSIGNALS:
+                sig_check()
             d[c2py(<RCP[const symengine.Basic]>(deref(iter).first))] =\
                     c2py(<RCP[const symengine.Basic]>(deref(iter).second))
             inc(iter)
@@ -1214,6 +1241,8 @@ cdef class FunctionSymbol(Function):
         cdef symengine.vec_basic Y = deref(X).get_args()
         s = []
         for i in range(Y.size()):
+            IF HAVE_CYSIGNALS:
+                sig_check()
             s.append(c2py(<RCP[const symengine.Basic]>(Y[i]))._sympy_())
         import sympy
         return sympy.Function(name)(*s)
@@ -1225,6 +1254,8 @@ cdef class FunctionSymbol(Function):
         cdef symengine.vec_basic Y = deref(X).get_args()
         s = []
         for i in range(Y.size()):
+            IF HAVE_CYSIGNALS:
+                sig_check()
             s.append(c2py(<RCP[const symengine.Basic]>(Y[i]))._sage_())
         import sage.all as sage
         return sage.function(name, *s)
@@ -1314,6 +1345,8 @@ cdef class PyFunction(FunctionSymbol):
         cdef symengine.vec_basic v
         cdef Basic arg_
         for arg in args:
+            IF HAVE_CYSIGNALS:
+                sig_check()
             arg_ = sympify(arg, True)
             v.push_back(arg_.thisptr)
         cdef PyFunctionClass _pyfunction_class = get_function_class(pyfunction_class, module)
@@ -1391,6 +1424,8 @@ cdef class Derivative(Basic):
         cdef Basic s_
         cdef Basic expr_ = sympify(expr, True)
         for s in symbols:
+            IF HAVE_CYSIGNALS:
+                sig_check()
             s_ = sympify(s, True)
             m.insert(<RCP[symengine.const_Basic]>(s_.thisptr))
         self.thisptr = symengine.make_rcp_Derivative(expr_.thisptr, m)
@@ -1402,6 +1437,8 @@ cdef class Derivative(Basic):
         cdef symengine.multiset_basic Y = deref(X).get_symbols()
         s = []
         for i in Y:
+            IF HAVE_CYSIGNALS:
+                sig_check()
             s.append(c2py(<RCP[const symengine.Basic]>(i))._sympy_())
         import sympy
         return sympy.Derivative(arg, *s)
@@ -1413,6 +1450,8 @@ cdef class Derivative(Basic):
         cdef symengine.multiset_basic Y = deref(X).get_symbols()
         s = []
         for i in Y:
+            IF HAVE_CYSIGNALS:
+                sig_check()
             s.append(c2py(<RCP[const symengine.Basic]>(i))._sage_())
         return arg.diff(*s)
 
@@ -1426,6 +1465,8 @@ cdef class Subs(Basic):
         cdef Basic p_
         cdef Basic expr_ = sympify(expr, True)
         for v, p in zip(variables, point):
+            IF HAVE_CYSIGNALS:
+                sig_check()
             v_ = sympify(v, True)
             p_ = sympify(p, True)
             m[v_.thisptr] = p_.thisptr
@@ -1456,6 +1497,8 @@ cdef class Subs(Basic):
         v = []
         p = []
         for i in range(V.size()):
+            IF HAVE_CYSIGNALS:
+                sig_check()
             v.append(c2py(<RCP[const symengine.Basic]>(V[i]))._sympy_())
             p.append(c2py(<RCP[const symengine.Basic]>(P[i]))._sympy_())
         import sympy
@@ -1468,6 +1511,8 @@ cdef class Subs(Basic):
         cdef symengine.vec_basic P = deref(X).get_point()
         v = {}
         for i in range(V.size()):
+            IF HAVE_CYSIGNALS:
+                sig_check()
             v[c2py(<RCP[const symengine.Basic]>(V[i]))._sage_()] = \
                 c2py(<RCP[const symengine.Basic]>(P[i]))._sage_()
         return arg.subs(v)
@@ -1566,6 +1611,8 @@ cdef class DenseMatrix(MatrixBase):
             self.thisptr = new symengine.DenseMatrix(row, col, v_)
             return
         for e in v:
+            IF HAVE_CYSIGNALS:
+                sig_check()
             f = sympify(e)
             if isinstance(f, DenseMatrix):
                 matrix_to_vec(f, v_)
@@ -1574,6 +1621,8 @@ cdef class DenseMatrix(MatrixBase):
                 continue
             try:
                 for e_ in f:
+                    IF HAVE_CYSIGNALS:
+                        sig_check()
                     v_.push_back(e_.thisptr)
                 if col is None:
                     row = row + 1
@@ -1656,6 +1705,8 @@ cdef class DenseMatrix(MatrixBase):
             else:
                 s = [0, 0, 0, 0, 0, 0]
                 for i in (0, 1):
+                    IF HAVE_CYSIGNALS:
+                        sig_check()
                     if isinstance(item[i], slice):
                         s[i], s[i+2], s[i+4] = item[i].indices(self.nrows() if i == 0 else self.ncols())
                     else:
@@ -1675,6 +1726,8 @@ cdef class DenseMatrix(MatrixBase):
         elif isinstance(key, slice):
             k = 0
             for i in range(*key.indices(len(self))):
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 self.set(i // self.ncols(), i % self.ncols(), value[k])
                 k = k + 1
         elif isinstance(key, tuple):
@@ -1684,19 +1737,27 @@ cdef class DenseMatrix(MatrixBase):
                 else:
                     k = 0
                     for i in range(*key[1].indices(self.cols)):
+                        IF HAVE_CYSIGNALS:
+                            sig_check()
                         self.set(key[0], i, value[k])
                         k = k + 1
             else:
                 if isinstance(key[1], int):
                     k = 0
                     for i in range(*key[0].indices(self.rows)):
+                        IF HAVE_CYSIGNALS:
+                            sig_check()
                         self.set(i, key[1], value[k])
                         k = k + 1
                 else:
                     k = 0
                     for i in range(*key[0].indices(self.rows)):
+                        IF HAVE_CYSIGNALS:
+                            sig_check()
                         l = 0
                         for j in range(*key[1].indices(self.cols)):
+                            IF HAVE_CYSIGNALS:
+                                sig_check()
                             try:
                                 self.set(i, j, value[k, l])
                             except TypeError:
@@ -1712,10 +1773,18 @@ cdef class DenseMatrix(MatrixBase):
             raise ShapeError("`self` and `rhs` must have the same number of rows.")
         cdef DenseMatrix result = zeros(self.rows, self.cols + o.cols)
         for i in range(self.rows):
+            IF HAVE_CYSIGNALS:
+                sig_check()
             for j in range(self.cols):
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 result[i, j] = self[i, j]
         for i in range(o.rows):
+            IF HAVE_CYSIGNALS:
+                sig_check()
             for j in range(o.cols):
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 result[i, j + self.cols] = o[i, j]
         return result
 
@@ -1725,10 +1794,18 @@ cdef class DenseMatrix(MatrixBase):
             raise ShapeError("`self` and `rhs` must have the same number of columns.")
         cdef DenseMatrix result = zeros(self.rows + o.rows, self.cols)
         for i in range(self.rows):
+            IF HAVE_CYSIGNALS:
+                sig_check()
             for j in range(self.cols):
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 result[i, j] = self[i, j]
         for i in range(o.rows):
+            IF HAVE_CYSIGNALS:
+                sig_check()
             for j in range(o.cols):
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 result[i + self.rows, j] = o[i, j]
         return result
 
@@ -1853,7 +1930,11 @@ cdef class DenseMatrix(MatrixBase):
         cdef int nr = self.nrows()
         cdef int nc = self.ncols()
         for i in range(nr):
+            IF HAVE_CYSIGNALS:
+                sig_check()
             for j in range(nc):
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 self._set(i, j, f(self._get(i, j)))
 
     def applyfunc(self, f):
@@ -1882,7 +1963,11 @@ cdef class DenseMatrix(MatrixBase):
     def free_symbols(self):
         s = set()
         for i in range(self.nrows()):
+            IF HAVE_CYSIGNALS:
+                sig_check()
             for j in range(self.ncols()):
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 s.update(self._get(i, j).free_symbols)
         return s
 
@@ -1944,7 +2029,11 @@ cdef class DenseMatrix(MatrixBase):
         deref(self.thisptr).FFLU(deref(L.thisptr))
 
         for i in range(self.nrows()):
+            IF HAVE_CYSIGNALS:
+                sig_check()
             for j in range(i + 1, self.ncols()):
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 U.set(i, j, L.get(i, j))
                 L.set(i, j, 0)
             U.set(i, i, L.get(i, i))
@@ -1970,8 +2059,12 @@ cdef class DenseMatrix(MatrixBase):
         s = []
         cdef symengine.DenseMatrix A = deref(symengine.static_cast_DenseMatrix(self.thisptr))
         for i in range(A.nrows()):
+            IF HAVE_CYSIGNALS:
+                sig_check()
             l = []
             for j in range(A.ncols()):
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 l.append(c2py(A.get(i, j))._sympy_())
             s.append(l)
         import sympy
@@ -1981,8 +2074,12 @@ cdef class DenseMatrix(MatrixBase):
         s = []
         cdef symengine.DenseMatrix A = deref(symengine.static_cast_DenseMatrix(self.thisptr))
         for i in range(A.nrows()):
+            IF HAVE_CYSIGNALS:
+                sig_check()
             l = []
             for j in range(A.ncols()):
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 l.append(c2py(A.get(i, j))._sage_())
             s.append(l)
         import sage.all as sage
@@ -1995,7 +2092,11 @@ cdef class DenseMatrix(MatrixBase):
         nr = self.nrows()
         nc = self.ncols()
         for ri in range(nr):
+            IF HAVE_CYSIGNALS:
+                sig_check()
             for ci in range(nc):
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 out[ri*nc + ci] = symengine.eval_double(deref(
                     <symengine.RCP[const symengine.Basic]>(deref(self.thisptr).get(ri, ci))))
 
@@ -2006,7 +2107,11 @@ cdef class DenseMatrix(MatrixBase):
         nr = self.nrows()
         nc = self.ncols()
         for ri in range(nr):
+            IF HAVE_CYSIGNALS:
+                sig_check()
             for ci in range(nc):
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 out[ri*nc + ci] = symengine.eval_complex_double(deref(
                     <symengine.RCP[const symengine.Basic]>(deref(self.thisptr).get(ri, ci))))
 
@@ -2025,6 +2130,8 @@ cdef class DenseMatrix(MatrixBase):
             if (isinstance(self, types)):
                 s.add(self)
             for arg in self.tolist():
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 s.update(arg.atoms(*types))
             return s
         else:
@@ -2059,7 +2166,11 @@ Matrix = DenseMatrix
 cdef matrix_to_vec(DenseMatrix d, symengine.vec_basic& v):
     cdef Basic e_
     for i in range(d.nrows()):
+        IF HAVE_CYSIGNALS:
+            sig_check()
         for j in range(d.ncols()):
+            IF HAVE_CYSIGNALS:
+                sig_check()
             e_ = d._get(i, j)
             v.push_back(e_.thisptr)
 
@@ -2073,6 +2184,8 @@ def diag(*values):
     cdef symengine.vec_basic V
     cdef Basic B
     for b in values:
+        IF HAVE_CYSIGNALS:
+            sig_check()
         B = sympify(b)
         V.push_back(B.thisptr)
     symengine.diag(deref(symengine.static_cast_DenseMatrix(d.thisptr)), V, 0)
@@ -2099,6 +2212,8 @@ cdef class Sieve:
         symengine.sieve_generate_primes(primes, n)
         s = []
         for i in range(primes.size()):
+            IF HAVE_CYSIGNALS:
+                sig_check()
             s.append(primes[i])
         return s
 
@@ -2138,6 +2253,8 @@ atexit.register(module_cleanup)
 def diff(ex, *x):
     ex = sympify(ex)
     for i in x:
+        IF HAVE_CYSIGNALS:
+            sig_check()
         ex = ex.diff(i)
     return ex
 
@@ -2148,6 +2265,8 @@ def add(*values):
     cdef symengine.vec_basic v_
     cdef Basic e
     for e_ in values:
+        IF HAVE_CYSIGNALS:
+            sig_check()
         e = sympify(e_)
         v_.push_back(e.thisptr)
     return c2py(symengine.add(v_))
@@ -2156,6 +2275,8 @@ def mul(*values):
     cdef symengine.vec_basic v_
     cdef Basic e
     for e_ in values:
+        IF HAVE_CYSIGNALS:
+            sig_check()
         e = sympify(e_)
         v_.push_back(e.thisptr)
     return c2py(symengine.mul(v_))
@@ -2260,6 +2381,8 @@ def function_symbol(name, *args):
     cdef symengine.vec_basic v
     cdef Basic e_
     for e in args:
+        IF HAVE_CYSIGNALS:
+            sig_check()
         e_ = sympify(e, False)
         if e_ is not None:
             v.push_back(e_.thisptr)
@@ -2415,6 +2538,8 @@ def crt(rem, mod):
     cdef Integer _a
     cdef bool ret_val
     for i in range(len(rem)):
+        IF HAVE_CYSIGNALS:
+            sig_check()
         _a = sympify(rem[i])
         _rem.push_back(symengine.rcp_static_cast_Integer(_a.thisptr))
         _a = sympify(mod[i])
@@ -2513,6 +2638,8 @@ def prime_factors(n):
     symengine.prime_factors(factors, deref(symengine.rcp_static_cast_Integer(_n.thisptr)))
     s = []
     for i in range(factors.size()):
+        IF HAVE_CYSIGNALS:
+            sig_check()
         s.append(c2py(<RCP[const symengine.Basic]>(factors[i])))
     return s
 
@@ -2523,6 +2650,8 @@ def prime_factor_multiplicities(n):
     cdef Basic r
     dict = {}
     for i in range(factors.size()):
+        IF HAVE_CYSIGNALS:
+            sig_check()
         r = c2py(<RCP[const symengine.Basic]>(factors[i]))
         if (r not in dict):
             dict[r] = 1
@@ -2551,6 +2680,8 @@ def primitive_root_list(n):
         deref(symengine.rcp_static_cast_Integer(_n.thisptr)))
     s = []
     for i in range(root_list.size()):
+        IF HAVE_CYSIGNALS:
+            sig_check()
         s.append(c2py(<RCP[const symengine.Basic]>(root_list[i])))
     return s
 
@@ -2618,6 +2749,8 @@ def nthroot_mod_list(a, n, m):
     symengine.nthroot_mod_list(root_list, a1, n1, m1)
     s = []
     for i in range(root_list.size()):
+        IF HAVE_CYSIGNALS:
+            sig_check()
         s.append(c2py(<RCP[const symengine.Basic]>(root_list[i])))
     return s
 
@@ -2647,6 +2780,8 @@ def powermod_list(a, b, m):
     symengine.powermod_list(v, a1, b1, m1)
     s = []
     for i in range(v.size()):
+        IF HAVE_CYSIGNALS:
+            sig_check()
         s.append(c2py(<RCP[const symengine.Basic]>(v[i])))
     return s
 
@@ -2706,6 +2841,8 @@ def with_buffer(iterable, real=True):
             real_view = cython.view.array((_size(iterable),),
                                           sizeof(double), format='d')
             for i in range(_size(iterable)):
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 real_view[i] = iterable[i]
             return real_view
         else:
@@ -2717,6 +2854,8 @@ def with_buffer(iterable, real=True):
             cmplx_view = cython.view.array((_size(iterable),),
                                            sizeof(double complex), format='Zd')
             for i in range(_size(iterable)):
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 cmplx_view[i] = iterable[i]
             return cmplx_view
         else:
@@ -2781,10 +2920,16 @@ cdef class _Lambdify(object):
             nc = args.ncols()
             mtx = (<DenseMatrix>args).thisptr
             for ri in range(nr):
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 for ci in range(nc):
-                   args_.push_back(deref(mtx).get(ri, ci))
+                    IF HAVE_CYSIGNALS:
+                        sig_check()
+                    args_.push_back(deref(mtx).get(ri, ci))
         else:
             for e in args:
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 e_ = sympify(e)
                 args_.push_back(e_.thisptr)
 
@@ -2793,11 +2938,17 @@ cdef class _Lambdify(object):
             nc = exprs.ncols()
             mtx = (<DenseMatrix>exprs).thisptr
             for ri in range(nr):
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 for ci in range(nc):
+                    IF HAVE_CYSIGNALS:
+                        sig_check()
                     b_ = deref(mtx).get(ri, ci)
                     outs_.push_back(b_)
         else:
             for e in ravel(exprs):
+                IF HAVE_CYSIGNALS:
+                    sig_check()
                 e_ = sympify(e)
                 outs_.push_back(e_.thisptr)
 
@@ -2911,6 +3062,8 @@ cdef class _Lambdify(object):
                 if not out.flags['C_CONTIGUOUS']:
                     raise ValueError("Output argument needs to be C-contiguous")
                 for idx, length in enumerate(out.shape[-len(self.out_shape)::-1]):
+                    IF HAVE_CYSIGNALS:
+                        sig_check()
                     if length < self.out_shape[-idx]:
                         raise ValueError("Incompatible shape of output argument")
                 if not out.flags['WRITEABLE']:
@@ -2926,6 +3079,8 @@ cdef class _Lambdify(object):
                 out = with_buffer(out, self.real)
                 reshape_out = False  # only reshape if we allocated.
         for idx in range(nbroadcast):
+            IF HAVE_CYSIGNALS:
+                sig_check()
             if self.real:
                 real_inp_view = inp  # slicing cython.view.array does not give a memview
                 real_out_view = out

@@ -40,7 +40,7 @@ cmake_opts = [("PYTHON_BIN", sys.executable),
 # added option for using cysignals from sagemath
 # see https://github.com/sagemath/cysignals
 # set the environment variable USE_CYSIGNALS=True to force the use of cysignals
-use_cysignals = getenv('USE_CYSIGNALS')
+use_cysignals = os.getenv('USE_CYSIGNALS')
 
 if use_cysignals:
     cysignals_version = '1.4.0'
