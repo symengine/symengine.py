@@ -791,6 +791,18 @@ cdef class Number(Basic):
 cdef class Integer(Number):
 
     @property
+    def is_positive(self):
+        return deref(symengine.rcp_static_cast_Integer(self.thisptr)).is_positive()
+
+    @property
+    def is_negative(self):
+        return deref(symengine.rcp_static_cast_Integer(self.thisptr)).is_negative()
+
+    @property
+    def is_zero(self):
+        return deref(symengine.rcp_static_cast_Integer(self.thisptr)).is_zero()
+
+    @property
     def is_Integer(self):
         return True
 
