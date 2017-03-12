@@ -1,6 +1,7 @@
 from symengine.sympy_compat import (Integer, Rational, S, Basic, Add, Mul,
     Pow, symbols, Symbol, log, sin, zeros, atan2, Number)
 
+
 def test_Integer():
     i = Integer(5)
     assert isinstance(i, Integer)
@@ -9,6 +10,7 @@ def test_Integer():
     assert isinstance(i, Basic)
     assert i.p == 5
     assert i.q == 1
+
 
 def test_Rational():
     i = S(1)/2
@@ -21,6 +23,7 @@ def test_Rational():
     assert not isinstance(x, Rational)
     assert not isinstance(x, Number)
 
+
 def test_Add():
     x, y = symbols("x y")
     i = Add(x, x)
@@ -28,6 +31,7 @@ def test_Add():
     i = Add(x, y)
     assert isinstance(i, Add)
     assert isinstance(i, Basic)
+
 
 def test_Mul():
     x, y = symbols("x y")
@@ -37,6 +41,7 @@ def test_Mul():
     assert isinstance(i, Mul)
     assert isinstance(i, Basic)
 
+
 def test_Pow():
     x = symbols("x")
     i = Pow(x, 1)
@@ -45,12 +50,14 @@ def test_Pow():
     assert isinstance(i, Pow)
     assert isinstance(i, Basic)
 
+
 def test_sin():
     x = symbols("x")
     i = sin(0)
     assert isinstance(i, Integer)
     i = sin(x)
     assert isinstance(i, sin)
+
 
 def test_log():
     x, y = symbols("x y")
@@ -59,6 +66,7 @@ def test_log():
     i = log(x)
     assert isinstance(i, log)
 
+
 def test_ATan2():
     x, y = symbols("x y")
     i = atan2(x, y)
@@ -66,12 +74,15 @@ def test_ATan2():
     i = atan2(0, 1)
     assert i == 0
 
+
 def test_zeros():
     assert zeros(3, c=2).shape == (3, 2)
+
 
 def test_has_functions_module():
     import symengine.sympy_compat as sp
     assert sp.functions.sin(0) == 0
+
 
 def test_subclass_symbol():
     # Subclass of Symbol with an extra attribute
@@ -89,4 +100,3 @@ def test_subclass_symbol():
     two_x = 2 * x
     # Check that after arithmetic, same subclass is returned
     assert two_x.args[1] is x
-

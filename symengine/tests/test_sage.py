@@ -3,6 +3,7 @@ from symengine import (Integer, symbols, sin, cos, pi, E, I, Add,
 from symengine.lib.symengine_wrapper import (PyNumber, PyFunction,
     sage_module, wrap_sage_function)
 
+
 def test_sage_conversions():
     try:
         import sage.all as sage
@@ -61,7 +62,8 @@ def test_sage_conversions():
     assert cos(x1) == sympify(sage.cos(x))
 
     assert function_symbol('f', x1, y1)._sage_() == sage.function('f', x, y)
-    assert function_symbol('f', 2 * x1, x1 + y1).diff(x1)._sage_() == sage.function('f', 2 * x, x + y).diff(x)
+    assert (function_symbol('f', 2 * x1, x1 + y1).diff(x1)._sage_() ==
+            sage.function('f', 2 * x, x + y).diff(x))
 
     # For the following test, sage needs to be modified
     # assert sage.sin(x) == sage.sin(x1)
@@ -101,21 +103,22 @@ def test_sage_conversions():
     e = x1 + wrap_sage_function(sage.log_gamma(x))
     assert str(e) == "x + log_gamma(x)"
     assert isinstance(e, Add)
-    assert e + wrap_sage_function(sage.log_gamma(x)) == x1 + 2*wrap_sage_function(sage.log_gamma(x))
+    assert (e + wrap_sage_function(sage.log_gamma(x)) ==
+            x1 + 2*wrap_sage_function(sage.log_gamma(x)))
 
-    f = e.subs({x1 : 10})
+    f = e.subs({x1: 10})
     assert f == 10 + log(362880)
 
-    f = e.subs({x1 : 2})
+    f = e.subs({x1: 2})
     assert f == 2
 
-    f = e.subs({x1 : 100});
-    v = f.n(53, real=True);
+    f = e.subs({x1: 100})
+    v = f.n(53, real=True)
     assert abs(float(v) - 459.13420537) < 1e-7
 
     f = e.diff(x1)
-    # Enable this once symengine conversions are in sage as sage.psi is converted to a sympy
-    # function in `e.diff(x1)`
+    # Enable this once symengine conversions are in
+    #  sage as sage.psi is converted to a sympy function in `e.diff(x1)`
     # assert f == 1 + wrap_sage_function(sage.psi(x))
 
 

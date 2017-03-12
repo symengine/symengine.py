@@ -3,8 +3,10 @@ from .utilities import var, symbols
 from .compatibility import with_metaclass
 from .lib.symengine_wrapper import (sympify, sympify as S,
         SympifyError, sqrt, I, E, pi, Matrix, Derivative, exp,
-        Lambdify as lambdify, symarray, diff, zeros, eye, diag, ones, zeros,
+        Lambdify as lambdify, symarray, diff, eye, diag, ones, zeros,
         expand, Subs, FunctionSymbol as AppliedUndef)
+from types import ModuleType
+import sys
 
 
 class BasicMeta(type):
@@ -21,6 +23,7 @@ class Number(Basic):
     _classes = (symengine.Number,)
     pass
 
+
 class Symbol(symengine.PySymbol, Basic):
     _classes = (symengine.Symbol,)
     pass
@@ -29,7 +32,7 @@ class Symbol(symengine.PySymbol, Basic):
 class Rational(Number):
     _classes = (symengine.Rational, symengine.Integer)
 
-    def __new__(cls, num, den = 1):
+    def __new__(cls, num, den=1):
         return symengine.Integer(num) / den
 
 
@@ -68,10 +71,7 @@ class Function(Basic):
         return symengine.UndefFunction(name)
 
 
-from types import ModuleType
-
 functions = ModuleType(__name__ + ".functions")
-import sys
 sys.modules[functions.__name__] = functions
 
 functions.sqrt = sqrt
@@ -94,7 +94,7 @@ class _RegisteredFunction(with_metaclass(_FunctionRegistrarMeta, Function)):
 class log(_RegisteredFunction):
     _classes = (symengine.Log,)
 
-    def __new__(cls, a, b = E):
+    def __new__(cls, a, b=E):
         return symengine.log(a, b)
 
 
@@ -117,6 +117,7 @@ class tan(_RegisteredFunction):
 
     def __new__(cls, a):
         return symengine.tan(a)
+
 
 class gamma(_RegisteredFunction):
     _classes = (symengine.Gamma,)
@@ -249,6 +250,7 @@ class atan2(_RegisteredFunction):
 
     def __new__(cls, a, b):
         return symengine.atan2(a, b)
+
 
 '''
 for i in ("""Sin Cos Tan Gamma Cot Csc Sec ASin ACos ATan
