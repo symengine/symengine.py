@@ -1,5 +1,5 @@
 from symengine import Symbol, sin, cos, sqrt, Add, Mul, function_symbol, Integer, log, E, symbols
-from symengine.lib.symengine_wrapper import Subs, Derivative
+from symengine.sympy_compat import Derivative, Subs
 
 
 def test_sin():

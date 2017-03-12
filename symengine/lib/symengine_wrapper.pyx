@@ -213,7 +213,7 @@ def sympy2symengine(a, raise_error=False):
     elif isinstance(a, sympy.Derivative):
         return diff(a.expr, a.variables)
     elif isinstance(a, sympy.Subs):
-        return Subs(a.expr, a.variables, a.point)
+        return a.expr.subs(a.variables, a.point)
     elif isinstance(a, sympy_AppliedUndef):
         name = str(a.func)
         return function_symbol(name, *(a.args))

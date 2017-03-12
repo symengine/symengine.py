@@ -133,6 +133,12 @@ class Derivative(_RegisteredFunction):
         return symengine.diff(expr, variables)
 
 
+class Subs(_RegisteredFunction):
+    _classes = (symengine.Subs,)
+
+    def __new__(cls, *args):
+        return symengine.Subs.subs(*args)
+
 class cot(_RegisteredFunction):
     _classes = (symengine.Cot,)
 
