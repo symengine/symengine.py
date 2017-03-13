@@ -619,6 +619,7 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
         DenseMatrix()
         DenseMatrix(unsigned i, unsigned j) nogil
         DenseMatrix(unsigned i, unsigned j, const vec_basic &v) nogil
+        void resize(unsigned i, unsigned j) nogil
 
     bool is_a_DenseMatrix "SymEngine::is_a<SymEngine::DenseMatrix>"(const MatrixBase &b) nogil
     DenseMatrix* static_cast_DenseMatrix "static_cast<SymEngine::DenseMatrix*>"(const MatrixBase *a)

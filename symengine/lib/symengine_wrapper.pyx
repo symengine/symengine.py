@@ -1740,6 +1740,13 @@ cdef class DenseMatrix(MatrixBase):
         def __get__(self):
             return self.nrows()*self.ncols()
 
+    def reshape(self, rows, cols):
+        if len(self) != rows*cols:
+            raise ValueError("Invalid reshape parameters %d %d" % (rows, cols))
+        r = DenseMatrix(self)
+        deref(symengine.static_cast_DenseMatrix(r.thisptr)).resize(rows, cols)
+        return r
+
     def _get_index(self, i, j):
         nr = self.nrows()
         nc = self.ncols()
