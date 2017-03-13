@@ -148,6 +148,12 @@ cdef class MatrixBase(object):
 cdef class DenseMatrix(MatrixBase):
     pass
 
+cdef class MutableDenseMatrix(DenseMatrix):
+    pass
+
+cdef class ImmutableDenseMatrix(DenseMatrix):
+    pass
+
 cdef class Log(Function):
     pass
 

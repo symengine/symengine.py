@@ -1730,32 +1730,6 @@ cdef class DenseMatrix(MatrixBase):
         else:
             raise NotImplementedError
 
-    def row_join(self, rhs):
-        cdef DenseMatrix o = _sympify(rhs)
-        if self.rows != o.rows:
-            raise ShapeError("`self` and `rhs` must have the same number of rows.")
-        cdef DenseMatrix result = zeros(self.rows, self.cols + o.cols)
-        for i in range(self.rows):
-            for j in range(self.cols):
-                result[i, j] = self[i, j]
-        for i in range(o.rows):
-            for j in range(o.cols):
-                result[i, j + self.cols] = o[i, j]
-        return result
-
-    def col_join(self, bott):
-        cdef DenseMatrix o = _sympify(bott)
-        if self.cols != o.cols:
-            raise ShapeError("`self` and `rhs` must have the same number of columns.")
-        cdef DenseMatrix result = zeros(self.rows + o.rows, self.cols)
-        for i in range(self.rows):
-            for j in range(self.cols):
-                result[i, j] = self[i, j]
-        for i in range(o.rows):
-            for j in range(o.cols):
-                result[i + self.rows, j] = o[i, j]
-        return result
-
     @property
     def rows(self):
         return self.nrows()
@@ -2079,6 +2053,94 @@ class DenseMatrixIter(object):
     next = __next__
 
 Matrix = DenseMatrix
+
+cdef class MutableDenseMatrix(DenseMatrix):
+
+    def __cinit__(self, row=None, col=None, v=None):
+        super(MutableDenseMatrix, self).__cinit__(self, row, col, v)
+
+    def as_mutable(self):
+        return self.copy()
+
+    def row_join(self, rhs):
+        cdef DenseMatrix o = _sympify(rhs)
+        if self.rows != o.rows:
+            raise ShapeError("`self` and `rhs` must have the same number of rows.")
+        cdef DenseMatrix result = zeros(self.rows, self.cols + o.cols)
+        for i in range(self.rows):
+            for j in range(self.cols):
+                result[i, j] = self[i, j]
+        for i in range(o.rows):
+            for j in range(o.cols):
+                result[i, j + self.cols] = o[i, j]
+        return result
+
+    def col_join(self, bott):
+        cdef DenseMatrix o = _sympify(bott)
+        if self.cols != o.cols:
+            raise ShapeError("`self` and `rhs` must have the same number of columns.")
+        cdef DenseMatrix result = zeros(self.rows + o.rows, self.cols)
+        for i in range(self.rows):
+            for j in range(self.cols):
+                result[i, j] = self[i, j]
+        for i in range(o.rows):
+            for j in range(o.cols):
+                result[i + self.rows, j] = o[i, j]
+        return result
+
+    def col_del(self, i):
+        raise NotImplementedError
+
+    def col_op(self, j, f):
+        raise NotImplementedError
+
+    def col_swap(self, i, j):
+        for k in range(0, self.rows):
+            self[k, i], self[k, j] = self[k, j], self[k, i]
+
+    def copyin_list(self, key, value):
+        raise NotImplementedError
+
+    def copyin_matrix(self, key, value):
+        raise NotImplementedError
+
+    def fill(self, value):
+        raise NotImplementedError
+
+    def row_del(self, i):
+        raise NotImplementedError
+
+    def row_op(self, i, f):
+        raise NotImplementedError
+
+    def row_swap(self, i, j):
+        for k in range(0, self.cols):
+            self[i, k], self[j, k] = self[j, k], self[i, k]
+
+    def simplify(self, *args):
+        raise NotImplementedError
+
+    def zip_row_op(self, i, k, f):
+        raise NotImplementedError
+
+
+cdef class ImmutableDenseMatrix(DenseMatrix):
+
+    def __cinit__(self, row=None, col=None, v=None):
+        super(ImmutableDenseMatrix, self).__cinit__(self, row, col, v)
+
+    def _entry(self, i, j):
+        return DenseMatrix.__getitem__(self, (i, j))
+
+    def __setitem__(self, key, value):
+        raise TypeError("Cannot set values of {}".format(self.__class__))
+
+    def set(self, i, j, e):
+        raise TypeError("Cannot set values of {}".format(self.__class__))
+
+    def _set(self, i, j, e):
+        raise TypeError("Cannot set values of {}".format(self.__class__))
+
 
 cdef matrix_to_vec(DenseMatrix d, symengine.vec_basic& v):
     cdef Basic e_
