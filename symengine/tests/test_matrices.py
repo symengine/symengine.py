@@ -289,6 +289,13 @@ def test_shape():
     A = DenseMatrix(2, 2, [1, 2, 3, 4])
     assert A.shape == (2, 2)
 
+def test_reshape():
+    A = DenseMatrix(2, 2, [1, 2, 3, 4])
+    B = DenseMatrix(4, 1, [1, 2, 3, 4])
+    C = A.reshape(4, 1)
+    assert C == B
+    assert C != A
+
 #@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_dump_real():
     if not HAVE_NUMPY:  # nosetests work-around
