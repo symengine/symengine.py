@@ -93,6 +93,10 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = Tanh.__new__(Tanh)
     elif (symengine.is_a_Coth(deref(o))):
         r = Coth.__new__(Coth)
+    elif (symengine.is_a_Csch(deref(o))):
+        r = Csch.__new__(Csch)
+    elif (symengine.is_a_Sech(deref(o))):
+        r = Sech.__new__(Sech)
     elif (symengine.is_a_ASinh(deref(o))):
         r = ASinh.__new__(ASinh)
     elif (symengine.is_a_ACosh(deref(o))):
@@ -101,6 +105,10 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = ATanh.__new__(ATanh)
     elif (symengine.is_a_ACoth(deref(o))):
         r = ACoth.__new__(ACoth)
+    elif (symengine.is_a_ACsch(deref(o))):
+        r = ACsch.__new__(ACsch)
+    elif (symengine.is_a_ASech(deref(o))):
+        r = ASech.__new__(ASech)
     elif (symengine.is_a_ATan2(deref(o))):
         r = ATan2.__new__(ATan2)
     elif (symengine.is_a_PyNumber(deref(o))):
@@ -184,6 +192,10 @@ def sympy2symengine(a, raise_error=False):
             return tanh(a.args[0])
         elif isinstance(a, sympy.coth):
             return coth(a.args[0])
+        elif isinstance(a, sympy.csch):
+            return csch(a.args[0])
+        elif isinstance(a, sympy.sech):
+            return sech(a.args[0])
     elif isinstance(a, sympy.asinh):
         return asinh(a.args[0])
     elif isinstance(a, sympy.acosh):
@@ -192,6 +204,10 @@ def sympy2symengine(a, raise_error=False):
         return atanh(a.args[0])
     elif isinstance(a, sympy.acoth):
         return acoth(a.args[0])
+    elif isinstance(a, sympy.acsch):
+        return acsch(a.args[0])
+    elif isinstance(a, sympy.asech):
+        return asech(a.args[0])
     elif isinstance(a, sympy.log):
         return log(a.args[0])
     elif isinstance(a, sympy.Abs):
@@ -2207,6 +2223,14 @@ def coth(x):
     cdef Basic X = sympify(x)
     return c2py(symengine.coth(X.thisptr))
 
+def sech(x):
+    cdef Basic X = sympify(x)
+    return c2py(symengine.sech(X.thisptr))
+
+def csch(x):
+    cdef Basic X = sympify(x)
+    return c2py(symengine.csch(X.thisptr))
+
 def asinh(x):
     cdef Basic X = sympify(x)
     return c2py(symengine.asinh(X.thisptr))
@@ -2222,6 +2246,14 @@ def atanh(x):
 def acoth(x):
     cdef Basic X = sympify(x)
     return c2py(symengine.acoth(X.thisptr))
+
+def asech(x):
+    cdef Basic X = sympify(x)
+    return c2py(symengine.asech(X.thisptr))
+
+def acsch(x):
+    cdef Basic X = sympify(x)
+    return c2py(symengine.acsch(X.thisptr))
 
 def function_symbol(name, *args):
     cdef symengine.vec_basic v

@@ -241,10 +241,14 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_Cosh "SymEngine::is_a<SymEngine::Cosh>"(const Basic &b) nogil
     bool is_a_Tanh "SymEngine::is_a<SymEngine::Tanh>"(const Basic &b) nogil
     bool is_a_Coth "SymEngine::is_a<SymEngine::Coth>"(const Basic &b) nogil
+    bool is_a_Csch "SymEngine::is_a<SymEngine::Csch>"(const Basic &b) nogil
+    bool is_a_Sech "SymEngine::is_a<SymEngine::Sech>"(const Basic &b) nogil
     bool is_a_ASinh "SymEngine::is_a<SymEngine::ASinh>"(const Basic &b) nogil
     bool is_a_ACosh "SymEngine::is_a<SymEngine::ACosh>"(const Basic &b) nogil
     bool is_a_ATanh "SymEngine::is_a<SymEngine::ATanh>"(const Basic &b) nogil
     bool is_a_ACoth "SymEngine::is_a<SymEngine::ACoth>"(const Basic &b) nogil
+    bool is_a_ACsch "SymEngine::is_a<SymEngine::ACsch>"(const Basic &b) nogil
+    bool is_a_ASech "SymEngine::is_a<SymEngine::ASech>"(const Basic &b) nogil
     bool is_a_FunctionSymbol "SymEngine::is_a<SymEngine::FunctionSymbol>"(const Basic &b) nogil
     bool is_a_Abs "SymEngine::is_a<SymEngine::Abs>"(const Basic &b) nogil
     bool is_a_Gamma "SymEngine::is_a<SymEngine::Gamma>"(const Basic &b) nogil
@@ -419,10 +423,14 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
     cdef RCP[const Basic] cosh(RCP[const Basic] &arg) nogil except+
     cdef RCP[const Basic] tanh(RCP[const Basic] &arg) nogil except+
     cdef RCP[const Basic] coth(RCP[const Basic] &arg) nogil except+
+    cdef RCP[const Basic] csch(RCP[const Basic] &arg) nogil except+
+    cdef RCP[const Basic] sech(RCP[const Basic] &arg) nogil except+
     cdef RCP[const Basic] asinh(RCP[const Basic] &arg) nogil except+
     cdef RCP[const Basic] acosh(RCP[const Basic] &arg) nogil except+
     cdef RCP[const Basic] atanh(RCP[const Basic] &arg) nogil except+
     cdef RCP[const Basic] acoth(RCP[const Basic] &arg) nogil except+
+    cdef RCP[const Basic] acsch(RCP[const Basic] &arg) nogil except+
+    cdef RCP[const Basic] asech(RCP[const Basic] &arg) nogil except+
     cdef RCP[const Basic] function_symbol(string name, const vec_basic &arg) nogil except+
     cdef RCP[const Basic] abs(RCP[const Basic] &arg) nogil except+
     cdef RCP[const Basic] gamma(RCP[const Basic] &arg) nogil except+
@@ -485,6 +493,12 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
     cdef cppclass Coth(HyperbolicFunction):
         pass
 
+    cdef cppclass Csch(HyperbolicFunction):
+        pass
+
+    cdef cppclass Sech(HyperbolicFunction):
+        pass
+
     cdef cppclass ASinh(HyperbolicFunction):
         pass
 
@@ -495,6 +509,12 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
         pass
 
     cdef cppclass ACoth(HyperbolicFunction):
+        pass
+
+    cdef cppclass ACsch(HyperbolicFunction):
+        pass
+
+    cdef cppclass ASech(HyperbolicFunction):
         pass
 
     cdef cppclass FunctionSymbol(Function):
