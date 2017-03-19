@@ -422,8 +422,10 @@ def get_dict(*args):
     cdef _DictBasic D = DictBasic()
     for k, v in arg.items():
         IF HAVE_CYSIGNALS:
-            sig_check()
+            sig_on()
         D.add(k, v)
+        IF HAVE_CYSIGNALS:
+            sig_off()
     return D
 
 
@@ -1345,8 +1347,6 @@ cdef class PyFunction(FunctionSymbol):
         cdef symengine.vec_basic v
         cdef Basic arg_
         for arg in args:
-            IF HAVE_CYSIGNALS:
-                sig_check()
             arg_ = sympify(arg, True)
             v.push_back(arg_.thisptr)
         cdef PyFunctionClass _pyfunction_class = get_function_class(pyfunction_class, module)
@@ -1466,10 +1466,12 @@ cdef class Subs(Basic):
         cdef Basic expr_ = sympify(expr, True)
         for v, p in zip(variables, point):
             IF HAVE_CYSIGNALS:
-                sig_check()
+                sig_on()
             v_ = sympify(v, True)
             p_ = sympify(p, True)
             m[v_.thisptr] = p_.thisptr
+            IF HAVE_CYSIGNALS:
+                sig_off()
         self.thisptr = symengine.make_rcp_Subs(expr_.thisptr, m)
 
     @property
@@ -1622,8 +1624,10 @@ cdef class DenseMatrix(MatrixBase):
             try:
                 for e_ in f:
                     IF HAVE_CYSIGNALS:
-                        sig_check()
+                        sig_on()
                     v_.push_back(e_.thisptr)
+                    IF HAVE_CYSIGNALS:
+                        sig_off()
                 if col is None:
                     row = row + 1
             except TypeError:
@@ -1774,18 +1778,26 @@ cdef class DenseMatrix(MatrixBase):
         cdef DenseMatrix result = zeros(self.rows, self.cols + o.cols)
         for i in range(self.rows):
             IF HAVE_CYSIGNALS:
-                sig_check()
+                sig_on()
             for j in range(self.cols):
                 IF HAVE_CYSIGNALS:
-                    sig_check()
+                    sig_on()
                 result[i, j] = self[i, j]
+                IF HAVE_CYSIGNALS:
+                    sig_off()
+            IF HAVE_CYSIGNALS:
+                sig_off()
         for i in range(o.rows):
             IF HAVE_CYSIGNALS:
-                sig_check()
+                sig_on()
             for j in range(o.cols):
                 IF HAVE_CYSIGNALS:
-                    sig_check()
+                    sig_on()
                 result[i, j + self.cols] = o[i, j]
+                IF HAVE_CYSIGNALS:
+                    sig_off()
+            IF HAVE_CYSIGNALS:
+                sig_off()
         return result
 
     def col_join(self, bott):
@@ -1795,18 +1807,26 @@ cdef class DenseMatrix(MatrixBase):
         cdef DenseMatrix result = zeros(self.rows + o.rows, self.cols)
         for i in range(self.rows):
             IF HAVE_CYSIGNALS:
-                sig_check()
+                sig_on()
             for j in range(self.cols):
                 IF HAVE_CYSIGNALS:
-                    sig_check()
+                    sig_on()
                 result[i, j] = self[i, j]
+                IF HAVE_CYSIGNALS:
+                    sig_off()
+            IF HAVE_CYSIGNALS:
+                sig_on()
         for i in range(o.rows):
             IF HAVE_CYSIGNALS:
-                sig_check()
+                sig_on()
             for j in range(o.cols):
                 IF HAVE_CYSIGNALS:
-                    sig_check()
+                    sig_on()
                 result[i + self.rows, j] = o[i, j]
+                IF HAVE_CYSIGNALS:
+                    sig_off()
+            IF HAVE_CYSIGNALS:
+                sig_off()
         return result
 
     @property
@@ -2033,9 +2053,11 @@ cdef class DenseMatrix(MatrixBase):
                 sig_check()
             for j in range(i + 1, self.ncols()):
                 IF HAVE_CYSIGNALS:
-                    sig_check()
+                    sig_on()
                 U.set(i, j, L.get(i, j))
                 L.set(i, j, 0)
+                IF HAVE_CYSIGNALS:
+                    sig_off()
             U.set(i, i, L.get(i, i))
 
         return L, U
@@ -2170,9 +2192,11 @@ cdef matrix_to_vec(DenseMatrix d, symengine.vec_basic& v):
             sig_check()
         for j in range(d.ncols()):
             IF HAVE_CYSIGNALS:
-                sig_check()
+                sig_on()
             e_ = d._get(i, j)
             v.push_back(e_.thisptr)
+            IF HAVE_CYSIGNALS:
+                sig_off()
 
 def eye(n):
     d = DenseMatrix(n, n)
@@ -2185,9 +2209,11 @@ def diag(*values):
     cdef Basic B
     for b in values:
         IF HAVE_CYSIGNALS:
-            sig_check()
+            sig_on()
         B = sympify(b)
         V.push_back(B.thisptr)
+        IF HAVE_CYSIGNALS:
+            sig_off()
     symengine.diag(deref(symengine.static_cast_DenseMatrix(d.thisptr)), V, 0)
     return d
 
@@ -2266,9 +2292,11 @@ def add(*values):
     cdef Basic e
     for e_ in values:
         IF HAVE_CYSIGNALS:
-            sig_check()
+            sig_on()
         e = sympify(e_)
         v_.push_back(e.thisptr)
+        IF HAVE_CYSIGNALS:
+            sig_off()
     return c2py(symengine.add(v_))
 
 def mul(*values):
@@ -2276,9 +2304,11 @@ def mul(*values):
     cdef Basic e
     for e_ in values:
         IF HAVE_CYSIGNALS:
-            sig_check()
+            sig_on()
         e = sympify(e_)
         v_.push_back(e.thisptr)
+        IF HAVE_CYSIGNALS:
+            sig_off()
     return c2py(symengine.mul(v_))
 
 def sin(x):
@@ -2382,10 +2412,12 @@ def function_symbol(name, *args):
     cdef Basic e_
     for e in args:
         IF HAVE_CYSIGNALS:
-            sig_check()
+            sig_on()
         e_ = sympify(e, False)
         if e_ is not None:
             v.push_back(e_.thisptr)
+        IF HAVE_CYSIGNALS:
+            sig_off()
     return c2py(symengine.function_symbol(name.encode("utf-8"), v))
 
 def sqrt(x):
@@ -2539,11 +2571,13 @@ def crt(rem, mod):
     cdef bool ret_val
     for i in range(len(rem)):
         IF HAVE_CYSIGNALS:
-            sig_check()
+            sig_on()
         _a = sympify(rem[i])
         _rem.push_back(symengine.rcp_static_cast_Integer(_a.thisptr))
         _a = sympify(mod[i])
         _mod.push_back(symengine.rcp_static_cast_Integer(_a.thisptr))
+        IF HAVE_CYSIGNALS:
+            sig_off()
 
     cdef RCP[const symengine.Integer] c
     ret_val = symengine.crt(symengine.outArg_Integer(c), _rem, _mod)
@@ -2924,14 +2958,18 @@ cdef class _Lambdify(object):
                     sig_check()
                 for ci in range(nc):
                     IF HAVE_CYSIGNALS:
-                        sig_check()
+                        sig_on()
                     args_.push_back(deref(mtx).get(ri, ci))
+                    IF HAVE_CYSIGNALS:
+                        sig_off()
         else:
             for e in args:
                 IF HAVE_CYSIGNALS:
-                    sig_check()
+                    sig_on()
                 e_ = sympify(e)
                 args_.push_back(e_.thisptr)
+                IF HAVE_CYSIGNALS:
+                    sig_off()
 
         if isinstance(exprs, DenseMatrix):
             nr = exprs.nrows()
@@ -2942,15 +2980,19 @@ cdef class _Lambdify(object):
                     sig_check()
                 for ci in range(nc):
                     IF HAVE_CYSIGNALS:
-                        sig_check()
+                        sig_on()
                     b_ = deref(mtx).get(ri, ci)
                     outs_.push_back(b_)
+                    IF HAVE_CYSIGNALS:
+                        sig_off()
         else:
             for e in ravel(exprs):
                 IF HAVE_CYSIGNALS:
-                    sig_check()
+                    sig_on()
                 e_ = sympify(e)
                 outs_.push_back(e_.thisptr)
+                IF HAVE_CYSIGNALS:
+                    sig_off()
 
         self._init(args_, outs_)
 
