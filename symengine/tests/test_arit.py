@@ -2,6 +2,7 @@ from symengine.utilities import raises
 
 from symengine import Symbol, Integer, Add, Pow
 
+
 def test_arit1():
     x = Symbol("x")
     y = Symbol("y")
@@ -11,6 +12,7 @@ def test_arit1():
     e = 2*x
     e = x + 1
     e = 1 + x
+
 
 def test_arit2():
     x = Symbol("x")
@@ -26,10 +28,12 @@ def test_arit2():
     assert not x+x == 3*x
     assert not x+x != 2*x
 
+
 def test_arit3():
     x = Symbol("x")
     y = Symbol("y")
     raises(TypeError, lambda: ("x"*x))
+
 
 def test_arit4():
     x = Symbol("x")
@@ -38,6 +42,7 @@ def test_arit4():
     assert x*y == y*x
     assert x*x*x == x**3
     assert x*y*x*x == x**3*y
+
 
 def test_arit5():
     x = Symbol("x")
@@ -49,6 +54,7 @@ def test_arit5():
     assert isinstance(e, Pow)
     assert f == x**2 + 2*x*y + y**2
     assert isinstance(f, Add)
+
 
 def test_arit6():
     x = Symbol("x")
@@ -62,6 +68,7 @@ def test_arit6():
     e = 2*x
     assert str(e) == "2*x"
 
+
 def test_arit7():
     x = Symbol("x")
     y = Symbol("y")
@@ -71,6 +78,7 @@ def test_arit7():
     assert 3*x - x == 2*x
 
     assert 2*x*y - x*y == x*y
+
 
 def test_arit8():
     x = Symbol("x")
@@ -85,6 +93,7 @@ def test_arit8():
     assert (2 * x**3 * y**2 * z)**3 / 8 == x**9 * y**6 * z**3
     assert (2*y**(-2*x**2)) * (3*y**(2*x**2)) == 6
 
+
 def test_expand1():
     x = Symbol("x")
     y = Symbol("y")
@@ -94,21 +103,25 @@ def test_expand1():
     assert ((2*x**2+3*y)**2).expand() == 4*x**4 + 12*x**2*y + 9*y**2
     assert ((2*x/3+y/4)**2).expand() == 4*x**2/9 + x*y/3 + y**2/16
 
+
 def test_arit9():
     x = Symbol("x")
     y = Symbol("y")
     assert 1/x == 1/x
     assert 1/x != 1/y
 
+
 def test_expand2():
     y = Symbol("y")
     z = Symbol("z")
     assert ((1/(y*z) - y*z)*y*z).expand() == 1-(y*z)**2
 
+
 def test_expand3():
     x = Symbol("x")
     y = Symbol("y")
     assert ((1/(x*y) - x*y+2)*(1+x*y)).expand() == 3 + 1/(x*y) + x*y - (x*y)**2
+
 
 def test_args():
     x = Symbol("x")
@@ -119,6 +132,7 @@ def test_args():
     assert (2*x**2).args == (2, x**2)
     assert set((2*x**2*y).args) == set((Integer(2), x**2, y))
 
+
 def test_atoms():
     x = Symbol("x")
     y = Symbol("y")
@@ -127,6 +141,7 @@ def test_atoms():
     assert (x**2).atoms(Symbol) == set([x])
     assert (x ** y + z).atoms() == set([x, y, z])
     assert (x**y + z).atoms(Symbol) == set([x, y, z])
+
 
 def test_free_symbols():
     x = Symbol("x")

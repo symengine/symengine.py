@@ -1,6 +1,7 @@
 from symengine import Symbol, sin, cos, sqrt, Add, Mul, function_symbol, Integer, log, E, symbols
 from symengine.lib.symengine_wrapper import Subs, Derivative
 
+
 def test_sin():
     x = Symbol("x")
     e = sin(x)
@@ -14,6 +15,7 @@ def test_sin():
     f = sin(e)
     g = f.diff(x).diff(x)
     assert isinstance(g, Add)
+
 
 def test_f():
     x = Symbol("x")
@@ -34,6 +36,7 @@ def test_f():
     f = function_symbol("f", x, y)
     g = function_symbol("f", x, y)
     assert f == g
+
 
 def test_derivative():
     x = Symbol("x")
@@ -60,6 +63,7 @@ def test_derivative():
     assert s.expr == function_symbol("f", x)
     assert s.variables == (x,)
 
+
 def test_abs():
     x = Symbol("x")
     e = abs(x)
@@ -73,6 +77,7 @@ def test_abs():
     assert abs(Integer(5)/3+x) != Integer(5)/3
     assert abs(Integer(5)/3+x) == abs(Integer(5)/3+x)
 
+
 def test_abs_diff():
     x = Symbol("x")
     y = Symbol("y")
@@ -80,6 +85,7 @@ def test_abs_diff():
     assert e.diff(x) != e
     assert e.diff(x) != 0
     assert e.diff(y) == 0
+
 
 def test_Subs():
     x = Symbol("x")
@@ -95,6 +101,7 @@ def test_Subs():
     assert s.expr == Derivative(function_symbol("f", _xi_1), [_xi_1])
     assert s.variables == (_xi_1,)
     assert s.point == (2*x,)
+
 
 def test_FunctionWrapper():
     import sympy
@@ -122,6 +129,7 @@ def test_FunctionWrapper():
 
     f = e.diff(x)
     assert f == 1 + sympy.polygamma(0, x)
+
 
 def test_log():
     x = Symbol("x")

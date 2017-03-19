@@ -46,19 +46,21 @@ def allclose(vec1, vec2, rtol=1e-13, atol=1e-13):
 def test_Lambdify():
     n = 7
     args = x, y, z = se.symbols('x y z')
-    l = se.Lambdify(args, [x+y+z, x**2, (x-y)/z, x*y*z], backend='lambda')
-    assert allclose(l(range(n, n+len(args))),
+    L = se.Lambdify(args, [x+y+z, x**2, (x-y)/z, x*y*z], backend='lambda')
+    assert allclose(L(range(n, n+len(args))),
                     [3*n+3, n**2, -1/(n+2), n*(n+1)*(n+2)])
+
 
 def test_Lambdify_LLVM():
     n = 7
     args = x, y, z = se.symbols('x y z')
     if not se.have_llvm:
-        raises(ValueError, lambda: se.Lambdify(args, [x+y+z, x**2, (x-y)/z, x*y*z],
-                                                      backend='llvm'))
+        raises(ValueError, lambda: se.Lambdify(args, [x+y+z, x**2,
+                                                      (x-y)/z, x*y*z],
+                                               backend='llvm'))
         return
-    l = se.Lambdify(args, [x+y+z, x**2, (x-y)/z, x*y*z], backend='llvm')
-    assert allclose(l(range(n, n+len(args))),
+    L = se.Lambdify(args, [x+y+z, x**2, (x-y)/z, x*y*z], backend='llvm')
+    assert allclose(L(range(n, n+len(args))),
                     [3*n+3, n**2, -1/(n+2), n*(n+1)*(n+2)])
 
 
@@ -66,7 +68,7 @@ def _get_2_to_2by2_numpy():
     args = x, y = se.symbols('x y')
     exprs = np.array([[x+y+1.0, x*y],
                       [x/y, x**y]])
-    l = se.Lambdify(args, exprs)
+    L = se.Lambdify(args, exprs)
 
     def check(A, inp):
         X, Y = inp
@@ -74,10 +76,10 @@ def _get_2_to_2by2_numpy():
         assert abs(A[0, 1] - (X*Y)) < 1e-15
         assert abs(A[1, 0] - (X/Y)) < 1e-15
         assert abs(A[1, 1] - (X**Y)) < 1e-13
-    return l, check
+    return L, check
 
 
-#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_Lambdify_2dim_numpy():
     if not HAVE_NUMPY:  # nosetests work-around
         return
@@ -106,7 +108,7 @@ def test_array():
     check(out)
 
 
-#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires NumPy')
+# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires NumPy')
 def test_array_out():
     if not HAVE_NUMPY:  # nosetests work-around
         return
@@ -124,7 +126,7 @@ def test_array_out():
     assert np.allclose(out1[:], [-1]*len(exprs))
 
 
-#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires NumPy')
+# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires NumPy')
 def test_numpy_array_out_exceptions():
     if not HAVE_NUMPY:  # nosetests work-around
         return
@@ -185,7 +187,7 @@ def test_memview_out():
     assert cy_arr2[0] == -1
 
 
-#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_broadcast():
     if not HAVE_NUMPY:  # nosetests work-around
         return
@@ -240,7 +242,7 @@ def test_cse_array_input():
     assert allclose(out, ref)
 
 
-#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_cse_numpy():
     if not HAVE_NUMPY:  # nosetests work-around
         return
@@ -250,7 +252,7 @@ def test_cse_numpy():
     assert allclose(out, ref)
 
 
-#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_broadcast_c():
     if not HAVE_NUMPY:  # nosetests work-around
         return
@@ -263,7 +265,7 @@ def test_broadcast_c():
         check(A[i, ...], inp[i, :])
 
 
-#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_broadcast_fortran():
     if not HAVE_NUMPY:  # nosetests work-around
         return
@@ -281,7 +283,7 @@ def _get_1_to_2by3_matrix():
     args = x,
     exprs = se.DenseMatrix(2, 3, [x+1, x+2, x+3,
                                   1/x, 1/(x*x), 1/(x**3.0)])
-    l = se.Lambdify(args, exprs)
+    L = se.Lambdify(args, exprs)
 
     def check(A, inp):
         X, = inp
@@ -291,20 +293,20 @@ def _get_1_to_2by3_matrix():
         assert abs(A[1, 0] - (1/X)) < 1e-15
         assert abs(A[1, 1] - (1/(X*X))) < 1e-15
         assert abs(A[1, 2] - (1/(X**3.0))) < 1e-15
-    return l, check
+    return L, check
 
 
 def _test_2dim_Matrix(use_numpy):
-    l, check = _get_1_to_2by3_matrix()
+    L, check = _get_1_to_2by3_matrix()
     inp = [7]
-    check(l(inp, use_numpy=use_numpy), inp)
+    check(L(inp, use_numpy=use_numpy), inp)
 
 
 def test_2dim_Matrix():
     _test_2dim_Matrix(False)
 
 
-#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_2dim_Matrix_numpy():
     if not HAVE_NUMPY:  # nosetests work-around
         return
@@ -312,9 +314,9 @@ def test_2dim_Matrix_numpy():
 
 
 def _test_2dim_Matrix_broadcast(use_numpy):
-    l, check = _get_1_to_2by3_matrix()
+    L, check = _get_1_to_2by3_matrix()
     inp = range(1, 5)
-    out = l(inp, use_numpy=use_numpy)
+    out = L(inp, use_numpy=use_numpy)
     for i in range(len(inp)):
         check(out[i, ...], (inp[i],))
 
@@ -323,26 +325,26 @@ def test_2dim_Matrix_broadcast():
     _test_2dim_Matrix_broadcast(False)
 
 
-#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_2dim_Matrix_broadcast_numpy():
     if not HAVE_NUMPY:  # nosetests work-around
         return
     _test_2dim_Matrix_broadcast(True)
 
 
-#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_2dim_Matrix_broadcast_multiple_extra_dim():
     if not HAVE_NUMPY:  # nosetests work-around
         return
-    l, check = _get_1_to_2by3_matrix()
+    L, check = _get_1_to_2by3_matrix()
     inp = np.arange(1, 4*5*6+1).reshape((4, 5, 6))
-    out = l(inp)
+    out = L(inp)
     assert out.shape == (4, 5, 6, 2, 3)
     for i, j, k in itertools.product(range(4), range(5), range(6)):
         check(out[i, j, k, ...], (inp[i, j, k],))
 
 
-#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_jacobian():
     if not HAVE_NUMPY:  # nosetests work-around
         return
@@ -358,7 +360,7 @@ def test_jacobian():
                              [Y + 1, X + 1]])
 
 
-#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_jacobian__broadcast():
     if not HAVE_NUMPY:  # nosetests work-around
         return
@@ -378,7 +380,7 @@ def test_jacobian__broadcast():
                                            [Y + 1, X + 1]])
 
 
-#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_excessive_args():
     if not HAVE_NUMPY:  # nosetests work-around
         return
@@ -391,7 +393,7 @@ def test_excessive_args():
     assert np.allclose(out, -1)
 
 
-#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_excessive_out():
     if not HAVE_NUMPY:  # nosetests work-around
         return
@@ -414,16 +416,16 @@ def ravelled(A):
     try:
         return A.ravel()
     except AttributeError:
-        l = []
+        L = []
         for idx in all_indices(A.memview.shape):
-            l.append(A[idx])
-        return l
+            L.append(A[idx])
+        return L
 
 
 def _get_2_to_2by2_list(real=True):
     args = x, y = se.symbols('x y')
     exprs = [[x + y*y, y*y], [x*y*y, se.sqrt(x)+y*y]]
-    l = se.Lambdify(args, exprs, real=real)
+    L = se.Lambdify(args, exprs, real=real)
 
     def check(A, inp):
         X, Y = inp
@@ -434,58 +436,58 @@ def _get_2_to_2by2_list(real=True):
         for i in range(size//4):
             for j in range(4):
                 assert isclose(ravA[i*4 + j], ref[j])
-    return l, check
+    return L, check
 
 
 def test_2_to_2by2_list():
-    l, check = _get_2_to_2by2_list()
+    L, check = _get_2_to_2by2_list()
     inp = [13, 17]
-    A = l(inp, use_numpy=False)
+    A = L(inp, use_numpy=False)
     check(A, inp)
 
 
-#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_2_to_2by2_numpy():
     if not HAVE_NUMPY:  # nosetests work-around
         return
-    l, check = _get_2_to_2by2_list()
+    L, check = _get_2_to_2by2_list()
     inp = [13, 17]
-    A = l(inp, use_numpy=True)
+    A = L(inp, use_numpy=True)
     check(A, inp)
 
 
-#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_unsafe_real():
     if not HAVE_NUMPY:  # nosetests work-around
         return
-    l, check = _get_2_to_2by2_list()
+    L, check = _get_2_to_2by2_list()
     inp = np.array([13., 17.])
     out = np.empty(4)
-    l.unsafe_real(inp, out)
+    L.unsafe_real(inp, out)
     check(out.reshape((2, 2)), inp)
 
 
-#@pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
 def test_unsafe_complex():
     if not HAVE_NUMPY:  # nosetests work-around
         return
-    l, check = _get_2_to_2by2_list(real=False)
-    assert not l.real
+    L, check = _get_2_to_2by2_list(real=False)
+    assert not L.real
     inp = np.array([13+11j, 7+4j], dtype=np.complex128)
     out = np.empty(4, dtype=np.complex128)
-    l.unsafe_complex(inp, out)
+    L.unsafe_complex(inp, out)
     check(out.reshape((2, 2)), inp)
 
 
 def test_itertools_chain():
     args, exprs, inp, check = _get_array()
-    l = se.Lambdify(args, exprs)
+    L = se.Lambdify(args, exprs)
     inp = itertools.chain([inp[0]], (inp[1],), [inp[2]])
-    A = l(inp, use_numpy=False)
+    A = L(inp, use_numpy=False)
     check(A)
 
 
-#@pytest.mark.xfail(not HAVE_NUMPY, reason='array.array lacks "Zd"')
+# @pytest.mark.xfail(not HAVE_NUMPY, reason='array.array lacks "Zd"')
 def test_complex_1():
     if not HAVE_NUMPY:  # nosetests work-around
         return
@@ -495,7 +497,7 @@ def test_complex_1():
                (11 + 14j)) < 1e-15
 
 
-#@pytest.mark.xfail(not HAVE_NUMPY, reason='array.array lacks "Zd"')
+# @pytest.mark.xfail(not HAVE_NUMPY, reason='array.array lacks "Zd"')
 def test_complex_2():
     if not HAVE_NUMPY:  # nosetests work-around
         return

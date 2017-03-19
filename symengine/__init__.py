@@ -16,7 +16,9 @@ if have_mpc:
 
 __version__ = "0.2.1.dev"
 
+
 def test():
-    import pytest, os
+    import pytest
+    import os
     return not pytest.cmdline.main(
         [os.path.dirname(os.path.abspath(__file__))])
