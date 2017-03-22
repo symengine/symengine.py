@@ -1,5 +1,5 @@
 from symengine.sympy_compat import (Integer, Rational, S, Basic, Add, Mul,
-    Pow, symbols, Symbol, log, sin, zeros, atan2, Number)
+    Pow, symbols, Symbol, log, sin, sech, csch, zeros, atan2, Number)
 
 
 def test_Integer():
@@ -57,6 +57,23 @@ def test_sin():
     assert isinstance(i, Integer)
     i = sin(x)
     assert isinstance(i, sin)
+
+
+def test_sech():
+    x = symbols("x")
+    i = sech(0)
+    assert isinstance(i, Integer)
+    i = sech(x)
+    assert isinstance(i, sech)
+
+
+def test_csch():
+    x = symbols("x")
+    i = csch(x)
+    assert isinstance(i, csch)
+    i = csch(-1)
+    j = csch(1)
+    assert i == -j
 
 
 def test_log():

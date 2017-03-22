@@ -279,8 +279,8 @@ class atan2(_RegisteredFunction):
 
 '''
 for i in ("""Sin Cos Tan Gamma Cot Csc Sec ASin ACos ATan
-          ACot ACsc ASec Sinh Cosh Tanh Coth ASinh ACosh ATanh
-          ACoth""").split():
+          ACot ACsc ASec Sinh Cosh Tanh Coth Sech Csch ASinh ACosh ATanh
+          ACoth ASech ACsch""").split():
     print("""
 class %s(Function):
     _classes = (symengine.%s,)

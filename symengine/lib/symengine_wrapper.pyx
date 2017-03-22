@@ -204,10 +204,6 @@ def sympy2symengine(a, raise_error=False):
         return atanh(a.args[0])
     elif isinstance(a, sympy.acoth):
         return acoth(a.args[0])
-    elif isinstance(a, sympy.acsch):
-        return acsch(a.args[0])
-    elif isinstance(a, sympy.asech):
-        return asech(a.args[0])
     elif isinstance(a, sympy.log):
         return log(a.args[0])
     elif isinstance(a, sympy.Abs):
@@ -232,6 +228,11 @@ def sympy2symengine(a, raise_error=False):
         return DenseMatrix(row, col, v)
     elif isinstance(a, sympy.polys.domains.modularinteger.ModularInteger):
         return PyNumber(a, sympy_module)
+    elif sympy.__version__ > '1.0':
+        if isinstance(a, sympy.acsch):
+            return acsch(a.args[0])
+        elif isinstance(a, sympy.asech):
+            return asech(a.args[0])
 
     if raise_error:
         raise SympifyError("sympy2symengine: Cannot convert '%r' to a symengine type." % a)
