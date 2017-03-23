@@ -97,6 +97,12 @@ cdef class Tanh(HyperbolicFunction):
 cdef class Coth(HyperbolicFunction):
     pass
 
+cdef class Csch(HyperbolicFunction):
+    pass
+
+cdef class Sech(HyperbolicFunction):
+    pass
+
 cdef class ASinh(HyperbolicFunction):
     pass
 
@@ -107,6 +113,12 @@ cdef class ATanh(HyperbolicFunction):
     pass
 
 cdef class ACoth(HyperbolicFunction):
+    pass
+
+cdef class ACsch(HyperbolicFunction):
+    pass
+
+cdef class ASech(HyperbolicFunction):
     pass
 
 cdef class FunctionSymbol(Function):

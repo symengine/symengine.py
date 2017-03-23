@@ -216,6 +216,19 @@ class coth(_RegisteredFunction):
     def __new__(cls, a):
         return symengine.coth(a)
 
+class csch(_RegisteredFunction):
+    _classes = (symengine.Csch,)
+
+    def __new__(cls, a):
+        return symengine.csch(a)
+
+
+class sech(_RegisteredFunction):
+    _classes = (symengine.Sech,)
+
+    def __new__(cls, a):
+        return symengine.sech(a)
+
 
 class asinh(_RegisteredFunction):
     _classes = (symengine.ASinh,)
@@ -244,6 +257,18 @@ class acoth(_RegisteredFunction):
     def __new__(cls, a):
         return symengine.acoth(a)
 
+class acsch(_RegisteredFunction):
+    _classes = (symengine.ACsch,)
+
+    def __new__(cls, a):
+        return symengine.acsch(a)
+
+
+class asech(_RegisteredFunction):
+    _classes = (symengine.ASech,)
+
+    def __new__(cls, a):
+        return symengine.asech(a)
 
 class atan2(_RegisteredFunction):
     _classes = (symengine.ATan2,)
@@ -254,8 +279,8 @@ class atan2(_RegisteredFunction):
 
 '''
 for i in ("""Sin Cos Tan Gamma Cot Csc Sec ASin ACos ATan
-          ACot ACsc ASec Sinh Cosh Tanh Coth ASinh ACosh ATanh
-          ACoth""").split():
+          ACot ACsc ASec Sinh Cosh Tanh Coth Sech Csch ASinh ACosh ATanh
+          ACoth ASech ACsch""").split():
     print("""
 class %s(Function):
     _classes = (symengine.%s,)
