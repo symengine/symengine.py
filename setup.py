@@ -37,6 +37,28 @@ if not use_setuptools:
 
 cmake_opts = [("PYTHON_BIN", sys.executable),
               ("CMAKE_INSTALL_RPATH_USE_LINK_PATH", "yes")]
+# added option for using cysignals from sagemath
+# see https://github.com/sagemath/cysignals
+# set the environment variable USE_CYSIGNALS=True to force the use of cysignals
+use_cysignals = os.getenv('USE_CYSIGNALS')
+
+if use_cysignals:
+    cysignals_version = '1.4.0'
+    # This directory
+    dir_setup = os.path.dirname(os.path.realpath(__file__))
+    # handle cysignals deps in the hard way:
+    from distutils.version import LooseVersion
+    try:
+        import cysignals
+        if cysignals.__version__ < LooseVersion(cysignals_version):
+            raise ImportError
+    except ImportError:
+        print("Please install the cysignals package with a version >= "
+              "%s" % cysignals_version)
+        sys.exit(-1)
+
+cmake_opts = [("PYTHON_BIN", sys.executable),
+              ("CMAKE_INSTALL_RPATH_USE_LINK_PATH", "yes")]
 cmake_generator = [None]
 cmake_build_type = ["Release"]
 
