@@ -770,3 +770,6 @@ IF HAVE_SYMENGINE_MPFR:
 IF HAVE_SYMENGINE_MPC:
     cdef extern from "<symengine/eval_mpc.h>" namespace "SymEngine":
         void eval_mpc(mpc_t result, const Basic &b, mpfr_rnd_t rnd) nogil except +
+
+cdef extern from "<symengine/parser.h>" namespace "SymEngine":
+    RCP[const Basic] parse(const string &n) nogil except +
