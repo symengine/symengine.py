@@ -1,5 +1,7 @@
 # SymEngine Python Wrappers
 
+[![codecov.io](https://codecov.io/github/symengine/symengine.py/coverage.svg?branch=master)](https://codecov.io/github/symengine/symengine.py?branch=master)
+
 Python wrappers to the C++ library [SymEngine](https://github.com/symengine/symengine),
 a fast C++ symbolic manipulation library.
 

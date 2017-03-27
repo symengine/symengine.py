@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+export GCOV_EXECUTABLE=gcov-4.8
+
 if [[ "${WITH_SAGE}" != "yes" ]]; then
     # symengine's bin/install_travis.sh will install miniconda
     conda_pkgs="python=${PYTHON_VERSION} pip cython sympy nose pytest"
