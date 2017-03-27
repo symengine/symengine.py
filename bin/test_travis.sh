@@ -20,7 +20,10 @@ fi
 if [[ "${WITH_SAGE}" == "yes" ]]; then
     sage -t $PYTHON_SOURCE_DIR/symengine/tests/test_sage.py
 fi
-
+if [[ "${WITH_COVERAGE}" == "yes" ]]; then
+    bash <(curl -s https://codecov.io/bash) -x $GCOV_EXECUTABLE
+    exit 0;
+fi
 if [[ "${TRIGGER_FEEDSTOCK}" == "yes" ]]; then
     cd $PYTHON_SOURCE_DIR
     ./bin/trigger_feedstock.sh
