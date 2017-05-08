@@ -3,8 +3,10 @@ from .utilities import var, symbols
 from .compatibility import with_metaclass
 from .lib.symengine_wrapper import (sympify, sympify as S,
         SympifyError, sqrt, I, E, pi, Matrix, Derivative, exp,
-        Lambdify as lambdify, symarray, diff, eye, diag, ones, zeros,
-        expand, Subs, FunctionSymbol as AppliedUndef)
+        factorial, gcd, lcm, factor, nextprime, mod_inverse,
+        totient, primitive_root, Lambdify as lambdify, symarray, 
+        diff, eye, diag, ones, zeros, expand, Subs, 
+        FunctionSymbol as AppliedUndef)
 from types import ModuleType
 import sys
 
