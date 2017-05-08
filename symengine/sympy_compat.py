@@ -3,13 +3,15 @@ from .utilities import var, symbols
 from .compatibility import with_metaclass
 from .lib.symengine_wrapper import (sympify, sympify as S,
         SympifyError, sqrt, I, E, pi, Matrix, Derivative, exp,
-        factorial, gcd, lcm, factor, nextprime, mod_inverse,
-        totient, primitive_root, Lambdify as lambdify, symarray, 
-        diff, eye, diag, ones, zeros, expand, Subs, 
+        nextprime, mod_inverse, primitive_root, Lambdify as lambdify, 
+        symarray, diff, eye, diag, ones, zeros, expand, Subs, 
         FunctionSymbol as AppliedUndef)
 from types import ModuleType
 import sys
 
+def dps_to_prec(n):
+    """Return the number of bits required to represent n decimals accurately."""
+    return max(1, int(round((int(n)+1)*3.3219280948873626)))
 
 class BasicMeta(type):
     def __instancecheck__(self, instance):
@@ -43,6 +45,47 @@ class Integer(Rational):
 
     def __new__(cls, i):
         return symengine.Integer(i)
+
+
+class Float(Number):
+    _classes = (symengine.RealDouble, symengine.RealMPFR)
+
+    def __new__(cls, num, dps=None, precision=None):
+        if dps is not None and precision is not None:
+            raise ValueError('Both decimal and binary precision supplied. '
+                             'Supply only one. ')
+        if dps is None and precision is None:
+            dps = 15
+        if precision is None:
+            precision = dps_to_prec(dps)
+
+        if HAVE_SYMENGINE_MPFR:
+            if precision > 53:
+                if isinstance(num, symengine.RealDouble):
+                    return symengine.RealMPFR(str(num), precision)
+                elif isinstance(num, symengine.RealMPFR):
+                    if precision == num.get_prec():
+                        return num
+                    else:
+                        return symengine.RealMPFR(str(num), precision)
+                else:
+                    return symengine.RealMPFR(str(num), precision)    
+            else:
+                if isinstance(num, symengine.RealDouble):
+                    return num
+                else:
+                    return symengine.RealDouble(float(num))
+        else:
+            if precision > 53:
+                raise ValueError('RealMPFR unavailable for high precision numerical values.')
+            else:
+                if isinstance(num, symengine.RealDouble):
+                    return num
+                else:
+                    return symengine.RealDouble(float(str(num)))
+
+
+RealNumber = Float
 
 
 class Add(Basic):

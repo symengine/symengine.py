@@ -1,5 +1,6 @@
 from symengine.sympy_compat import (Integer, Rational, S, Basic, Add, Mul,
-    Pow, symbols, Symbol, log, sin, sech, csch, zeros, atan2, Number)
+    Pow, symbols, Symbol, log, sin, sech, csch, zeros, atan2, Number, Float,
+    symengine)
 
 
 def test_Integer():
@@ -22,6 +23,39 @@ def test_Rational():
     x = symbols("x")
     assert not isinstance(x, Rational)
     assert not isinstance(x, Number)
+
+
+def test_Float():
+    A = Float("1.23", precision = 53)
+    B = Float("1.23")
+    C = Float(A)
+    assert A == B == C
+    assert isinstance(A, Float)
+    assert isinstance(B, Float)
+    assert isinstance(C, Float)
+    assert isinstance(A, symengine.RealDouble)
+    assert isinstance(B, symengine.RealDouble)
+    assert isinstance(C, symengine.RealDouble)
+    raises(ValueError, lambda: Float("1.23", dps = 3, precision = 10))
+    raises(ValueError, lambda: Float(A, dps = 3, precision = 16))
+    if HAVE_SYMENGINE_MPFR:
+        A = Float("1.23", dps = 16)
+        B = Float("1.23", precision = 56)
+        assert A == B
+        assert isinstance(A, Float)
+        assert isinstance(B, Float)
+        assert isinstance(A, symengine.RealMPFR)
+        assert isinstance(B, symengine.RealMPFR)
+        A = Float(C, dps = 16)
+        assert A == B
+        assert isinstance(A, Float)
+        assert isinstance(A, symengine.RealMPFR)
+        A = Float(A, precision = 53)
+        assert A == C
+        assert isinstance(A, Float)
+        assert isinstance(A, symengine.RealDouble)
+    if not HAVE_SYMENGINE_MPFR:
+        raises(ValueError, lambda: Float("1.23", precision = 58))        
 
 
 def test_Add():
