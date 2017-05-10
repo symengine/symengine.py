@@ -1,6 +1,7 @@
 from symengine import symbols
 from symengine.lib.symengine_wrapper import (DenseMatrix, Symbol, Integer,
-    function_symbol, I, NonSquareMatrixError, ShapeError)
+    function_symbol, I, NonSquareMatrixError, ShapeError, zeros, ones, eye,
+    ImmutableMatrix)
 from symengine.utilities import raises
 
 
@@ -342,3 +343,55 @@ def test_dump_complex():
     out = np.empty(4, dtype=np.complex128)
     A.dump_complex(out)
     assert np.allclose(out, ref)
+
+
+def test_col_swap():
+    A = DenseMatrix(2, 2, [1, 2, 3, 4])
+    B = DenseMatrix(2, 2, [2, 1, 4, 3])
+    A.col_swap(0, 1)
+    assert A == B
+
+
+def test_fill():
+    A = zeros(4, 4)
+    A.fill(1)
+    B = ones(4, 4)
+    assert A == B
+    assert A.rows == B.rows
+    assert A.cols == B.cols
+    assert A.shape == B.shape == (4, 4)
+
+
+def test_row_swap():
+    A = DenseMatrix(2, 2, [1, 2, 3, 4])
+    B = DenseMatrix(2, 2, [3, 4, 1, 2])
+    A.row_swap(0, 1)
+    assert A == B
+
+
+def test_immutablematrix():
+    A = ImmutableMatrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    assert A.shape == (3, 3)
+    assert A[1, 2] == 6
+    assert A[2, 2] == 9
+
+    assert A[1, :] == ImmutableMatrix([[4, 5, 6]])
+    assert A[:2, :2] == ImmutableMatrix([[1, 2], [4, 5]])
+
+    with raises(TypeError):
+        A[2, 2] = 5
+
+    X = DenseMatrix([[1, 2], [3, 4]])
+    assert X.as_immutable() == ImmutableMatrix([[1, 2], [3, 4]])
+
+    assert X.det() == -2
+
+    X = ImmutableMatrix(eye(3))
+    assert isinstance(X + A, ImmutableMatrix)
+    assert isinstance(X * A, ImmutableMatrix)
+    assert isinstance(X * 2, ImmutableMatrix)
+    assert isinstance(2 * X, ImmutableMatrix)
+
+    X = ImmutableMatrix([[1, 2], [3, 4]])
+    Y = ImmutableMatrix([[1], [0]])
+    assert type(X.LUsolve(Y)) == ImmutableMatrix

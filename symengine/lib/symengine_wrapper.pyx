@@ -219,13 +219,18 @@ def sympy2symengine(a, raise_error=False):
         return function_symbol(name, *(a.args))
     elif isinstance(a, sympy.Function):
         return PyFunction(a, a.args, a.func, sympy_module)
-    elif isinstance(a, (sympy.MatrixBase)):
+    elif isinstance(a, sympy.MatrixBase):
         row, col = a.shape
         v = []
         for r in a.tolist():
             for e in r:
                 v.append(e)
-        return DenseMatrix(row, col, v)
+        if isinstance(a, sympy.MutableDenseMatrix):
+            return MutableDenseMatrix(row, col, v)
+        elif isinstance(a, sympy.ImmutableDenseMatrix):
+            return ImmutableDenseMatrix(row, col, v)
+        else:
+            raise NotImplementedError
     elif isinstance(a, sympy.polys.domains.modularinteger.ModularInteger):
         return PyNumber(a, sympy_module)
     elif sympy.__version__ > '1.0':
@@ -1531,6 +1536,7 @@ cdef class MatrixBase:
     def __hash__(self):
         return 0
 
+
 class MatrixError(Exception):
     pass
 
@@ -1543,7 +1549,7 @@ class ShapeError(ValueError, MatrixError):
 class NonSquareMatrixError(ShapeError):
     pass
 
-cdef class DenseMatrix(MatrixBase):
+cdef class DenseMatrixBase(MatrixBase):
     """
     Represents a two-dimensional dense matrix.
 
@@ -1579,10 +1585,10 @@ cdef class DenseMatrix(MatrixBase):
             v = row
             row = 0
         cdef symengine.vec_basic v_
-        cdef DenseMatrix A
+        cdef DenseMatrixBase A
         cdef Basic e_
         #TODO: Add a constructor to DenseMatrix in C++
-        if (isinstance(v, DenseMatrix)):
+        if (isinstance(v, DenseMatrixBase)):
             matrix_to_vec(v, v_)
             if col is None:
                 row = v.nrows()
@@ -1591,7 +1597,7 @@ cdef class DenseMatrix(MatrixBase):
             return
         for e in v:
             f = _sympify(e)
-            if isinstance(f, DenseMatrix):
+            if isinstance(f, DenseMatrixBase):
                 matrix_to_vec(f, v_)
                 if col is None:
                     row = row + f.nrows()
@@ -1730,6 +1736,32 @@ cdef class DenseMatrix(MatrixBase):
         else:
             raise NotImplementedError
 
+    def row_join(self, rhs):
+        cdef DenseMatrixBase o = _sympify(rhs)
+        if self.rows != o.rows:
+            raise ShapeError("`self` and `rhs` must have the same number of rows.")
+        cdef DenseMatrixBase result = zeros(self.rows, self.cols + o.cols)
+        for i in range(self.rows):
+            for j in range(self.cols):
+                result[i, j] = self[i, j]
+        for i in range(o.rows):
+            for j in range(o.cols):
+                result[i, j + self.cols] = o[i, j]
+        return result
+
+    def col_join(self, bott):
+        cdef DenseMatrixBase o = _sympify(bott)
+        if self.cols != o.cols:
+            raise ShapeError("`self` and `rhs` must have the same number of columns.")
+        cdef DenseMatrixBase result = zeros(self.rows + o.rows, self.cols)
+        for i in range(self.rows):
+            for j in range(self.cols):
+                result[i, j] = self[i, j]
+        for i in range(o.rows):
+            for j in range(o.cols):
+                result[i + self.rows, j] = o[i, j]
+        return result
+
     @property
     def rows(self):
         return self.nrows()
@@ -1758,7 +1790,7 @@ cdef class DenseMatrix(MatrixBase):
     def reshape(self, rows, cols):
         if len(self) != rows*cols:
             raise ValueError("Invalid reshape parameters %d %d" % (rows, cols))
-        r = DenseMatrix(self)
+        cdef DenseMatrixBase r = self.__class__(self)
         deref(symengine.static_cast_DenseMatrix(r.thisptr)).resize(rows, cols)
         return r
 
@@ -1799,10 +1831,10 @@ cdef class DenseMatrix(MatrixBase):
         return c2py(deref(self.thisptr).det())
 
     def inv(self, method='LU'):
-        result = DenseMatrix(self.nrows(), self.ncols())
+        cdef DenseMatrixBase result = self.__class__(self.nrows(), self.ncols())
 
         if method.upper() == 'LU':
-            ## inv() method of DenseMatrix uses LU factorization
+            ## inv() method of DenseMatrixBase uses LU factorization
             deref(self.thisptr).inv(deref(result.thisptr))
         elif method.upper() == 'FFLU':
             symengine.inverse_FFLU(deref(symengine.static_cast_DenseMatrix(self.thisptr)),
@@ -1816,30 +1848,30 @@ cdef class DenseMatrix(MatrixBase):
 
     def add_matrix(self, A):
         cdef MatrixBase A_ = _sympify(A)
-        result = DenseMatrix(self.nrows(), self.ncols())
+        cdef DenseMatrixBase result = self.__class__(self.nrows(), self.ncols())
         deref(self.thisptr).add_matrix(deref(A_.thisptr), deref(result.thisptr))
         return result
 
     def mul_matrix(self, A):
         cdef MatrixBase A_ = _sympify(A)
-        result = DenseMatrix(self.nrows(), A.ncols())
+        cdef DenseMatrixBase result = self.__class__(self.nrows(), A.ncols())
         deref(self.thisptr).mul_matrix(deref(A_.thisptr), deref(result.thisptr))
         return result
 
     def add_scalar(self, k):
         cdef Basic k_ = _sympify(k)
-        result = DenseMatrix(self.nrows(), self.ncols())
+        cdef DenseMatrixBase result = self.__class__(self.nrows(), self.ncols())
         deref(self.thisptr).add_scalar(k_.thisptr, deref(result.thisptr))
         return result
 
     def mul_scalar(self, k):
         cdef Basic k_ = _sympify(k)
-        result = DenseMatrix(self.nrows(), self.ncols())
+        cdef DenseMatrixBase result = self.__class__(self.nrows(), self.ncols())
         deref(self.thisptr).mul_scalar(k_.thisptr, deref(result.thisptr))
         return result
 
     def transpose(self):
-        result = DenseMatrix(self.ncols(), self.nrows())
+        cdef DenseMatrixBase result = self.__class__(self.ncols(), self.nrows())
         deref(self.thisptr).transpose(deref(result.thisptr))
         return result
 
@@ -1855,7 +1887,7 @@ cdef class DenseMatrix(MatrixBase):
                 self._set(i, j, f(self._get(i, j)))
 
     def applyfunc(self, f):
-        cdef DenseMatrix out = DenseMatrix(self)
+        cdef DenseMatrixBase out = self.__class__(self)
         out._applyfunc(f)
         return out
 
@@ -1865,7 +1897,7 @@ cdef class DenseMatrix(MatrixBase):
 
     def diff(self, x):
         cdef Basic x_ = _sympify(x)
-        R = DenseMatrix(self.rows, self.cols)
+        cdef DenseMatrixBase R = self.__class__(self.rows, self.cols)
         symengine.diff(<const symengine.DenseMatrix &>deref(self.thisptr),
                 x_.thisptr, <symengine.DenseMatrix &>deref(R.thisptr))
         return R
@@ -1886,28 +1918,28 @@ cdef class DenseMatrix(MatrixBase):
 
     def _submatrix(self, unsigned r_i, unsigned c_i, unsigned r_j, unsigned c_j, unsigned r_s=1, unsigned c_s=1):
         r_j, c_j = r_j - 1, c_j - 1
-        result = DenseMatrix(((r_j - r_i) // r_s) + 1, ((c_j - c_i) // c_s) + 1)
+        cdef DenseMatrixBase result = self.__class__(((r_j - r_i) // r_s) + 1, ((c_j - c_i) // c_s) + 1)
         deref(self.thisptr).submatrix(deref(result.thisptr), r_i, c_i, r_j, c_j, r_s, c_s)
         return result
 
     def LU(self):
-        L = DenseMatrix(self.nrows(), self.ncols())
-        U = DenseMatrix(self.nrows(), self.ncols())
+        cdef DenseMatrixBase L = self.__class__(self.nrows(), self.ncols())
+        cdef DenseMatrixBase U = self.__class__(self.nrows(), self.ncols())
         deref(self.thisptr).LU(deref(L.thisptr), deref(U.thisptr))
         return L, U
 
     def LDL(self):
-        L = DenseMatrix(self.nrows(), self.ncols())
-        D = DenseMatrix(self.nrows(), self.ncols())
+        cdef DenseMatrixBase L = self.__class__(self.nrows(), self.ncols())
+        cdef DenseMatrixBase D = self.__class__(self.nrows(), self.ncols())
         deref(self.thisptr).LDL(deref(L.thisptr), deref(D.thisptr))
         return L, D
 
     def solve(self, b, method='LU'):
-        cdef DenseMatrix b_ = _sympify(b)
-        x = DenseMatrix(b_.nrows(), b_.ncols())
+        cdef DenseMatrixBase b_ = _sympify(b)
+        cdef DenseMatrixBase x = self.__class__(b_.nrows(), b_.ncols())
 
         if method.upper() == 'LU':
-            ## solve() method of DenseMatrix uses LU factorization
+            ## solve() method of DenseMatrixBase uses LU factorization
             symengine.pivoted_LU_solve(deref(symengine.static_cast_DenseMatrix(self.thisptr)),
                 deref(symengine.static_cast_DenseMatrix(b_.thisptr)),
                 deref(symengine.static_cast_DenseMatrix(x.thisptr)))
@@ -1929,16 +1961,16 @@ cdef class DenseMatrix(MatrixBase):
         return x
 
     def LUsolve(self, b):
-        cdef DenseMatrix b_ = _sympify(b)
-        x = DenseMatrix(b.nrows(), b.ncols())
+        cdef DenseMatrixBase b_ = _sympify(b)
+        cdef DenseMatrixBase x = self.__class__(b.nrows(), b.ncols())
         symengine.pivoted_LU_solve(deref(symengine.static_cast_DenseMatrix(self.thisptr)),
             deref(symengine.static_cast_DenseMatrix(b_.thisptr)),
             deref(symengine.static_cast_DenseMatrix(x.thisptr)))
         return x
 
     def FFLU(self):
-        L = DenseMatrix(self.nrows(), self.ncols())
-        U = DenseMatrix(self.nrows(), self.ncols(), [0]*self.nrows()*self.ncols())
+        cdef DenseMatrixBase L = self.__class__(self.nrows(), self.ncols())
+        cdef DenseMatrixBase U = self.__class__(self.nrows(), self.ncols(), [0]*self.nrows()*self.ncols())
         deref(self.thisptr).FFLU(deref(L.thisptr))
 
         for i in range(self.nrows()):
@@ -1950,15 +1982,15 @@ cdef class DenseMatrix(MatrixBase):
         return L, U
 
     def FFLDU(self):
-        L = DenseMatrix(self.nrows(), self.ncols())
-        D = DenseMatrix(self.nrows(), self.ncols())
-        U = DenseMatrix(self.nrows(), self.ncols())
+        cdef DenseMatrixBase L = self.__class__(self.nrows(), self.ncols())
+        cdef DenseMatrixBase D = self.__class__(self.nrows(), self.ncols())
+        cdef DenseMatrixBase U = self.__class__(self.nrows(), self.ncols())
         deref(self.thisptr).FFLDU(deref(L.thisptr), deref(D.thisptr), deref(U.thisptr))
         return L, D, U
 
     def jacobian(self, x):
-        cdef DenseMatrix x_ = _sympify(x)
-        R = DenseMatrix(self.nrows(), x.nrows())
+        cdef DenseMatrixBase x_ = _sympify(x)
+        cdef DenseMatrixBase R = self.__class__(self.nrows(), x.nrows())
         symengine.jacobian(<const symengine.DenseMatrix &>deref(self.thisptr),
                 <const symengine.DenseMatrix &>deref(x_.thisptr),
                 <symengine.DenseMatrix &>deref(R.thisptr))
@@ -2009,10 +2041,13 @@ cdef class DenseMatrix(MatrixBase):
                     <symengine.RCP[const symengine.Basic]>(deref(self.thisptr).get(ri, ci))))
 
     def __iter__(self):
-        return DenseMatrixIter(self)
+        return DenseMatrixBaseIter(self)
 
     def as_mutable(self):
-        return self
+        return MutableDenseMatrix(self)
+
+    def as_immutable(self):
+        return ImmutableDenseMatrix(self)
 
     def tolist(self):
         return self[:]
@@ -2034,7 +2069,7 @@ cdef class DenseMatrix(MatrixBase):
     def expand(self, *args, **kwargs):
         return self.applyfunc(lambda x : x.expand())
 
-class DenseMatrixIter(object):
+class DenseMatrixBaseIter(object):
 
     def __init__(self, d):
         self.curr = -1
@@ -2052,85 +2087,25 @@ class DenseMatrixIter(object):
 
     next = __next__
 
-Matrix = DenseMatrix
-
-cdef class MutableDenseMatrix(DenseMatrix):
-
-    def __cinit__(self, row=None, col=None, v=None):
-        super(MutableDenseMatrix, self).__cinit__(self, row, col, v)
-
-    def as_mutable(self):
-        return self.copy()
-
-    def row_join(self, rhs):
-        cdef DenseMatrix o = _sympify(rhs)
-        if self.rows != o.rows:
-            raise ShapeError("`self` and `rhs` must have the same number of rows.")
-        cdef DenseMatrix result = zeros(self.rows, self.cols + o.cols)
-        for i in range(self.rows):
-            for j in range(self.cols):
-                result[i, j] = self[i, j]
-        for i in range(o.rows):
-            for j in range(o.cols):
-                result[i, j + self.cols] = o[i, j]
-        return result
-
-    def col_join(self, bott):
-        cdef DenseMatrix o = _sympify(bott)
-        if self.cols != o.cols:
-            raise ShapeError("`self` and `rhs` must have the same number of columns.")
-        cdef DenseMatrix result = zeros(self.rows + o.rows, self.cols)
-        for i in range(self.rows):
-            for j in range(self.cols):
-                result[i, j] = self[i, j]
-        for i in range(o.rows):
-            for j in range(o.cols):
-                result[i + self.rows, j] = o[i, j]
-        return result
-
-    def col_del(self, i):
-        raise NotImplementedError
-
-    def col_op(self, j, f):
-        raise NotImplementedError
+cdef class MutableDenseMatrix(DenseMatrixBase):
 
     def col_swap(self, i, j):
         for k in range(0, self.rows):
             self[k, i], self[k, j] = self[k, j], self[k, i]
 
-    def copyin_list(self, key, value):
-        raise NotImplementedError
-
-    def copyin_matrix(self, key, value):
-        raise NotImplementedError
-
     def fill(self, value):
-        raise NotImplementedError
-
-    def row_del(self, i):
-        raise NotImplementedError
-
-    def row_op(self, i, f):
-        raise NotImplementedError
+        for i in range(self.rows):
+            for j in range(self.cols):
+                self[i, j] = value
 
     def row_swap(self, i, j):
         for k in range(0, self.cols):
             self[i, k], self[j, k] = self[j, k], self[i, k]
 
-    def simplify(self, *args):
-        raise NotImplementedError
 
-    def zip_row_op(self, i, k, f):
-        raise NotImplementedError
+Matrix = DenseMatrix = MutableDenseMatrix
 
-
-cdef class ImmutableDenseMatrix(DenseMatrix):
-
-    def __cinit__(self, row=None, col=None, v=None):
-        super(ImmutableDenseMatrix, self).__cinit__(self, row, col, v)
-
-    def _entry(self, i, j):
-        return DenseMatrix.__getitem__(self, (i, j))
+cdef class ImmutableDenseMatrix(DenseMatrixBase):
 
     def __setitem__(self, key, value):
         raise TypeError("Cannot set values of {}".format(self.__class__))
@@ -2141,8 +2116,9 @@ cdef class ImmutableDenseMatrix(DenseMatrix):
     def _set(self, i, j, e):
         raise TypeError("Cannot set values of {}".format(self.__class__))
 
+ImmutableMatrix = ImmutableDenseMatrix
 
-cdef matrix_to_vec(DenseMatrix d, symengine.vec_basic& v):
+cdef matrix_to_vec(DenseMatrixBase d, symengine.vec_basic& v):
     cdef Basic e_
     for i in range(d.nrows()):
         for j in range(d.ncols()):
@@ -2150,12 +2126,12 @@ cdef matrix_to_vec(DenseMatrix d, symengine.vec_basic& v):
             v.push_back(e_.thisptr)
 
 def eye(n):
-    d = DenseMatrix(n, n)
+    cdef DenseMatrixBase d = DenseMatrix(n, n)
     symengine.eye(deref(symengine.static_cast_DenseMatrix(d.thisptr)), 0)
     return d
 
 def diag(*values):
-    d = DenseMatrix(len(values), len(values))
+    cdef DenseMatrixBase d = DenseMatrix(len(values), len(values))
     cdef symengine.vec_basic V
     cdef Basic B
     for b in values:
@@ -2167,14 +2143,14 @@ def diag(*values):
 def ones(r, c = None):
     if c is None:
         c = r
-    d = DenseMatrix(r, c)
+    cdef DenseMatrixBase d = DenseMatrix(r, c)
     symengine.ones(deref(symengine.static_cast_DenseMatrix(d.thisptr)))
     return d
 
 def zeros(r, c = None):
     if c is None:
         c = r
-    d = DenseMatrix(r, c)
+    cdef DenseMatrixBase d = DenseMatrix(r, c)
     symengine.zeros(deref(symengine.static_cast_DenseMatrix(d.thisptr)))
     return d
 
@@ -2862,10 +2838,10 @@ cdef class _Lambdify(object):
             RCP[const symengine.Basic] b_
             symengine.vec_basic args_, outs_
 
-        if isinstance(args, DenseMatrix):
+        if isinstance(args, DenseMatrixBase):
             nr = args.nrows()
             nc = args.ncols()
-            mtx = (<DenseMatrix>args).thisptr
+            mtx = (<DenseMatrixBase>args).thisptr
             for ri in range(nr):
                 for ci in range(nc):
                    args_.push_back(deref(mtx).get(ri, ci))
@@ -2874,10 +2850,10 @@ cdef class _Lambdify(object):
                 e_ = _sympify(e)
                 args_.push_back(e_.thisptr)
 
-        if isinstance(exprs, DenseMatrix):
+        if isinstance(exprs, DenseMatrixBase):
             nr = exprs.nrows()
             nc = exprs.ncols()
-            mtx = (<DenseMatrix>exprs).thisptr
+            mtx = (<DenseMatrixBase>exprs).thisptr
             for ri in range(nr):
                 for ci in range(nc):
                     b_ = deref(mtx).get(ri, ci)
@@ -2957,7 +2933,7 @@ cdef class _Lambdify(object):
 
         if use_numpy:
             numpy_dtype = np.float64 if self.real else np.complex128
-            if isinstance(inp, DenseMatrix):
+            if isinstance(inp, DenseMatrixBase):
                 arr = np.empty(inp_size, dtype=numpy_dtype)
                 if self.real:
                     inp.dump_real(arr)
