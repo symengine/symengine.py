@@ -12,5 +12,5 @@ if [[ "${WITH_SAGE}" == "yes" ]]; then
 fi
 
 conda update -q -n root conda
-conda install ${conda_pkgs}
+conda install ${conda_pkgs} libgap=4.8.3
 source activate $our_install_dir;
