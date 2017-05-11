@@ -13,3 +13,4 @@ fi
 
 conda update -q -n root conda
 conda install ${conda_pkgs}
+source activate $our_install_dir;
