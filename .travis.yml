@@ -25,20 +25,17 @@ env:
   ## statement, so if the variable is not set, the other if branch will get
   ## executed.
   matrix:
-  ## Out of tree builds (default):
+  # Debug builds:
   - BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="2.7" TRIGGER_FEEDSTOCK="yes"
+  - BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="3.6"
 
-  ## In-tree builds (we just check a few configurations to make sure they work):
-  # Debug build with Python 2.7:
-  - BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="2.7"
-  # Release build shared lib with Python 2.7:
+  # Release builds:
   - PYTHON_VERSION="2.7" BUILD_SHARED_LIBS="yes"
-
-  # These test the setup.py file
-  - PYTHON_VERSION="2.7" WITH_MPFR="yes" INTEGER_CLASS="gmp"
+  - PYTHON_VERSION="2.7" WITH_MPFR="yes" INTEGER_CLASS="gmpxx"
   - PYTHON_VERSION="3.3" WITH_MPC="yes"
   - PYTHON_VERSION="3.4" WITH_MPFR="yes" WITH_NUMPY="yes"
-  - PYTHON_VERSION="3.5" WITH_MPFR="yes" WITH_NUMPY="yes"
+  - PYTHON_VERSION="3.5" WITH_MPC="yes" WITH_NUMPY="yes"
+  - PYTHON_VERSION="3.6" WITH_MPC="yes" WITH_NUMPY="yes"
 
 matrix:
   exclude:
@@ -81,13 +78,9 @@ matrix:
     - env: BUILD_TYPE="Release" PYTHON_VERSION="3.5"
       compiler: gcc
       os: osx
-    - env: BUILD_TYPE="Release" WITH_SAGE="yes" WITH_MPC="yes"
+    - env: BUILD_TYPE="Release" WITH_SAGE="yes" WITH_MPC="yes" PYTHON_VERSION="2.7"
       compiler: gcc
       os: linux
-      addons:
-        apt:
-          packages:
-          - lrzip
 
 install:
   - export PYTHON_SOURCE_DIR=`pwd`
@@ -100,12 +93,13 @@ install:
   - git checkout `cat ../symengine_version.txt`
   - cd ..
 
-  # Setup travis for Python wrappers
-  - source bin/install_travis.sh
-
   # Setup travis for C++ library
   - cd $SOURCE_DIR
-  - if [[ "${WITH_SAGE}" != "yes" ]]; then source bin/install_travis.sh; fi
+  - source bin/install_travis.sh
+
+  # Setup travis for Python wrappers
+  - cd $PYTHON_SOURCE_DIR
+  - source bin/install_travis.sh
 
   # Build C++ library
   - cd $SOURCE_DIR

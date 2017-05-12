@@ -1,5 +1,5 @@
 from symengine import (Integer, symbols, sin, cos, pi, E, I, Add,
-    function_symbol, DenseMatrix, sympify)
+    function_symbol, DenseMatrix, sympify, log)
 from symengine.lib.symengine_wrapper import (PyNumber, PyFunction,
     sage_module, wrap_sage_function)
 
