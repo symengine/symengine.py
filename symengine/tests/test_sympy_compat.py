@@ -1,6 +1,7 @@
 from symengine.sympy_compat import (Integer, Rational, S, Basic, Add, Mul,
     Pow, symbols, Symbol, log, sin, sech, csch, zeros, atan2, Number, Float,
     symengine)
+from symengine.utilities import raises
 
 
 def test_Integer():
@@ -38,7 +39,7 @@ def test_Float():
     assert isinstance(C, symengine.RealDouble)
     raises(ValueError, lambda: Float("1.23", dps = 3, precision = 10))
     raises(ValueError, lambda: Float(A, dps = 3, precision = 16))
-    if HAVE_SYMENGINE_MPFR:
+    if symengine.have_mpfr:
         A = Float("1.23", dps = 16)
         B = Float("1.23", precision = 56)
         assert A == B
@@ -54,7 +55,7 @@ def test_Float():
         assert A == C
         assert isinstance(A, Float)
         assert isinstance(A, symengine.RealDouble)
-    if not HAVE_SYMENGINE_MPFR:
+    if not symengine.have_mpfr:
         raises(ValueError, lambda: Float("1.23", precision = 58))        
 
 

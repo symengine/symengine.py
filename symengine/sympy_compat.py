@@ -59,7 +59,7 @@ class Float(Number):
         if precision is None:
             precision = dps_to_prec(dps)
 
-        IF HAVE_SYMENGINE_MPFR:
+        if symengine.have_mpfr:
             if precision > 53:
                 if isinstance(num, symengine.RealMPFR) and precision == num.get_prec():
                     return num
