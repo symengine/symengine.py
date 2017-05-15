@@ -59,30 +59,17 @@ class Float(Number):
         if precision is None:
             precision = dps_to_prec(dps)
 
-        if HAVE_SYMENGINE_MPFR:
+        IF HAVE_SYMENGINE_MPFR:
             if precision > 53:
-                if isinstance(num, symengine.RealDouble):
-                    return symengine.RealMPFR(str(num), precision)
-                elif isinstance(num, symengine.RealMPFR):
-                    if precision == num.get_prec():
-                        return num
-                    else:
-                        return symengine.RealMPFR(str(num), precision)
-                else:
-                    return symengine.RealMPFR(str(num), precision)    
-            else:
-                if isinstance(num, symengine.RealDouble):
+                if isinstance(num, symengine.RealMPFR) and precision == num.get_prec():
                     return num
-                else:
-                    return symengine.RealDouble(float(num))
+                return symengine.RealMPFR(str(num), precision)
+        if precision > 53:
+            raise ValueError('RealMPFR unavailable for high precision numerical values.')
+        elif isinstance(num, symengine.RealDouble):
+            return num
         else:
-            if precision > 53:
-                raise ValueError('RealMPFR unavailable for high precision numerical values.')
-            else:
-                if isinstance(num, symengine.RealDouble):
-                    return num
-                else:
-                    return symengine.RealDouble(float(str(num)))
+            return symengine.RealDouble(float(num))
 
 
 RealNumber = Float
