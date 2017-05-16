@@ -2,7 +2,8 @@ from .lib import symengine_wrapper as symengine
 from .utilities import var, symbols
 from .compatibility import with_metaclass
 from .lib.symengine_wrapper import (sympify, sympify as S,
-        SympifyError, sqrt, I, E, pi, Matrix, Derivative, exp,
+        SympifyError, sqrt, I, E, pi, MutableDenseMatrix, 
+        ImmutableDenseMatrix, DenseMatrix, Matrix, Derivative, exp,
         nextprime, mod_inverse, primitive_root, Lambdify as lambdify, 
         symarray, diff, eye, diag, ones, zeros, expand, Subs, 
         FunctionSymbol as AppliedUndef)

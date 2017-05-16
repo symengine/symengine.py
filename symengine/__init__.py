@@ -1,11 +1,11 @@
 from .lib.symengine_wrapper import (Symbol, Integer, sympify, SympifyError,
         Add, Mul, Pow, exp, log, gamma, sqrt, function_symbol, I, E, pi,
         have_mpfr, have_mpc, have_flint, have_piranha, have_llvm,
-        RealDouble, ComplexDouble, DenseMatrix, Matrix,
-        sin, cos, tan, cot, csc, sec, asin, acos, atan, acot, acsc, asec,
-        sinh, cosh, tanh, coth, asinh, acosh, atanh, acoth, Lambdify,
-        LambdifyCSE, DictBasic, series, symarray, diff, zeros, eye, diag,
-        ones, zeros, add, expand, has_symbol, UndefFunction)
+        RealDouble, ComplexDouble, MutableDenseMatrix, ImmutableDenseMatrix,
+        DenseMatrix, Matrix, sin, cos, tan, cot, csc, sec, asin, acos, atan, 
+        acot, acsc, asec, sinh, cosh, tanh, coth, asinh, acosh, atanh, acoth, 
+        Lambdify, LambdifyCSE, DictBasic, series, symarray, diff, zeros, eye, 
+        diag, ones, zeros, add, expand, has_symbol, UndefFunction)
 from .utilities import var, symbols
 
 if have_mpfr:

@@ -145,7 +145,13 @@ cdef class Subs(Basic):
 cdef class MatrixBase(object):
     cdef symengine.MatrixBase* thisptr
 
-cdef class DenseMatrix(MatrixBase):
+cdef class DenseMatrixBase(MatrixBase):
+    pass
+
+cdef class MutableDenseMatrix(DenseMatrixBase):
+    pass
+
+cdef class ImmutableDenseMatrix(DenseMatrixBase):
     pass
 
 cdef class Log(Function):
