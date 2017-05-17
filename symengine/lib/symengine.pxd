@@ -788,6 +788,14 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
             const DenseMatrix &x, DenseMatrix &result) nogil except +
     void diff "SymEngine::sdiff"(const DenseMatrix &A,
             RCP[const Basic] &x, DenseMatrix &result) nogil except +
+    void row_join(const DenseMatrix &A, const DenseMatrix &B, DenseMatrix &C) nogil
+    void col_join(const DenseMatrix &A, const DenseMatrix &B, DenseMatrix &C) nogil
+    void row_del(DenseMatrix &A, unsigned k) nogil
+    void col_del(DenseMatrix &A, unsigned k) nogil
+    void row_exchange_dense(DenseMatrix &A, unsigned i, unsigned j) nogil
+    void column_exchange_dense(DenseMatrix &A, unsigned i, unsigned j) nogil
+    void dot(const DenseMatrix &A, const DenseMatrix &B, DenseMatrix &C) nogil
+    void cross(const DenseMatrix &A, const DenseMatrix &B, DenseMatrix &C) nogil
     void eye (DenseMatrix &A, int k) nogil
     void diag(DenseMatrix &A, vec_basic &v, int k) nogil
     void ones(DenseMatrix &A) nogil

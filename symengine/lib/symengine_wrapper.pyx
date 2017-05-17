@@ -2506,15 +2506,9 @@ cdef class DenseMatrixBase(MatrixBase):
         if self.rows != o.rows:
             raise ShapeError("`self` and `rhs` must have the same number of rows.")
         cdef DenseMatrixBase result = self.__class__(self.rows, self.cols + o.cols)
-        cdef Basic e_
-        for i in range(self.rows):
-            for j in range(self.cols):
-                e_ = self._get(i, j)
-                deref(result.thisptr).set(i, j, e_.thisptr)
-        for i in range(o.rows):
-            for j in range(o.cols):
-                e_ = sympify(o._get(i, j))
-                deref(result.thisptr).set(i, j + self.cols, e_.thisptr)
+        symengine.row_join(deref(symengine.static_cast_DenseMatrix(self.thisptr)),
+                deref(symengine.static_cast_DenseMatrix(o.thisptr)),
+                deref(symengine.static_cast_DenseMatrix(result.thisptr)))
         return result
 
     def col_join(self, bott):
@@ -2522,15 +2516,28 @@ cdef class DenseMatrixBase(MatrixBase):
         if self.cols != o.cols:
             raise ShapeError("`self` and `rhs` must have the same number of columns.")
         cdef DenseMatrixBase result = self.__class__(self.rows + o.rows, self.cols)
-        cdef Basic e_
-        for i in range(self.rows):
-            for j in range(self.cols):
-                e_ = self._get(i, j)
-                deref(result.thisptr).set(i, j, e_.thisptr)
-        for i in range(o.rows):
-            for j in range(o.cols):
-                e_ = sympify(o._get(i, j))
-                deref(result.thisptr).set(i + self.rows, j, e_.thisptr)
+        symengine.col_join(deref(symengine.static_cast_DenseMatrix(self.thisptr)),
+                deref(symengine.static_cast_DenseMatrix(o.thisptr)),
+                deref(symengine.static_cast_DenseMatrix(result.thisptr)))
+        return result
+
+    def dot(self, b):
+        cdef DenseMatrixBase o = sympify(b)
+        cdef DenseMatrixBase result = self.__class__(self.rows, self.cols)
+        symengine.dot(deref(symengine.static_cast_DenseMatrix(self.thisptr)),
+                deref(symengine.static_cast_DenseMatrix(o.thisptr)),
+                deref(symengine.static_cast_DenseMatrix(result.thisptr)))
+        return result
+
+    def cross(self, b):
+        cdef DenseMatrixBase o = sympify(b)
+        if self.cols * self.rows != 3 or o.cols * o.rows != 3:
+            raise ShapeError("Dimensions incorrect for cross product: %s x %s" %
+                             ((self.rows, self.cols), (b.rows, b.cols)))
+        cdef DenseMatrixBase result = self.__class__(self.rows, self.cols)
+        symengine.cross(deref(symengine.static_cast_DenseMatrix(self.thisptr)),
+                deref(symengine.static_cast_DenseMatrix(o.thisptr)),
+                deref(symengine.static_cast_DenseMatrix(result.thisptr)))
         return result
 
     @property
@@ -2864,8 +2871,8 @@ class DenseMatrixBaseIter(object):
 cdef class MutableDenseMatrix(DenseMatrixBase):
 
     def col_swap(self, i, j):
-        for k in range(0, self.rows):
-            self[k, i], self[k, j] = self[k, j], self[k, i]
+        symengine.column_exchange_dense(deref(symengine.static_cast_DenseMatrix(self.thisptr)),
+                           i, j)
 
     def fill(self, value):
         for i in range(self.rows):
@@ -2873,8 +2880,24 @@ cdef class MutableDenseMatrix(DenseMatrixBase):
                 self[i, j] = value
 
     def row_swap(self, i, j):
-        for k in range(0, self.cols):
-            self[i, k], self[j, k] = self[j, k], self[i, k]
+        symengine.row_exchange_dense(deref(symengine.static_cast_DenseMatrix(self.thisptr)),
+                           i, j)
+
+    def row_del(self, i):
+        if i < -self.rows or i >= self.rows:
+            raise IndexError("Index out of range: 'i = %s', valid -%s <= i"
+                             " < %s" % (i, self.rows, self.rows))
+        if i < 0:
+            i += self.rows
+        symengine.row_del(deref(symengine.static_cast_DenseMatrix(self.thisptr)), i)
+
+    def col_del(self, i):
+        if i < -self.cols or i >= self.cols:
+            raise IndexError("Index out of range: 'i=%s', valid -%s <= i < %s"
+                             % (i, self.cols, self.cols))
+        if i < 0:
+            i += self.cols
+        symengine.col_del(deref(symengine.static_cast_DenseMatrix(self.thisptr)), i)
 
     def _applyfunc(self, f):
         cdef int nr = self.nrows()
