@@ -1,18 +1,29 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.6)
 project(python_wrapper)
 
+find_package(PythonInterp REQUIRED)
+find_package(PythonLibs REQUIRED)
+find_package(PythonExtensions REQUIRED)
+find_package(Cython REQUIRED)
+
 set(CMAKE_PREFIX_PATH ${SymEngine_DIR} ${CMAKE_PREFIX_PATH})
-find_package(SymEngine 0.3.0 REQUIRED CONFIG
+
+find_package(SymEngine 0.3.0
+             REQUIRED CONFIG
              PATH_SUFFIXES lib/cmake/symengine cmake/symengine CMake/)
+
 message("SymEngine_DIR : " ${SymEngine_DIR})
+
 set(CMAKE_BUILD_TYPE ${SYMENGINE_BUILD_TYPE})
 set(CMAKE_CXX_FLAGS_RELEASE ${SYMENGINE_CXX_FLAGS_RELEASE})
 set(CMAKE_CXX_FLAGS_DEBUG ${SYMENGINE_CXX_FLAGS_DEBUG})
+
 include_directories(${SYMENGINE_INCLUDE_DIRS})
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
-find_package(Python REQUIRED)
-find_package(Cython REQUIRED)
+# set(CMAKE_MODULE_PATH
+#     ${CMAKE_MODULE_PATH}
+#     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
+
 
 include_directories(${PYTHON_INCLUDE_PATH})
 
@@ -22,7 +33,10 @@ if (MINGW AND ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8"))
 endif()
 
 if (MINGW AND (CMAKE_BUILD_TYPE STREQUAL "Release"))
-    try_compile(CHECK_PYTHON_HYPOT "${CMAKE_CURRENT_BINARY_DIR}/" "${CMAKE_SOURCE_DIR}/cmake/check_python_hypot.cpp")
+    try_compile(CHECK_PYTHON_HYPOT
+                "${CMAKE_CURRENT_BINARY_DIR}/"
+                "${CMAKE_SOURCE_DIR}/cmake/check_python_hypot.cpp")
+
     if (NOT ${CHECK_PYTHON_HYPOT})
         # include cmath before all headers
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -include cmath")

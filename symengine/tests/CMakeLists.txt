@@ -1,4 +1,3 @@
-set(PY_PATH ${PYTHON_INSTALL_PATH}/symengine/tests)
 install(FILES __init__.py
     test_arit.py
     test_dict_basic.py
@@ -17,5 +16,4 @@ install(FILES __init__.py
     test_var.py
     test_lambdify.py
     test_sympy_compat.py
-    DESTINATION ${PY_PATH}
-    )
+    DESTINATION ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/symengine/tests)

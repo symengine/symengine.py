@@ -4,8 +4,7 @@ from symengine cimport RCP, pair, map_basic_basic, umap_int_basic, umap_int_basi
 from libcpp cimport bool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
-from cpython cimport PyObject, Py_XINCREF, Py_XDECREF, \
-    PyObject_CallMethodObjArgs
+from cpython cimport PyObject, Py_XINCREF, Py_XDECREF, PyObject_CallMethodObjArgs
 from libc.string cimport memcpy
 import cython
 import itertools
