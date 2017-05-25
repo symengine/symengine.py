@@ -1,6 +1,49 @@
 cmake_minimum_required(VERSION 3.6)
 project(python_wrapper)
 
+# If running directly under scikit-build, set up the superbuild.
+if(SKBUILD)
+    include(ExternalProject)
+
+    file(STRINGS symengine_version.txt SYMENGINE_GIT_TAG LIMIT_COUNT 1)
+
+    ExternalProject_add(
+        symengine
+        SOURCE_DIR ${CMAKE_BINARY_DIR}/symengine-src
+        BINARY_DIR ${CMAKE_BINARY_DIR}/symengine-bin
+        CMAKE_CACHE_ARGS
+          -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_BINARY_DIR}/symengine-install
+        GIT_REPOSITORY git://github.com/symengine/symengine.git
+        GIT_TAG ${SYMENGINE_GIT_TAG})
+
+    set(symengine_install_dir
+        ${CMAKE_BINARY_DIR}/symengine-install)
+    set(symengine_wrapper_install_dir
+        ${CMAKE_BINARY_DIR}/symengine-wrapper-install)
+
+    ExternalProject_add(
+        symengine_wrapper
+        DEPENDS symengine
+        SOURCE_DIR ${CMAKE_SOURCE_DIR}
+        BINARY_DIR ${CMAKE_BINARY_DIR}/symengine-wrapper-bin
+        CMAKE_CACHE_ARGS
+          -DCMAKE_INSTALL_PREFIX:PATH=${symengine_wrapper_install_dir}
+          -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE}
+          -DPYTHON_VERSION_STRING:STRING=${PYTHON_VERSION_STRING}
+          -DPYTHON_INCLUDE_DIR:PATH=${PYTHON_INCLUDE_DIR}
+          -DPYTHON_LIBRARY:FILEPATH=${PYTHON_LIBRARY}
+          -DSKBUILD:BOOL=NO
+          -DCMAKE_MODULE_PATH:PATH=${CMAKE_MODULE_PATH}
+          -DSymEngine_DIR:PATH=${symengine_install_dir}
+        DOWNLOAD_COMMAND ""
+        UPDATE_COMMAND "")
+
+    install(DIRECTORY ${symengine_wrapper_install_dir}/
+            DESTINATION ${CMAKE_INSTALL_PREFIX})
+
+    return()
+endif()
+
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibs REQUIRED)
 find_package(PythonExtensions REQUIRED)

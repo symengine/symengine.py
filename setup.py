@@ -32,6 +32,7 @@ integration with SymPy and Sage.'''
 
 setup(name="symengine",
       version="0.2.1.dev",
+      cmake_with_sdist=True,
       description="Python library providing wrappers to SymEngine",
       setup_requires=['cython>=0.19.1'],
       long_description=long_description,
