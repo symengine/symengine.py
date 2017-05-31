@@ -5,7 +5,7 @@ from .lib.symengine_wrapper import (sympify, sympify as S,
         SympifyError, sqrt, I, E, pi, Matrix, Derivative, exp,
         nextprime, mod_inverse, primitive_root, Lambdify as lambdify, 
         symarray, diff, eye, diag, ones, zeros, expand, Subs, 
-        FunctionSymbol as AppliedUndef)
+        FunctionSymbol as AppliedUndef, Max, Min)
 from types import ModuleType
 import sys
 
@@ -149,20 +149,6 @@ class tan(_RegisteredFunction):
 
     def __new__(cls, a):
         return symengine.tan(a)
-
-
-class Max(Basic):
-    _classes = (symengine._Max,)
-
-    def __new__(cls, *args):
-        return symengine._max(*args)
-
-
-class Min(Basic):
-    _classes = (symengine._Min,)
-
-    def __new__(cls, *args):
-        return symengine._min(*args)
 
 
 class gamma(_RegisteredFunction):

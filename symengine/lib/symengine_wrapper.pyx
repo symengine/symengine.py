@@ -46,9 +46,9 @@ cdef c2py(RCP[const symengine.Basic] o):
     elif (symengine.is_a_Abs(deref(o))):
         r = Abs.__new__(Abs)
     elif (symengine.is_a_Max(deref(o))):
-        r = _Max.__new__(_Max)
+        r = Max.__new__(Max)
     elif (symengine.is_a_Min(deref(o))):
-        r = _Min.__new__(_Min)
+        r = Min.__new__(Min)
     elif (symengine.is_a_Gamma(deref(o))):
         r = Gamma.__new__(Gamma)
     elif (symengine.is_a_Derivative(deref(o))):
@@ -661,6 +661,20 @@ cdef class Basic(object):
 
     def has(self, *symbols):
         return any([has_symbol(self, symbol) for symbol in symbols])
+
+    def args_as_sage(Basic self):
+        cdef symengine.vec_basic Y = deref(self.thisptr).get_args()
+        s = []
+        for i in range(Y.size()):
+            s.append(c2py(<RCP[const symengine.Basic]>(Y[i]))._sage_())
+        return s
+
+    def args_as_sympy(Basic self):
+        cdef symengine.vec_basic Y = deref(self.thisptr).get_args()
+        s = []
+        for i in range(Y.size()):
+            s.append(c2py(<RCP[const symengine.Basic]>(Y[i]))._sympy_())
+        return s
 
 def series(ex, x=None, x0=0, n=6, as_deg_coef_pair=False):
     # TODO: check for x0 an infinity, see sympy/core/expr.py
@@ -1400,57 +1414,42 @@ cdef class Abs(Function):
         arg = c2py(deref(X).get_arg())._sage_()
         return abs(arg)
 
-cdef class _Max(Function):
-    '''
-    Class named as such to prevent namespace issues with
-    Python's min. Import as Min for aesthetics.
-    '''
+
+class Max(Function):
+
+    def __new__(cls, *args):
+        if not args:
+            return super(Max, cls).__new__(cls)
+        return _max(*args)
 
     def _sympy_(self):
-        cdef RCP[const symengine.Max] X = \
-            symengine.rcp_static_cast_Max(self.thisptr)
-        cdef symengine.vec_basic Y = deref(X).get_args()
-        s = []
-        for i in range(Y.size()):
-            s.append(c2py(<RCP[const symengine.Basic]>(Y[i]))._sympy_())
         import sympy
+        s = self.args_as_sympy()
         return sympy.Max(*s)
 
     def _sage_(self):
         import sage.all as sage
-        cdef RCP[const symengine.Max] X = \
-            symengine.rcp_static_cast_Max(self.thisptr)
-        cdef symengine.vec_basic Y = deref(X).get_args()
-        s = []
-        for i in range(Y.size()):
-            s.append(c2py(<RCP[const symengine.Basic]>(Y[i]))._sage_())
+        s = self.args_as_sage()
         return sage.max(*s)
 
-cdef class _Min(Function):
-    '''
-    Class named as such to prevent namespace issues with
-    Python's min. Import as Min for aesthetics.
-    '''
+
+class Min(Function):
+
+    def __new__(cls, *args):
+        if not args:
+            return super(Min, cls).__new__(cls)
+        return _min(*args)
 
     def _sympy_(self):
-        cdef RCP[const symengine.Min] X = \
-            symengine.rcp_static_cast_Min(self.thisptr)
-        cdef symengine.vec_basic Y = deref(X).get_args()
-        s = []
-        for i in range(Y.size()):
-            s.append(c2py(<RCP[const symengine.Basic]>(Y[i]))._sympy_())
         import sympy
+        s = self.args_as_sympy()
         return sympy.Min(*s)
 
     def _sage_(self):
         import sage.all as sage
-        cdef RCP[const symengine.Min] X = \
-            symengine.rcp_static_cast_Min(self.thisptr)
-        cdef symengine.vec_basic Y = deref(X).get_args()
-        s = []
-        for i in range(Y.size()):
-            s.append(c2py(<RCP[const symengine.Basic]>(Y[i]))._sage_())
+        s = self.args_as_sage()
         return sage.min(*s)
+
 
 cdef class Derivative(Basic):
 
