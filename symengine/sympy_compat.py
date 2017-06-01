@@ -6,7 +6,7 @@ from .lib.symengine_wrapper import (sympify, sympify as S,
         ImmutableDenseMatrix, DenseMatrix, Matrix, Derivative, exp,
         nextprime, mod_inverse, primitive_root, Lambdify as lambdify, 
         symarray, diff, eye, diag, ones, zeros, expand, Subs, 
-        FunctionSymbol as AppliedUndef)
+        FunctionSymbol as AppliedUndef, Max, Min)
 from types import ModuleType
 import sys
 

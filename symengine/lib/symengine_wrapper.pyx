@@ -45,6 +45,10 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = FunctionSymbol.__new__(FunctionSymbol)
     elif (symengine.is_a_Abs(deref(o))):
         r = Abs.__new__(Abs)
+    elif (symengine.is_a_Max(deref(o))):
+        r = Max.__new__(Max)
+    elif (symengine.is_a_Min(deref(o))):
+        r = Min.__new__(Min)
     elif (symengine.is_a_Gamma(deref(o))):
         r = Gamma.__new__(Gamma)
     elif (symengine.is_a_Derivative(deref(o))):
@@ -208,6 +212,10 @@ def sympy2symengine(a, raise_error=False):
         return log(a.args[0])
     elif isinstance(a, sympy.Abs):
         return abs(sympy2symengine(a.args[0], raise_error))
+    elif isinstance(a, sympy.Max):
+        return _max(*a.args)
+    elif isinstance(a, sympy.Min):
+        return _min(*a.args)
     elif isinstance(a, sympy.gamma):
         return gamma(a.args[0])
     elif isinstance(a, sympy.Derivative):
@@ -658,6 +666,20 @@ cdef class Basic(object):
 
     def has(self, *symbols):
         return any([has_symbol(self, symbol) for symbol in symbols])
+
+    def args_as_sage(Basic self):
+        cdef symengine.vec_basic Y = deref(self.thisptr).get_args()
+        s = []
+        for i in range(Y.size()):
+            s.append(c2py(<RCP[const symengine.Basic]>(Y[i]))._sage_())
+        return s
+
+    def args_as_sympy(Basic self):
+        cdef symengine.vec_basic Y = deref(self.thisptr).get_args()
+        s = []
+        for i in range(Y.size()):
+            s.append(c2py(<RCP[const symengine.Basic]>(Y[i]))._sympy_())
+        return s
 
 def series(ex, x=None, x0=0, n=6, as_deg_coef_pair=False):
     # TODO: check for x0 an infinity, see sympy/core/expr.py
@@ -1396,6 +1418,42 @@ cdef class Abs(Function):
         cdef RCP[const symengine.Abs] X = symengine.rcp_static_cast_Abs(self.thisptr)
         arg = c2py(deref(X).get_arg())._sage_()
         return abs(arg)
+
+
+class Max(Function):
+
+    def __new__(cls, *args):
+        if not args:
+            return super(Max, cls).__new__(cls)
+        return _max(*args)
+
+    def _sympy_(self):
+        import sympy
+        s = self.args_as_sympy()
+        return sympy.Max(*s)
+
+    def _sage_(self):
+        import sage.all as sage
+        s = self.args_as_sage()
+        return sage.max(*s)
+
+
+class Min(Function):
+
+    def __new__(cls, *args):
+        if not args:
+            return super(Min, cls).__new__(cls)
+        return _min(*args)
+
+    def _sympy_(self):
+        import sympy
+        s = self.args_as_sympy()
+        return sympy.Min(*s)
+
+    def _sage_(self):
+        import sage.all as sage
+        s = self.args_as_sage()
+        return sage.min(*s)
 
 
 cdef class Derivative(Basic):
@@ -2341,6 +2399,22 @@ def log(x, y = None):
         return c2py(symengine.log(X.thisptr))
     cdef Basic Y = _sympify(y)
     return c2py(symengine.log(X.thisptr, Y.thisptr))
+
+def _max(*args):
+    cdef symengine.vec_basic v
+    cdef Basic e_
+    for e in args:
+        e_ = sympify(e)
+        v.push_back(e_.thisptr)
+    return c2py(symengine.max(v))
+
+def _min(*args):
+    cdef symengine.vec_basic v
+    cdef Basic e_
+    for e in args:
+        e_ = sympify(e)
+        v.push_back(e_.thisptr)
+    return c2py(symengine.min(v))
 
 def gamma(x):
     cdef Basic X = _sympify(x)

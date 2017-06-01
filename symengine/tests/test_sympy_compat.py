@@ -1,6 +1,6 @@
 from symengine.sympy_compat import (Integer, Rational, S, Basic, Add, Mul,
-    Pow, symbols, Symbol, log, sin, sech, csch, zeros, atan2, Number, Float,
-    symengine)
+    Pow, symbols, Symbol, log, sin, cos, sech, csch, zeros, atan2, Number, Float,
+    symengine, Min, Max)
 from symengine.utilities import raises
 
 
@@ -84,6 +84,38 @@ def test_Pow():
     i = Pow(x, 2)
     assert isinstance(i, Pow)
     assert isinstance(i, Basic)
+
+
+def test_Max():
+    x = Symbol("x")
+    y = Symbol("y")
+    z = Symbol("z")
+    assert Max(Integer(6)/3, 1) == 2
+    assert Max(-2, 2) == 2
+    assert Max(2, 2) == 2
+    assert Max(0.2, 0.3) == 0.3
+    assert Max(x, x) == x
+    assert Max(x, y) == Max(y, x)
+    assert Max(x, y, z) == Max(z, y, x)
+    assert Max(x, Max(y, z)) == Max(z, y, x)
+    assert Max(1000, 100, -100, x, y, z) == Max(x, y, z, 1000)
+    assert Max(cos(x), sin(x)) == Max(sin(x), cos(x))
+
+
+def test_Min():
+    x = Symbol("x")
+    y = Symbol("y")
+    z = Symbol("z")
+    assert Min(Integer(6)/3, 1) == 1
+    assert Min(-2, 2) == -2
+    assert Min(2, 2) == 2
+    assert Min(0.2, 0.3) == 0.2
+    assert Min(x, x) == x
+    assert Min(x, y) == Min(y, x)
+    assert Min(x, y, z) == Min(z, y, x)
+    assert Min(x, Min(y, z)) == Min(z, y, x)
+    assert Min(1000, 100, -100, x, y, z) == Min(x, y, z, -100)
+    assert Min(cos(x), sin(x)) == Min(cos(x), sin(x))
 
 
 def test_sin():

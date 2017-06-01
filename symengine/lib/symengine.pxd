@@ -143,6 +143,8 @@ cdef extern from "<symengine/symengine_rcp.h>" namespace "SymEngine":
     RCP[const FunctionSymbol] rcp_static_cast_FunctionSymbol "SymEngine::rcp_static_cast<const SymEngine::FunctionSymbol>"(RCP[const Basic] &b) nogil
     RCP[const FunctionWrapper] rcp_static_cast_FunctionWrapper "SymEngine::rcp_static_cast<const SymEngine::FunctionWrapper>"(RCP[const Basic] &b) nogil
     RCP[const Abs] rcp_static_cast_Abs "SymEngine::rcp_static_cast<const SymEngine::Abs>"(RCP[const Basic] &b) nogil
+    RCP[const Max] rcp_static_cast_Max "SymEngine::rcp_static_cast<const SymEngine::Max>"(RCP[const Basic] &b) nogil
+    RCP[const Min] rcp_static_cast_Min "SymEngine::rcp_static_cast<const SymEngine::Min>"(RCP[const Basic] &b) nogil
     RCP[const Gamma] rcp_static_cast_Gamma "SymEngine::rcp_static_cast<const SymEngine::Gamma>"(RCP[const Basic] &b) nogil
     RCP[const Derivative] rcp_static_cast_Derivative "SymEngine::rcp_static_cast<const SymEngine::Derivative>"(RCP[const Basic] &b) nogil
     RCP[const Subs] rcp_static_cast_Subs "SymEngine::rcp_static_cast<const SymEngine::Subs>"(RCP[const Basic] &b) nogil
@@ -251,6 +253,8 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_ASech "SymEngine::is_a<SymEngine::ASech>"(const Basic &b) nogil
     bool is_a_FunctionSymbol "SymEngine::is_a<SymEngine::FunctionSymbol>"(const Basic &b) nogil
     bool is_a_Abs "SymEngine::is_a<SymEngine::Abs>"(const Basic &b) nogil
+    bool is_a_Max "SymEngine::is_a<SymEngine::Max>"(const Basic &b) nogil
+    bool is_a_Min "SymEngine::is_a<SymEngine::Min>"(const Basic &b) nogil
     bool is_a_Gamma "SymEngine::is_a<SymEngine::Gamma>"(const Basic &b) nogil
     bool is_a_Derivative "SymEngine::is_a<SymEngine::Derivative>"(const Basic &b) nogil
     bool is_a_Subs "SymEngine::is_a<SymEngine::Subs>"(const Basic &b) nogil
@@ -433,6 +437,8 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
     cdef RCP[const Basic] asech(RCP[const Basic] &arg) nogil except+
     cdef RCP[const Basic] function_symbol(string name, const vec_basic &arg) nogil except+
     cdef RCP[const Basic] abs(RCP[const Basic] &arg) nogil except+
+    cdef RCP[const Basic] max(const vec_basic &arg) nogil except+
+    cdef RCP[const Basic] min(const vec_basic &arg) nogil except+
     cdef RCP[const Basic] gamma(RCP[const Basic] &arg) nogil except+
     cdef RCP[const Basic] atan2(RCP[const Basic] &num, RCP[const Basic] &den) nogil except+
 
@@ -538,6 +544,12 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
 
     cdef cppclass Abs(Function):
         RCP[const Basic] get_arg() nogil
+
+    cdef cppclass Max(Function):
+        pass
+
+    cdef cppclass Min(Function):
+        pass
 
     cdef cppclass Gamma(Function):
         pass
