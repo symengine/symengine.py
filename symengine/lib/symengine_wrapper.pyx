@@ -1072,7 +1072,7 @@ cdef class ComplexDouble(Number):
         return self.real_part()._sage_() + sage.I * self.imaginary_part()._sage_()
 
 
-cdef class RealMPFR(Number):
+class RealMPFR(Float):
 
     @property
     def is_Float(self):

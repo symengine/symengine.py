@@ -40,6 +40,7 @@ def test_Float():
     raises(ValueError, lambda: Float("1.23", dps = 3, precision = 10))
     raises(ValueError, lambda: Float(A, dps = 3, precision = 16))
     if have_mpfr:
+        from symengine.sympy_compat import RealMPFR
         A = Float("1.23", dps = 16)
         B = Float("1.23", precision = 56)
         assert A == B
