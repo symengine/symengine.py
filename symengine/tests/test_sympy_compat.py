@@ -1,6 +1,6 @@
 from symengine.sympy_compat import (Integer, Rational, S, Basic, Add, Mul,
     Pow, symbols, Symbol, log, sin, cos, sech, csch, zeros, atan2, Number, Float,
-    symengine, Min, Max)
+    Min, Max, RealDouble, have_mpfr)
 from symengine.utilities import raises
 
 
@@ -34,28 +34,28 @@ def test_Float():
     assert isinstance(A, Float)
     assert isinstance(B, Float)
     assert isinstance(C, Float)
-    assert isinstance(A, symengine.RealDouble)
-    assert isinstance(B, symengine.RealDouble)
-    assert isinstance(C, symengine.RealDouble)
+    assert isinstance(A, RealDouble)
+    assert isinstance(B, RealDouble)
+    assert isinstance(C, RealDouble)
     raises(ValueError, lambda: Float("1.23", dps = 3, precision = 10))
     raises(ValueError, lambda: Float(A, dps = 3, precision = 16))
-    if symengine.have_mpfr:
+    if have_mpfr:
         A = Float("1.23", dps = 16)
         B = Float("1.23", precision = 56)
         assert A == B
         assert isinstance(A, Float)
         assert isinstance(B, Float)
-        assert isinstance(A, symengine.RealMPFR)
-        assert isinstance(B, symengine.RealMPFR)
+        assert isinstance(A, RealMPFR)
+        assert isinstance(B, RealMPFR)
         A = Float(C, dps = 16)
         assert A == B
         assert isinstance(A, Float)
-        assert isinstance(A, symengine.RealMPFR)
+        assert isinstance(A, RealMPFR)
         A = Float(A, precision = 53)
         assert A == C
         assert isinstance(A, Float)
-        assert isinstance(A, symengine.RealDouble)
-    if not symengine.have_mpfr:
+        assert isinstance(A, RealDouble)
+    if not have_mpfr:
         raises(ValueError, lambda: Float("1.23", precision = 58))        
 
 

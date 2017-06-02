@@ -37,7 +37,7 @@ cdef c2py(RCP[const symengine.Basic] o):
     elif (symengine.is_a_Symbol(deref(o))):
         if (symengine.is_a_PySymbol(deref(o))):
             return <object>(deref(symengine.rcp_static_cast_PySymbol(o)).get_py_object())
-        r = Symbol.__new__(Symbol)
+        r = Basic.__new__(Symbol)
     elif (symengine.is_a_Constant(deref(o))):
         r = Constant.__new__(Constant)
     elif (symengine.is_a_PyFunction(deref(o))):
@@ -666,7 +666,8 @@ cdef class Basic(object):
         return d
 
     def coeff(self, x, n=1):
-        cdef Symbol _x = _sympify(x)
+        cdef Basic _x = _sympify(x)
+        require(_x, Symbol)
         cdef Basic _n = _sympify(n)
         return c2py(symengine.coeff(deref(self.thisptr), deref(_x.thisptr), deref(_n.thisptr)))
 
@@ -696,11 +697,12 @@ def series(ex, x=None, x0=0, n=6, as_deg_coef_pair=False):
     if not syms:
         return _ex
 
-    cdef Symbol _x
+    cdef Basic _x
     if x is None:
         _x = list(syms)[0]
     else:
         _x = _sympify(x)
+    require(_x, Symbol)
     if not _x in syms:
         return _ex
 
@@ -731,31 +733,25 @@ def series(ex, x=None, x0=0, n=6, as_deg_coef_pair=False):
     return add(*l)
 
 
-cdef class Symbol(Basic):
+class Symbol(Basic):
 
     """
     Symbol is a class to store a symbolic variable with a given name.
-
-    Note: Subclassing `Symbol` will not work properly. Use `PySymbol`
-          which is a subclass of `Symbol` for subclassing.
     """
-    def __cinit__(self, name = None):
-        if name is None:
-            return
-        self.thisptr = symengine.make_rcp_Symbol(name.encode("utf-8"))
 
-    def __init__(self, name = None):
-        return
+    def __init__(Basic self, name, *args, **kwargs):
+        if type(self) == Symbol:
+            self.thisptr = symengine.make_rcp_Symbol(name.encode("utf-8"))
+        else:
+            self.thisptr = symengine.make_rcp_PySymbol(name.encode("utf-8"), <PyObject*>self)
 
     def _sympy_(self):
-        cdef RCP[const symengine.Symbol] X = symengine.rcp_static_cast_Symbol(self.thisptr)
         import sympy
-        return sympy.Symbol(str(deref(X).get_name().decode("utf-8")))
+        return sympy.Symbol(str(self))
 
     def _sage_(self):
-        cdef RCP[const symengine.Symbol] X = symengine.rcp_static_cast_Symbol(self.thisptr)
         import sage.all as sage
-        return sage.SR.symbol(str(deref(X).get_name().decode("utf-8")))
+        return sage.SR.symbol(str(self))
 
     @property
     def name(self):
@@ -768,14 +764,6 @@ cdef class Symbol(Basic):
     @property
     def is_Symbol(self):
         return True
-
-
-cdef class PySymbol(Symbol):
-    def __init__(self, name, *args, **kwargs):
-        super(PySymbol, self).__init__(name)
-        if name is None:
-            return
-        self.thisptr = symengine.make_rcp_PySymbol(name.encode("utf-8"), <PyObject*>self)
 
 
 def symarray(prefix, shape, **kwargs):
@@ -3296,7 +3284,8 @@ def LambdifyCSE(args, exprs, real=True, cse=None, concatenate=None):
 
 def has_symbol(obj, symbol=None):
     cdef Basic b = _sympify(obj)
-    cdef Symbol s = _sympify(symbol)
+    cdef Basic s = _sympify(symbol)
+    require(s, Symbol)
     if (not symbol):
         return not b.free_symbols.empty()
     else:
