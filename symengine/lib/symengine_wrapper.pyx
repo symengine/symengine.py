@@ -1476,6 +1476,10 @@ mul = Mul
 
 class Abs(OneArgFunction):
 
+    def __new__(cls, x):
+        cdef Basic X = _sympify(x)
+        return c2py(symengine.abs(X.thisptr))
+
     def _sympy_(Basic self):
         cdef RCP[const symengine.Abs] X = symengine.rcp_static_cast_Abs(self.thisptr)
         arg = c2py(deref(X).get_arg())._sympy_()

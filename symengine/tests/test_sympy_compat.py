@@ -1,6 +1,6 @@
 from symengine.sympy_compat import (Integer, Rational, S, Basic, Add, Mul,
     Pow, symbols, Symbol, log, sin, cos, sech, csch, zeros, atan2, Number, Float,
-    Min, Max, RealDouble, have_mpfr)
+    Min, Max, RealDouble, have_mpfr, Abs)
 from symengine.utilities import raises
 
 
@@ -185,3 +185,7 @@ def test_subclass_symbol():
     two_x = 2 * x
     # Check that after arithmetic, same subclass is returned
     assert two_x.args[1] is x
+
+def test_Abs():
+    x = symbols("x")
+    assert Abs(x) == Abs(-x)
