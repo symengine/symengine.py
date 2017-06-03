@@ -395,3 +395,20 @@ def test_immutablematrix():
     X = ImmutableMatrix([[1, 2], [3, 4]])
     Y = ImmutableMatrix([[1], [0]])
     assert type(X.LUsolve(Y)) == ImmutableMatrix
+
+    x = Symbol("x")
+    X = ImmutableMatrix([[1, 2], [3, 4]])
+    Y = ImmutableMatrix([[1, 2], [x, 4]])
+    assert Y.subs(x, 3) == X
+
+    X = ImmutableMatrix([[1, 2], [3, 4]])
+    Y = ImmutableMatrix([[5], [6]])
+    Z = X.row_join(Y)
+    assert isinstance(Z, ImmutableMatrix)
+    assert Z == ImmutableMatrix([[1, 2, 5], [3, 4, 6]])
+
+    X = ImmutableMatrix([[1, 2], [3, 4]])
+    Y = ImmutableMatrix([[5, 6]])
+    Z = X.col_join(Y)
+    assert isinstance(Z, ImmutableMatrix)
+    assert Z == ImmutableMatrix([[1, 2], [3, 4], [5, 6]])
