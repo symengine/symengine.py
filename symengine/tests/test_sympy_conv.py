@@ -281,7 +281,6 @@ def test_conv11():
     assert sympify(e1) == e2
     assert sympify(e1) != e3
 
-    print(e2, e1)
     assert e2._sympy_() == e1
     assert e3._sympy_() != e1
 
