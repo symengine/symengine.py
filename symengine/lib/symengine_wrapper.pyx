@@ -219,9 +219,9 @@ def sympy2symengine(a, raise_error=False):
     elif isinstance(a, sympy.gamma):
         return gamma(a.args[0])
     elif isinstance(a, sympy.Derivative):
-        return Derivative(a.expr, a.variables)
+        return diff(a.expr, a.variables)
     elif isinstance(a, sympy.Subs):
-        return Subs(a.expr, a.variables, a.point)
+        return a.expr.subs(a.variables, a.point)
     elif isinstance(a, sympy_AppliedUndef):
         name = str(a.func)
         return function_symbol(name, *(a.args))
@@ -1470,17 +1470,6 @@ cdef class Derivative(Basic):
     @property
     def variables(self):
         return self.args[1:]
-
-    def __cinit__(self, expr = None, symbols = None):
-        if expr is None or symbols is None:
-            return
-        cdef symengine.multiset_basic m
-        cdef Basic s_
-        cdef Basic expr_ = _sympify(expr, True)
-        for s in symbols:
-            s_ = _sympify(s, True)
-            m.insert(<RCP[symengine.const_Basic]>(s_.thisptr))
-        self.thisptr = symengine.make_rcp_Derivative(expr_.thisptr, m)
 
     def _sympy_(self):
         cdef RCP[const symengine.Derivative] X = \

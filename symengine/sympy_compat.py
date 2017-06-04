@@ -159,6 +159,19 @@ class gamma(_RegisteredFunction):
         return symengine.gamma(a)
 
 
+class Derivative(_RegisteredFunction):
+    _classes = (symengine.Derivative,)
+
+    def __new__(cls, expr, variables):
+        return symengine.diff(expr, variables)
+
+
+class Subs(_RegisteredFunction):
+    _classes = (symengine.Subs,)
+
+    def __new__(cls, *args):
+        return symengine.Subs.subs(*args)
+
 class cot(_RegisteredFunction):
     _classes = (symengine.Cot,)
 
