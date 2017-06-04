@@ -1644,6 +1644,7 @@ class Max(Function):
 
     func = __class__
 
+
 class Min(Function):
 
     def __new__(cls, *args):
@@ -1661,7 +1662,13 @@ class Min(Function):
 
     func = __class__
 
+
 class Derivative(Basic):
+
+    def __new__(self, expr, *variables):
+        if len(variables) == 1 and is_sequence(variables[0]):
+            return diff(expr, *variables[0])
+        return diff(expr, *variables)
 
     @property
     def is_Derivative(self):
@@ -1675,9 +1682,6 @@ class Derivative(Basic):
     @property
     def variables(self):
         return self.args[1:]
-
-    def __new__(self, expr, *variables):
-        return diff(expr, *variables)
 
     def _sympy_(Basic self):
         cdef RCP[const symengine.Derivative] X = \
