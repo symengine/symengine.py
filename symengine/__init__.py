@@ -3,10 +3,11 @@ from .lib.symengine_wrapper import (Symbol, sympify as S, sympify,
         have_mpfr, have_mpc, have_flint, have_piranha, have_llvm, 
         Integer, Rational, Float, Number, RealNumber, RealDouble,
         ComplexDouble, Max, Min, DenseMatrix, Matrix, ImmutableMatrix,
-        ImmutableDenseMatrix, MutableDenseMatrix, Basic,
+        ImmutableDenseMatrix, MutableDenseMatrix, MatrixBase, Basic,
         Lambdify, LambdifyCSE, Lambdify as lambdify, DictBasic, symarray,
-        series, diff, zeros, eye, diag,ones, zeros,
-        add, expand, has_symbol, UndefFunction)
+        series, diff, zeros, eye, diag, ones, Derivative, Subs,
+        add, expand, has_symbol, UndefFunction, Function,
+        FunctionSymbol as AppliedUndef)
 from .utilities import var, symbols
 from .functions import *
 
