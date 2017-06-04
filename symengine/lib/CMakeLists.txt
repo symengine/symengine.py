@@ -1,37 +1,32 @@
-set(SRC
-    symengine_wrapper.cpp
-    pywrapper.cpp
-    )
+
+set(SRC pywrapper.cpp)
 
 configure_file(config.pxi.in config.pxi)
 
 include_directories(BEFORE ${python_wrapper_BINARY_DIR}/symengine/lib)
 add_subdirectory(symengine)
 
-cython_add_module_pyx(symengine_wrapper symengine.pxd)
-add_python_library(symengine_wrapper ${SRC})
+add_cython_target(symengine_wrapper CXX OUTPUT_VAR symengine_wrapper_src)
+add_library(symengine_wrapper MODULE ${symengine_wrapper_src} ${SRC})
 target_link_libraries(symengine_wrapper ${SYMENGINE_LIBRARIES})
+python_extension_module(symengine_wrapper)
+
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
   # Must suppress strict aliasing for this file
   set_source_files_properties(
     symengine_wrapper.cpp
-    PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -Wno-unused-function"
-    )
+    PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing -Wno-unused-function")
 endif()
 
-add_custom_target(cython
-    COMMAND cython symengine_wrapper.pyx
-    )
+set(symengine_pkg ${PYTHON_RELATIVE_SITE_PACKAGES_DIR}/symengine)
 
-set(PY_PATH ${PYTHON_INSTALL_PATH}/symengine/lib)
 install(TARGETS symengine_wrapper
-            RUNTIME DESTINATION ${PY_PATH}
-            ARCHIVE DESTINATION ${PY_PATH}
-            LIBRARY DESTINATION ${PY_PATH}
-        )
+            RUNTIME DESTINATION ${symengine_pkg}/lib
+            ARCHIVE DESTINATION ${symengine_pkg}/lib
+            LIBRARY DESTINATION ${symengine_pkg}/lib)
+
 install(FILES __init__.py
     ${CMAKE_CURRENT_BINARY_DIR}/config.pxi
     symengine.pxd
     symengine_wrapper.pxd
-    DESTINATION ${PY_PATH}
-    )
+    DESTINATION ${symengine_pkg}/lib)
