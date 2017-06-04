@@ -658,17 +658,17 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
     bool is_a_DenseMatrix "SymEngine::is_a<SymEngine::DenseMatrix>"(const MatrixBase &b) nogil
     DenseMatrix* static_cast_DenseMatrix "static_cast<SymEngine::DenseMatrix*>"(const MatrixBase *a)
     void inverse_FFLU "SymEngine::inverse_fraction_free_LU"(const DenseMatrix &A,
-        DenseMatrix &B) nogil
-    void pivoted_LU (const DenseMatrix &A, DenseMatrix &L, DenseMatrix &U, vector[int] &P) nogil
-    void pivoted_LU_solve (const DenseMatrix &A, const DenseMatrix &b, DenseMatrix &x) nogil
+        DenseMatrix &B) nogil except +
+    void pivoted_LU (const DenseMatrix &A, DenseMatrix &L, DenseMatrix &U, vector[int] &P) nogil except +
+    void pivoted_LU_solve (const DenseMatrix &A, const DenseMatrix &b, DenseMatrix &x) nogil except +
     void inverse_GJ "SymEngine::inverse_gauss_jordan"(const DenseMatrix &A,
-        DenseMatrix &B) nogil
+        DenseMatrix &B) nogil except +
     void FFLU_solve "SymEngine::fraction_free_LU_solve"(const DenseMatrix &A,
-        const DenseMatrix &b, DenseMatrix &x) nogil
+        const DenseMatrix &b, DenseMatrix &x) nogil except +
     void FFGJ_solve "SymEngine::fraction_free_gauss_jordan_solve"(const DenseMatrix &A,
-        const DenseMatrix &b, DenseMatrix &x) nogil
+        const DenseMatrix &b, DenseMatrix &x) nogil except +
     void LDL_solve "SymEngine::LDL_solve"(const DenseMatrix &A, const DenseMatrix &b,
-        DenseMatrix &x) nogil
+        DenseMatrix &x) nogil except +
     void jacobian "SymEngine::sjacobian"(const DenseMatrix &A,
             const DenseMatrix &x, DenseMatrix &result) nogil except +
     void diff "SymEngine::sdiff"(const DenseMatrix &A,
