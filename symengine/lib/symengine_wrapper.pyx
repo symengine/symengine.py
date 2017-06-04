@@ -1798,26 +1798,32 @@ cdef class DenseMatrixBase(MatrixBase):
         cdef DenseMatrixBase o = _sympify(rhs)
         if self.rows != o.rows:
             raise ShapeError("`self` and `rhs` must have the same number of rows.")
-        cdef DenseMatrixBase result = zeros(self.rows, self.cols + o.cols)
+        cdef DenseMatrixBase result = self.__class__(self.rows, self.cols + o.cols)
+        cdef Basic e_
         for i in range(self.rows):
             for j in range(self.cols):
-                result[i, j] = self[i, j]
+                e_ = self._get(i, j)
+                deref(result.thisptr).set(i, j, e_.thisptr)
         for i in range(o.rows):
             for j in range(o.cols):
-                result[i, j + self.cols] = o[i, j]
+                e_ = _sympify(o._get(i, j))
+                deref(result.thisptr).set(i, j + self.cols, e_.thisptr)
         return result
 
     def col_join(self, bott):
         cdef DenseMatrixBase o = _sympify(bott)
         if self.cols != o.cols:
             raise ShapeError("`self` and `rhs` must have the same number of columns.")
-        cdef DenseMatrixBase result = zeros(self.rows + o.rows, self.cols)
+        cdef DenseMatrixBase result = self.__class__(self.rows + o.rows, self.cols)
+        cdef Basic e_
         for i in range(self.rows):
             for j in range(self.cols):
-                result[i, j] = self[i, j]
+                e_ = self._get(i, j)
+                deref(result.thisptr).set(i, j, e_.thisptr)
         for i in range(o.rows):
             for j in range(o.cols):
-                result[i + self.rows, j] = o[i, j]
+                e_ = _sympify(o._get(i, j))
+                deref(result.thisptr).set(i + self.rows, j, e_.thisptr)
         return result
 
     @property
@@ -1937,16 +1943,16 @@ cdef class DenseMatrixBase(MatrixBase):
     def T(self):
         return self.transpose()
 
-    def _applyfunc(self, f):
-        cdef int nr = self.nrows()
-        cdef int nc = self.ncols()
-        for i in range(nr):
-            for j in range(nc):
-                self._set(i, j, f(self._get(i, j)))
-
     def applyfunc(self, f):
         cdef DenseMatrixBase out = self.__class__(self)
-        out._applyfunc(f)
+        cdef int nr = self.nrows()
+        cdef int nc = self.ncols()
+        cdef Basic e_;
+        for i in range(nr):
+            for j in range(nc):
+                e_ = _sympify(f(self._get(i, j)))
+                if e_ is not None:
+                    deref(out.thisptr).set(i, j, e_.thisptr)
         return out
 
     def msubs(self, *args):
@@ -2160,6 +2166,12 @@ cdef class MutableDenseMatrix(DenseMatrixBase):
         for k in range(0, self.cols):
             self[i, k], self[j, k] = self[j, k], self[i, k]
 
+    def _applyfunc(self, f):
+        cdef int nr = self.nrows()
+        cdef int nc = self.ncols()
+        for i in range(nr):
+            for j in range(nc):
+                self._set(i, j, f(self._get(i, j)))
 
 Matrix = DenseMatrix = MutableDenseMatrix
 
