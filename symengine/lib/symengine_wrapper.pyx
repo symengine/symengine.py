@@ -765,6 +765,8 @@ class Symbol(Basic):
     def is_Symbol(self):
         return True
 
+    func = __class__
+
 
 def symarray(prefix, shape, **kwargs):
     """ Creates an nd-array of symbols
@@ -887,6 +889,7 @@ class Rational(Number):
             rat = self.get_num_den()
             return rat[0]._sage_() / rat[1]._sage_()
 
+    func = __class__
 
 class Integer(Rational):
 
@@ -985,6 +988,8 @@ class Integer(Rational):
 
     def get_num_den(Basic self):
         return self, 1
+
+    func = __class__
 
 
 def dps_to_prec(n):
@@ -1180,9 +1185,7 @@ class Add(Basic):
         deref(X).as_two_terms(symengine.outArg(a), symengine.outArg(b))
         return c2py(a)._sage_() + c2py(b)._sage_()
 
-    @property
-    def func(self):
-        return Add
+    func = __class__
 
     def as_coefficients_dict(Basic self):
         cdef RCP[const symengine.Add] X = symengine.rcp_static_cast_Add(self.thisptr)
@@ -1223,9 +1226,7 @@ class Mul(Basic):
         deref(X).as_two_terms(symengine.outArg(a), symengine.outArg(b))
         return c2py(a)._sage_() * c2py(b)._sage_()
 
-    @property
-    def func(self):
-        return Mul
+    func = __class__
 
     def as_coefficients_dict(Basic self):
         cdef RCP[const symengine.Mul] X = symengine.rcp_static_cast_Mul(self.thisptr)
@@ -1260,8 +1261,7 @@ class Pow(Basic):
         exp = c2py(deref(X).get_exp())
         return base._sage_() ** exp._sage_()
 
-    def func(self, *values):
-        return _sympify(values[0]) ** _sympify(values[1])
+    func = __class__
 
 
 class Function(Basic):
@@ -1490,6 +1490,7 @@ class Abs(OneArgFunction):
         arg = c2py(deref(X).get_arg())._sage_()
         return abs(arg)
 
+    func = __class__
 
 class FunctionSymbol(Function):
 
@@ -1641,6 +1642,7 @@ class Max(Function):
         s = self.args_as_sage()
         return sage.max(*s)
 
+    func = __class__
 
 class Min(Function):
 
@@ -1657,6 +1659,7 @@ class Min(Function):
         s = self.args_as_sage()
         return sage.min(*s)
 
+    func = __class__
 
 class Derivative(Basic):
 
@@ -1696,6 +1699,9 @@ class Derivative(Basic):
         for i in Y:
             s.append(c2py(<RCP[const symengine.Basic]>(i))._sage_())
         return arg.diff(*s)
+
+    func = __class__
+
 
 class Subs(Basic):
 
@@ -1742,6 +1748,9 @@ class Subs(Basic):
             v[c2py(<RCP[const symengine.Basic]>(V[i]))._sage_()] = \
                 c2py(<RCP[const symengine.Basic]>(P[i]))._sage_()
         return arg.subs(v)
+
+    func = __class__
+
 
 cdef class MatrixBase:
 
