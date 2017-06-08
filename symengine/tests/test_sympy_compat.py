@@ -1,5 +1,5 @@
 from symengine.sympy_compat import (Integer, Rational, S, Basic, Add, Mul,
-    Pow, symbols, Symbol, log, sin, cos, sech, csch, zeros, atan2, Number, Float,
+    Pow, symbols, Symbol, log, sin, cos, sech, csch, zeros, atan2, nan, Number, Float,
     Min, Max, RealDouble, have_mpfr, Abs)
 from symengine.utilities import raises
 
@@ -117,6 +117,10 @@ def test_Min():
     assert Min(x, Min(y, z)) == Min(z, y, x)
     assert Min(1000, 100, -100, x, y, z) == Min(x, y, z, -100)
     assert Min(cos(x), sin(x)) == Min(cos(x), sin(x))
+
+
+def test_NaN():
+    type(nan)() == nan
 
 
 def test_sin():
