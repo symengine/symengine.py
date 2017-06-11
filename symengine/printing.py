@@ -1,8 +1,12 @@
-from symengine.lib.symengine_wrapper import ccode, _sympify
+from symengine.lib.symengine_wrapper import ccode, _sympify, Basic
 
 class CCodePrinter:
 
     def doprint(self, expr, assign_to=None):
+        if not isinstance(assign_to, (Basic, type(None), str)):
+            raise TypeError("{0} cannot assign to object of type {1}".format(
+                    type(self).__name__, type(assign_to)))
+
         expr = _sympify(expr)
         if not assign_to:
             if expr.is_Matrix:
