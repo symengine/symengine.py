@@ -2,9 +2,9 @@ from symengine import (Symbol, Integer, sympify, SympifyError, log,
         function_symbol, I, E, pi, exp, gamma, have_mpfr, have_mpc,
         DenseMatrix, sin, cos, tan, cot, csc, sec, asin, acos, atan,
         acot, acsc, asec, sinh, cosh, tanh, coth, asinh, acosh, atanh,
-        acoth, Add, Mul, Pow)
+        acoth, Add, Mul, Pow, diff)
 from symengine.lib.symengine_wrapper import (Subs, Derivative, RealMPFR,
-        ComplexMPC, PyNumber)
+        ComplexMPC, PyNumber, Function)
 import sympy
 
 # Note: We test _sympy_() for SymEngine -> SymPy conversion, as those are
@@ -271,13 +271,12 @@ def test_conv11():
     y = sympy.Symbol("y")
     x1 = Symbol("x")
     y1 = Symbol("y")
-    e1 = sympy.Subs(sympy.Derivative(sympy.Function("f")(x, y), x),
-                    [x, y], [y, y])
+    f = sympy.Function("f")
+    f1 = Function("f")
 
-    e2 = Subs(Derivative(function_symbol("f", x1, y1), [x1]),
-              [x1, y1], [y1, y1])
-    e3 = Subs(Derivative(function_symbol("f", x1, y1), [x1]),
-              [y1, x1], [x1, y1])
+    e1 = diff(f(2*x, y), x)
+    e2 = diff(f1(2*x1, y1), x1)
+    e3 = diff(f1(2*x1, y1), y1)
 
     assert sympify(e1) == e2
     assert sympify(e1) != e3

@@ -138,8 +138,7 @@ cdef extern from "<symengine/symengine_rcp.h>" namespace "SymEngine":
     RCP[const Add] rcp_static_cast_Add "SymEngine::rcp_static_cast<const SymEngine::Add>"(RCP[const Basic] &b) nogil
     RCP[const Mul] rcp_static_cast_Mul "SymEngine::rcp_static_cast<const SymEngine::Mul>"(RCP[const Basic] &b) nogil
     RCP[const Pow] rcp_static_cast_Pow "SymEngine::rcp_static_cast<const SymEngine::Pow>"(RCP[const Basic] &b) nogil
-    RCP[const TrigFunction] rcp_static_cast_TrigFunction "SymEngine::rcp_static_cast<const SymEngine::TrigFunction>"(RCP[const Basic] &b) nogil
-    RCP[const HyperbolicFunction] rcp_static_cast_HyperbolicFunction "SymEngine::rcp_static_cast<const SymEngine::HyperbolicFunction>"(RCP[const Basic] &b) nogil
+    RCP[const OneArgFunction] rcp_static_cast_OneArgFunction "SymEngine::rcp_static_cast<const SymEngine::OneArgFunction>"(RCP[const Basic] &b) nogil
     RCP[const FunctionSymbol] rcp_static_cast_FunctionSymbol "SymEngine::rcp_static_cast<const SymEngine::FunctionSymbol>"(RCP[const Basic] &b) nogil
     RCP[const FunctionWrapper] rcp_static_cast_FunctionWrapper "SymEngine::rcp_static_cast<const SymEngine::FunctionWrapper>"(RCP[const Basic] &b) nogil
     RCP[const Abs] rcp_static_cast_Abs "SymEngine::rcp_static_cast<const SymEngine::Abs>"(RCP[const Basic] &b) nogil
@@ -445,8 +444,11 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
     cdef cppclass Function(Basic):
         pass
 
-    cdef cppclass TrigFunction(Function):
+    cdef cppclass OneArgFunction(Function):
         RCP[const Basic] get_arg() nogil
+
+    cdef cppclass TrigFunction(OneArgFunction):
+        pass
 
     cdef cppclass Sin(TrigFunction):
         pass
@@ -484,8 +486,8 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
     cdef cppclass ASec(TrigFunction):
         pass
 
-    cdef cppclass HyperbolicFunction(Function):
-        RCP[const Basic] get_arg() nogil
+    cdef cppclass HyperbolicFunction(OneArgFunction):
+        pass
 
     cdef cppclass Sinh(HyperbolicFunction):
         pass
@@ -542,8 +544,8 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
         vec_basic get_variables() nogil
         vec_basic get_point() nogil
 
-    cdef cppclass Abs(Function):
-        RCP[const Basic] get_arg() nogil
+    cdef cppclass Abs(OneArgFunction):
+        pass
 
     cdef cppclass Max(Function):
         pass
@@ -551,7 +553,7 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
     cdef cppclass Min(Function):
         pass
 
-    cdef cppclass Gamma(Function):
+    cdef cppclass Gamma(OneArgFunction):
         pass
 
     cdef cppclass ATan2(Function):
@@ -656,17 +658,17 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
     bool is_a_DenseMatrix "SymEngine::is_a<SymEngine::DenseMatrix>"(const MatrixBase &b) nogil
     DenseMatrix* static_cast_DenseMatrix "static_cast<SymEngine::DenseMatrix*>"(const MatrixBase *a)
     void inverse_FFLU "SymEngine::inverse_fraction_free_LU"(const DenseMatrix &A,
-        DenseMatrix &B) nogil
-    void pivoted_LU (const DenseMatrix &A, DenseMatrix &L, DenseMatrix &U, vector[int] &P) nogil
-    void pivoted_LU_solve (const DenseMatrix &A, const DenseMatrix &b, DenseMatrix &x) nogil
+        DenseMatrix &B) nogil except +
+    void pivoted_LU (const DenseMatrix &A, DenseMatrix &L, DenseMatrix &U, vector[int] &P) nogil except +
+    void pivoted_LU_solve (const DenseMatrix &A, const DenseMatrix &b, DenseMatrix &x) nogil except +
     void inverse_GJ "SymEngine::inverse_gauss_jordan"(const DenseMatrix &A,
-        DenseMatrix &B) nogil
+        DenseMatrix &B) nogil except +
     void FFLU_solve "SymEngine::fraction_free_LU_solve"(const DenseMatrix &A,
-        const DenseMatrix &b, DenseMatrix &x) nogil
+        const DenseMatrix &b, DenseMatrix &x) nogil except +
     void FFGJ_solve "SymEngine::fraction_free_gauss_jordan_solve"(const DenseMatrix &A,
-        const DenseMatrix &b, DenseMatrix &x) nogil
+        const DenseMatrix &b, DenseMatrix &x) nogil except +
     void LDL_solve "SymEngine::LDL_solve"(const DenseMatrix &A, const DenseMatrix &b,
-        DenseMatrix &x) nogil
+        DenseMatrix &x) nogil except +
     void jacobian "SymEngine::sjacobian"(const DenseMatrix &A,
             const DenseMatrix &x, DenseMatrix &result) nogil except +
     void diff "SymEngine::sdiff"(const DenseMatrix &A,
