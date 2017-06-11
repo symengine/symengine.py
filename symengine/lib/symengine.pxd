@@ -787,3 +787,6 @@ IF HAVE_SYMENGINE_MPC:
 
 cdef extern from "<symengine/parser.h>" namespace "SymEngine":
     RCP[const Basic] parse(const string &n) nogil except +
+
+cdef extern from "<symengine/codegen.h>" namespace "SymEngine":
+    string ccode(const Basic &x) nogil except +
