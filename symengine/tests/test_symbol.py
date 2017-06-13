@@ -95,7 +95,7 @@ def test_symbols():
 
     assert symbols('aa:d') == (aa, ab, ac, ad)
     assert symbols('aa:d,x:z') == (aa, ab, ac, ad, x, y, z)
-    assert symbols(('aa:d','x:z')) == ((aa, ab, ac, ad), (x, y, z))
+    assert symbols(('aa:d', 'x:z')) == ((aa, ab, ac, ad), (x, y, z))
 
     def sym(s):
         return str(symbols(s))

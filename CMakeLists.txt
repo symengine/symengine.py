@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(python_wrapper)
 
 set(CMAKE_PREFIX_PATH ${SymEngine_DIR} ${CMAKE_PREFIX_PATH})
-find_package(SymEngine 0.2.0 REQUIRED CONFIG
+find_package(SymEngine 0.3.0 REQUIRED CONFIG
              PATH_SUFFIXES lib/cmake/symengine cmake/symengine CMake/)
 message("SymEngine_DIR : " ${SymEngine_DIR})
 set(CMAKE_BUILD_TYPE ${SYMENGINE_BUILD_TYPE})

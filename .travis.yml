@@ -16,7 +16,7 @@ addons:
 
 env:
   global:
-    - secure: "jkvObuYjs4oT0bbUzLOtKLPkD2AVt/c4ZOS2qNkStC8dwtLpcYd4tLn1S07PCMYzCLL/DGvp6J8IKmzhQV7a/Yl/wVySTNBFnPecjku8Spf1UqdJbrJa8Ln/nxnajFyc2Q7QnKj8s4sguN1GRY7Jdylp9l7XgebjGwVrpKXIR+JqiSAhxkEyMmWklzu80m+BOTep0xTY/E9fFMCznQFM96jTSjq9vFxCAzToOpP3EFQyBjhDkPNQvaI3KYcBabe5DQs0wMvLEboxDEGYG+Y4ijp1d8JFmWZgzU1nQm++n8WG/Igz8rF6Asy7fHeE2/sexQf0LEqtTFtSmJFFnn6vJdn+6JOB05ARbdXc2KKzP81BCCjhPIH/KNQNMpD6p7KfXhthM0np/dxBRDlCh+6kDiuei+798YSJ63Svdr+lmg4weuxWRQh7D2lmXTcygWSW4iafCgK+D0lekg239HKcvDXPx352obM/HAz7tUiIaiOvHNlKlVL7bbHDhKWyaduAHB9jVnAIvcDWjumwyOaIPPLQL1JsL8Tha1H5uUPYWYjfNjjqk57pXq1YPUFoyiylViqX1eTWypwkXFKFJCWb6IhuW32OKEYACXJLZm7zui/qvIKiNn7PNGBxtrW/rvpvVAM94yQNhlmjxiu4/V74D0/9Oh90cPGFtoocbj5MT98="
+    - secure: "gdcw4nEd06q+E8yZkaqtgexX4kHgKqFuTRHKyx5QJBW/q+vL94ntbFft7jZssXEmFtijyjjNbhTucwcSaXIAP1X4tct5kHcuBH5LVvCxi7r4NfhERJDE/EAOS4xbQJ9IUHjdBWCWTCCiXpg0bG/1YcCVsppcKi2Z864CBDpa8DPuDUtyxFpkHW7PdALitLWDIIkIJU817JqYlJKcnR62OYGdVlHiUHhSGI6JKnqou7gf6fgXLsXNnUDUeWS+9vElOTV6OU7vHbG1Ka2N2vwpLIoBoSrw80EDAyP+QqqBRP1B2CyPGvEu9lTyqxUVkb0DAjsltn1bt36UVIb+l55B1JWPSriI3xiVstXa9D2Xb1uth9h712c0cwXw9LJ7YsXEcwdAfCRF/Zywt9IdwCWlnRkiGD2fOHPBkjpXVAV+2xFSD8WLuV6hc3xZjFLvzRxiDZ1CYSY+Wh6IxOp7411GT3BgtH0kEXb5+cg55cjPxgWAWOsU1WkrrWMl9DngeiWNwGZQCU+UkPB1WaITtA6JbFdEZPinZFWtYPMj6ZdA+ARkmwQnG6Y6sg37Zq76n8mDjLb5ECLXq22uRLaATl8lRLOaNDStg9PSxtVGON65NeesPMRFRC7+2ySQ/8KqsZZubHk7SoSY8APP+5mqzBuMbt2bnBVLmf04TI7RnVPSZ6A="
 
   ## All these variables are sent into the bin/test_travis.sh script. See this
   ## script to know how they are used. Most of them are just passed to cmake,
@@ -25,20 +25,17 @@ env:
   ## statement, so if the variable is not set, the other if branch will get
   ## executed.
   matrix:
-  ## Out of tree builds (default):
+  # Debug builds:
   - BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="2.7" TRIGGER_FEEDSTOCK="yes"
+  - BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="3.6"
 
-  ## In-tree builds (we just check a few configurations to make sure they work):
-  # Debug build with Python 2.7:
-  - BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="2.7"
-  # Release build shared lib with Python 2.7:
+  # Release builds:
   - PYTHON_VERSION="2.7" BUILD_SHARED_LIBS="yes"
-
-  # These test the setup.py file
-  - PYTHON_VERSION="2.7" WITH_MPFR="yes" INTEGER_CLASS="gmp"
+  - PYTHON_VERSION="2.7" WITH_MPFR="yes" INTEGER_CLASS="gmpxx"
   - PYTHON_VERSION="3.3" WITH_MPC="yes"
   - PYTHON_VERSION="3.4" WITH_MPFR="yes" WITH_NUMPY="yes"
-  - PYTHON_VERSION="3.5" WITH_MPFR="yes" WITH_NUMPY="yes"
+  - PYTHON_VERSION="3.5" WITH_MPC="yes" WITH_NUMPY="yes"
+  - PYTHON_VERSION="3.6" WITH_MPC="yes" WITH_NUMPY="yes"
 
 matrix:
   exclude:
@@ -81,13 +78,9 @@ matrix:
     - env: BUILD_TYPE="Release" PYTHON_VERSION="3.5"
       compiler: gcc
       os: osx
-    - env: BUILD_TYPE="Release" WITH_SAGE="yes" WITH_MPC="yes"
+    - env: BUILD_TYPE="Release" WITH_SAGE="yes" WITH_MPC="yes" PYTHON_VERSION="2.7"
       compiler: gcc
       os: linux
-      addons:
-        apt:
-          packages:
-          - lrzip
 
 install:
   - export PYTHON_SOURCE_DIR=`pwd`
@@ -100,12 +93,13 @@ install:
   - git checkout `cat ../symengine_version.txt`
   - cd ..
 
-  # Setup travis for Python wrappers
-  - source bin/install_travis.sh
-
   # Setup travis for C++ library
   - cd $SOURCE_DIR
-  - if [[ "${WITH_SAGE}" != "yes" ]]; then source bin/install_travis.sh; fi
+  - source bin/install_travis.sh
+
+  # Setup travis for Python wrappers
+  - cd $PYTHON_SOURCE_DIR
+  - source bin/install_travis.sh
 
   # Build C++ library
   - cd $SOURCE_DIR

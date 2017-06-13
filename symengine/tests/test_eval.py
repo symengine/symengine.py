@@ -3,6 +3,7 @@ from symengine import (Symbol, sin, cos, Integer, Add, I, RealDouble, ComplexDou
 
 from symengine.lib.symengine_wrapper import eval_double
 
+
 def test_eval_double1():
     x = Symbol("x")
     y = Symbol("y")
@@ -10,11 +11,13 @@ def test_eval_double1():
     e = e.subs(x, 7)
     assert abs(eval_double(e) - 1) < 1e-9
 
+
 def test_eval_double2():
     x = Symbol("x")
     y = Symbol("y")
     e = sin(x)**2 + cos(x)**2
     raises(RuntimeError, lambda: (abs(eval_double(e) - 1) < 1e-9))
+
 
 def test_n():
     x = Symbol("x")
@@ -49,9 +52,9 @@ def test_n():
         x = sqrt(Integer(2))
         raises(ValueError, lambda: (x.n(75)))
 
+
 def test_rel():
     x = Symbol("x")
     y = Symbol("y")
     ex = (x + y < x)
     assert repr(ex) == "x + y < x"
-

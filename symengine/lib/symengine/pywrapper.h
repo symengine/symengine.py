@@ -9,6 +9,38 @@
 namespace SymEngine {
 
 /*
+ * PySymbol is a subclass of Symbol that keeps a reference to a Python object.
+ * When subclassing a Symbol from Python, the information stored in subclassed
+ * object is lost because all the arithmetic and function evaluations happen on
+ * the C++ side. The object returned by `(x + 1) - 1` is wrapped in the Python
+ * class Symbol and therefore the fact that `x` is a subclass of Symbol is lost.
+ *
+ * By subclassing in the C++ side and keeping a python object reference, the
+ * subclassed python object can be returned instead of wrapping in a Python
+ * class Symbol.
+ *
+ * TODO: Python object and C++ object both keep a reference to each other as one
+ * must be alive when the other is alive. This creates a cyclic reference and
+ * should be fixed.
+*/
+
+class PySymbol : public Symbol {
+private:
+    PyObject* obj;
+public:
+    PySymbol(const std::string& name, PyObject* obj) : Symbol(name), obj(obj) {
+        Py_INCREF(obj);
+    }
+    PyObject* get_py_object() const {
+        return obj;
+    }
+    virtual ~PySymbol() {
+        // TODO: This is never called because of the cyclic reference.
+        Py_DECREF(obj);
+    }
+};
+
+/*
  * This module provides classes to wrap Python objects defined in SymPy
  * or Sage into SymEngine.
  *

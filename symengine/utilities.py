@@ -7,6 +7,8 @@ import sys
 
 
 _range = _re.compile('([0-9]*:[0-9]+|[a-zA-Z]?:[a-zA-Z])')
+
+
 def symbols(names, **args):
     """
     Transform strings into instances of :class:`Symbol` class.
@@ -95,6 +97,7 @@ def symbols(names, **args):
                 marker += 1
                 names = names.replace(lit, lit_char)
                 literals.append((lit_char, lit[1:]))
+
         def literal(s):
             if literals:
                 for c, l in literals:
@@ -215,7 +218,8 @@ def var(names, **args):
         for symbol in symbols:
             if isinstance(symbol, Basic):
                 frame.f_globals[symbol.__str__()] = symbol
-            #Once we hace an undefined function class implemented, put a check for function here
+            # Once we hace an undefined function class
+            # implemented, put a check for function here
             else:
                 traverse(symbol, frame)
 
@@ -228,14 +232,14 @@ def var(names, **args):
         if syms is not None:
             if isinstance(syms, Basic):
                 frame.f_globals[syms.__str__()] = syms
-            #Once we hace an undefined function class implemented, put a check for function here
+            # Once we hace an undefined function class
+            # implemented, put a check for function here
             else:
                 traverse(syms, frame)
     finally:
         del frame  # break cyclic dependencies as stated in inspect docs
 
     return syms
-
 
 
 try:
@@ -257,8 +261,8 @@ if not USE_PYTEST:
         manager for use in ``with`` statements; the code to execute then
         comes from the scope of the ``with``.
 
-        ``raises()`` does nothing if the callable raises the expected exception,
-        otherwise it raises an AssertionError.
+        ``raises()`` does nothing if the callable raises the expected
+        exception, otherwise it raises an AssertionError.
 
         Examples
         ========

@@ -2,6 +2,7 @@ from symengine.utilities import raises
 
 from symengine import symbols, DictBasic, sin, Integer
 
+
 def test_DictBasic():
     x, y, z = symbols("x y z")
     d = DictBasic({x: 2, y: z})
