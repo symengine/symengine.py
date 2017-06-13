@@ -144,6 +144,7 @@ cdef extern from "<symengine/symengine_rcp.h>" namespace "SymEngine":
     RCP[const Abs] rcp_static_cast_Abs "SymEngine::rcp_static_cast<const SymEngine::Abs>"(RCP[const Basic] &b) nogil
     RCP[const Max] rcp_static_cast_Max "SymEngine::rcp_static_cast<const SymEngine::Max>"(RCP[const Basic] &b) nogil
     RCP[const Min] rcp_static_cast_Min "SymEngine::rcp_static_cast<const SymEngine::Min>"(RCP[const Basic] &b) nogil
+    RCP[const Infty] rcp_static_cast_Infty "SymEngine::rcp_static_cast<const SymEngine::Infty>"(RCP[const Basic] &b) nogil
     RCP[const Gamma] rcp_static_cast_Gamma "SymEngine::rcp_static_cast<const SymEngine::Gamma>"(RCP[const Basic] &b) nogil
     RCP[const Derivative] rcp_static_cast_Derivative "SymEngine::rcp_static_cast<const SymEngine::Derivative>"(RCP[const Basic] &b) nogil
     RCP[const Subs] rcp_static_cast_Subs "SymEngine::rcp_static_cast<const SymEngine::Subs>"(RCP[const Basic] &b) nogil
@@ -226,6 +227,8 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_Complex "SymEngine::is_a<SymEngine::Complex>"(const Basic &b) nogil
     bool is_a_Symbol "SymEngine::is_a<SymEngine::Symbol>"(const Basic &b) nogil
     bool is_a_Constant "SymEngine::is_a<SymEngine::Constant>"(const Basic &b) nogil
+    bool is_a_Infty "SymEngine::is_a<SymEngine::Infty>"(const Basic &b) nogil
+    bool is_a_NaN "SymEngine::is_a<SymEngine::NaN>"(const Basic &b) nogil
     bool is_a_Sin "SymEngine::is_a<SymEngine::Sin>"(const Basic &b) nogil
     bool is_a_Cos "SymEngine::is_a<SymEngine::Cos>"(const Basic &b) nogil
     bool is_a_Tan "SymEngine::is_a<SymEngine::Tan>"(const Basic &b) nogil
@@ -348,7 +351,17 @@ cdef extern from "<symengine/constants.h>" namespace "SymEngine":
     RCP[const Basic] I
     RCP[const Basic] E
     RCP[const Basic] pi
+    RCP[const Basic] Inf
+    RCP[const Basic] ComplexInf
+    RCP[const Basic] Nan
+  
+cdef extern from "<symengine/infinity.h>" namespace "SymEngine":
+    cdef cppclass Infty(Number):
+        pass
 
+cdef extern from "<symengine/nan.h>" namespace "SymEngine":
+    cdef cppclass NaN(Number):
+        pass
 
 cdef extern from "<symengine/add.h>" namespace "SymEngine":
     cdef RCP[const Basic] add(RCP[const Basic] &a, RCP[const Basic] &b) nogil except+
@@ -392,6 +405,8 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     RCP[const Basic] make_rcp_Symbol "SymEngine::make_rcp<const SymEngine::Symbol>"(string name) nogil
     RCP[const Basic] make_rcp_PySymbol "SymEngine::make_rcp<const SymEngine::PySymbol>"(string name, PyObject * pyobj) nogil
     RCP[const Basic] make_rcp_Constant "SymEngine::make_rcp<const SymEngine::Constant>"(string name) nogil
+    RCP[const Basic] make_rcp_Infty "SymEngine::make_rcp<const SymEngine::Infty>"(RCP[const Number] i) nogil
+    RCP[const Basic] make_rcp_NaN "SymEngine::make_rcp<const SymEngine::NaN>"() nogil
     RCP[const Basic] make_rcp_Integer "SymEngine::make_rcp<const SymEngine::Integer>"(int i) nogil
     RCP[const Basic] make_rcp_Integer "SymEngine::make_rcp<const SymEngine::Integer>"(integer_class i) nogil
     RCP[const Basic] make_rcp_Subs "SymEngine::make_rcp<const SymEngine::Subs>"(RCP[const Basic] arg, const map_basic_basic &x) nogil

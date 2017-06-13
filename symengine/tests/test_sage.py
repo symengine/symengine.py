@@ -1,5 +1,5 @@
-from symengine import (Integer, symbols, sin, cos, pi, E, I, Add,
-    function_symbol, DenseMatrix, sympify, log)
+from symengine import (Integer, symbols, sin, cos, pi, E, I, oo, zoo,
+    nan, Add, function_symbol, DenseMatrix, sympify, log)
 from symengine.lib.symengine_wrapper import (PyNumber, PyFunction,
     sage_module, wrap_sage_function)
 
@@ -72,9 +72,15 @@ def test_sage_conversions():
     assert pi._sage_() == sage.pi
     assert E._sage_() == sage.e
     assert I._sage_() == sage.I
+    assert oo._sage_() == sage.oo
+    assert zoo._sage_() == sage.unsigned_infinity
+    assert nan._sage_() == sage.NaN
 
     assert pi == sympify(sage.pi)
     assert E == sympify(sage.e)
+    assert oo == sympify(sage.oo)
+    assert zoo == sympify(sage.unsigned_infinity)
+    assert nan == sympify(sage.NaN)
 
     # SympyConverter does not support converting the following
     # assert I == sympify(sage.I)

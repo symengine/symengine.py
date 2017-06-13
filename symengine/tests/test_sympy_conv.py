@@ -1,8 +1,8 @@
 from symengine import (Symbol, Integer, sympify, SympifyError, log,
-        function_symbol, I, E, pi, exp, gamma, have_mpfr, have_mpc,
-        DenseMatrix, sin, cos, tan, cot, csc, sec, asin, acos, atan,
-        acot, acsc, asec, sinh, cosh, tanh, coth, asinh, acosh, atanh,
-        acoth, Add, Mul, Pow, diff)
+        function_symbol, I, E, pi, oo, zoo, nan, exp, gamma, have_mpfr,
+        have_mpc, DenseMatrix, sin, cos, tan, cot, csc, sec, asin, acos,
+        atan, acot, acsc, asec, sinh, cosh, tanh, coth, asinh, acosh,
+        atanh, acoth, Add, Mul, Pow, diff)
 from symengine.lib.symengine_wrapper import (Subs, Derivative, RealMPFR,
         ComplexMPC, PyNumber, Function)
 import sympy
@@ -369,6 +369,15 @@ def test_constants():
 
     assert sympify(sympy.pi) == pi
     assert sympy.pi == pi._sympy_()
+
+    assert sympify(sympy.oo) == oo
+    assert sympy.oo == oo._sympy_()
+
+    assert sympify(sympy.zoo) == zoo
+    assert sympy.zoo == zoo._sympy_()
+
+    assert sympify(sympy.nan) == nan
+    assert sympy.nan == nan._sympy_()
 
 
 def test_abs():

@@ -40,6 +40,15 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = Basic.__new__(Symbol)
     elif (symengine.is_a_Constant(deref(o))):
         r = Constant.__new__(Constant)
+    elif (symengine.is_a_Infty(deref(o))):
+        if (deref(symengine.rcp_static_cast_Infty(o)).is_positive()):
+            r = Number.__new__(Infinity)
+        elif (deref(symengine.rcp_static_cast_Infty(o)).is_negative()):
+            r = Number.__new__(NegativeInfinity)
+        else:
+            r = Number.__new__(ComplexInfinity)
+    elif (symengine.is_a_NaN(deref(o))):
+        r = Number.__new__(NaN)
     elif (symengine.is_a_PyFunction(deref(o))):
         r = PyFunction.__new__(PyFunction)
     elif (symengine.is_a_FunctionSymbol(deref(o))):
@@ -160,6 +169,14 @@ def sympy2symengine(a, raise_error=False):
         return E
     elif a is sympy.pi:
         return pi
+    elif a is sympy.S.NegativeInfinity:
+        return -oo
+    elif a is sympy.S.Infinity:
+        return oo
+    elif a is sympy.S.ComplexInfinity:
+        return zoo
+    elif a is sympy.nan:
+        return nan
     elif isinstance(a, sympy.functions.elementary.trigonometric.TrigonometricFunction):
         if isinstance(a, sympy.sin):
             return sin(a.args[0])
@@ -1160,6 +1177,58 @@ cdef class Complex(Number):
     def _sage_(self):
         import sage.all as sage
         return self.real_part()._sage_() + sage.I * self.imaginary_part()._sage_()
+
+class Infinity(Number):
+
+    def __new__(cls):
+        return oo
+
+    def _sympy_(self):
+        import sympy
+        return sympy.oo
+
+    def _sage_(self):
+        import sage.all as sage
+        return sage.oo
+
+class NegativeInfinity(Number):
+
+    def __new__(cls):
+        return -oo
+
+    def _sympy_(self):
+        import sympy
+        return -sympy.oo
+
+    def _sage_(self):
+        import sage.all as sage
+        return -sage.oo
+
+class ComplexInfinity(Number):
+
+    def __new__(cls):
+        return zoo
+
+    def _sympy_(self):
+        import sympy
+        return sympy.zoo
+
+    def _sage_(self):
+        import sage.all as sage
+        return sage.unsigned_infinity
+
+class NaN(Number):
+
+    def __new__(cls):
+        return nan
+
+    def _sympy_(self):
+        import sympy
+        return sympy.nan
+
+    def _sage_(self):
+        import sage.all as sage
+        return sage.NaN
 
 class Add(Basic):
 
@@ -2456,10 +2525,13 @@ cdef class Sieve_iterator:
 I = c2py(symengine.I)
 E = c2py(symengine.E)
 pi = c2py(symengine.pi)
+oo = c2py(symengine.Inf)
+zoo = c2py(symengine.ComplexInf)
+nan = c2py(symengine.Nan)
 
 def module_cleanup():
-    global I, E, pi, sympy_module, sage_module
-    del I, E, pi, sympy_module, sage_module
+    global I, E, pi, oo, zoo, nan, sympy_module, sage_module
+    del I, E, pi, oo, zoo, nan, sympy_module, sage_module
 
 import atexit
 atexit.register(module_cleanup)
