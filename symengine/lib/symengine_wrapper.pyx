@@ -389,8 +389,8 @@ cdef class _DictBasic(object):
                 self.add(key, value)
 
     def add(self, key, value):
-        cdef Basic K = _sympify(key)
-        cdef Basic V = _sympify(value)
+        cdef Basic K = sympify(key)
+        cdef Basic V = sympify(value)
         cdef symengine.std_pair_rcp_const_basic_rcp_const_basic pair
         pair.first = K.thisptr
         pair.second = V.thisptr
@@ -405,7 +405,7 @@ cdef class _DictBasic(object):
         return self.c.size()
 
     def __getitem__(self, key):
-        cdef Basic K = _sympify(key)
+        cdef Basic K = sympify(key)
         it = self.c.find(K.thisptr)
         if it == self.c.end():
             raise KeyError(key)
@@ -413,19 +413,19 @@ cdef class _DictBasic(object):
             return c2py(deref(it).second)
 
     def __setitem__(self, key, value):
-        cdef Basic K = _sympify(key)
-        cdef Basic V = _sympify(value)
+        cdef Basic K = sympify(key)
+        cdef Basic V = sympify(value)
         self.c[K.thisptr] = V.thisptr
 
     def clear(self):
         self.clear()
 
     def __delitem__(self, key):
-        cdef Basic K = _sympify(key)
+        cdef Basic K = sympify(key)
         self.c.erase(K.thisptr)
 
     def __contains__(self, key):
-        cdef Basic K = _sympify(key)
+        cdef Basic K = sympify(key)
         it = self.c.find(K.thisptr)
         return it != self.c.end()
 
@@ -3392,6 +3392,10 @@ def has_symbol(obj, symbol=None):
     else:
         return symengine.has_symbol(deref(b.thisptr),
                 deref(symengine.rcp_static_cast_Symbol(s.thisptr)))
+
+def ccode(expr):
+    cdef Basic expr_ = sympify(expr)
+    return symengine.ccode(deref(expr_.thisptr)).decode("utf-8")
 
 # Turn on nice stacktraces:
 symengine.print_stack_on_segfault()
