@@ -1,4 +1,4 @@
-from symengine.lib.symengine_wrapper import ccode, _sympify, Basic
+from symengine.lib.symengine_wrapper import ccode, sympify, Basic
 
 class CCodePrinter:
 
@@ -7,7 +7,7 @@ class CCodePrinter:
             raise TypeError("{0} cannot assign to object of type {1}".format(
                     type(self).__name__, type(assign_to)))
 
-        expr = _sympify(expr)
+        expr = sympify(expr)
         if not assign_to:
             if expr.is_Matrix:
                 raise RuntimeError("Matrices need a assign_to parameter")
