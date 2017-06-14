@@ -7,6 +7,11 @@
 
 namespace SymEngine {
 
+int PyGILState_Check2(void) {
+    PyThreadState * tstate = _PyThreadState_Current;
+    return tstate && (tstate == PyGILState_GetThisThreadState());
+}
+
 // PyModule
 PyModule::PyModule(PyObject* (*to_py)(const RCP<const Basic>), RCP<const Basic> (*from_py)(PyObject*),
                    RCP<const Number> (*eval)(PyObject*, long), RCP<const Basic> (*diff)(PyObject*, RCP<const Basic>)) :
@@ -19,7 +24,7 @@ PyModule::PyModule(PyObject* (*to_py)(const RCP<const Basic>), RCP<const Basic> 
 PyModule::~PyModule(){
     Py_DECREF(zero);
     Py_DECREF(one);
-    Py_DECREF(minus_one);
+    Py_DECREF(minus_one);   
 }
 
 // PyNumber
@@ -37,8 +42,14 @@ bool PyNumber::__eq__(const Basic &o) const {
 }
 
 int PyNumber::compare(const Basic &o) const {
+    if (not PyGILState_Check2()){
+        PyEval_AcquireLock();
+    }
     SYMENGINE_ASSERT(is_a<PyNumber>(o))
     PyObject* o1 = static_cast<const PyNumber &>(o).get_py_object();
+    if (PyGILState_Check2()){
+        PyEval_ReleaseLock();
+    }
     if (PyObject_RichCompareBool(pyobject_, o1, Py_EQ) == 1)
         return 0;
     return PyObject_RichCompareBool(pyobject_, o1, Py_LT) == 1 ? -1 : 1;
@@ -70,6 +81,9 @@ bool PyNumber::is_complex() const {
 
 //! Addition
 RCP<const Number> PyNumber::add(const Number &other) const {
+    if (not PyGILState_Check2()){
+        PyEval_AcquireLock();
+    }
     PyObject *other_p, *result;
     if (is_a<PyNumber>(other)) {
         other_p = static_cast<const PyNumber &>(other).pyobject_;
@@ -78,11 +92,17 @@ RCP<const Number> PyNumber::add(const Number &other) const {
         other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
         result = PyNumber_Add(pyobject_, other_p);
         Py_XDECREF(other_p);
+    }
+    if (PyGILState_Check2()){
+        PyEval_ReleaseLock();
     }
     return make_rcp<PyNumber>(result, pymodule_);
 }
 //! Subtraction
 RCP<const Number> PyNumber::sub(const Number &other) const {
+    if (not PyGILState_Check2()){
+        PyEval_AcquireLock();
+    }
     PyObject *other_p, *result;
     if (is_a<PyNumber>(other)) {
         other_p = static_cast<const PyNumber &>(other).pyobject_;
@@ -92,9 +112,15 @@ RCP<const Number> PyNumber::sub(const Number &other) const {
         result = PyNumber_Subtract(pyobject_, other_p);
         Py_XDECREF(other_p);
     }
+    if (PyGILState_Check2()){
+        PyEval_ReleaseLock();
+    }
     return make_rcp<PyNumber>(result, pymodule_);
 }
 RCP<const Number> PyNumber::rsub(const Number &other) const {
+    if (not PyGILState_Check2()){
+        PyEval_AcquireLock();
+    }
     PyObject *other_p, *result;
     if (is_a<PyNumber>(other)) {
         other_p = static_cast<const PyNumber &>(other).pyobject_;
@@ -103,11 +129,17 @@ RCP<const Number> PyNumber::rsub(const Number &other) const {
         other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
         result = PyNumber_Subtract(other_p, pyobject_);
         Py_XDECREF(other_p);
+    }
+    if (PyGILState_Check2()){
+        PyEval_ReleaseLock();
     }
     return make_rcp<PyNumber>(result, pymodule_);
 }
 //! Multiplication
 RCP<const Number> PyNumber::mul(const Number &other) const {
+    if (not PyGILState_Check2()){
+        PyEval_AcquireLock();
+    }
     PyObject *other_p, *result;
     if (is_a<PyNumber>(other)) {
         other_p = static_cast<const PyNumber &>(other).pyobject_;
@@ -116,11 +148,17 @@ RCP<const Number> PyNumber::mul(const Number &other) const {
         other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
         result = PyNumber_Multiply(pyobject_, other_p);
         Py_XDECREF(other_p);
+    }
+    if (PyGILState_Check2()){
+        PyEval_ReleaseLock();
     }
     return make_rcp<PyNumber>(result, pymodule_);
 }
 //! Division
 RCP<const Number> PyNumber::div(const Number &other) const {
+    if (not PyGILState_Check2()){
+        PyEval_AcquireLock();
+    }
     PyObject *other_p, *result;
     if (is_a<PyNumber>(other)) {
         other_p = static_cast<const PyNumber &>(other).pyobject_;
@@ -130,9 +168,15 @@ RCP<const Number> PyNumber::div(const Number &other) const {
         result = PyNumber_Divide(pyobject_, other_p);
         Py_XDECREF(other_p);
     }
+    if (PyGILState_Check2()){
+        PyEval_ReleaseLock();
+    }
     return make_rcp<PyNumber>(result, pymodule_);
 }
 RCP<const Number> PyNumber::rdiv(const Number &other) const {
+    if (not PyGILState_Check2()){
+        PyEval_AcquireLock();
+    }
     PyObject *other_p, *result;
     if (is_a<PyNumber>(other)) {
         other_p = static_cast<const PyNumber &>(other).pyobject_;
@@ -141,11 +185,17 @@ RCP<const Number> PyNumber::rdiv(const Number &other) const {
         other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
         result = PyNumber_Divide(pyobject_, other_p);
         Py_XDECREF(other_p);
+    }
+    if (PyGILState_Check2()){
+        PyEval_ReleaseLock();
     }
     return make_rcp<PyNumber>(result, pymodule_);
 }
 //! Power
 RCP<const Number> PyNumber::pow(const Number &other) const {
+    if (not PyGILState_Check2()){
+        PyEval_AcquireLock();
+    }
     PyObject *other_p, *result;
     if (is_a<PyNumber>(other)) {
         other_p = static_cast<const PyNumber &>(other).pyobject_;
@@ -155,9 +205,15 @@ RCP<const Number> PyNumber::pow(const Number &other) const {
         result = PyNumber_Power(pyobject_, other_p, Py_None);
         Py_XDECREF(other_p);
     }
+    if (PyGILState_Check2()){
+        PyEval_ReleaseLock();
+    }
     return make_rcp<PyNumber>(result, pymodule_);
 }
 RCP<const Number> PyNumber::rpow(const Number &other) const {
+    if (not PyGILState_Check2()){
+        PyEval_AcquireLock();
+    }
     PyObject *other_p, *result;
     if (is_a<PyNumber>(other)) {
         other_p = static_cast<const PyNumber &>(other).pyobject_;
@@ -166,6 +222,9 @@ RCP<const Number> PyNumber::rpow(const Number &other) const {
         other_p = pymodule_->to_py_(other.rcp_from_this_cast<const Basic>());
         result = PyNumber_Power(other_p, pyobject_, Py_None);
         Py_XDECREF(other_p);
+    }
+    if (PyGILState_Check2()){
+        PyEval_ReleaseLock();
     }
     return make_rcp<PyNumber>(result, pymodule_);
 }
@@ -175,6 +234,9 @@ RCP<const Number> PyNumber::eval(long bits) const {
 }
 
 std::string PyNumber::__str__() const {
+    if (not PyGILState_Check2()){
+        PyEval_AcquireLock();
+    }
     PyObject* temp;
     std::string str;
 #if PY_MAJOR_VERSION > 2
@@ -185,6 +247,9 @@ std::string PyNumber::__str__() const {
     str = std::string(PyString_AsString(temp));
 #endif
     Py_XDECREF(temp);
+    if (PyGILState_Check2()){
+        PyEval_ReleaseLock();
+    }
     return str;
 }
 
@@ -196,12 +261,18 @@ PyFunctionClass::PyFunctionClass(PyObject *pyobject, std::string name, const RCP
 }
 
 PyObject* PyFunctionClass::call(const vec_basic &vec) const {
+    if (not PyGILState_Check2()){
+        PyEval_AcquireLock();
+    }
     PyObject *tuple = PyTuple_New(vec.size());
     for (unsigned i = 0; i < vec.size(); i++) {
         PyTuple_SetItem(tuple, i, pymodule_->to_py_(vec[i]));
     }
     PyObject* result = PyObject_CallObject(pyobject_, tuple);
     Py_DECREF(tuple);
+    if (PyGILState_Check2()){
+        PyEval_ReleaseLock();
+    }
     return result;
 }
 
@@ -240,9 +311,15 @@ RCP<const PyFunctionClass> PyFunction::get_pyfunction_class() const {
 }
 
 RCP<const Basic> PyFunction::create(const vec_basic &x) const {
+    if (not PyGILState_Check2()){
+        PyEval_AcquireLock();
+    }
     PyObject* pyobj = pyfunction_class_->call(x);
     RCP<const Basic> result = pyfunction_class_->get_py_module()->from_py_(pyobj);
     Py_XDECREF(pyobj);
+    if (PyGILState_Check2()){
+        PyEval_ReleaseLock();
+    }
     return result;
 }
 
