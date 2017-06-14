@@ -18,17 +18,20 @@ lbm_se_llvm = se.Lambdify(args, exprs, backend='llvm')
 
 inp = np.ones(28)
 
+lmb_sp(*inp)
 tim_sympy = clock()
 for i in range(500):
     res_sympy = lmb_sp(*inp)
 tim_sympy = clock() - tim_sympy
 
+lbm_se(inp)
 tim_se = clock()
 res_se = np.empty(len(exprs))
 for i in range(500):
     res_se = lbm_se(inp)
 tim_se = clock() - tim_se
 
+lbm_se_llvm(inp)
 tim_se_llvm = clock()
 res_se_llvm = np.empty(len(exprs))
 for i in range(500):
@@ -62,6 +65,7 @@ def ManualLLVM(inputs, *outputs):
     return func
 
 lbm_se_llvm_manual = ManualLLVM(args, np.array(exprs))
+lbm_se_llvm_manual(inp)
 tim_se_llvm_manual = clock()
 res_se_llvm_manual = np.empty(len(exprs))
 for i in range(500):
@@ -72,3 +76,16 @@ print('symengine (ManualLLVM)    speed-up factor (higher is better) vs sympy: %1
 
 if tim_se_llvm_manual < tim_se_llvm:
     warnings.warn("Cython code for Lambdify.__call__ is slow.")
+
+import setuptools
+import pyximport
+pyximport.install()
+from Lambdify_reference import _benchmark_reference_for_Lambdify as lmb_ref
+
+lmb_ref(inp)
+tim_ref = clock()
+for i in range(500):
+    res_ref = lmb_ref(inp)
+tim_ref = clock() - tim_ref
+print('Hard-coded Cython code    speed-up factor (higher is better) vs sympy: %12.5g' %
+      (tim_sympy/tim_ref))

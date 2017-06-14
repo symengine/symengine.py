@@ -183,9 +183,9 @@ def test_array_out_no_numpy():
     if sys.version_info[0] < 3:
         return  # requires Py3
     args, exprs, inp, check = _get_array()
-    lmb = se.Lambdify(args, exprs)
+    lmb = se.Lambdify(args, exprs, use_numpy=False)
     out1 = array.array('d', [0]*len(exprs))
-    out2 = lmb(inp, out1, use_numpy=False)
+    out2 = lmb(inp, out1)
     # Ensure buffer points to still data point:
     assert out1.buffer_info() == out2.buffer_info()
     assert out1 is out2
@@ -198,10 +198,10 @@ def test_array_out_no_numpy():
 
 def test_memview_out():
     args, exprs, inp, check = _get_array()
-    lmb = se.Lambdify(args, exprs)
-    cy_arr1 = lmb(inp, use_numpy=False)
+    lmb = se.Lambdify(args, exprs, use_numpy=False)
+    cy_arr1 = lmb(inp)
     check(cy_arr1)
-    cy_arr2 = lmb(inp, cy_arr1, use_numpy=False)
+    cy_arr2 = lmb(inp, cy_arr1)
     check(cy_arr2)
     assert cy_arr2[0] != -1
     cy_arr1[0] = -1
@@ -249,8 +249,8 @@ def _get_cse_exprs():
 def test_cse_list_input():
     args, exprs, inp, ref = _get_cse_exprs()
     lmb = se.LambdifyCSE(args, exprs, concatenate=lambda tup:
-                         tup[0]+list(tup[1]))
-    out = lmb(inp, use_numpy=False)
+                         tup[0]+list(tup[1]), use_numpy=False)
+    out = lmb(inp)
     assert allclose(out, ref)
 
 
@@ -258,8 +258,8 @@ def test_cse_array_input():
     args, exprs, inp, ref = _get_cse_exprs()
     inp = array.array('d', inp)
     lmb = se.LambdifyCSE(args, exprs, concatenate=lambda tup:
-                         tup[0]+array.array('d', tup[1]))
-    out = lmb(inp, use_numpy=False)
+                         tup[0]+array.array('d', tup[1]), use_numpy=False)
+    out = lmb(inp)
     assert allclose(out, ref)
 
 
@@ -299,12 +299,12 @@ def test_broadcast_fortran():
         check(A[i, ...], inp[i, :])
 
 
-def _get_1_to_2by3_matrix():
+def _get_1_to_2by3_matrix(use_numpy=None):
     x = se.symbols('x')
     args = x,
     exprs = se.DenseMatrix(2, 3, [x+1, x+2, x+3,
                                   1/x, 1/(x*x), 1/(x**3.0)])
-    L = se.Lambdify(args, exprs)
+    L = se.Lambdify(args, exprs, use_numpy=use_numpy)
 
     def check(A, inp):
         X, = inp
@@ -318,9 +318,9 @@ def _get_1_to_2by3_matrix():
 
 
 def _test_2dim_Matrix(use_numpy):
-    L, check = _get_1_to_2by3_matrix()
+    L, check = _get_1_to_2by3_matrix(use_numpy=use_numpy)
     inp = [7]
-    check(L(inp, use_numpy=use_numpy), inp)
+    check(L(inp), inp)
 
 
 def test_2dim_Matrix():
@@ -335,9 +335,9 @@ def test_2dim_Matrix_numpy():
 
 
 def _test_2dim_Matrix_broadcast(use_numpy):
-    L, check = _get_1_to_2by3_matrix()
+    L, check = _get_1_to_2by3_matrix(use_numpy=use_numpy)
     inp = range(1, 5)
-    out = L(inp, use_numpy=use_numpy)
+    out = L(inp)
     for i in range(len(inp)):
         check(out[i, ...], (inp[i],))
 
@@ -443,10 +443,10 @@ def ravelled(A):
         return L
 
 
-def _get_2_to_2by2_list(real=True):
+def _get_2_to_2by2_list(real=True, use_numpy=None):
     args = x, y = se.symbols('x y')
     exprs = [[x + y*y, y*y], [x*y*y, se.sqrt(x)+y*y]]
-    L = se.Lambdify(args, exprs, real=real)
+    L = se.Lambdify(args, exprs, real=real, use_numpy=use_numpy)
 
     def check(A, inp):
         X, Y = inp
@@ -461,9 +461,9 @@ def _get_2_to_2by2_list(real=True):
 
 
 def test_2_to_2by2_list():
-    L, check = _get_2_to_2by2_list()
+    L, check = _get_2_to_2by2_list(use_numpy=False)
     inp = [13, 17]
-    A = L(inp, use_numpy=False)
+    A = L(inp)
     check(A, inp)
 
 
@@ -471,9 +471,9 @@ def test_2_to_2by2_list():
 def test_2_to_2by2_numpy():
     if not HAVE_NUMPY:  # nosetests work-around
         return
-    L, check = _get_2_to_2by2_list()
+    L, check = _get_2_to_2by2_list(use_numpy=True)
     inp = [13, 17]
-    A = L(inp, use_numpy=True)
+    A = L(inp)
     check(A, inp)
 
 
@@ -502,9 +502,9 @@ def test_unsafe_complex():
 
 def test_itertools_chain():
     args, exprs, inp, check = _get_array()
-    L = se.Lambdify(args, exprs)
+    L = se.Lambdify(args, exprs, use_numpy=False)
     inp = itertools.chain([inp[0]], (inp[1],), [inp[2]])
-    A = L(inp, use_numpy=False)
+    A = L(inp)
     check(A)
 
 
