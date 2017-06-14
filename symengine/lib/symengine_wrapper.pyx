@@ -6,6 +6,7 @@ from libcpp.string cimport string
 from libcpp.vector cimport vector
 from cpython cimport PyObject, Py_XINCREF, Py_XDECREF, \
     PyObject_CallMethodObjArgs
+from libc.stdlib cimport malloc, free
 from libc.string cimport memcpy
 import cython
 import itertools
@@ -2118,7 +2119,7 @@ cdef class DenseMatrixBase(MatrixBase):
             return self.nrows()*self.ncols()
 
     def ravel(self):
-        return [self.get(i, j) for i in range(self.nrows()) for j in range(self.ncols())]
+        return [self._get(i, j) for i in range(self.nrows()) for j in range(self.ncols())]
 
     def reshape(self, rows, cols):
         if len(self) != rows*cols:
@@ -3110,7 +3111,8 @@ cdef class _Lambdify(object):
     """
     cdef size_t args_size, tot_out_size
     cdef list out_shapes
-    cdef vector[int] out_sizes, accum_out_sizes
+    cdef int *out_sizes
+    cdef int *accum_out_sizes
     cdef readonly bool real
     cdef readonly int n_exprs
 
@@ -3119,9 +3121,20 @@ cdef class _Lambdify(object):
         self.out_shapes = [get_shape(expr) for expr in exprs]
         self.n_exprs = len(exprs)
         self.args_size = _size(args)
-        self.out_sizes = [reduce(mul, shape or (1,)) for shape in self.out_shapes]
-        self.accum_out_sizes = [sum(self.out_sizes[:i]) for i in range(self.n_exprs + 1)]
-        self.tot_out_size = sum(self.out_sizes)
+        self.out_sizes = <int *>malloc(sizeof(int)*self.n_exprs)
+        self.accum_out_sizes = <int *>malloc(sizeof(int)*(self.n_exprs+1))
+        self.tot_out_size = 0
+        for idx, shape in enumerate(self.out_shapes):
+            self.out_sizes[idx] = reduce(mul, shape or (1,))
+            self.tot_out_size += self.out_sizes[idx]
+        for i in range(self.n_exprs + 1):
+            self.accum_out_sizes[i] = 0
+            for j in range(i):
+                self.accum_out_sizes[i] += self.out_sizes[j]
+
+    def __dealloc__(self):
+        free(self.out_sizes)
+        free(self.accum_out_sizes)
 
     def __init__(self, args, *exprs, bool real=True):
         cdef:
@@ -3221,7 +3234,7 @@ cdef class _Lambdify(object):
         if nbroadcast > 1 and self.args_size == 1 and inp_shape[-1] != 1:  # Implicit reshape
             inp_shape = inp_shape + (1,)
         new_out_shapes = [inp_shape[:-1] + out_shape for out_shape in self.out_shapes]
-        new_out_sizes = [nbroadcast*out_size for out_size in self.out_sizes]
+        new_out_sizes = [nbroadcast*self.out_sizes[i] for i in range(self.n_exprs)]
         new_tot_out_size = nbroadcast * self.tot_out_size
         if use_numpy is None:
             try:
