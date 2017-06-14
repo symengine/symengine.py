@@ -2117,6 +2117,9 @@ cdef class DenseMatrixBase(MatrixBase):
         def __get__(self):
             return self.nrows()*self.ncols()
 
+    def ravel(self):
+        return [self.get(i, j) for i in range(self.nrows()) for j in range(self.ncols())]
+
     def reshape(self, rows, cols):
         if len(self) != rows*cols:
             raise ValueError("Invalid reshape parameters %d %d" % (rows, cols))
@@ -2132,9 +2135,9 @@ cdef class DenseMatrixBase(MatrixBase):
         if j < 0:
             j += nc
         if i < 0 or i >= nr:
-            raise IndexError
+            raise IndexError("Row index out of bounds: %d" % i)
         if j < 0 or j >= nc:
-            raise IndexError
+            raise IndexError("Column index out of bounds: %d" % j)
         return i, j
 
     def get(self, i, j):
@@ -3140,19 +3143,20 @@ cdef class _Lambdify(object):
                 e_ = _sympify(e)
                 args_.push_back(e_.thisptr)
 
-        if isinstance(exprs, DenseMatrixBase):
-            nr = exprs.nrows()
-            nc = exprs.ncols()
-            mtx = (<DenseMatrixBase>exprs).thisptr
-            for ri in range(nr):
-                for ci in range(nc):
-                    b_ = deref(mtx).get(ri, ci)
-                    outs_.push_back(b_)
-        else:
-            for e in ravel(exprs):
-                e_ = _sympify(e)
-                outs_.push_back(e_.thisptr)
 
+        for curr_expr in exprs:
+            if isinstance(curr_expr, DenseMatrixBase):
+                nr = curr_expr.nrows()
+                nc = curr_expr.ncols()
+                mtx = (<DenseMatrixBase>curr_expr).thisptr
+                for ri in range(nr):
+                    for ci in range(nc):
+                        b_ = deref(mtx).get(ri, ci)
+                        outs_.push_back(b_)
+            else:
+                for e in ravel(curr_expr):
+                    e_ = _sympify(e)
+                    outs_.push_back(e_.thisptr)
         self._init(args_, outs_)
 
     cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_):
@@ -3391,7 +3395,8 @@ def LambdifyCSE(args, *exprs, real=True, cse=None, concatenate=None):
     if concatenate is None:
         from numpy import concatenate
     from sympy import sympify as s_sympify
-    subs, new_exprs = cse([s_sympify(expr) for expr in exprs])
+    flat_exprs = list(itertools.chain(*map(ravel, exprs)))
+    subs, flat_new_exprs = cse([s_sympify(expr) for expr in flat_exprs])
     if subs:
         cse_symbs, cse_exprs = zip(*subs)
         new_exprs = []

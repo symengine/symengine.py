@@ -50,6 +50,19 @@ def test_get_shape():
     assert get_shape([[1], [1], [1]]) == (3, 1)
     assert get_shape([[1, 1, 1]]) == (1, 3)
 
+    x = se.symbols('x')
+    exprs = [x+1, x+2, x+3, 1/x, 1/(x*x), 1/(x**3.0)]
+    A = se.DenseMatrix(2, 3, exprs)
+    assert get_shape(A) == (2, 3)
+
+
+def test_ravel():
+    x = se.symbols('x')
+    ravel = se.lib.symengine_wrapper.ravel
+    exprs = [x+1, x+2, x+3, 1/x, 1/(x*x), 1/(x**3.0)]
+    A = se.DenseMatrix(2, 3, exprs)
+    assert ravel(A) == exprs
+
 
 def test_Lambdify():
     n = 7
