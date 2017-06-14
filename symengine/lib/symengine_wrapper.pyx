@@ -3386,7 +3386,7 @@ def Lambdify(args, *exprs, bool real=True, backend="lambda"):
     return LambdaDouble(args, *exprs, real=real)
 
 
-def LambdifyCSE(args, *exprs, real=True, cse=None, concatenate=None):
+def LambdifyCSE(args, *exprs, cse=None, concatenate=None, **kwargs):
     """
     Analogous with Lambdify but performs common subexpression elimination
     internally. See docstring of Lambdify.
@@ -3395,13 +3395,14 @@ def LambdifyCSE(args, *exprs, real=True, cse=None, concatenate=None):
     ----------
     args: iterable of symbols
     exprs: iterable of expressions (with symbols from args)
-    real: bool (default: True)
     cse: callback (default: None)
         defaults to sympy.cse (see SymPy documentation)
     concatenate: callback (default: numpy.concatenate)
         Examples when not using numpy:
         ``lambda tup: tup[0]+list(tup[1])``
         ``lambda tup: tup[0]+array.array('d', tup[1])``
+    \*\*kwargs: Keyword arguments passed onto Lambdify
+
     """
     if cse is None:
         from sympy import cse
@@ -3424,16 +3425,16 @@ def LambdifyCSE(args, *exprs, real=True, cse=None, concatenate=None):
             else:
                 raise NotImplementedError("n-dimensional output not yet supported.")
             n_taken += size
-        lmb = Lambdify(tuple(args) + cse_symbs, *new_exprs, real=real)
-        cse_lambda = Lambdify(args, cse_exprs, real=real)
-        def cb(inp, out=None, **kwargs):
-            cse_vals = cse_lambda(inp, **kwargs)
+        lmb = Lambdify(tuple(args) + cse_symbs, *new_exprs, **kwargs)
+        cse_lambda = Lambdify(args, cse_exprs, **kwargs)
+        def cb(inp, out=None, **kw):
+            cse_vals = cse_lambda(inp, **kw)
             new_inp = concatenate((inp, cse_vals))
-            return lmb(new_inp, out, **kwargs)
+            return lmb(new_inp, out, **kw)
 
         return cb
     else:
-        return Lambdify(args, *exprs, real=real)
+        return Lambdify(args, *exprs, **kwargs)
 
 
 def has_symbol(obj, symbol=None):
