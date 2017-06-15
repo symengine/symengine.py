@@ -3085,9 +3085,11 @@ cdef class _Lambdify(object):
     cdef readonly int n_exprs
     cdef int *out_sizes
     cdef int *accum_out_sizes
+    cdef object numpy_dtype
 
     def __cinit__(self, args, *exprs, bool real=True):
         self.real = real
+        self.numpy_dtype = np.float64 if self.real else np.complex128
         self.out_shapes = [get_shape(expr) for expr in exprs]
         self.n_exprs = len(exprs)
         self.args_size = _size(args)
@@ -3189,14 +3191,13 @@ cdef class _Lambdify(object):
             cdef cnp.ndarray[cnp.float64_t, ndim=1, mode='c'] real_out
             cdef cnp.ndarray[cnp.complex128_t, ndim=1, mode='c'] cmplx_inp
             cdef cnp.ndarray[cnp.complex128_t, ndim=1, mode='c'] cmplx_out
-            size_t nbroadcast = 1
+            size_t idx, nbroadcast = 1
             long inp_size
             tuple inp_shape
-        numpy_dtype = np.float64 if self.real else np.complex128
         try:
-            inp = np.ascontiguousarray(inp, dtype=numpy_dtype)
+            inp = np.ascontiguousarray(inp, dtype=self.numpy_dtype)
         except TypeError:
-            inp = np.fromiter(inp, dtype=numpy_dtype)
+            inp = np.fromiter(inp, dtype=self.numpy_dtype)
         inp_shape = inp.shape
         if self.real:
             real_inp = inp.ravel()
@@ -3215,33 +3216,28 @@ cdef class _Lambdify(object):
         new_tot_out_size = nbroadcast * self.tot_out_size
         if out is None:
             reshape_outs = len(new_out_shapes[0]) > 1
-            out = np.empty(new_tot_out_size, dtype=numpy_dtype)
+            out = np.empty(new_tot_out_size, dtype=self.numpy_dtype)
+            if self.real:
+                real_out = out
+            else:
+                cmplx_out = out
         else:
             reshape_outs = False
             if out.size < new_tot_out_size:
                 raise ValueError("Incompatible size of output argument")
             if not (out.flags['C_CONTIGUOUS'] or out.flags['F_CONTIGUOUS']):
                 raise ValueError("Output argument needs to be C-contiguous")
-            if self.n_exprs == 1:
-                for idx, avail in enumerate(out.shape[-len(self.out_shapes[0]):]):
-                    req = self.out_shapes[0][idx-len(self.out_shapes[0])]
-                    if idx + out.ndim - len(self.out_shapes[0]) == 0:
-                        ok = avail >= req
-                    else:
-                        ok = avail == req
-                    if not ok:
-                        raise ValueError("Incompatible shape of output argument")
             if not out.flags['WRITEABLE']:
                 raise ValueError("Output argument needs to be writeable")
 
-        if self.real:
-            real_out = out.ravel()
-            if <size_t>real_out.data != out.__array_interface__['data'][0]:
-                raise ValueError("out parameter not compatible")
-        else:
-            cmplx_out = out.ravel()
-            if <size_t>cmplx_out.data != out.__array_interface__['data'][0]:
-                raise ValueError("out parameter not compatible")
+            if self.real:
+                real_out = out.ravel()
+                if <size_t>real_out.data != out.__array_interface__['data'][0]:
+                    raise ValueError("out parameter not compatible")
+            else:
+                cmplx_out = out.ravel()
+                if <size_t>cmplx_out.data != out.__array_interface__['data'][0]:
+                    raise ValueError("out parameter not compatible")
 
         for idx in range(nbroadcast):
             if self.real:

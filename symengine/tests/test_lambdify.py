@@ -153,11 +153,8 @@ def test_numpy_array_out_exceptions():
     inp_bcast = [[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]]
     lmb(np.array(inp_bcast), all_right_broadcast)
 
-    f_contig_broadcast = np.empty((4, len(exprs)), order='F')
-    raises(ValueError, lambda: (lmb(inp_bcast, f_contig_broadcast)))
-
-    improper_bcast = np.empty((4, len(exprs)+1))
-    raises(ValueError, lambda: (lmb(inp_bcast, improper_bcast)))
+    noncontig_broadcast = np.empty((4, len(exprs), 3)).transpose((1, 2, 0))
+    raises(ValueError, lambda: (lmb(inp_bcast, noncontig_broadcast)))
 
 
 # @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
