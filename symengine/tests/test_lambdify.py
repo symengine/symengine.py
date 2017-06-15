@@ -85,7 +85,7 @@ def test_Lambdify_LLVM():
                     [3*n+3, n**2, -1/(n+2), n*(n+1)*(n+2)])
 
 
-def _get_2_to_2by2_numpy():
+def _get_2_to_2by2():
     args = x, y = se.symbols('x y')
     exprs = np.array([[x+y+1.0, x*y],
                       [x/y, x**y]])
@@ -101,10 +101,10 @@ def _get_2_to_2by2_numpy():
 
 
 # @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
-def test_Lambdify_2dim_numpy():
+def test_Lambdify_2dim():
     if not HAVE_NUMPY:  # nosetests work-around
         return
-    lmb, check = _get_2_to_2by2_numpy()
+    lmb, check = _get_2_to_2by2()
     for inp in [(5, 7), np.array([5, 7]), [5.0, 7.0]]:
         A = lmb(inp)
         assert A.shape == (2, 2)
@@ -130,28 +130,9 @@ def test_array():
 
 
 # @pytest.mark.skipif(not HAVE_NUMPY, reason='requires NumPy')
-def test_array_out():
-    if not HAVE_NUMPY:  # nosetests work-around
-        return
-    if sys.version_info[0] < 3:
-        return  # requires Py3
-    args, exprs, inp, check = _get_array()
-    lmb = se.Lambdify(args, exprs)
-    out1 = array.array('d', [0]*len(exprs))
-    out2 = lmb(inp, out1)
-    # Ensure buffer points to still data point:
-    assert out1.buffer_info()[0] == out2.__array_interface__['data'][0]
-    check(out1)
-    check(out2)
-    out2[:] = -1
-    assert np.allclose(out1[:], [-1]*len(exprs))
-
-
-# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires NumPy')
 def test_numpy_array_out_exceptions():
     if not HAVE_NUMPY:  # nosetests work-around
         return
-    import numpy as np
     args, exprs, inp, check = _get_array()
     lmb = se.Lambdify(args, exprs)
 
@@ -162,50 +143,21 @@ def test_numpy_array_out_exceptions():
     raises(ValueError, lambda: (lmb(inp, too_short)))
 
     wrong_dtype = np.empty(len(exprs), dtype=int)
-    raises(TypeError, lambda: (lmb(inp, wrong_dtype)))
+    raises(ValueError, lambda: (lmb(inp, wrong_dtype)))
 
     read_only = np.empty(len(exprs))
     read_only.flags['WRITEABLE'] = False
     raises(ValueError, lambda: (lmb(inp, read_only)))
 
-    all_right_broadcast = np.empty((2, len(exprs)))
-    inp_bcast = [[1, 2, 3], [4, 5, 6]]
+    all_right_broadcast = np.empty((4, len(exprs)))
+    inp_bcast = [[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]]
     lmb(np.array(inp_bcast), all_right_broadcast)
 
-    f_contig_broadcast = np.empty((2, len(exprs)), order='F')
+    f_contig_broadcast = np.empty((4, len(exprs)), order='F')
     raises(ValueError, lambda: (lmb(inp_bcast, f_contig_broadcast)))
 
-    improper_bcast = np.empty((3, len(exprs)))
+    improper_bcast = np.empty((4, len(exprs)+1))
     raises(ValueError, lambda: (lmb(inp_bcast, improper_bcast)))
-
-
-def test_array_out_no_numpy():
-    if sys.version_info[0] < 3:
-        return  # requires Py3
-    args, exprs, inp, check = _get_array()
-    lmb = se.Lambdify(args, exprs, use_numpy=False)
-    out1 = array.array('d', [0]*len(exprs))
-    out2 = lmb(inp, out1)
-    # Ensure buffer points to still data point:
-    assert out1.buffer_info() == out2.buffer_info()
-    assert out1 is out2
-    check(out1)
-    check(out2)
-    assert out2[0] != -1
-    out1[0] = -1
-    assert out2[0] == -1
-
-
-def test_memview_out():
-    args, exprs, inp, check = _get_array()
-    lmb = se.Lambdify(args, exprs, use_numpy=False)
-    cy_arr1 = lmb(inp)
-    check(cy_arr1)
-    cy_arr2 = lmb(inp, cy_arr1)
-    check(cy_arr2)
-    assert cy_arr2[0] != -1
-    cy_arr1[0] = -1
-    assert cy_arr2[0] == -1
 
 
 # @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
@@ -246,30 +198,48 @@ def _get_cse_exprs():
     return args, exprs, inp, ref
 
 
-def test_cse_list_input():
-    args, exprs, inp, ref = _get_cse_exprs()
-    lmb = se.LambdifyCSE(args, exprs, concatenate=lambda tup:
-                         tup[0]+list(tup[1]), use_numpy=False)
-    out = lmb(inp)
-    assert allclose(out, ref)
-
-
-def test_cse_array_input():
-    args, exprs, inp, ref = _get_cse_exprs()
-    inp = array.array('d', inp)
-    lmb = se.LambdifyCSE(args, exprs, concatenate=lambda tup:
-                         tup[0]+array.array('d', tup[1]), use_numpy=False)
-    out = lmb(inp)
-    assert allclose(out, ref)
-
-
 # @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
-def test_cse_numpy():
+def test_cse():
     if not HAVE_NUMPY:  # nosetests work-around
         return
     args, exprs, inp, ref = _get_cse_exprs()
     lmb = se.LambdifyCSE(args, exprs)
     out = lmb(inp)
+    assert allclose(out, ref)
+
+def _get_cse_exprs_big():
+    # this is essentially a performance test (can be replaced by a benchmark)
+    x, p = se.symarray('x', 14), se.symarray('p', 14)
+    exp = se.exp
+    exprs = [
+        x[0] + x[1] - x[4] + 36.252574322669, x[0] - x[2] + x[3] + 21.3219379611249,
+        x[3] + x[5] - x[6] + 9.9011158998744, 2*x[3] + x[5] - x[7] + 18.190422234653,
+        3*x[3] + x[5] - x[8] + 24.8679190043357, 4*x[3] + x[5] - x[9] + 29.9336062089226,
+        -x[10] + 5*x[3] + x[5] + 28.5520551531262, 2*x[0] + x[11] - 2*x[4] - 2*x[5] + 32.4401680272417,
+        3*x[1] - x[12] + x[5] + 34.9992934135095, 4*x[1] - x[13] + x[5] + 37.0716199972041,
+        (p[0] - p[1] + 2*p[10] + 2*p[11] - p[12] - 2*p[13] + p[2] + 2*p[5] + 2*p[6] + 2*p[7] +
+         2*p[8] + 2*p[9] - exp(x[0]) + exp(x[1]) - 2*exp(x[10]) - 2*exp(x[11]) + exp(x[12]) +
+         2*exp(x[13]) - exp(x[2]) - 2*exp(x[5]) - 2*exp(x[6]) - 2*exp(x[7]) - 2*exp(x[8]) - 2*exp(x[9])),
+        (-p[0] - p[1] - 15*p[10] - 2*p[11] - 3*p[12] - 4*p[13] - 4*p[2] - 3*p[3] - 2*p[4] - 3*p[6] -
+         6*p[7] - 9*p[8] - 12*p[9] + exp(x[0]) + exp(x[1]) + 15*exp(x[10]) + 2*exp(x[11]) +
+         3*exp(x[12]) + 4*exp(x[13]) + 4*exp(x[2]) + 3*exp(x[3]) + 2*exp(x[4]) + 3*exp(x[6]) +
+         6*exp(x[7]) + 9*exp(x[8]) + 12*exp(x[9])),
+        (-5*p[10] - p[2] - p[3] - p[6] - 2*p[7] - 3*p[8] - 4*p[9] + 5*exp(x[10]) + exp(x[2]) + exp(x[3]) +
+         exp(x[6]) + 2*exp(x[7]) + 3*exp(x[8]) + 4*exp(x[9])),
+        -p[1] - 2*p[11] - 3*p[12] - 4*p[13] - p[4] + exp(x[1]) + 2*exp(x[11]) + 3*exp(x[12]) + 4*exp(x[13]) + exp(x[4]),
+        (-p[10] - 2*p[11] - p[12] - p[13] - p[5] - p[6] - p[7] - p[8] - p[9] + exp(x[10]) +
+         2*exp(x[11]) + exp(x[12]) + exp(x[13]) + exp(x[5]) + exp(x[6]) + exp(x[7]) + exp(x[8]) + exp(x[9]))
+    ]
+    return tuple(x) + tuple(p), exprs, np.ones(len(x) + len(p))
+
+
+def test_cse_big():
+    if not HAVE_NUMPY:  # nosetests work-around
+        return
+    args, exprs, inp = _get_cse_exprs_big()
+    lmb = se.LambdifyCSE(args, exprs)
+    out = lmb(inp)
+    ref = [expr.xreplace(dict(zip(args, inp))) for expr in exprs]
     assert allclose(out, ref)
 
 
@@ -279,7 +249,7 @@ def test_broadcast_c():
         return
     n = 3
     inp = np.arange(2*n).reshape((n, 2))
-    lmb, check = _get_2_to_2by2_numpy()
+    lmb, check = _get_2_to_2by2()
     A = lmb(inp)
     assert A.shape == (3, 2, 2)
     for i in range(n):
@@ -292,19 +262,19 @@ def test_broadcast_fortran():
         return
     n = 3
     inp = np.arange(2*n).reshape((n, 2), order='F')
-    lmb, check = _get_2_to_2by2_numpy()
+    lmb, check = _get_2_to_2by2()
     A = lmb(inp)
     assert A.shape == (3, 2, 2)
     for i in range(n):
         check(A[i, ...], inp[i, :])
 
 
-def _get_1_to_2by3_matrix(use_numpy=None):
+def _get_1_to_2by3_matrix():
     x = se.symbols('x')
     args = x,
     exprs = se.DenseMatrix(2, 3, [x+1, x+2, x+3,
                                   1/x, 1/(x*x), 1/(x**3.0)])
-    L = se.Lambdify(args, exprs, use_numpy=use_numpy)
+    L = se.Lambdify(args, exprs)
 
     def check(A, inp):
         X, = inp
@@ -317,40 +287,30 @@ def _get_1_to_2by3_matrix(use_numpy=None):
     return L, check
 
 
-def _test_2dim_Matrix(use_numpy):
-    L, check = _get_1_to_2by3_matrix(use_numpy=use_numpy)
+# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+def test_2dim_Matrix():
+    if not HAVE_NUMPY:  # nosetests work-around
+        return
+    L, check = _get_1_to_2by3_matrix()
     inp = [7]
     check(L(inp), inp)
 
 
-def test_2dim_Matrix():
-    _test_2dim_Matrix(False)
 
-
-# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
-def test_2dim_Matrix_numpy():
-    if not HAVE_NUMPY:  # nosetests work-around
-        return
-    _test_2dim_Matrix(True)
-
-
-def _test_2dim_Matrix_broadcast(use_numpy):
-    L, check = _get_1_to_2by3_matrix(use_numpy=use_numpy)
+def _test_2dim_Matrix_broadcast():
+    L, check = _get_1_to_2by3_matrix()
     inp = range(1, 5)
     out = L(inp)
     for i in range(len(inp)):
         check(out[i, ...], (inp[i],))
 
 
-def test_2dim_Matrix_broadcast():
-    _test_2dim_Matrix_broadcast(False)
-
 
 # @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
-def test_2dim_Matrix_broadcast_numpy():
+def test_2dim_Matrix_broadcast():
     if not HAVE_NUMPY:  # nosetests work-around
         return
-    _test_2dim_Matrix_broadcast(True)
+    _test_2dim_Matrix_broadcast()
 
 
 # @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
@@ -443,10 +403,10 @@ def ravelled(A):
         return L
 
 
-def _get_2_to_2by2_list(real=True, use_numpy=None):
+def _get_2_to_2by2_list(real=True):
     args = x, y = se.symbols('x y')
     exprs = [[x + y*y, y*y], [x*y*y, se.sqrt(x)+y*y]]
-    L = se.Lambdify(args, exprs, real=real, use_numpy=use_numpy)
+    L = se.Lambdify(args, exprs, real=real)
 
     def check(A, inp):
         X, Y = inp
@@ -460,18 +420,11 @@ def _get_2_to_2by2_list(real=True, use_numpy=None):
     return L, check
 
 
-def test_2_to_2by2_list():
-    L, check = _get_2_to_2by2_list(use_numpy=False)
-    inp = [13, 17]
-    A = L(inp)
-    check(A, inp)
-
-
 # @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
-def test_2_to_2by2_numpy():
+def test_2_to_2by2():
     if not HAVE_NUMPY:  # nosetests work-around
         return
-    L, check = _get_2_to_2by2_list(use_numpy=True)
+    L, check = _get_2_to_2by2_list()
     inp = [13, 17]
     A = L(inp)
     check(A, inp)
@@ -502,7 +455,7 @@ def test_unsafe_complex():
 
 def test_itertools_chain():
     args, exprs, inp, check = _get_array()
-    L = se.Lambdify(args, exprs, use_numpy=False)
+    L = se.Lambdify(args, exprs)
     inp = itertools.chain([inp[0]], (inp[1],), [inp[2]])
     A = L(inp)
     check(A)
@@ -534,7 +487,6 @@ def test_more_than_255_args():
     # not affect SymEngine's Lambdify class
     if not HAVE_NUMPY:  # nosetests work-around
         return
-    import numpy as np
     n = 257
     x = se.symarray('x', n)
     p, q, r = 17, 42, 13
