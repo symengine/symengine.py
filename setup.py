@@ -162,6 +162,14 @@ class InstallWithCmake(_install):
         # Multiple symbols can be separated with semi-colons.
         if self.define:
             defines = self.define.split(';')
+            if not any(define.startswith('WITH_NUMPY') for define in defines):
+                try:
+                    import numpy as np
+                except ImportError:
+                    defines.append('WITH_NUMPY=False')
+                else:
+                    defines.append('WITH_NUMPY=True')
+                defines.append()
             self.define = [(s.strip(), None) if '=' not in s else
                            tuple(ss.strip() for ss in s.split('='))
                            for s in defines]

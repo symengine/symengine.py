@@ -43,7 +43,10 @@ Additional options to setup.py are
         --define="var1=value1;var2=value2"                      # Give options to CMake
         --inplace                                               # Build the extension in source tree
 
-Standard options to setup.py like `--user`, `--prefix` can be used to configure install location
+Standard options to setup.py like `--user`, `--prefix` can be used to
+configure install location. NumPy is used if found by default, if you wish
+to make your choice of NumPy use explicit: then add
+e.g. ``WITH_NUMPY=False`` to ``--define``.
 
 Use SymEngine from Python as follows:
 
