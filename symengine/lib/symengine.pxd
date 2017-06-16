@@ -153,7 +153,7 @@ cdef extern from "<symengine/symengine_rcp.h>" namespace "SymEngine":
     RCP[const RealMPFR] rcp_static_cast_RealMPFR "SymEngine::rcp_static_cast<const SymEngine::RealMPFR>"(RCP[const Basic] &b) nogil
     RCP[const ComplexMPC] rcp_static_cast_ComplexMPC "SymEngine::rcp_static_cast<const SymEngine::ComplexMPC>"(RCP[const Basic] &b) nogil
     RCP[const Log] rcp_static_cast_Log "SymEngine::rcp_static_cast<const SymEngine::Log>"(RCP[const Basic] &b) nogil
-    RCP[const Boolean] rcp_static_cast_Boolean "SymEngine::rcp_static_cast<const SymEngine::Boolean>"(RCP[const Basic] &b) nogil
+    RCP[const BooleanAtom] rcp_static_cast_BooleanAtom "SymEngine::rcp_static_cast<const SymEngine::BooleanAtom>"(RCP[const Basic] &b) nogil
     RCP[const PyNumber] rcp_static_cast_PyNumber "SymEngine::rcp_static_cast<const SymEngine::PyNumber>"(RCP[const Basic] &b) nogil
     RCP[const PyFunction] rcp_static_cast_PyFunction "SymEngine::rcp_static_cast<const SymEngine::PyFunction>"(RCP[const Basic] &b) nogil
     Ptr[RCP[Basic]] outArg(RCP[const Basic] &arg) nogil
@@ -766,7 +766,7 @@ cdef extern from "<symengine/logic.h>" namespace "SymEngine":
     cdef cppclass Boolean(Basic):
         pass
     cdef cppclass BooleanAtom(Boolean):
-        pass
+        bool get_val() nogil
     cdef cppclass Relational(Boolean):
         pass
     cdef cppclass Equality(Relational):
@@ -781,13 +781,13 @@ cdef extern from "<symengine/logic.h>" namespace "SymEngine":
     RCP[const Basic] boolTrue
     RCP[const Basic] boolFalse
     bool is_a_Relational(const Basic &b) nogil
-    RCP[const Boolean] Eq(const RCP[const Basic] &lhs) nogil
-    RCP[const Boolean] Eq(const RCP[const Basic] &lhs, const RCP[const Basic] &rhs) nogil
-    RCP[const Boolean] Ne(const RCP[const Basic] &lhs, const RCP[const Basic] &rhs) nogil
-    RCP[const Boolean] Ge(const RCP[const Basic] &lhs, const RCP[const Basic] &rhs) nogil
-    RCP[const Boolean] Gt(const RCP[const Basic] &lhs, const RCP[const Basic] &rhs) nogil
-    RCP[const Boolean] Le(const RCP[const Basic] &lhs, const RCP[const Basic] &rhs) nogil
-    RCP[const Boolean] Lt(const RCP[const Basic] &lhs, const RCP[const Basic] &rhs) nogil
+    cdef RCP[const Boolean] Eq(RCP[const Basic] &lhs) nogil except+
+    cdef RCP[const Boolean] Eq(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
+    cdef RCP[const Boolean] Ne(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
+    cdef RCP[const Boolean] Ge(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
+    cdef RCP[const Boolean] Gt(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
+    cdef RCP[const Boolean] Le(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
+    cdef RCP[const Boolean] Lt(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
 
 cdef extern from "<utility>" namespace "std":
     cdef integer_class std_move_mpz "std::move" (integer_class) nogil

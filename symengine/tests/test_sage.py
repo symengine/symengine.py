@@ -1,5 +1,6 @@
 from symengine import (Integer, symbols, sin, cos, pi, E, I, oo, zoo,
-    nan, Add, function_symbol, DenseMatrix, sympify, log)
+    nan, true, false, Add, function_symbol, DenseMatrix,
+    sympify, log)
 from symengine.lib.symengine_wrapper import (PyNumber, PyFunction,
     sage_module, wrap_sage_function)
 
@@ -68,13 +69,15 @@ def test_sage_conversions():
     # For the following test, sage needs to be modified
     # assert sage.sin(x) == sage.sin(x1)
 
-    # Constants
+    # Constants and Booleans
     assert pi._sage_() == sage.pi
     assert E._sage_() == sage.e
     assert I._sage_() == sage.I
     assert oo._sage_() == sage.oo
     assert zoo._sage_() == sage.unsigned_infinity
     assert nan._sage_() == sage.NaN
+    assert true._sage_() == True
+    assert false._sage_() == False
 
     assert pi == sympify(sage.pi)
     assert E == sympify(sage.e)

@@ -68,7 +68,10 @@ cdef c2py(RCP[const symengine.Basic] o):
     elif (symengine.is_a_Min(deref(o))):
         r = Function.__new__(Min)
     elif (symengine.is_a_BooleanAtom(deref(o))):
-        r = BooleanAtom.__new__(BooleanAtom)
+        if (deref(symengine.rcp_static_cast_BooleanAtom(o)).get_val()):
+            r = BooleanAtom.__new__(BooleanTrue)
+        else:
+            r = BooleanAtom.__new__(BooleanFalse)
     elif (symengine.is_a_Equality(deref(o))):
         r = Equality.__new__(Equality)
     elif (symengine.is_a_Unequality(deref(o))):
@@ -196,9 +199,9 @@ def sympy2symengine(a, raise_error=False):
     elif a is sympy.nan:
         return nan
     elif a is sympy.S.true:
-        return BooleanTrue
+        return true
     elif a is sympy.S.false:
-        return BooleanFalse
+        return false
     elif isinstance(a, sympy.functions.elementary.trigonometric.TrigonometricFunction):
         if isinstance(a, sympy.sin):
             return sin(a.args[0])
@@ -350,7 +353,7 @@ def _sympify(a, raise_error=True):
     if isinstance(a, (Basic, MatrixBase)):
         return a
     elif isinstance(a, bool):
-        return (BooleanTrue if a else BooleanFalse)
+        return (true if a else false)
     elif isinstance(a, (int, long)):
         return Integer(a)
     elif isinstance(a, float):
@@ -876,19 +879,27 @@ class Boolean(Basic):
 
 
 class BooleanAtom(Boolean):
+    pass
+
+
+class BooleanTrue(BooleanAtom):
 
     def _sympy_(self):
         import sympy
-        if self == BooleanTrue:
-            return sympy.S.true
-        else:
-            return sympy.S.false
+        return sympy.S.true
 
     def _sage_(self):
-        if self == BooleanTrue:
-            return True
-        else:
-            return False
+        return True
+
+
+class BooleanFalse(BooleanAtom):
+
+    def _sympy_(self):
+        import sympy
+        return sympy.S.false
+
+    def _sage_(self):
+        return False
 
 
 class Relational(Boolean):
@@ -939,48 +950,6 @@ class Unequality(Relational):
 Ne = Unequality
 
 
-class GreaterThan(Relational):
-
-    def __new__(cls, *args):
-        return ge(*args)
-
-    def _sympy_(self):
-        import sympy
-        s = self.args_as_sympy()
-        return sympy.GreaterThan(*s)
-
-    def _sage_(self):
-        import sage.all as sage
-        s = self.args_as_sage()
-        return sage.ge(*s)
-
-    func = __class__
-
-
-Ge = GreaterThan
-
-
-class StrictGreaterThan(Relational):
-
-    def __new__(cls, *args):
-        return gt(*args)
-
-    def _sympy_(self):
-        import sympy
-        s = self.args_as_sympy()
-        return sympy.StrictGreaterThan(*s)
-
-    def _sage_(self):
-        import sage.all as sage
-        s = self.args_as_sage()
-        return sage.gt(*s)
-
-    func = __class__
-
-
-Gt = StrictGreaterThan
-
-
 class LessThan(Relational):
 
     def __new__(cls, *args):
@@ -995,8 +964,6 @@ class LessThan(Relational):
         import sage.all as sage
         s = self.args_as_sage()
         return sage.le(*s)
-
-    func = __class__
 
 
 Le = LessThan
@@ -1016,8 +983,6 @@ class StrictLessThan(Relational):
         import sage.all as sage
         s = self.args_as_sage()
         return sage.lt(*s)
-
-    func = __class__
 
 
 Lt = StrictLessThan
@@ -2740,12 +2705,12 @@ pi = c2py(symengine.pi)
 oo = c2py(symengine.Inf)
 zoo = c2py(symengine.ComplexInf)
 nan = c2py(symengine.Nan)
-BooleanTrue = c2py(symengine.boolTrue)
-BooleanFalse = c2py(symengine.boolFalse)
+true = c2py(symengine.boolTrue)
+false = c2py(symengine.boolFalse)
 
 def module_cleanup():
-    global I, E, pi, oo, zoo, nan, BooleanTrue, BooleanFalse, sympy_module, sage_module
-    del I, E, pi, oo, zoo, nan, BooleanTrue, BooleanFalse, sympy_module, sage_module
+    global I, E, pi, oo, zoo, nan, true, false, sympy_module, sage_module
+    del I, E, pi, oo, zoo, nan, true, false, sympy_module, sage_module
 
 import atexit
 atexit.register(module_cleanup)
@@ -2813,10 +2778,14 @@ def ge(lhs, rhs):
     cdef Basic Y = sympify(rhs)
     return c2py(<RCP[const symengine.Basic]>(symengine.Ge(X.thisptr, Y.thisptr)))
 
+Ge = GreaterThan = ge
+
 def gt(lhs, rhs):
     cdef Basic X = sympify(lhs)
     cdef Basic Y = sympify(rhs)
     return c2py(<RCP[const symengine.Basic]>(symengine.Gt(X.thisptr, Y.thisptr)))
+
+Gt = StrictGreaterThan = gt
 
 def le(lhs, rhs):
     cdef Basic X = sympify(lhs)
@@ -3339,7 +3308,7 @@ cdef class _Lambdify(object):
     cdef vector[int] accum_out_sizes
     cdef object numpy_dtype
 
-    def __cinit__(self, args, *exprs, bool real=True):
+    def __cinit__(self, args, *exprs, cppbool real=True):
         cdef vector[int] out_sizes
         self.real = real
         self.numpy_dtype = np.float64 if self.real else np.complex128
@@ -3355,7 +3324,7 @@ cdef class _Lambdify(object):
             for j in range(i):
                 self.accum_out_sizes[i] += out_sizes[j]
 
-    def __init__(self, args, *exprs, bool real=True):
+    def __init__(self, args, *exprs, cppbool real=True):
         cdef:
             Basic e_
             size_t ri, ci, nr, nc
@@ -3538,7 +3507,7 @@ IF HAVE_SYMENGINE_LLVM:
             self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
 
 
-def Lambdify(args, *exprs, bool real=True, backend=None):
+def Lambdify(args, *exprs, cppbool real=True, backend=None):
     if backend is None:
         backend = os.getenv('SYMENGINE_LAMBDIFY_BACKEND', "lambda")
     if backend == "llvm":
