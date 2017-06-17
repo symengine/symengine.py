@@ -174,9 +174,9 @@ class InstallWithCmake(_install):
         self.define = _process_define(self)
         cmake_opts.extend(self.define)
         cmake_build_type[0] = self.build_type
-        cmake_opts.extend([('PYTHON_INSTALL_PATH', self.install_platlib)])
+        cmake_opts.extend([('PYTHON_INSTALL_PATH', path.join(os.getcwd(), self.install_platlib))])
         cmake_opts.extend([('PYTHON_INSTALL_HEADER_PATH',
-                            self.install_headers)])
+                            path.join(os.getcwd(), self.install_headers))])
 
     def cmake_install(self):
         source_dir = path.dirname(path.realpath(__file__))
