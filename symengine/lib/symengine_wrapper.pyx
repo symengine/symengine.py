@@ -2599,6 +2599,7 @@ have_mpc = False
 have_piranha = False
 have_flint = False
 have_llvm = False
+have_numpy = False
 
 IF HAVE_SYMENGINE_MPFR:
     have_mpfr = True
@@ -3015,6 +3016,7 @@ IF HAVE_NUMPY:
     # Lambdify requires NumPy (since b713a61, see gh-112)
     cimport numpy as cnp
     import numpy as np
+    have_numpy = True
 
     cdef size_t _size(n):
         try:

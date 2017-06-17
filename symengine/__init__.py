@@ -4,10 +4,10 @@ from .lib.symengine_wrapper import (Symbol, sympify as S, sympify,
         have_llvm, Integer, Rational, Float, Number, RealNumber,
         RealDouble, ComplexDouble, Max, Min, DenseMatrix, Matrix,
         ImmutableMatrix, ImmutableDenseMatrix, MutableDenseMatrix,
-        MatrixBase, Basic, Lambdify, LambdifyCSE, Lambdify as lambdify,
-        DictBasic, symarray, series, diff, zeros, eye, diag, ones,
-        Derivative, Subs, add, expand, has_symbol, UndefFunction,
-        Function, FunctionSymbol as AppliedUndef)
+        MatrixBase, Basic, DictBasic, symarray, series, diff, zeros,
+        eye, diag, ones, Derivative, Subs, add, expand, has_symbol,
+        UndefFunction, Function, FunctionSymbol as AppliedUndef,
+        have_numpy)
 from .utilities import var, symbols
 from .functions import *
 
@@ -16,6 +16,26 @@ if have_mpfr:
 
 if have_mpc:
     from .lib.symengine_wrapper import ComplexMPC
+
+if have_numpy:
+    from .lib.symengine_wrapper import Lambdify, LambdifyCSE
+
+    def lambdify(args, exprs):
+        try:
+            len(args)
+        except TypeError:
+            args = [args]
+        try:
+            len(exprs)
+        except TypeError:
+            exprs = [exprs]
+        lmb = Lambdify(args, exprs)
+        def f(*inner_args):
+            if len(inner_args) != len(args):
+                raise TypeError("Incorrect number of arguments")
+            return lmb(inner_args)
+        return f
+
 
 __version__ = "0.2.1.dev"
 
