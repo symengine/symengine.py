@@ -62,9 +62,9 @@ global_user_options = [
 ]
 
 def _process_define(arg):
-    (defs, one), = getattr(arg, 'define', ['', '1'])
+    (defs, one), = getattr(arg, 'define', None) or [('', '1')]
     assert one == '1'
-    defs = defs.split(';')
+    defs = [df for df in defs.split(';') if df != '']
     if not any(define.startswith('WITH_NUMPY') for define in defs):
         try:
             import numpy as np
