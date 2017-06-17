@@ -67,6 +67,7 @@ def test_Add():
     i = Add(x, y)
     assert isinstance(i, Add)
     assert isinstance(i, Basic)
+    assert i.func(y, x) == i
 
 
 def test_Mul():
@@ -76,6 +77,7 @@ def test_Mul():
     i = Mul(x, y)
     assert isinstance(i, Mul)
     assert isinstance(i, Basic)
+    assert i.func(y, x) == i
 
 
 def test_Pow():
@@ -85,6 +87,7 @@ def test_Pow():
     i = Pow(x, 2)
     assert isinstance(i, Pow)
     assert isinstance(i, Basic)
+    assert i.func(x, 2) == i
 
 
 def test_Max():
