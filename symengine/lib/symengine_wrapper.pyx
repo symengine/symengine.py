@@ -3213,11 +3213,12 @@ IF HAVE_NUMPY:
 
             """
             cdef:
-                cdef cnp.ndarray[cnp.float64_t, ndim=1, mode='c'] real_inp
-                cdef cnp.ndarray[cnp.float64_t, ndim=1, mode='c'] real_out
-                cdef cnp.ndarray[cnp.complex128_t, ndim=1, mode='c'] cmplx_inp
-                cdef cnp.ndarray[cnp.complex128_t, ndim=1, mode='c'] cmplx_out
-                size_t idx, nbroadcast = 1
+                cnp.ndarray[cnp.float64_t, ndim=1, mode='c'] real_inp
+                cnp.ndarray[cnp.float64_t, ndim=1, mode='c'] real_out
+                cnp.ndarray[cnp.complex128_t, ndim=1, mode='c'] cmplx_inp
+                cnp.ndarray[cnp.complex128_t, ndim=1, mode='c'] cmplx_out
+                bint reshape_outs
+                size_t idx, new_tot_out_size, nbroadcast = 1
                 long inp_size
                 tuple inp_shape
             try:
@@ -3237,10 +3238,9 @@ IF HAVE_NUMPY:
                 inp_shape = inp.shape + (1,)
             else:
                 inp_shape = inp.shape
-            new_out_shapes = [inp_shape[:-1] + out_shape for out_shape in self.out_shapes]
-            new_out_sizes = [nbroadcast*self.out_sizes[i] for i in range(self.n_exprs)]
             new_tot_out_size = nbroadcast * self.tot_out_size
             if out is None:
+                new_out_shapes = [inp_shape[:-1] + out_shape for out_shape in self.out_shapes]
                 reshape_outs = len(new_out_shapes[0]) > 1
                 out = np.empty(new_tot_out_size, dtype=self.numpy_dtype)
                 if self.real:
@@ -3265,11 +3265,12 @@ IF HAVE_NUMPY:
                     if <size_t>cmplx_out.data != out.__array_interface__['data'][0]:
                         raise ValueError("out parameter not compatible")
 
-            for idx in range(nbroadcast):
-                if self.real:
+            if self.real:
+                for idx in range(nbroadcast):
                     self.unsafe_real(real_inp, real_out,
                                      idx*self.args_size, idx*self.tot_out_size)
-                else:
+            else:
+                for idx in range(nbroadcast):
                     self.unsafe_complex(cmplx_inp, cmplx_out,
                                         idx*self.args_size, idx*self.tot_out_size)
 
@@ -3281,11 +3282,9 @@ IF HAVE_NUMPY:
                 result = [out]
 
             if self.n_exprs == 1:
-                result = result[0]
+                return result[0]
             else:
-                result = tuple(result)
-
-            return result
+                return result
 
 
     cdef class LambdaDouble(_Lambdify):
