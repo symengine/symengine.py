@@ -3060,7 +3060,10 @@ IF HAVE_NUMPY:
         try:
             return ndarr.ravel()
         except AttributeError:
-            return _ravel_nested(ndarr)
+            try:
+                return _ravel_nested(ndarr.tolist())
+            except AttributeError:
+                return _ravel_nested(ndarr)
 
 
     cdef class _Lambdify(object):
@@ -3139,8 +3142,8 @@ IF HAVE_NUMPY:
                     for ci in range(nc):
                        args_.push_back(deref(mtx).get(ri, ci))
             else:
-                for e in args:
-                    e_ = _sympify(e)
+                for arg in args:
+                    e_ = _sympify(arg)
                     args_.push_back(e_.thisptr)
 
 

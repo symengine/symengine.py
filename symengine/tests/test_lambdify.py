@@ -265,11 +265,11 @@ def test_broadcast_fortran():
         check(A[i, ...], inp[i, :])
 
 
-def _get_1_to_2by3_matrix():
+def _get_1_to_2by3_matrix(Mtx=se.DenseMatrix):
     x = se.symbols('x')
     args = x,
-    exprs = se.DenseMatrix(2, 3, [x+1, x+2, x+3,
-                                  1/x, 1/(x*x), 1/(x**3.0)])
+    exprs = Mtx(2, 3, [x+1, x+2, x+3,
+                       1/x, 1/(x*x), 1/(x**3.0)])
     L = se.Lambdify(args, exprs)
 
     def check(A, inp):
@@ -287,6 +287,15 @@ def test_2dim_Matrix():
     if not have_numpy:  # nosetests work-around
         return
     L, check = _get_1_to_2by3_matrix()
+    inp = [7]
+    check(L(inp), inp)
+
+
+def test_2dim_Matrix__sympy():
+    if not have_numpy:  # nosetests work-around
+        return
+    import sympy as sp
+    L, check = _get_1_to_2by3_matrix(sp.Matrix)
     inp = [7]
     check(L(inp), inp)
 
