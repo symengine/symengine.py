@@ -3375,7 +3375,7 @@ IF HAVE_NUMPY:
             new_exprs = []
             n_taken = 0
             for expr in exprs:
-                shape = get_shape(expr)
+                shape = get_shape(expr) or (1,)
                 size = long(reduce(mul, shape))
                 if len(shape) == 1:
                     new_exprs.append(flat_new_exprs[n_taken:n_taken+size])
@@ -3389,7 +3389,8 @@ IF HAVE_NUMPY:
             cse_lambda = Lambdify(args, [expr.xreplace(explicit_subs) for expr in cse_exprs], **kwargs)
             def cb(inp, out=None, **kw):
                 cse_vals = cse_lambda(inp, **kw)
-                new_inp = concatenate((inp, cse_vals))
+                print(inp, cse_vals) # DO-NOT-MERGE!
+                new_inp = concatenate((inp, cse_vals), axis=-1)
                 return lmb(new_inp, out, **kw)
 
             return cb

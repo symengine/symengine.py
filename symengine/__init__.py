@@ -25,11 +25,7 @@ if have_numpy:
             len(args)
         except TypeError:
             args = [args]
-        try:
-            len(exprs)
-        except TypeError:
-            exprs = [exprs]
-        lmb = Lambdify(args, exprs)
+        lmb = Lambdify(args, *exprs)
         def f(*inner_args):
             if len(inner_args) != len(args):
                 raise TypeError("Incorrect number of arguments")

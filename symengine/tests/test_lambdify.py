@@ -39,7 +39,7 @@ def allclose(vec1, vec2, rtol=1e-13, atol=1e-13):
 
 
 def test_get_shape():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     get_shape = se.lib.symengine_wrapper.get_shape
     assert get_shape([1]) == (1,)
@@ -54,7 +54,7 @@ def test_get_shape():
 
 
 def test_ravel():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     x = se.symbols('x')
     ravel = se.lib.symengine_wrapper.ravel
@@ -64,7 +64,7 @@ def test_ravel():
 
 
 def test_Lambdify():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     n = 7
     args = x, y, z = se.symbols('x y z')
@@ -74,7 +74,7 @@ def test_Lambdify():
 
 
 def test_Lambdify_LLVM():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     n = 7
     args = x, y, z = se.symbols('x y z')
@@ -104,7 +104,7 @@ def _get_2_to_2by2():
 
 
 def test_Lambdify_2dim():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     lmb, check = _get_2_to_2by2()
     for inp in [(5, 7), np.array([5, 7]), [5.0, 7.0]]:
@@ -125,7 +125,7 @@ def _get_array():
 
 
 def test_array():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     args, exprs, inp, check = _get_array()
     lmb = se.Lambdify(args, exprs)
@@ -134,7 +134,7 @@ def test_array():
 
 
 def test_numpy_array_out_exceptions():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     args, exprs, inp, check = _get_array()
     lmb = se.Lambdify(args, exprs)
@@ -161,7 +161,7 @@ def test_numpy_array_out_exceptions():
 
 
 def test_broadcast():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     a = np.linspace(-np.pi, np.pi)
     inp = np.vstack((np.cos(a), np.sin(a))).T  # 50 rows 2 cols
@@ -174,7 +174,7 @@ def test_broadcast():
 
 
 def test_broadcast_multiple_extra_dimensions():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     inp = np.arange(12.).reshape((4, 3, 1))
     x = se.symbols('x')
@@ -198,7 +198,7 @@ def _get_cse_exprs():
 
 
 def test_cse():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     args, exprs, inp, ref = _get_cse_exprs()
     lmb = se.LambdifyCSE(args, exprs)
@@ -232,7 +232,7 @@ def _get_cse_exprs_big():
 
 
 def test_cse_big():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     args, exprs, inp = _get_cse_exprs_big()
     lmb = se.LambdifyCSE(args, exprs)
@@ -242,7 +242,7 @@ def test_cse_big():
 
 
 def test_broadcast_c():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     n = 3
     inp = np.arange(2*n).reshape((n, 2))
@@ -254,7 +254,7 @@ def test_broadcast_c():
 
 
 def test_broadcast_fortran():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     n = 3
     inp = np.arange(2*n).reshape((n, 2), order='F')
@@ -284,7 +284,7 @@ def _get_1_to_2by3_matrix(Mtx=se.DenseMatrix):
 
 
 def test_2dim_Matrix():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     L, check = _get_1_to_2by3_matrix()
     inp = [7]
@@ -292,7 +292,7 @@ def test_2dim_Matrix():
 
 
 def test_2dim_Matrix__sympy():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     import sympy as sp
     L, check = _get_1_to_2by3_matrix(sp.Matrix)
@@ -311,13 +311,13 @@ def _test_2dim_Matrix_broadcast():
 
 
 def test_2dim_Matrix_broadcast():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     _test_2dim_Matrix_broadcast()
 
 
 def test_2dim_Matrix_broadcast_multiple_extra_dim():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     L, check = _get_1_to_2by3_matrix()
     inp = np.arange(1, 4*5*6+1).reshape((4, 5, 6))
@@ -328,7 +328,7 @@ def test_2dim_Matrix_broadcast_multiple_extra_dim():
 
 
 def test_jacobian():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     x, y = se.symbols('x, y')
     args = se.DenseMatrix(2, 1, [x, y])
@@ -343,7 +343,7 @@ def test_jacobian():
 
 
 def test_jacobian__broadcast():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     x, y = se.symbols('x, y')
     args = se.DenseMatrix(2, 1, [x, y])
@@ -362,7 +362,7 @@ def test_jacobian__broadcast():
 
 
 def test_excessive_args():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     x = se.symbols('x')
     lmb = se.Lambdify([x], [-x])
@@ -374,7 +374,7 @@ def test_excessive_args():
 
 
 def test_excessive_out():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     x = se.symbols('x')
     lmb = se.Lambdify([x], [-x])
@@ -419,7 +419,7 @@ def _get_2_to_2by2_list(real=True):
 
 
 def test_2_to_2by2():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     L, check = _get_2_to_2by2_list()
     inp = [13, 17]
@@ -428,7 +428,7 @@ def test_2_to_2by2():
 
 
 def test_unsafe_real():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     L, check = _get_2_to_2by2_list()
     inp = np.array([13., 17.])
@@ -438,7 +438,7 @@ def test_unsafe_real():
 
 
 def test_unsafe_complex():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     L, check = _get_2_to_2by2_list(real=False)
     assert not L.real
@@ -449,7 +449,7 @@ def test_unsafe_complex():
 
 
 def test_itertools_chain():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     args, exprs, inp, check = _get_array()
     L = se.Lambdify(args, exprs)
@@ -460,7 +460,7 @@ def test_itertools_chain():
 
 # @pytest.mark.xfail(not have_numpy, reason='array.array lacks "Zd"')
 def test_complex_1():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     x = se.Symbol('x')
     lmb = se.Lambdify([x], [1j + x], real=False)
@@ -470,7 +470,7 @@ def test_complex_1():
 
 # @pytest.mark.xfail(not have_numpy, reason='array.array lacks "Zd"')
 def test_complex_2():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     x = se.Symbol('x')
     lmb = se.Lambdify([x], [3 + x - 1j], real=False)
@@ -482,7 +482,7 @@ def test_more_than_255_args():
     # SymPy's lambdify can handle at most 255 arguments
     # this is a proof of concept that this limitation does
     # not affect SymEngine's Lambdify class
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     n = 257
     x = se.symarray('x', n)
@@ -507,7 +507,7 @@ def _Lambdify_heterogeneous_output(Lambdify):
     v = se.DenseMatrix(2, 1, [x**3 * y, (x+1)*(y+1)])
     jac = v.jacobian(args)
     exprs = [jac, x+y, v, (x+1)*(y+1)]
-    lmb = se.Lambdify(args, *exprs)
+    lmb = Lambdify(args, *exprs)
     inp0 = 7, 11
     inp1 = 8, 13
     inp2 = 5, 9
@@ -522,12 +522,39 @@ def _Lambdify_heterogeneous_output(Lambdify):
 
 
 def test_Lambdify_heterogeneous_output():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     _Lambdify_heterogeneous_output(se.Lambdify)
 
 
 def test_LambdifyCSE_heterogeneous_output():
-    if not have_numpy:  # nosetests work-around
+    if not have_numpy:
         return
     _Lambdify_heterogeneous_output(se.LambdifyCSE)
+
+
+def _sympy_lambdify_heterogeneous_output(cb, Mtx):
+    x, y = se.symbols('x, y')
+    args = Mtx(2, 1, [x, y])
+    v = Mtx(2, 1, [x**3 * y, (x+1)*(y+1)])
+    jac = v.jacobian(args)
+    exprs = [jac, x+y, v, (x+1)*(y+1)]
+    lmb = cb(args, exprs)
+    inp0 = 7, 11
+    inp1 = 8, 13
+    inp2 = 5, 9
+    for idx, (X, Y) in enumerate([inp0, inp1, inp2]):
+        o_j, o_xpy, o_v, o_xty = lmb(X, Y)
+        assert np.allclose(o_j, [[3 * X**2 * Y, X**3],
+                                 [Y + 1, X + 1]])
+        assert np.allclose(o_xpy, [X+Y])
+        assert np.allclose(o_v, [[X**3 * Y], [(X+1)*(Y+1)]])
+        assert np.allclose(o_xty, [(X+1)*(Y+1)])
+
+
+def test_lambdify__sympy():
+    if not have_numpy:
+        return
+    import sympy as sp
+    _sympy_lambdify_heterogeneous_output(se.lambdify, se.DenseMatrix)
+    _sympy_lambdify_heterogeneous_output(sp.lambdify, sp.Matrix)
