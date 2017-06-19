@@ -73,13 +73,13 @@ cdef c2py(RCP[const symengine.Basic] o):
         else:
             r = BooleanAtom.__new__(BooleanFalse)
     elif (symengine.is_a_Equality(deref(o))):
-        r = Equality.__new__(Equality)
+        r = Relational.__new__(Equality)
     elif (symengine.is_a_Unequality(deref(o))):
-        r = Unequality.__new__(Unequality)
+        r = Relational.__new__(Unequality)
     elif (symengine.is_a_LessThan(deref(o))):
-        r = LessThan.__new__(LessThan)
+        r = Relational.__new__(LessThan)
     elif (symengine.is_a_StrictLessThan(deref(o))):
-        r = StrictLessThan.__new__(StrictLessThan)
+        r = Relational.__new__(StrictLessThan)
     elif (symengine.is_a_Gamma(deref(o))):
         r = Function.__new__(Gamma)
     elif (symengine.is_a_Derivative(deref(o))):
@@ -595,15 +595,14 @@ cdef class Basic(object):
             return symengine.eq(deref(A.thisptr), deref(B.thisptr))
         elif (op == 3):
             return symengine.neq(deref(A.thisptr), deref(B.thisptr))
-        from sympy import Rel
         if (op == 0):
-            return Rel(A, B, '<')
+            return c2py(<RCP[const symengine.Basic]>(symengine.Lt(A.thisptr, B.thisptr)))
         elif (op == 1):
-            return Rel(A, B, '<=')
+            return c2py(<RCP[const symengine.Basic]>(symengine.Le(A.thisptr, B.thisptr)))
         elif (op == 4):
-            return Rel(A, B, '>')
+            return c2py(<RCP[const symengine.Basic]>(symengine.Gt(A.thisptr, B.thisptr)))
         elif (op == 5):
-            return Rel(A, B, '>=')
+            return c2py(<RCP[const symengine.Basic]>(symengine.Ge(A.thisptr, B.thisptr)))
 
     def expand(Basic self not None):
         return c2py(symengine.expand(self.thisptr))
