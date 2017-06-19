@@ -20,12 +20,12 @@ if have_mpc:
 if have_numpy:
     from .lib.symengine_wrapper import Lambdify, LambdifyCSE
 
-    def lambdify(args, exprs):
+    def lambdify(args, exprs, real=True, backend=None):
         try:
             len(args)
         except TypeError:
             args = [args]
-        lmb = Lambdify(args, *exprs)
+        lmb = Lambdify(args, *exprs, real=real, backend=backend)
         def f(*inner_args):
             if len(inner_args) != len(args):
                 raise TypeError("Incorrect number of arguments")

@@ -6,7 +6,6 @@ from libcpp.string cimport string
 from libcpp.vector cimport vector
 from cpython cimport PyObject, Py_XINCREF, Py_XDECREF, \
     PyObject_CallMethodObjArgs
-from libc.stdlib cimport malloc, free
 from libc.string cimport memcpy
 import cython
 import itertools
@@ -3014,6 +3013,7 @@ def has_symbol(obj, symbol=None):
 
 IF HAVE_NUMPY:
     # Lambdify requires NumPy (since b713a61, see gh-112)
+    import os
     cimport numpy as cnp
     import numpy as np
     have_numpy = True
@@ -3101,30 +3101,24 @@ IF HAVE_NUMPY:
         cdef list out_shapes
         cdef readonly bint real
         cdef readonly int n_exprs
-        cdef int *out_sizes
-        cdef int *accum_out_sizes
+        cdef vector[int] accum_out_sizes
         cdef object numpy_dtype
 
         def __cinit__(self, args, *exprs, bool real=True):
+            cdef vector[int] out_sizes
             self.real = real
             self.numpy_dtype = np.float64 if self.real else np.complex128
             self.out_shapes = [get_shape(expr) for expr in exprs]
             self.n_exprs = len(exprs)
             self.args_size = _size(args)
-            self.out_sizes = <int *>malloc(sizeof(int)*self.n_exprs)
-            self.accum_out_sizes = <int *>malloc(sizeof(int)*(self.n_exprs+1))
             self.tot_out_size = 0
             for idx, shape in enumerate(self.out_shapes):
-                self.out_sizes[idx] = reduce(mul, shape or (1,))
-                self.tot_out_size += self.out_sizes[idx]
+                out_sizes.push_back(reduce(mul, shape or (1,)))
+                self.tot_out_size += out_sizes[idx]
             for i in range(self.n_exprs + 1):
-                self.accum_out_sizes[i] = 0
+                self.accum_out_sizes.push_back(0)
                 for j in range(i):
-                    self.accum_out_sizes[i] += self.out_sizes[j]
-
-        def __dealloc__(self):
-            free(self.out_sizes)
-            free(self.accum_out_sizes)
+                    self.accum_out_sizes[i] += out_sizes[j]
 
         def __init__(self, args, *exprs, bool real=True):
             cdef:
@@ -3329,14 +3323,19 @@ IF HAVE_NUMPY:
                 self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
 
 
-    def Lambdify(args, *exprs, bool real=True, backend="lambda"):
+    def Lambdify(args, *exprs, bool real=True, backend=None):
+        if backend is None:
+            backend = os.getenv('SYMENGINE_LAMBDIFY_BACKEND', "lambda")
         if backend == "llvm":
             IF HAVE_SYMENGINE_LLVM:
                 return LLVMDouble(args, *exprs, real=real)
             ELSE:
                 raise ValueError("""llvm backend is chosen, but symengine is not compiled
                                     with llvm support.""")
-
+        elif backend == "lambda":
+            pass
+        else:
+            warnings.warn("Unknown SymEngine backend: %s\nUsing backend='lambda'" % backend)
         return LambdaDouble(args, *exprs, real=real)
 
 

@@ -59,10 +59,12 @@ else()
 endif()
 
 if(WITH_NUMPY)
+    set(WITH_NUMPY True CACHE BOOL INTERNAL)
     find_package(NumPy REQUIRED)
     include_directories(${NUMPY_INCLUDE_PATH})
     set(HAVE_NUMPY True)
 else()
+    set(WITH_NUMPY False CACHE BOOL INTERNAL)
     set(HAVE_NUMPY False)
 endif()
 
