@@ -493,9 +493,9 @@ def test_more_than_255_args():
     input_arr = np.arange(q, q + n*n).reshape((n, n))
     out = callback(input_arr)
     ref = np.empty((n, 3))
-    coeffs = np.arange(p, p + n)
+    coeffs = np.arange(p, p + n, dtype=np.int64)
     for i in range(n):
-        ref[i, 0] = coeffs.dot(np.arange(q + n*i, q + n*(i+1)))
+        ref[i, 0] = coeffs.dot(np.arange(q + n*i, q + n*(i+1), dtype=np.int64))
         ref[i, 1] = q + n*i + r
     ref[:, 2] = -99
     assert np.allclose(out, ref)
