@@ -3,7 +3,7 @@
 # symengine's bin/install_travis.sh will install miniconda
 export conda_pkgs="python=${PYTHON_VERSION} pip cython sympy nose pytest"
 
-if [[ "${WITH_NUMPY}" == "yes" ]]; then
+if [[ "${WITH_NUMPY}" != "no" ]]; then
     export conda_pkgs="${conda_pkgs} numpy";
 fi
 
