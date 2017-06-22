@@ -1,5 +1,8 @@
 from symengine import Symbol, sin, cos, sqrt, Add, Mul, function_symbol, Integer, log, E, symbols
-from symengine.lib.symengine_wrapper import Subs, Derivative
+from symengine.lib.symengine_wrapper import (Subs, Derivative, LambertW, zeta, dirichlet_eta,
+                                            zoo, pi, KroneckerDelta, LeviCivita, erf, erfc,
+                                            oo, lowergamma, uppergamma, exp, loggamma, beta,
+                                            polygamma, digamma, trigamma, EulerGamma)
 
 
 def test_sin():
@@ -114,23 +117,20 @@ def test_FunctionWrapper():
     assert isinstance(s.args[1]._sympy_(), sympy.Ynm)
 
     x = symbols("x")
-    e = x + sympy.loggamma(x)
-    assert str(e) == "x + loggamma(x)"
+    e = x + sympy.Mod(x, 2)
+    assert str(e) == "x + Mod(x, 2)"
     assert isinstance(e, Add)
-    assert e + sympy.loggamma(x) == x + 2*sympy.loggamma(x)
+    assert e + sympy.Mod(x, 2) == x + 2*sympy.Mod(x, 2)
 
     f = e.subs({x : 10})
-    assert f == 10 + log(362880)
+    assert f == 10
 
     f = e.subs({x : 2})
     assert f == 2
 
     f = e.subs({x : 100});
     v = f.n(53, real=True);
-    assert abs(float(v) - 459.13420537) < 1e-7
-
-    f = e.diff(x)
-    assert f == 1 + sympy.polygamma(0, x)
+    assert abs(float(v) - 100.00000000) < 1e-7
 
 
 def test_log():
@@ -139,3 +139,65 @@ def test_log():
     assert log(E) == 1
     assert log(x, x) == 1
     assert log(x, y) == log(x) / log(y)
+
+def test_lambertw():
+    assert LambertW(0) == 0
+    assert LambertW(E) == 1
+
+def test_zeta():
+    x = Symbol("x")
+    assert zeta(1) == zoo
+    assert zeta(1, x) == zoo
+
+def test_dirichlet_eta():
+    assert dirichlet_eta(1) == log(2)
+    assert dirichlet_eta(2) == pi**2/12
+
+def test_kronecker_delta():
+    x = Symbol("x")
+    assert KroneckerDelta(1, 1) == 1
+    assert KroneckerDelta(1, 2) == 0
+    assert KroneckerDelta(x, x) == 1
+
+def test_levi_civita():
+    assert LeviCivita(1, 2, 3) == 1
+    assert LeviCivita(1, 3, 2) == -1
+    assert LeviCivita(1, 2, 2) == 0
+
+def test_erf():
+    assert erf(0) == 0
+    assert erf(oo) == 1
+
+def test_erfc():
+    assert erfc(0) == 1
+    assert erfc(oo) == 0
+
+def test_lowergamma():
+    assert lowergamma(1, 2) == 1 - exp(-2)
+
+def test_uppergamma():
+    assert uppergamma(1, 2) == exp(-2)
+    assert uppergamma(4, 0) == 6
+
+def test_loggamma():
+    assert loggamma(-1) == oo
+    assert loggamma(0) == oo
+    assert loggamma(1) == 0
+    assert loggamma(3) == log(2)
+
+def test_beta():
+    assert beta(3, 2) == beta(2, 3)
+
+def test_polygamma():
+    assert polygamma(0, 0) == zoo
+
+def test_digamma():
+    x = Symbol("x")
+    assert digamma(x) == polygamma(0, x)
+    assert digamma(0) == zoo
+    assert digamma(1) == -EulerGamma
+
+def test_trigamma():
+    x = Symbol("x")
+    assert trigamma(-2) == zoo
+    assert trigamma(x) == polygamma(1, x)

@@ -274,6 +274,18 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_StrictLessThan "SymEngine::is_a<SymEngine::StrictLessThan>"(const Basic &b) nogil
     bool is_a_PyNumber "SymEngine::is_a<SymEngine::PyNumber>"(const Basic &b) nogil
     bool is_a_ATan2 "SymEngine::is_a<SymEngine::ATan2>"(const Basic &b) nogil
+    bool is_a_LambertW "SymEngine::is_a<SymEngine::LambertW>"(const Basic &b) nogil
+    bool is_a_Zeta "SymEngine::is_a<SymEngine::Zeta>"(const Basic &b) nogil
+    bool is_a_DirichletEta "SymEngine::is_a<SymEngine::Dirichlet_eta>"(const Basic &b) nogil
+    bool is_a_KroneckerDelta "SymEngine::is_a<SymEngine::KroneckerDelta>"(const Basic &b) nogil
+    bool is_a_LeviCivita "SymEngine::is_a<SymEngine::LeviCivita>"(const Basic &b) nogil
+    bool is_a_Erf "SymEngine::is_a<SymEngine::Erf>"(const Basic &b) nogil
+    bool is_a_Erfc "SymEngine::is_a<SymEngine::Erfc>"(const Basic &b) nogil
+    bool is_a_LowerGamma "SymEngine::is_a<SymEngine::LowerGamma>"(const Basic &b) nogil
+    bool is_a_UpperGamma "SymEngine::is_a<SymEngine::UpperGamma>"(const Basic &b) nogil
+    bool is_a_LogGamma "SymEngine::is_a<SymEngine::LogGamma>"(const Basic &b) nogil
+    bool is_a_Beta "SymEngine::is_a<SymEngine::Beta>"(const Basic &b) nogil
+    bool is_a_PolyGamma "SymEngine::is_a<SymEngine::PolyGamma>"(const Basic &b) nogil
     bool is_a_PySymbol "SymEngine::is_a_sub<SymEngine::PySymbol>"(const Basic &b) nogil
 
     RCP[const Basic] expand(RCP[const Basic] &o) nogil except +
@@ -357,6 +369,9 @@ cdef extern from "<symengine/constants.h>" namespace "SymEngine":
     RCP[const Basic] I
     RCP[const Basic] E
     RCP[const Basic] pi
+    RCP[const Basic] GoldenRatio
+    RCP[const Basic] Catalan
+    RCP[const Basic] EulerGamma
     RCP[const Basic] Inf
     RCP[const Basic] ComplexInf
     RCP[const Basic] Nan
@@ -461,6 +476,22 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
     cdef RCP[const Basic] min(const vec_basic &arg) nogil except+
     cdef RCP[const Basic] gamma(RCP[const Basic] &arg) nogil except+
     cdef RCP[const Basic] atan2(RCP[const Basic] &num, RCP[const Basic] &den) nogil except+
+    cdef RCP[const Basic] lambertw(RCP[const Basic] &arg) nogil except+
+    cdef RCP[const Basic] zeta(RCP[const Basic] &s) nogil except+
+    cdef RCP[const Basic] zeta(RCP[const Basic] &s, RCP[const Basic] &a) nogil except+
+    cdef RCP[const Basic] dirichlet_eta(RCP[const Basic] &s) nogil except+
+    cdef RCP[const Basic] kronecker_delta(RCP[const Basic] &i, RCP[const Basic] &j) nogil except+
+    cdef RCP[const Basic] levi_civita(const vec_basic &arg) nogil except+
+    cdef RCP[const Basic] erf(RCP[const Basic] &arg) nogil except+
+    cdef RCP[const Basic] erfc(RCP[const Basic] &arg) nogil except+
+    cdef RCP[const Basic] lowergamma(RCP[const Basic] &s, RCP[const Basic] &x) nogil except+
+    cdef RCP[const Basic] uppergamma(RCP[const Basic] &s, RCP[const Basic] &x) nogil except+
+    cdef RCP[const Basic] loggamma(RCP[const Basic] &arg) nogil except+
+    cdef RCP[const Basic] beta(RCP[const Basic] &x, RCP[const Basic] &y) nogil except+
+    cdef RCP[const Basic] polygamma(RCP[const Basic] &n, RCP[const Basic] &x) nogil except+
+    cdef RCP[const Basic] digamma(RCP[const Basic] &x) nogil except+
+    cdef RCP[const Basic] trigamma(RCP[const Basic] &x) nogil except+
+
 
     cdef cppclass Function(Basic):
         pass
@@ -579,6 +610,43 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
 
     cdef cppclass ATan2(Function):
         pass
+
+    cdef cppclass LambertW(OneArgFunction):
+        pass
+
+    cdef cppclass Zeta(Function):
+        pass
+
+    cdef cppclass Dirichlet_eta(OneArgFunction):
+        pass
+
+    cdef cppclass KroneckerDelta(Function):
+        pass
+
+    cdef cppclass LeviCivita(Function):
+        pass
+
+    cdef cppclass Erf(OneArgFunction):
+        pass
+
+    cdef cppclass Erfc(OneArgFunction):
+        pass
+
+    cdef cppclass LowerGamma(Function):
+        pass
+
+    cdef cppclass UpperGamma(Function):
+        pass
+
+    cdef cppclass LogGamma(OneArgFunction):
+        pass
+
+    cdef cppclass Beta(Function):
+        pass
+
+    cdef cppclass PolyGamma(Function):
+        pass
+
 
 IF HAVE_SYMENGINE_MPFR:
     cdef extern from "mpfr.h":
