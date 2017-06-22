@@ -29,6 +29,7 @@ environment:
     - BUILD_TYPE: "Debug"
       COMPILER: MinGW-w64
       PYTHON_VERSION: 35-x64
+      WITH_NUMPY: no
 
 install:
 - set PYTHON_SOURCE_DIR=%CD%
@@ -63,6 +64,7 @@ install:
 - set PATH=C:\Python%PYTHON_VERSION%;C:\Python%PYTHON_VERSION%\Scripts;%PATH%
 - pip install nose pytest sympy
 - pip install --install-option="--no-cython-compile" cython
+- if NOT [%WITH_NUMPY%]==[no] pip install numpy
 
 - set /p commit=<symengine_version.txt
 - cd symengine-cpp

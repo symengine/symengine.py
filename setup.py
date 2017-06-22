@@ -61,6 +61,21 @@ global_user_options = [
      'options to cmake <var>:<type>=<value>'),
 ]
 
+def _process_define(arg):
+    (defs, one), = getattr(arg, 'define', None) or [('', '1')]
+    assert one == '1'
+    defs = [df for df in defs.split(';') if df != '']
+    if not any(define.startswith('WITH_NUMPY') for define in defs):
+        try:
+            import numpy as np
+        except ImportError:
+            defs.append('WITH_NUMPY=False')
+        else:
+            defs.append('WITH_NUMPY=True')
+    return [(s.strip(), None) if '=' not in s else
+            tuple(ss.strip() for ss in s.split('='))
+            for s in defs]
+
 
 class BuildWithCmake(_build):
     sub_commands = [('build_ext', None)]
@@ -83,12 +98,8 @@ class BuildExtWithCmake(_build_ext):
         # The argument parsing will result in self.define being a string, but
         # it has to be a list of 2-tuples.
         # Multiple symbols can be separated with semi-colons.
-        if self.define:
-            defines = self.define.split(';')
-            self.define = [(s.strip(), None) if '=' not in s else
-                           tuple(ss.strip() for ss in s.split('='))
-                           for s in defines]
-            cmake_opts.extend(self.define)
+        self.define = _process_define(self)
+        cmake_opts.extend(self.define)
         if self.symengine_dir:
             cmake_opts.extend([('SymEngine_DIR', self.symengine_dir)])
 
@@ -160,13 +171,8 @@ class InstallWithCmake(_install):
         # The argument parsing will result in self.define being a string, but
         # it has to be a list of 2-tuples.
         # Multiple symbols can be separated with semi-colons.
-        if self.define:
-            defines = self.define.split(';')
-            self.define = [(s.strip(), None) if '=' not in s else
-                           tuple(ss.strip() for ss in s.split('='))
-                           for s in defines]
-            cmake_opts.extend(self.define)
-
+        self.define = _process_define(self)
+        cmake_opts.extend(self.define)
         cmake_build_type[0] = self.build_type
         cmake_opts.extend([('PYTHON_INSTALL_PATH', path.join(os.getcwd(), self.install_platlib))])
         cmake_opts.extend([('PYTHON_INSTALL_HEADER_PATH',
