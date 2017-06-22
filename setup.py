@@ -203,6 +203,21 @@ class InstallWithCmake(_install):
         _install.run(self)
         self.cmake_install()
 
+cmdclass={
+          'build': BuildWithCmake,
+          'build_ext': BuildExtWithCmake,
+          'install': InstallWithCmake,
+          }
+
+try:
+    from wheel.bdist_wheel import bdist_wheel
+    class BdistWheelWithCmake(bdist_wheel):
+        def finalize_options(self):
+            bdist_wheel.finalize_options(self)
+            self.root_is_pure = False
+    cmdclass["bdist_wheel"] = BdistWheelWithCmake
+except ImportError:
+    pass
 
 long_description = '''
 SymEngine is a standalone fast C++ symbolic manipulation library.
@@ -218,11 +233,7 @@ setup(name="symengine",
       author_email="symengine@googlegroups.com",
       license="MIT",
       url="https://github.com/symengine/symengine.py",
-      cmdclass={
-          'build': BuildWithCmake,
-          'build_ext': BuildExtWithCmake,
-          'install': InstallWithCmake,
-          },
+      cmdclass = cmdclass,
       classifiers=[
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
