@@ -6,7 +6,6 @@ set(SRC
 configure_file(config.pxi.in config.pxi)
 
 include_directories(BEFORE ${python_wrapper_BINARY_DIR}/symengine/lib)
-add_subdirectory(symengine)
 
 cython_add_module_pyx(symengine_wrapper symengine.pxd)
 add_python_library(symengine_wrapper ${SRC})
@@ -34,4 +33,9 @@ install(FILES __init__.py
     symengine.pxd
     symengine_wrapper.pxd
     DESTINATION ${PY_PATH}
+    )
+
+install(FILES
+    pywrapper.h
+    DESTINATION ${PYTHON_INSTALL_PATH}/symengine/lib
     )

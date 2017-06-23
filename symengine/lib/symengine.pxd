@@ -294,7 +294,7 @@ cdef extern from "<symengine/number.h>" namespace "SymEngine":
     cdef cppclass NumberWrapper(Basic):
         pass
 
-cdef extern from "<symengine/pywrapper.h>" namespace "SymEngine":
+cdef extern from "pywrapper.h" namespace "SymEngine":
     cdef cppclass PyNumber(NumberWrapper):
         PyObject* get_py_object()
     cdef cppclass PyModule:
@@ -304,7 +304,7 @@ cdef extern from "<symengine/pywrapper.h>" namespace "SymEngine":
     cdef cppclass PyFunction:
         PyObject* get_py_object()
 
-cdef extern from "<symengine/pywrapper.h>" namespace "SymEngine":
+cdef extern from "pywrapper.h" namespace "SymEngine":
     cdef cppclass PySymbol(Symbol):
         PySymbol(string name, PyObject* pyobj)
         PyObject* get_py_object()
