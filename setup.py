@@ -222,7 +222,12 @@ except ImportError:
 long_description = '''
 SymEngine is a standalone fast C++ symbolic manipulation library.
 Optional thin Python wrappers (SymEngine) allow easy usage from Python and
-integration with SymPy and Sage.'''
+integration with SymPy and Sage.
+
+See https://github.com/symengine/symengine.py for information about License
+and dependencies of wheels
+
+'''
 
 setup(name="symengine",
       version="0.2.1.dev",
