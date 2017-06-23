@@ -114,11 +114,3 @@ script:
 notifications:
   email: false
 
-deploy:
-  provider: pypi
-  user: isuruf
-  password:
-    secure: "HsVXENZjVg05Mce5Ts6iG292Ch03YHETto/512Nu1R8xeRWeerMZpumBE2X0WPrDBuV/zLMlf/jc8rN6EX9GEGaBxTPwFq5tNRTFjShUcmSxWLWPVgF7fYm1+pPjkzODOTIHPkJB00nw22DUuF2kg/gCm7uZeaGNsBELNpKPJyRv9ShxOLqOxK+WR5QQw+xMmmq+ugsc1/kjnxuczcUs/dXyYfFrw9nrKD8qUPeyEsaea1jUxDIVLBtaxnwbmhtw+GPE5tH+5Q/Y8mA7epw5Znj47W+WxfF/sdtBt31m9KNmMcISYpvUHpcju/gTUAeRBU0Ln04teR6iMHUcQJerM0T61uZCNCoYQv1A9oVKA3NO1Gb6in8BqoR+wZB2po+g8U3x+nKGxJrFNekm9zAhs7yQEYnP6C9ekUpe+73qi6I6fzMB71sMJa6SegYL99z+UW6zjhIesf6nX43U+954pN7FsrIzkdTHW67YrBfKr8PEZ0VPxJzokWTPkYO5Qkvjp1TNyFBsV2DS5qpMMYHYxNDbxj5elYZxPt+bvRbtmMdS4p2ze5DVWEQbwW+jZydBoccH6uAhjXkFRil9/5LAJmwfIYcBrF6RkZu1VhSSIULhtOqtA7psSSBSprqyhPsvs8l13PUs92SogXCrYFfHgNR6J8UM3iiP0yooeV6Z+gw="
-  on:
-    condition: $TRIGGER_FEEDSTOCK = yes
-    tags: true
