@@ -3035,7 +3035,6 @@ def has_symbol(obj, symbol=None):
 IF HAVE_NUMPY:
     # Lambdify requires NumPy (since b713a61, see gh-112)
     import os
-    cimport numpy as cnp
     import numpy as np
     have_numpy = True
 
@@ -3181,20 +3180,17 @@ IF HAVE_NUMPY:
             raise ValueError("Not supported")
 
         cpdef unsafe_real(self,
-                          cnp.ndarray[cnp.float64_t, ndim=1, mode='c'] inp,
-                          cnp.ndarray[cnp.float64_t, ndim=1, mode='c'] out,
+                          double[::1] inp, double[::1] out,
                           int inp_offset=0, int out_offset=0):
             raise ValueError("Not supported")
 
-        cpdef unsafe_complex(self,
-                             cnp.ndarray[cnp.complex128_t, ndim=1, mode='c'] inp,
-                             cnp.ndarray[cnp.complex128_t, ndim=1, mode='c'] out,
+        cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out,
                              int inp_offset=0, int out_offset=0):
             raise ValueError("Not supported")
 
         cpdef eval_real(self,
-                        cnp.ndarray[cnp.float64_t, ndim=1, mode='c'] inp,
-                        cnp.ndarray[cnp.float64_t, ndim=1, mode='c'] out):
+                        inp,
+                        out):
             if inp.size != self.args_size:
                 raise ValueError("Size of inp incompatible with number of args.")
             if out.size != self.tot_out_size:
@@ -3202,8 +3198,8 @@ IF HAVE_NUMPY:
             self.unsafe_real(inp, out)
 
         cpdef eval_complex(self,
-                           cnp.ndarray[cnp.complex128_t, ndim=1, mode='c'] inp,
-                           cnp.ndarray[cnp.complex128_t, ndim=1, mode='c'] out):
+                           inp,
+                           out):
             if inp.size != self.args_size:
                 raise ValueError("Size of inp incompatible with number of args.")
             if out.size != self.tot_out_size:
@@ -3228,19 +3224,18 @@ IF HAVE_NUMPY:
 
             """
             cdef:
-                cnp.ndarray[cnp.float64_t, ndim=1, mode='c'] real_inp
-                cnp.ndarray[cnp.float64_t, ndim=1, mode='c'] real_out
-                cnp.ndarray[cnp.complex128_t, ndim=1, mode='c'] cmplx_inp
-                cnp.ndarray[cnp.complex128_t, ndim=1, mode='c'] cmplx_out
                 bint reshape_outs
                 size_t idx, new_tot_out_size, nbroadcast = 1
                 long inp_size
                 tuple inp_shape
+                double[::1] real_out, real_inp
+                double complex[::1] cmplx_out, cmplx_inp
             try:
                 inp = np.ascontiguousarray(inp, dtype=self.numpy_dtype)
             except TypeError:
                 inp = np.fromiter(inp, dtype=self.numpy_dtype)
             inp_shape = inp.shape
+
             if self.real:
                 real_inp = inp.ravel()
             else:
@@ -3258,10 +3253,6 @@ IF HAVE_NUMPY:
                 new_out_shapes = [inp_shape[:-1] + out_shape for out_shape in self.out_shapes]
                 reshape_outs = len(new_out_shapes[0]) > 1
                 out = np.empty(new_tot_out_size, dtype=self.numpy_dtype)
-                if self.real:
-                    real_out = out
-                else:
-                    cmplx_out = out
             else:
                 reshape_outs = False
                 if out.size < new_tot_out_size:
@@ -3270,15 +3261,12 @@ IF HAVE_NUMPY:
                     raise ValueError("Output argument needs to be C-contiguous")
                 if not out.flags['WRITEABLE']:
                     raise ValueError("Output argument needs to be writeable")
+                out = out.ravel()
 
-                if self.real:
-                    real_out = out.ravel()
-                    if <size_t>real_out.data != out.__array_interface__['data'][0]:
-                        raise ValueError("out parameter not compatible")
-                else:
-                    cmplx_out = out.ravel()
-                    if <size_t>cmplx_out.data != out.__array_interface__['data'][0]:
-                        raise ValueError("out parameter not compatible")
+            if self.real:
+                real_out = out
+            else:
+                cmplx_out = out
 
             if self.real:
                 for idx in range(nbroadcast):
@@ -3315,16 +3303,10 @@ IF HAVE_NUMPY:
                 self.lambda_double_complex.resize(1)
                 self.lambda_double_complex[0].init(args_, outs_)
 
-        cpdef unsafe_real(self,
-                          cnp.ndarray[cnp.float64_t, ndim=1, mode='c'] inp,
-                          cnp.ndarray[cnp.float64_t, ndim=1, mode='c'] out,
-                          int inp_offset=0, int out_offset=0):
+        cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=0, int out_offset=0):
             self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
 
-        cpdef unsafe_complex(self,
-                             cnp.ndarray[cnp.complex128_t, ndim=1, mode='c'] inp,
-                             cnp.ndarray[cnp.complex128_t, ndim=1, mode='c'] out,
-                             int inp_offset=0, int out_offset=0):
+        cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out, int inp_offset=0, int out_offset=0):
             self.lambda_double_complex[0].call(&out[out_offset], &inp[inp_offset])
 
 
@@ -3337,10 +3319,7 @@ IF HAVE_NUMPY:
                 self.lambda_double.resize(1)
                 self.lambda_double[0].init(args_, outs_)
 
-            cpdef unsafe_real(self,
-                              cnp.ndarray[cnp.float64_t, ndim=1, mode='c'] inp,
-                              cnp.ndarray[cnp.float64_t, ndim=1, mode='c'] out,
-                              int inp_offset=0, int out_offset=0):
+            cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=0, int out_offset=0):
                 self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
 
 
