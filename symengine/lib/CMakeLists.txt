@@ -35,3 +35,8 @@ install(FILES __init__.py
     symengine_wrapper.pxd
     DESTINATION ${PY_PATH}
     )
+
+install(FILES
+    pywrapper.h
+    DESTINATION ${PYTHON_INSTALL_PATH}/symengine/lib
+    )
