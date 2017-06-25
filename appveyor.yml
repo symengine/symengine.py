@@ -95,6 +95,8 @@ install:
 
 - cmake --build . --config %BUILD_TYPE% --target install
 - cd ../../
+- set PATH="C:/Program Files (x86)/symengine/bin";%PATH%
+- set PATH="C:/Program Files/symengine/bin";%PATH%
 
 build_script:
 
