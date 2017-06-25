@@ -18,7 +18,6 @@ environment:
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
       PLATFORM: "x64"
-      WITH_MPC: yes
       CONDA_INSTALL_LOCN: C:\\Miniconda35-x64
       WITH_MPFR: yes
       WITH_MPC: yes
