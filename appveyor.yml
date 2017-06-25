@@ -22,6 +22,10 @@ environment:
       WITH_MPFR: yes
       WITH_MPC: yes
       WITH_LLVM: yes
+    - BUILD_TYPE: "Release"
+      COMPILER: MSVC15
+      PLATFORM: "x64"
+      CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
 #    - BUILD_TYPE: "Debug"
 #      COMPILER: MinGW
 #      PYTHON_VERSION: 27
@@ -67,7 +71,7 @@ install:
 - if NOT [%COMPILER%]==[MSVC15] call symengine-cpp\bin\appveyor-download.cmd "https://raw.githubusercontent.com/symengine/dependencies/dcc10cce2133e2b57e61c5ced6120139bbcdfa20/python-libs-mingw32.7z" -FileName pylibs.7z
 - if NOT [%COMPILER%]==[MSVC15] 7z x -aoa -oC:\ pylibs.7z > NUL
 
-- if [%COMPILER%]!=[MSVC15] set C:\Python%PYTHON_VERSION%;C:\Python%PYTHON_VERSION%\Scripts;PATH=%PATH%
+- if NOT [%COMPILER%]==[MSVC15] set C:\Python%PYTHON_VERSION%;C:\Python%PYTHON_VERSION%\Scripts;PATH=%PATH%
 - pip install nose pytest sympy
 - pip install --install-option="--no-cython-compile" cython
 - if NOT [%WITH_NUMPY%]==[no] pip install numpy
