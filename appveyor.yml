@@ -91,15 +91,13 @@ install:
 - if [%WITH_MPC%]==[yes] cmake -DWITH_MPC=yes ..
 - if [%WITH_LLVM%]==[yes] cmake -DWITH_LLVM=yes -DMSVC_USE_MT=no ..
 
-- cmake -DBUILD_SHARED_LIBS=yes -DBUILD_TESTS=no -DBUILD_BENCHMARKS=no ..
+- cmake -DBUILD_SHARED_LIBS=yes -DBUILD_TESTS=no -DBUILD_BENCHMARKS=no -DCMAKE_INSTALL_PREFIX=C:\symengine ..
 
 - cmake --build . --config %BUILD_TYPE% --target install
 - cd ../../
-- set PATH="C:/Program Files (x86)/symengine/bin";%PATH%
-- set PATH="C:/Program Files/symengine/bin";%PATH%
 
 build_script:
-
+- set PATH=C:\symengine\bin\;%PATH%
 - if [%COMPILER%]==[MSVC15] python setup.py install build_ext --compiler=msvc --build-type=%BUILD_TYPE%
 - if [%COMPILER%]==[MinGW] python setup.py install build_ext --compiler=mingw --inplace
 - if [%COMPILER%]==[MinGW-w64] python setup.py install build_ext --compiler=mingw --inplace
