@@ -65,13 +65,6 @@ def _process_define(arg):
     (defs, one), = getattr(arg, 'define', None) or [('', '1')]
     assert one == '1'
     defs = [df for df in defs.split(';') if df != '']
-    if not any(define.startswith('WITH_NUMPY') for define in defs):
-        try:
-            import numpy as np
-        except ImportError:
-            defs.append('WITH_NUMPY=False')
-        else:
-            defs.append('WITH_NUMPY=True')
     return [(s.strip(), None) if '=' not in s else
             tuple(ss.strip() for ss in s.split('='))
             for s in defs]
