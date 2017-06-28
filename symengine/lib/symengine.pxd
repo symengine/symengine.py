@@ -297,6 +297,10 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_Interval "SymEngine::is_a<SymEngine::Interval>"(const Basic &b) nogil
     bool is_a_Piecewise "SymEngine::is_a<SymEngine::Piecewise>"(const Basic &b) nogil
     bool is_a_Contains "SymEngine::is_a<SymEngine::Contains>"(const Basic &b) nogil
+    bool is_a_And "SymEngine::is_a<SymEngine::And>"(const Basic &b) nogil
+    bool is_a_Not "SymEngine::is_a<SymEngine::Not>"(const Basic &b) nogil
+    bool is_a_Or "SymEngine::is_a<SymEngine::Or>"(const Basic &b) nogil
+    bool is_a_Xor "SymEngine::is_a<SymEngine::Xor>"(const Basic &b) nogil
     RCP[const Basic] expand(RCP[const Basic] &o) nogil except +
 
 cdef extern from "<symengine/subs.h>" namespace "SymEngine":
@@ -891,6 +895,14 @@ cdef extern from "<symengine/logic.h>" namespace "SymEngine":
         pass
     cdef cppclass Contains(Boolean):
         pass
+    cdef cppclass And(Boolean):
+        pass
+    cdef cppclass Or(Boolean):
+        pass
+    cdef cppclass Not(Boolean):
+        pass
+    cdef cppclass Xor(Boolean):
+        pass
 
     RCP[const Basic] boolTrue
     RCP[const Basic] boolFalse
@@ -904,6 +916,15 @@ cdef extern from "<symengine/logic.h>" namespace "SymEngine":
     cdef RCP[const Boolean] Lt(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
     ctypedef Boolean const_Boolean "const SymEngine::Boolean"
     ctypedef vector[pair[RCP[const_Basic], RCP[const_Boolean]]] PiecewiseVec;
+    ctypedef vector[RCP[const_Boolean]] vec_boolean "SymEngine::vec_boolean"
+    ctypedef set[RCP[const_Boolean], RCPBasicKeyLess] set_boolean "SymEngine::set_boolean"
+    cdef RCP[const Boolean] logical_and(set_boolean &s) nogil except+
+    cdef RCP[const Boolean] logical_nand(set_boolean &s) nogil except+
+    cdef RCP[const Boolean] logical_or(set_boolean &s) nogil except+
+    cdef RCP[const Boolean] logical_not(RCP[const Boolean] &s) nogil except+
+    cdef RCP[const Boolean] logical_nor(set_boolean &s) nogil except+
+    cdef RCP[const Boolean] logical_xor(vec_boolean &s) nogil except+
+    cdef RCP[const Boolean] logical_xnor(vec_boolean &s) nogil except+
     cdef RCP[const Basic] piecewise(PiecewiseVec vec) nogil except +
     cdef RCP[const Boolean] contains(RCP[const Basic] &expr,
                                      RCP[const Set] &set) nogil

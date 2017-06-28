@@ -192,6 +192,14 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = BooleanAtom.__new__(BooleanAtom)
     elif (symengine.is_a_Interval(deref(o))):
         r = Interval.__new__(Interval)
+    elif (symengine.is_a_And(deref(o))):
+        r = Boolean.__new__(And)
+    elif (symengine.is_a_Not(deref(o))):
+        r = Boolean.__new__(Not)
+    elif (symengine.is_a_Or(deref(o))):
+        r = Boolean.__new__(Or)
+    elif (symengine.is_a_Xor(deref(o))):
+        r = Boolean.__new__(Xor)
     else:
         raise Exception("Unsupported SymEngine class.")
     r.thisptr = o
@@ -355,6 +363,20 @@ def sympy2symengine(a, raise_error=False):
         return ceiling(a.args[0])
     elif isinstance(a, sympy.conjugate):
         return conjugate(a.args[0])
+    elif isinstance(a, sympy.And):
+        return logical_and(*a.args)
+    elif isinstance(a, sympy.Or):
+        return logical_or(*a.args)
+    elif isinstance(a, sympy.Not):
+        return logical_not(a.args[0])
+    elif isinstance(a, sympy.Nor):
+        return logical_nor(*a.args)
+    elif isinstance(a, sympy.Nand):
+        return logical_nand(*a.args)
+    elif isinstance(a, sympy.Xor):
+        return logical_xor(*a.args)
+    elif isinstance(a, sympy.Xnor):
+        return logical_xnor(*a.args)
     elif isinstance(a, sympy.gamma):
         return gamma(a.args[0])
     elif isinstance(a, sympy.Derivative):
@@ -1067,7 +1089,7 @@ cdef class Constant(Basic):
             raise Exception("Unknown Constant")
 
 
-class Boolean(Basic):
+cdef class Boolean(Basic):
     pass
 
 
@@ -1100,6 +1122,30 @@ class BooleanFalse(BooleanAtom):
 
     def _sage_(self):
         return False
+
+
+class And(Boolean):
+
+    def __new__(cls, *args):
+        return logical_and(*args)
+
+
+class Or(Boolean):
+
+    def __new__(cls, *args):
+        return logical_or(*args)
+
+
+class Not(Boolean):
+
+    def __new__(cls, x):
+        return logical_not(x)
+
+
+class Xor(Boolean):
+
+    def __new__(cls, *args):
+        return logical_xor(*args)
 
 
 class Relational(Boolean):
@@ -3362,6 +3408,58 @@ def digamma(x):
 def trigamma(x):
     cdef Basic X = sympify(x)
     return c2py(symengine.trigamma(X.thisptr))
+
+def logical_and(*args):
+    cdef symengine.set_boolean s
+    cdef Boolean e_
+    for e in args:
+        e_ = sympify(e)
+        s.insert(e_.thisptr)
+    return c2py(<RCP[const symengine.Basic]>(symengine.logical_and(s)))
+
+def logical_or(*args):
+    cdef symengine.set_boolean s
+    cdef Boolean e_
+    for e in args:
+        e_ = sympify(e)
+        s.insert(e_.thisptr)
+    return c2py(<RCP[const symengine.Basic]>(symengine.logical_or(s)))
+
+def logical_nor(*args):
+    cdef symengine.set_boolean s
+    cdef Boolean e_
+    for e in args:
+        e_ = sympify(e)
+        s.insert(e_.thisptr)
+    return c2py(<RCP[const symengine.Basic]>(symengine.logical_nor(s)))
+
+def logical_nand(*args):
+    cdef symengine.set_boolean s
+    cdef Boolean e_
+    for e in args:
+        e_ = sympify(e)
+        s.insert(e_.thisptr)
+    return c2py(<RCP[const symengine.Basic]>(symengine.logical_nand(s)))
+
+def logical_not(x):
+    cdef Boolean X = sympify(x)
+    return c2py(<RCP[const symengine.Basic]>(symengine.logical_not(X.thisptr)))
+
+def logical_xor(*args):
+    cdef symengine.vec_boolean v
+    cdef Boolean e_
+    for e in args:
+        e_ = sympify(e)
+        v.push_back(e_.thisptr)
+    return c2py(<RCP[const symengine.Basic]>(symengine.logical_xor(v)))
+
+def logical_xnor(*args):
+    cdef symengine.vec_boolean v
+    cdef Boolean e_
+    for e in args:
+        e_ = sympify(e)
+        v.push_back(e_.thisptr)
+    return c2py(<RCP[const symengine.Basic]>(symengine.logical_xnor(v)))
 
 def eval_double(x):
     cdef Basic X = sympify(x)
