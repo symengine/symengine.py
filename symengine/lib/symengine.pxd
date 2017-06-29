@@ -295,6 +295,10 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_Ceiling "SymEngine::is_a<SymEngine::Ceiling>"(const Basic &b) nogil
     bool is_a_Conjugate "SymEngine::is_a<SymEngine::Conjugate>"(const Basic &b) nogil
     bool is_a_Interval "SymEngine::is_a<SymEngine::Interval>"(const Basic &b) nogil
+    bool is_a_EmptySet "SymEngine::is_a<SymEngine::EmptySet>"(const Basic &b) nogil
+    bool is_a_UniversalSet "SymEngine::is_a<SymEngine::UniversalSet>"(const Basic &b) nogil
+    bool is_a_FiniteSet "SymEngine::is_a<SymEngine::FiniteSet>"(const Basic &b) nogil
+
     bool is_a_Piecewise "SymEngine::is_a<SymEngine::Piecewise>"(const Basic &b) nogil
     bool is_a_Contains "SymEngine::is_a<SymEngine::Contains>"(const Basic &b) nogil
     bool is_a_And "SymEngine::is_a<SymEngine::And>"(const Basic &b) nogil
@@ -878,7 +882,7 @@ cdef extern from "<symengine/visitor.h>" namespace "SymEngine":
 
 cdef extern from "<symengine/logic.h>" namespace "SymEngine":
     cdef cppclass Boolean(Basic):
-        pass
+        RCP[const Boolean] logical_not() nogil except+
     cdef cppclass BooleanAtom(Boolean):
         bool get_val() nogil
     cdef cppclass Relational(Boolean):
@@ -984,6 +988,17 @@ cdef extern from "<symengine/sets.h>" namespace "SymEngine":
     cdef cppclass Set(Basic):
         RCP[const Set] set_intersection(RCP[const Set] &o) nogil except +
         RCP[const Set] set_union(RCP[const Set] &o) nogil except +
+        RCP[const Set] set_complement(RCP[const Set] &o) nogil except +
+        RCP[const Boolean] contains(RCP[const Basic] &a) nogil except +
     cdef cppclass Interval(Set):
         pass
-    cdef RCP[const Basic] interval(RCP[const Number] &start, RCP[const Number] &end, bool l, bool r) nogil
+    cdef cppclass EmptySet(Set):
+        pass
+    cdef cppclass UniversalSet(Set):
+        pass
+    cdef cppclass FiniteSet(Set):
+        pass
+    cdef RCP[const Basic] interval(RCP[const Number] &start, RCP[const Number] &end, bool l, bool r) nogil except +
+    cdef RCP[const EmptySet] emptyset() nogil except +
+    cdef RCP[const UniversalSet] universalset() nogil except +
+    cdef RCP[const Set] finiteset(set_basic &container) nogil except +

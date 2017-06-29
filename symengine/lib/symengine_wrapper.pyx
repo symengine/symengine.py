@@ -192,6 +192,12 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = BooleanAtom.__new__(BooleanAtom)
     elif (symengine.is_a_Interval(deref(o))):
         r = Interval.__new__(Interval)
+    elif (symengine.is_a_EmptySet(deref(o))):
+        r = EmptySet.__new__(EmptySet)
+    elif (symengine.is_a_UniversalSet(deref(o))):
+        r = UniversalSet.__new__(UniversalSet)
+    elif (symengine.is_a_FiniteSet(deref(o))):
+        r = FiniteSet.__new__(FiniteSet)
     elif (symengine.is_a_And(deref(o))):
         r = Boolean.__new__(And)
     elif (symengine.is_a_Not(deref(o))):
@@ -398,9 +404,15 @@ def sympy2symengine(a, raise_error=False):
         return BooleanFalse
     elif isinstance(a, (sympy.Piecewise)):
         return piecewise(*(a.args))
-    elif isinstance(a, (sympy.Interval)):
+    elif isinstance(a, sympy.Interval):
         return interval(*(a.args))
-    elif isinstance(a, (sympy.Contains)):
+    elif isinstance(a, sympy.S.EmptySet):
+        return emptyset()
+    elif isinstance(a, sympy.S.UniversalSet):
+        return universalset()
+    elif isinstance(a, sympy.FiniteSet):
+        return finiteset(*(a.args))
+    elif isinstance(a, sympy.Contains):
         return contains(*(a.args))
     elif isinstance(a, sympy.Function):
         return PyFunction(a, a.args, a.func, sympy_module)
@@ -1090,7 +1102,9 @@ cdef class Constant(Basic):
 
 
 cdef class Boolean(Basic):
-    pass
+    
+    def logical_not(self):
+        return c2py(<RCP[const symengine.Basic]>(deref(symengine.rcp_static_cast_Boolean(self.thisptr)).logical_not()))
 
 
 class BooleanAtom(Boolean):
@@ -1129,11 +1143,21 @@ class And(Boolean):
     def __new__(cls, *args):
         return logical_and(*args)
 
+    def _sympy_(self):
+        import sympy
+        s = self.args_as_sympy()
+        return sympy.And(*s)
+
 
 class Or(Boolean):
 
     def __new__(cls, *args):
         return logical_or(*args)
+
+    def _sympy_(self):
+        import sympy
+        s = self.args_as_sympy()
+        return sympy.Or(*s)
 
 
 class Not(Boolean):
@@ -1141,11 +1165,20 @@ class Not(Boolean):
     def __new__(cls, x):
         return logical_not(x)
 
+    def _sympy_(self):
+        import sympy
+        return sympy.Not(c2py(<RCP[const symengine.Basic]>(self.args[0])._sympy_()))
+
 
 class Xor(Boolean):
 
     def __new__(cls, *args):
         return logical_xor(*args)
+
+    def _sympy_(self):
+        import sympy
+        s = self.args_as_sympy()
+        return sympy.Xor(*s)
 
 
 class Relational(Boolean):
@@ -2482,6 +2515,10 @@ class Subs(Basic):
 
 
 cdef class Piecewise(Basic):
+
+    def __new__(self, *args):
+        return piecewise(*args)
+
     def _sympy_(self):
         import sympy
         a = self.args
@@ -2492,6 +2529,7 @@ cdef class Piecewise(Basic):
 
 
 cdef class Set(Basic):
+
     def intersection(self, a):
         cdef Set other = sympify(a)
         cdef RCP[const symengine.Set] other_ = symengine.rcp_static_cast_Set(other.thisptr)
@@ -2502,16 +2540,65 @@ cdef class Set(Basic):
         cdef Set other = sympify(a)
         cdef RCP[const symengine.Set] other_ = symengine.rcp_static_cast_Set(other.thisptr)
         return c2py(<RCP[const symengine.Basic]>(deref(symengine.rcp_static_cast_Set(self.thisptr))
-                    .set_intersection(other_)))
+                    .set_union(other_)))
+
+    def complement(self, a):
+        cdef Set other = sympify(a)
+        cdef RCP[const symengine.Set] other_ = symengine.rcp_static_cast_Set(other.thisptr)
+        return c2py(<RCP[const symengine.Basic]>(deref(symengine.rcp_static_cast_Set(self.thisptr))
+                    .set_complement(other_)))
+
+    def contains(self, a):
+        cdef Basic a_ = sympify(a)
+        return c2py(<RCP[const symengine.Basic]>(deref(symengine.rcp_static_cast_Set(self.thisptr))
+                    .contains(a_)))
 
 
 cdef class Interval(Set):
+
+    def __new__(self, *args):
+        return interval(*args)
+
     def _sympy_(self):
         import sympy
         return sympy.Interval(*[arg._sympy_() for arg in self.args])
 
 
+cdef class EmptySet(Set):
+
+    def __new__(self):
+        return emptyset()
+
+    def _sympy_(self):
+        import sympy
+        return sympy.EmptySet()
+
+
+cdef class UniversalSet(Set):
+
+    def __new__(self):
+        return universalset()
+
+    def _sympy_(self):
+        import sympy
+        return sympy.UniversalSet()
+
+
+cdef class FiniteSet(Set):
+    
+    def __new__(self, *args):
+        return finiteset(*args)
+
+    def _sympy_(self):
+        import sympy
+        return sympy.FiniteSet(*[arg._sympy_() for arg in self.args])    
+
+
 cdef class Contains(Boolean):
+    
+    def __new__(self, expr, sset):
+        return contains(expr, sset)
+
     def _sympy_(self):
         import sympy
         return sympy.Contains(*[arg._sympy_() for arg in self.args])
@@ -3433,6 +3520,8 @@ def logical_nor(*args):
         s.insert(e_.thisptr)
     return c2py(<RCP[const symengine.Basic]>(symengine.logical_nor(s)))
 
+Nor = logical_nor
+
 def logical_nand(*args):
     cdef symengine.set_boolean s
     cdef Boolean e_
@@ -3440,6 +3529,8 @@ def logical_nand(*args):
         e_ = sympify(e)
         s.insert(e_.thisptr)
     return c2py(<RCP[const symengine.Basic]>(symengine.logical_nand(s)))
+
+Nand = logical_nand
 
 def logical_not(x):
     cdef Boolean X = sympify(x)
@@ -3460,6 +3551,8 @@ def logical_xnor(*args):
         e_ = sympify(e)
         v.push_back(e_.thisptr)
     return c2py(<RCP[const symengine.Basic]>(symengine.logical_xnor(v)))
+
+Xnor = logical_xnor
 
 def eval_double(x):
     cdef Basic X = sympify(x)
@@ -4334,11 +4427,28 @@ def interval(start, end, left_open=False, right_open=False):
     return c2py(symengine.interval(n1, n2, left_open_, right_open_))
 
 
+def emptyset():
+    return c2py(<RCP[const symengine.Basic]>(symengine.emptyset()))
+
+
+def universalset():
+    return c2py(<RCP[const symengine.Basic]>(symengine.universalset()))
+
+
+def finiteset(*args)
+    cdef symengine.set_basic s
+    cdef Basic e_
+    for e in args:
+        e_ = sympify(e)
+        s.insert(e_.thisptr)
+    return c2py(<RCP[const symengine.Basic]>(symengine.finiteset(s)))
+
+
 def contains(expr, sset):
     cdef Basic expr_ = sympify(expr)
     cdef Set sset_ = sympify(sset)
     cdef RCP[const symengine.Set] s = symengine.rcp_static_cast_Set(sset_.thisptr)
-    return c2py(<RCP[const symengine.Basic]>symengine.contains(expr_.thisptr, s))
+    return c2py(<RCP[const symengine.Basic]>(symengine.contains(expr_.thisptr, s)))
 
 def ccode(expr):
     cdef Basic expr_ = sympify(expr)
