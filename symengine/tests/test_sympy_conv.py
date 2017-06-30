@@ -6,7 +6,8 @@ from symengine import (Symbol, Integer, sympify, SympifyError, log,
 from symengine.lib.symengine_wrapper import (Subs, Derivative, RealMPFR,
         ComplexMPC, PyNumber, Function, EulerGamma, Catalan, GoldenRatio,
         LambertW, zeta, dirichlet_eta, KroneckerDelta, LeviCivita, erf, erfc,
-        lowergamma, uppergamma, loggamma, beta, polygamma)
+        lowergamma, uppergamma, loggamma, beta, polygamma, sign, floor,
+        ceiling, conjugate)
 import sympy
 
 # Note: We test _sympy_() for SymEngine -> SymPy conversion, as those are
@@ -555,6 +556,38 @@ def test_polygamma():
     y = Symbol("y")
     e1 = sympy.polygamma(sympy.Symbol("x"), sympy.Symbol("y"))
     e2 = polygamma(x, y)
+    assert sympify(e1) == e2
+    assert e2._sympy_() == e1
+
+
+def test_sign():
+    x = Symbol("x")
+    e1 = sympy.sign(sympy.Symbol("x"))
+    e2 = sign(x)
+    assert sympify(e1) == e2
+    assert e2._sympy_() == e1
+
+
+def test_floor():
+    x = Symbol("x")
+    e1 = sympy.floor(sympy.Symbol("x"))
+    e2 = floor(x)
+    assert sympify(e1) == e2
+    assert e2._sympy_() == e1
+
+
+def test_ceiling():
+    x = Symbol("x")
+    e1 = sympy.ceiling(sympy.Symbol("x"))
+    e2 = ceiling(x)
+    assert sympify(e1) == e2
+    assert e2._sympy_() == e1
+
+
+def test_conjugate():
+    x = Symbol("x")
+    e1 = sympy.conjugate(sympy.Symbol("x"))
+    e2 = conjugate(x)
     assert sympify(e1) == e2
     assert e2._sympy_() == e1
 

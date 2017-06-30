@@ -170,6 +170,14 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = Function.__new__(beta)
     elif (symengine.is_a_PolyGamma(deref(o))):
         r = Function.__new__(polygamma)
+    elif (symengine.is_a_Sign(deref(o))):
+        r = Function.__new__(sign)
+    elif (symengine.is_a_Floor(deref(o))):
+        r = Function.__new__(floor)
+    elif (symengine.is_a_Ceiling(deref(o))):
+        r = Function.__new__(ceiling)
+    elif (symengine.is_a_Conjugate(deref(o))):
+        r = Function.__new__(conjugate)
     elif (symengine.is_a_PyNumber(deref(o))):
         r = PyNumber.__new__(PyNumber)
     else:
@@ -325,6 +333,14 @@ def sympy2symengine(a, raise_error=False):
         return beta(*a.args)
     elif isinstance(a, sympy.polygamma):
         return polygamma(*a.args)
+    elif isinstance(a, sympy.sign):
+        return sign(a.args[0])
+    elif isinstance(a, sympy.floor):
+        return floor(a.args[0])
+    elif isinstance(a, sympy.ceiling):
+        return ceiling(a.args[0])
+    elif isinstance(a, sympy.conjugate):
+        return conjugate(a.args[0])
     elif isinstance(a, sympy.gamma):
         return gamma(a.args[0])
     elif isinstance(a, sympy.Derivative):
@@ -1728,6 +1744,30 @@ class polygamma(Function):
     def _sympy_(self):
         import sympy
         return sympy.polygamma(*self.args_as_sympy())
+
+class sign(OneArgFunction):
+    def __new__(cls, x):
+        cdef Basic X = sympify(x)
+        return c2py(symengine.sign(X.thisptr))
+
+class floor(OneArgFunction):
+    def __new__(cls, x):
+        cdef Basic X = sympify(x)
+        return c2py(symengine.floor(X.thisptr))
+
+class ceiling(OneArgFunction):
+    def __new__(cls, x):
+        cdef Basic X = sympify(x)
+        return c2py(symengine.ceiling(X.thisptr))
+
+    def _sage_(self):
+        import sage.all as sage
+        return sage.ceil(self.get_arg()._sage_())
+
+class conjugate(OneArgFunction):
+    def __new__(cls, x):
+        cdef Basic X = sympify(x)
+        return c2py(symengine.conjugate(X.thisptr))
 
 class log(OneArgFunction):
     def __new__(cls, x, y=None):

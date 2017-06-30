@@ -3,8 +3,8 @@ from symengine import (Integer, symbols, sin, cos, pi, E, I, oo, zoo,
     sympify, log)
 from symengine.lib.symengine_wrapper import (PyNumber, PyFunction,
     sage_module, wrap_sage_function, Catalan, GoldenRatio, EulerGamma,
-    LambertW, KroneckerDelta, erf, lowergamma,
-    uppergamma, loggamma, beta)
+    LambertW, KroneckerDelta, erf, lowergamma, uppergamma, loggamma,
+    beta, floor, ceiling, conjugate)
 
 
 def test_sage_conversions():
@@ -88,6 +88,15 @@ def test_sage_conversions():
 
     assert beta(x1, y1) == beta(x, y)
     assert beta(x1, y1)._sage_() == sage.beta(x, y)
+
+    assert floor(x1) == floor(x)
+    assert floor(x1)._sage_() == sage.floor(x)
+
+    assert ceiling(x1) == ceiling(x)
+    assert ceiling(x1)._sage_() == sage.ceil(x)
+
+    assert conjugate(x1) == conjugate(x)
+    assert conjugate(x1)._sage_() == sage.conjugate(x)
 
     # For the following test, sage needs to be modified
     # assert sage.sin(x) == sage.sin(x1)

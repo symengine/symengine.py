@@ -287,6 +287,10 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_Beta "SymEngine::is_a<SymEngine::Beta>"(const Basic &b) nogil
     bool is_a_PolyGamma "SymEngine::is_a<SymEngine::PolyGamma>"(const Basic &b) nogil
     bool is_a_PySymbol "SymEngine::is_a_sub<SymEngine::PySymbol>"(const Basic &b) nogil
+    bool is_a_Sign "SymEngine::is_a<SymEngine::Sign>"(const Basic &b) nogil
+    bool is_a_Floor "SymEngine::is_a<SymEngine::Floor>"(const Basic &b) nogil
+    bool is_a_Ceiling "SymEngine::is_a<SymEngine::Ceiling>"(const Basic &b) nogil
+    bool is_a_Conjugate "SymEngine::is_a<SymEngine::Conjugate>"(const Basic &b) nogil
 
     RCP[const Basic] expand(RCP[const Basic] &o) nogil except +
 
@@ -491,6 +495,10 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
     cdef RCP[const Basic] polygamma(RCP[const Basic] &n, RCP[const Basic] &x) nogil except+
     cdef RCP[const Basic] digamma(RCP[const Basic] &x) nogil except+
     cdef RCP[const Basic] trigamma(RCP[const Basic] &x) nogil except+
+    cdef RCP[const Basic] sign(RCP[const Basic] &x) nogil except+
+    cdef RCP[const Basic] floor(RCP[const Basic] &x) nogil except+
+    cdef RCP[const Basic] ceiling(RCP[const Basic] &x) nogil except+
+    cdef RCP[const Basic] conjugate(RCP[const Basic] &x) nogil except+
 
 
     cdef cppclass Function(Basic):
@@ -647,6 +655,17 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
     cdef cppclass PolyGamma(Function):
         pass
 
+    cdef cppclass Sign(OneArgFunction):
+        pass
+
+    cdef cppclass Floor(OneArgFunction):
+        pass
+
+    cdef cppclass Ceiling(OneArgFunction):
+        pass
+
+    cdef cppclass Conjugate(OneArgFunction):
+        pass
 
 IF HAVE_SYMENGINE_MPFR:
     cdef extern from "mpfr.h":
