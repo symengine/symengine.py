@@ -33,7 +33,7 @@ if have_numpy:
         return f
 
 
-__version__ = "0.3.0.rc0"
+__version__ = "0.3.0"
 
 
 def test():
