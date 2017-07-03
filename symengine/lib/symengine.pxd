@@ -153,6 +153,7 @@ cdef extern from "<symengine/symengine_rcp.h>" namespace "SymEngine":
     RCP[const RealMPFR] rcp_static_cast_RealMPFR "SymEngine::rcp_static_cast<const SymEngine::RealMPFR>"(RCP[const Basic] &b) nogil
     RCP[const ComplexMPC] rcp_static_cast_ComplexMPC "SymEngine::rcp_static_cast<const SymEngine::ComplexMPC>"(RCP[const Basic] &b) nogil
     RCP[const Log] rcp_static_cast_Log "SymEngine::rcp_static_cast<const SymEngine::Log>"(RCP[const Basic] &b) nogil
+    RCP[const BooleanAtom] rcp_static_cast_BooleanAtom "SymEngine::rcp_static_cast<const SymEngine::BooleanAtom>"(RCP[const Basic] &b) nogil
     RCP[const PyNumber] rcp_static_cast_PyNumber "SymEngine::rcp_static_cast<const SymEngine::PyNumber>"(RCP[const Basic] &b) nogil
     RCP[const PyFunction] rcp_static_cast_PyFunction "SymEngine::rcp_static_cast<const SymEngine::PyFunction>"(RCP[const Basic] &b) nogil
     Ptr[RCP[Basic]] outArg(RCP[const Basic] &arg) nogil
@@ -266,6 +267,11 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_RealMPFR "SymEngine::is_a<SymEngine::RealMPFR>"(const Basic &b) nogil
     bool is_a_ComplexMPC "SymEngine::is_a<SymEngine::ComplexMPC>"(const Basic &b) nogil
     bool is_a_Log "SymEngine::is_a<SymEngine::Log>"(const Basic &b) nogil
+    bool is_a_BooleanAtom "SymEngine::is_a<SymEngine::BooleanAtom>"(const Basic &b) nogil
+    bool is_a_Equality "SymEngine::is_a<SymEngine::Equality>"(const Basic &b) nogil
+    bool is_a_Unequality "SymEngine::is_a<SymEngine::Unequality>"(const Basic &b) nogil
+    bool is_a_LessThan "SymEngine::is_a<SymEngine::LessThan>"(const Basic &b) nogil
+    bool is_a_StrictLessThan "SymEngine::is_a<SymEngine::StrictLessThan>"(const Basic &b) nogil
     bool is_a_PyNumber "SymEngine::is_a<SymEngine::PyNumber>"(const Basic &b) nogil
     bool is_a_ATan2 "SymEngine::is_a<SymEngine::ATan2>"(const Basic &b) nogil
     bool is_a_PySymbol "SymEngine::is_a_sub<SymEngine::PySymbol>"(const Basic &b) nogil
@@ -755,6 +761,33 @@ cdef extern from "<symengine/visitor.h>" namespace "SymEngine":
     bool has_symbol(const Basic &b, const Symbol &x) nogil except +
     RCP[const Basic] coeff(const Basic &b, const Basic &x, const Basic &n) nogil except +
     set_basic free_symbols(const Basic &b) nogil except +
+
+cdef extern from "<symengine/logic.h>" namespace "SymEngine":
+    cdef cppclass Boolean(Basic):
+        pass
+    cdef cppclass BooleanAtom(Boolean):
+        bool get_val() nogil
+    cdef cppclass Relational(Boolean):
+        pass
+    cdef cppclass Equality(Relational):
+        pass
+    cdef cppclass Unequality(Relational):
+        pass
+    cdef cppclass LessThan(Relational):
+        pass
+    cdef cppclass StrictLessThan(Relational):
+        pass
+
+    RCP[const Basic] boolTrue
+    RCP[const Basic] boolFalse
+    bool is_a_Relational(const Basic &b) nogil
+    cdef RCP[const Boolean] Eq(RCP[const Basic] &lhs) nogil except+
+    cdef RCP[const Boolean] Eq(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
+    cdef RCP[const Boolean] Ne(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
+    cdef RCP[const Boolean] Ge(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
+    cdef RCP[const Boolean] Gt(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
+    cdef RCP[const Boolean] Le(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
+    cdef RCP[const Boolean] Lt(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
 
 cdef extern from "<utility>" namespace "std":
     cdef integer_class std_move_mpz "std::move" (integer_class) nogil

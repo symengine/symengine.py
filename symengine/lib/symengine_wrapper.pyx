@@ -1,7 +1,7 @@
 from cython.operator cimport dereference as deref, preincrement as inc
 cimport symengine
 from symengine cimport RCP, pair, map_basic_basic, umap_int_basic, umap_int_basic_iterator, umap_basic_num, umap_basic_num_iterator, rcp_const_basic, std_pair_short_rcp_const_basic, rcp_const_seriescoeffinterface
-from libcpp cimport bool
+from libcpp cimport bool as cppbool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 from cpython cimport PyObject, Py_XINCREF, Py_XDECREF, \
@@ -67,6 +67,19 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = Function.__new__(Max)
     elif (symengine.is_a_Min(deref(o))):
         r = Function.__new__(Min)
+    elif (symengine.is_a_BooleanAtom(deref(o))):
+        if (deref(symengine.rcp_static_cast_BooleanAtom(o)).get_val()):
+            r = BooleanAtom.__new__(BooleanTrue)
+        else:
+            r = BooleanAtom.__new__(BooleanFalse)
+    elif (symengine.is_a_Equality(deref(o))):
+        r = Relational.__new__(Equality)
+    elif (symengine.is_a_Unequality(deref(o))):
+        r = Relational.__new__(Unequality)
+    elif (symengine.is_a_LessThan(deref(o))):
+        r = Relational.__new__(LessThan)
+    elif (symengine.is_a_StrictLessThan(deref(o))):
+        r = Relational.__new__(StrictLessThan)
     elif (symengine.is_a_Gamma(deref(o))):
         r = Function.__new__(Gamma)
     elif (symengine.is_a_Derivative(deref(o))):
@@ -185,6 +198,10 @@ def sympy2symengine(a, raise_error=False):
         return zoo
     elif a is sympy.nan:
         return nan
+    elif a is sympy.S.true:
+        return true
+    elif a is sympy.S.false:
+        return false
     elif isinstance(a, sympy.functions.elementary.trigonometric.TrigonometricFunction):
         if isinstance(a, sympy.sin):
             return sin(a.args[0])
@@ -242,6 +259,18 @@ def sympy2symengine(a, raise_error=False):
         return _max(*a.args)
     elif isinstance(a, sympy.Min):
         return _min(*a.args)
+    elif isinstance(a, sympy.Equality):
+        return eq(*a.args)
+    elif isinstance(a, sympy.Unequality):
+        return ne(*a.args)
+    elif isinstance(a, sympy.GreaterThan):
+        return ge(*a.args)
+    elif isinstance(a, sympy.StrictGreaterThan):
+        return gt(*a.args)
+    elif isinstance(a, sympy.LessThan):
+        return le(*a.args)
+    elif isinstance(a, sympy.StrictLessThan):
+        return lt(*a.args)
     elif isinstance(a, sympy.gamma):
         return gamma(a.args[0])
     elif isinstance(a, sympy.Derivative):
@@ -323,6 +352,8 @@ def _sympify(a, raise_error=True):
     """
     if isinstance(a, (Basic, MatrixBase)):
         return a
+    elif isinstance(a, bool):
+        return (true if a else false)
     elif isinstance(a, (int, long)):
         return Integer(a)
     elif isinstance(a, float):
@@ -564,15 +595,14 @@ cdef class Basic(object):
             return symengine.eq(deref(A.thisptr), deref(B.thisptr))
         elif (op == 3):
             return symengine.neq(deref(A.thisptr), deref(B.thisptr))
-        from sympy import Rel
         if (op == 0):
-            return Rel(A, B, '<')
+            return c2py(<RCP[const symengine.Basic]>(symengine.Lt(A.thisptr, B.thisptr)))
         elif (op == 1):
-            return Rel(A, B, '<=')
+            return c2py(<RCP[const symengine.Basic]>(symengine.Le(A.thisptr, B.thisptr)))
         elif (op == 4):
-            return Rel(A, B, '>')
+            return c2py(<RCP[const symengine.Basic]>(symengine.Gt(A.thisptr, B.thisptr)))
         elif (op == 5):
-            return Rel(A, B, '>=')
+            return c2py(<RCP[const symengine.Basic]>(symengine.Ge(A.thisptr, B.thisptr)))
 
     def expand(Basic self not None):
         return c2py(symengine.expand(self.thisptr))
@@ -841,6 +871,120 @@ cdef class Constant(Basic):
             return sage.pi
         else:
             raise Exception("Unknown Constant")
+
+
+class Boolean(Basic):
+    pass
+
+
+class BooleanAtom(Boolean):
+    pass
+
+
+class BooleanTrue(BooleanAtom):
+
+    def _sympy_(self):
+        import sympy
+        return sympy.S.true
+
+    def _sage_(self):
+        return True
+
+
+class BooleanFalse(BooleanAtom):
+
+    def _sympy_(self):
+        import sympy
+        return sympy.S.false
+
+    def _sage_(self):
+        return False
+
+
+class Relational(Boolean):
+    pass
+
+Rel = Relational
+
+
+class Equality(Relational):
+
+    def __new__(cls, *args):
+        return eq(*args)
+
+    def _sympy_(self):
+        import sympy
+        s = self.args_as_sympy()
+        return sympy.Equality(*s)
+
+    def _sage_(self):
+        import sage.all as sage
+        s = self.args_as_sage()
+        return sage.eq(*s)
+
+    func = __class__
+
+
+Eq = Equality
+
+
+class Unequality(Relational):
+
+    def __new__(cls, *args):
+        return ne(*args)
+
+    def _sympy_(self):
+        import sympy
+        s = self.args_as_sympy()
+        return sympy.Unequality(*s)
+
+    def _sage_(self):
+        import sage.all as sage
+        s = self.args_as_sage()
+        return sage.ne(*s)
+
+    func = __class__
+
+
+Ne = Unequality
+
+
+class LessThan(Relational):
+
+    def __new__(cls, *args):
+        return le(*args)
+
+    def _sympy_(self):
+        import sympy
+        s = self.args_as_sympy()
+        return sympy.LessThan(*s)
+
+    def _sage_(self):
+        import sage.all as sage
+        s = self.args_as_sage()
+        return sage.le(*s)
+
+
+Le = LessThan
+
+
+class StrictLessThan(Relational):
+
+    def __new__(cls, *args):
+        return lt(*args)
+
+    def _sympy_(self):
+        import sympy
+        s = self.args_as_sympy()
+        return sympy.StrictLessThan(*s)
+
+    def _sage_(self):
+        import sage.all as sage
+        s = self.args_as_sage()
+        return sage.lt(*s)
+
+
+Lt = StrictLessThan
 
 
 cdef class Number(Basic):
@@ -2560,10 +2704,12 @@ pi = c2py(symengine.pi)
 oo = c2py(symengine.Inf)
 zoo = c2py(symengine.ComplexInf)
 nan = c2py(symengine.Nan)
+true = c2py(symengine.boolTrue)
+false = c2py(symengine.boolFalse)
 
 def module_cleanup():
-    global I, E, pi, oo, zoo, nan, sympy_module, sage_module
-    del I, E, pi, oo, zoo, nan, sympy_module, sage_module
+    global I, E, pi, oo, zoo, nan, true, false, sympy_module, sage_module
+    del I, E, pi, oo, zoo, nan, true, false, sympy_module, sage_module
 
 import atexit
 atexit.register(module_cleanup)
@@ -2613,6 +2759,42 @@ def _min(*args):
 def gamma(x):
     cdef Basic X = sympify(x)
     return c2py(symengine.gamma(X.thisptr))
+
+def eq(lhs, rhs = None):
+    cdef Basic X = sympify(lhs)
+    if rhs is None:
+        return c2py(<RCP[const symengine.Basic]>(symengine.Eq(X.thisptr)))
+    cdef Basic Y = sympify(rhs)
+    return c2py(<RCP[const symengine.Basic]>(symengine.Eq(X.thisptr, Y.thisptr)))
+
+def ne(lhs, rhs):
+    cdef Basic X = sympify(lhs)
+    cdef Basic Y = sympify(rhs)
+    return c2py(<RCP[const symengine.Basic]>(symengine.Ne(X.thisptr, Y.thisptr)))
+
+def ge(lhs, rhs):
+    cdef Basic X = sympify(lhs)
+    cdef Basic Y = sympify(rhs)
+    return c2py(<RCP[const symengine.Basic]>(symengine.Ge(X.thisptr, Y.thisptr)))
+
+Ge = GreaterThan = ge
+
+def gt(lhs, rhs):
+    cdef Basic X = sympify(lhs)
+    cdef Basic Y = sympify(rhs)
+    return c2py(<RCP[const symengine.Basic]>(symengine.Gt(X.thisptr, Y.thisptr)))
+
+Gt = StrictGreaterThan = gt
+
+def le(lhs, rhs):
+    cdef Basic X = sympify(lhs)
+    cdef Basic Y = sympify(rhs)
+    return c2py(<RCP[const symengine.Basic]>(symengine.Le(X.thisptr, Y.thisptr)))
+
+def lt(lhs, rhs):
+    cdef Basic X = sympify(lhs)
+    cdef Basic Y = sympify(rhs)
+    return c2py(<RCP[const symengine.Basic]>(symengine.Lt(X.thisptr, Y.thisptr)))
 
 def eval_double(x):
     cdef Basic X = sympify(x)
@@ -2758,7 +2940,7 @@ def mod_inverse(a, b):
 def crt(rem, mod):
     cdef symengine.vec_integer _rem, _mod
     cdef Basic _a
-    cdef bool ret_val
+    cdef cppbool ret_val
     for i in range(len(rem)):
         _a = sympify(rem[i])
         require(_a, Integer)
@@ -2895,7 +3077,7 @@ def primitive_root(n):
     cdef RCP[const symengine.Integer] g
     cdef Basic _n = sympify(n)
     require(_n, Integer)
-    cdef bool ret_val = symengine.primitive_root(symengine.outArg_Integer(g),
+    cdef cppbool ret_val = symengine.primitive_root(symengine.outArg_Integer(g),
         deref(symengine.rcp_static_cast_Integer(_n.thisptr)))
     if ret_val == 0:
         return None
@@ -2932,7 +3114,7 @@ def multiplicative_order(a, n):
     cdef RCP[const symengine.Integer] n1 = symengine.rcp_static_cast_Integer(_n.thisptr)
     cdef RCP[const symengine.Integer] a1 = symengine.rcp_static_cast_Integer(_a.thisptr)
     cdef RCP[const symengine.Integer] o
-    cdef bool c = symengine.multiplicative_order(symengine.outArg_Integer(o),
+    cdef cppbool c = symengine.multiplicative_order(symengine.outArg_Integer(o),
         a1, n1)
     if not c:
         return None
@@ -2973,7 +3155,7 @@ def nthroot_mod(a, n, m):
     cdef RCP[const symengine.Integer] n1 = symengine.rcp_static_cast_Integer(_n.thisptr)
     cdef RCP[const symengine.Integer] a1 = symengine.rcp_static_cast_Integer(_a.thisptr)
     cdef RCP[const symengine.Integer] m1 = symengine.rcp_static_cast_Integer(_m.thisptr)
-    cdef bool ret_val = symengine.nthroot_mod(symengine.outArg_Integer(root), a1, n1, m1)
+    cdef cppbool ret_val = symengine.nthroot_mod(symengine.outArg_Integer(root), a1, n1, m1)
     if not ret_val:
         return None
     return c2py(<RCP[const symengine.Basic]>root)
@@ -3006,7 +3188,7 @@ def powermod(a, b, m):
     cdef RCP[const symengine.Number] b1 = symengine.rcp_static_cast_Number(_b.thisptr)
     cdef RCP[const symengine.Integer] root
 
-    cdef bool ret_val = symengine.powermod(symengine.outArg_Integer(root), a1, b1, m1)
+    cdef cppbool ret_val = symengine.powermod(symengine.outArg_Integer(root), a1, b1, m1)
     if ret_val == 0:
         return None
     return c2py(<RCP[const symengine.Basic]>root)
@@ -3125,7 +3307,7 @@ cdef class _Lambdify(object):
     cdef vector[int] accum_out_sizes
     cdef object numpy_dtype
 
-    def __cinit__(self, args, *exprs, bool real=True):
+    def __cinit__(self, args, *exprs, cppbool real=True):
         cdef vector[int] out_sizes
         self.real = real
         self.numpy_dtype = np.float64 if self.real else np.complex128
@@ -3141,7 +3323,7 @@ cdef class _Lambdify(object):
             for j in range(i):
                 self.accum_out_sizes[i] += out_sizes[j]
 
-    def __init__(self, args, *exprs, bool real=True):
+    def __init__(self, args, *exprs, cppbool real=True):
         cdef:
             Basic e_
             size_t ri, ci, nr, nc
@@ -3324,7 +3506,7 @@ IF HAVE_SYMENGINE_LLVM:
             self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
 
 
-def Lambdify(args, *exprs, bool real=True, backend=None):
+def Lambdify(args, *exprs, cppbool real=True, backend=None):
     if backend is None:
         backend = os.getenv('SYMENGINE_LAMBDIFY_BACKEND', "lambda")
     if backend == "llvm":

@@ -7,7 +7,9 @@ from .lib.symengine_wrapper import (Symbol, sympify as S, sympify,
         MatrixBase, Basic, DictBasic, symarray, series, diff, zeros,
         eye, diag, ones, Derivative, Subs, add, expand, has_symbol,
         UndefFunction, Function, FunctionSymbol as AppliedUndef,
-        have_numpy)
+        have_numpy, true, false, Equality, Unequality, GreaterThan,
+        LessThan, StrictGreaterThan, StrictLessThan, Eq, Ne, Ge, Le,
+        Gt, Lt)
 from .utilities import var, symbols
 from .functions import *
 
