@@ -206,7 +206,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     ctypedef map[RCP[Integer], unsigned] map_integer_uint "SymEngine::map_integer_uint"
     cdef struct RCPIntegerKeyLess
     cdef struct RCPBasicKeyLess
-    ctypedef set[RCP[Basic], RCPBasicKeyLess] set_basic "SymEngine::set_basic"
+    ctypedef set[RCP[const_Basic], RCPBasicKeyLess] set_basic "SymEngine::set_basic"
     ctypedef multiset[RCP[const_Basic], RCPBasicKeyLess] multiset_basic "SymEngine::multiset_basic"
     cdef cppclass Basic:
         string __str__() nogil except +
@@ -1022,3 +1022,7 @@ cdef extern from "<symengine/sets.h>" namespace "SymEngine":
     cdef RCP[const Set] set_complement(RCP[const Set] &universe, RCP[const Set] &container) nogil except +
     cdef RCP[const Set] conditionset(RCP[const Basic] &sym, RCP[const Boolean] &condition) nogil except +
     cdef RCP[const Set] imageset(RCP[const Basic] &sym, RCP[const Basic] &expr, RCP[const Set] &base) nogil except +
+
+cdef extern from "<symengine/solve.h>" namespace "SymEngine":
+    cdef RCP[const Set] solve(RCP[const Basic] &f, RCP[const Symbol] &sym) nogil except +
+    cdef RCP[const Set] solve(RCP[const Basic] &f, RCP[const Symbol] &sym, RCP[const Set] &domain) nogil except +

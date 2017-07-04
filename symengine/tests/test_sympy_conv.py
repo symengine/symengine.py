@@ -7,7 +7,8 @@ from symengine.lib.symengine_wrapper import (Subs, Derivative, RealMPFR,
         ComplexMPC, PyNumber, Function, EulerGamma, Catalan, GoldenRatio,
         LambertW, zeta, dirichlet_eta, KroneckerDelta, LeviCivita, erf, erfc,
         lowergamma, uppergamma, loggamma, beta, polygamma, sign, floor,
-        ceiling, conjugate)
+        ceiling, conjugate, And, Or, Not, Xor, Piecewise, Interval, EmptySet,
+        FiniteSet, Contains, Union, Complement)
 import unittest
 
 # Note: We test _sympy_() for SymEngine -> SymPy conversion, as those are
@@ -647,6 +648,82 @@ def test_conjugate():
     e2 = conjugate(x)
     assert sympify(e1) == e2
     assert e2._sympy_() == e1
+
+
+@unittest.skipIf(not have_sympy, "SymPy not installed")
+def test_logic():
+    x = true
+    y = false
+    x1 = sympy.true
+    y1 = sympy.false
+
+    assert And(x, y) == And(x1, y1)
+    assert And(x1, y) == And(x1, y1)
+    assert And(x, y)._sympy_() == sympy.And(x1, y1)
+    assert sympify(sympy.And(x1, y1)) == And(x, y)
+
+    assert Or(x, y) == Or(x1, y1)
+    assert Or(x1, y) == Or(x1, y1)
+    assert Or(x, y)._sympy_() == sympy.Or(x1, y1)
+    assert sympify(sympy.Or(x1, y1)) == Or(x, y)
+
+    assert Not(x) == Not(x1)
+    assert Not(x1) == Not(x1)
+    assert Not(x)._sympy_() == sympy.Not(x1)
+    assert sympify(sympy.Not(x1)) == Not(x)
+
+    assert Xor(x, y) == Xor(x1, y1)
+    assert Xor(x1, y) == Xor(x1, y1)
+    assert Xor(x, y)._sympy_() == sympy.Xor(x1, y1)
+    assert sympify(sympy.Xor(x1, y1)) == Xor(x, y)
+
+    x = Symbol("x")
+    x1 = sympy.Symbol("x")
+
+    assert Piecewise((x, x < 1), (0, True)) == Piecewise((x1, x1 < 1), (0, True))
+    assert Piecewise((x, x1 < 1), (0, True)) == Piecewise((x1, x1 < 1), (0, True))
+    assert Piecewise((x, x < 1), (0, True))._sympy_() == sympy.Piecewise((x1, x1 < 1), (0, True))
+    assert sympify(sympy.Piecewise((x1, x1 < 1), (0, True))) == Piecewise((x, x < 1), (0, True))
+
+    assert Contains(x, Interval(1, 1)) == Contains(x1, Interval(1, 1))
+    assert Contains(x, Interval(1, 1))._sympy_() == sympy.Contains(x1, Interval(1, 1))
+    assert sympify(sympy.Contains(x1, Interval(1, 1))) == Contains(x, Interval(1, 1))
+
+
+@unittest.skipIf(not have_sympy, "SymPy not installed")
+def test_sets():
+    x = Integer(2)
+    y = Integer(3)
+    x1 = sympy.Integer(2)
+    y1 = sympy.Integer(3)
+
+    assert Interval(x, y) == Interval(x1, y1)
+    assert Interval(x1, y) == Interval(x1, y1)
+    assert Interval(x, y)._sympy_() == sympy.Interval(x1, y1)
+    assert sympify(sympy.Interval(x1, y1)) == Interval(x, y)
+
+    assert sympify(sympy.EmptySet()) == EmptySet()
+    assert sympy.EmptySet() == EmptySet()._sympy_()
+
+    assert FiniteSet(x, y) == FiniteSet(x1, y1)
+    assert FiniteSet(x1, y) == FiniteSet(x1, y1)
+    assert FiniteSet(x, y)._sympy_() == sympy.FiniteSet(x1, y1)
+    assert sympify(sympy.FiniteSet(x1, y1)) == FiniteSet(x, y)
+
+    x = Interval(1, 2)
+    y = Interval(2, 3)
+    x1 = sympy.Interval(1, 2)
+    y1 = sympy.Interval(2, 3)
+
+    assert Union(x, y) == Union(x1, y1)
+    assert Union(x1, y) == Union(x1, y1)
+    assert Union(x, y)._sympy_() == sympy.Union(x1, y1)
+    assert sympify(sympy.Union(x1, y1)) == Union(x, y)
+
+    assert Complement(x, y) == Complement(x1, y1)
+    assert Complement(x1, y) == Complement(x1, y1)
+    assert Complement(x, y)._sympy_() == sympy.Complement(x1, y1)
+    assert sympify(sympy.Complement(x1, y1)) == Complement(x, y)
 
 
 @unittest.skipIf(not have_sympy, "SymPy not installed")

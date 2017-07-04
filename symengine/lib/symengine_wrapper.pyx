@@ -183,25 +183,25 @@ cdef c2py(RCP[const symengine.Basic] o):
     elif (symengine.is_a_PyNumber(deref(o))):
         r = PyNumber.__new__(PyNumber)
     elif (symengine.is_a_Piecewise(deref(o))):
-        r = Piecewise.__new__(Piecewise)
+        r = Basic.__new__(Piecewise)
     elif (symengine.is_a_Contains(deref(o))):
-        r = Contains.__new__(Contains)
+        r = Boolean.__new__(Contains)
     elif (symengine.is_a_Interval(deref(o))):
-        r = Interval.__new__(Interval)
+        r = Set.__new__(Interval)
     elif (symengine.is_a_EmptySet(deref(o))):
-        r = EmptySet.__new__(EmptySet)
+        r = Set.__new__(EmptySet)
     elif (symengine.is_a_UniversalSet(deref(o))):
-        r = UniversalSet.__new__(UniversalSet)
+        r = Set.__new__(UniversalSet)
     elif (symengine.is_a_FiniteSet(deref(o))):
-        r = FiniteSet.__new__(FiniteSet)
+        r = Set.__new__(FiniteSet)
     elif (symengine.is_a_Union(deref(o))):
-        r = Union.__new__(Union)
+        r = Set.__new__(Union)
     elif (symengine.is_a_Complement(deref(o))):
-        r = Complement.__new__(Complement)
+        r = Set.__new__(Complement)
     elif (symengine.is_a_ConditionSet(deref(o))):
-        r = ConditionSet.__new__(ConditionSet)
+        r = Set.__new__(ConditionSet)
     elif (symengine.is_a_ImageSet(deref(o))):
-        r = ImageSet.__new__(ImageSet)
+        r = Set.__new__(ImageSet)
     elif (symengine.is_a_And(deref(o))):
         r = Boolean.__new__(And)
     elif (symengine.is_a_Not(deref(o))):
@@ -380,13 +380,11 @@ def sympy2symengine(a, raise_error=False):
     elif isinstance(a, sympy.Not):
         return logical_not(a.args[0])
     elif isinstance(a, sympy.Nor):
-        return logical_nor(*a.args)
+        return Nor(*a.args)
     elif isinstance(a, sympy.Nand):
-        return logical_nand(*a.args)
+        return Nand(*a.args)
     elif isinstance(a, sympy.Xor):
         return logical_xor(*a.args)
-    elif isinstance(a, sympy.Xnor):
-        return logical_xnor(*a.args)
     elif isinstance(a, sympy.gamma):
         return gamma(a.args[0])
     elif isinstance(a, sympy.Derivative):
@@ -400,10 +398,8 @@ def sympy2symengine(a, raise_error=False):
         return piecewise(*(a.args))
     elif isinstance(a, sympy.Interval):
         return interval(*(a.args))
-    elif isinstance(a, sympy.S.EmptySet):
+    elif isinstance(a, sympy.EmptySet):
         return emptyset()
-    elif isinstance(a, sympy.S.UniversalSet):
-        return universalset()
     elif isinstance(a, sympy.FiniteSet):
         return finiteset(*(a.args))
     elif isinstance(a, sympy.Contains):
@@ -414,8 +410,6 @@ def sympy2symengine(a, raise_error=False):
         return set_intersection(*(a.args))
     elif isinstance(a, sympy.Complement):
         return set_complement(*(a.args))
-    elif isinstance(a, sympy.ConditionSet):
-        return conditionset(*(a.args))
     elif isinstance(a, sympy.ImageSet):
         return imageset(*(a.args))
     elif isinstance(a, sympy.Function):
@@ -439,6 +433,8 @@ def sympy2symengine(a, raise_error=False):
             return acsch(a.args[0])
         elif isinstance(a, sympy.asech):
             return asech(a.args[0])
+        elif isinstance(a, sympy.ConditionSet):
+            return conditionset(*(a.args))
 
     if raise_error:
         raise SympifyError("sympy2symengine: Cannot convert '%r' to a symengine type." % a)
@@ -1171,7 +1167,8 @@ class Not(Boolean):
 
     def _sympy_(self):
         import sympy
-        return sympy.Not(c2py(<RCP[const symengine.Basic]>(self.args[0])._sympy_()))
+        s = self.args_as_sympy()[0]
+        return sympy.Not(s)
 
 
 class Xor(Boolean):
@@ -2577,6 +2574,10 @@ class EmptySet(Set):
         import sympy
         return sympy.EmptySet()
 
+    @property
+    def func(self):
+        return self.__class__
+
 
 class UniversalSet(Set):
 
@@ -2585,7 +2586,11 @@ class UniversalSet(Set):
 
     def _sympy_(self):
         import sympy
-        return sympy.UniversalSet()
+        return sympy.S.UniversalSet
+
+    @property
+    def func(self):
+        return self.__class__
 
 
 class FiniteSet(Set):
@@ -2633,19 +2638,12 @@ class ConditionSet(Set):
     def __new__(self, sym, condition):
         return conditionset(sym, condition)
 
-    def _sympy_(self):
-        import sympy
-        return sympy.ConditionSet(*[arg._sympy_() for arg in self.args])
-
 
 class ImageSet(Set):
     
     def __new__(self, sym, expr, base):
         return imageset(sym, expr, base)
 
-    def _sympy_(self):
-        import sympy
-        return sympy.ImageSet(*[arg._sympy_() for arg in self.args])
 
 
 cdef class MatrixBase:
@@ -3556,7 +3554,7 @@ def logical_or(*args):
         s.insert(symengine.rcp_static_cast_Boolean(e_.thisptr))
     return c2py(<RCP[const symengine.Basic]>(symengine.logical_or(s)))
 
-def logical_nor(*args):
+def Nor(*args):
     cdef symengine.set_boolean s
     cdef Boolean e_
     for e in args:
@@ -3564,9 +3562,7 @@ def logical_nor(*args):
         s.insert(symengine.rcp_static_cast_Boolean(e_.thisptr))
     return c2py(<RCP[const symengine.Basic]>(symengine.logical_nor(s)))
 
-Nor = logical_nor
-
-def logical_nand(*args):
+def Nand(*args):
     cdef symengine.set_boolean s
     cdef Boolean e_
     for e in args:
@@ -3574,11 +3570,11 @@ def logical_nand(*args):
         s.insert(symengine.rcp_static_cast_Boolean(e_.thisptr))
     return c2py(<RCP[const symengine.Basic]>(symengine.logical_nand(s)))
 
-Nand = logical_nand
-
 def logical_not(x):
-    cdef Boolean X = sympify(x)
-    return c2py(<RCP[const symengine.Basic]>(symengine.logical_not(symengine.rcp_static_cast_Boolean(X.thisptr))))
+    cdef Basic x_ = sympify(x)
+    require(x_, Boolean)
+    cdef RCP[const symengine.Boolean] _x = symengine.rcp_static_cast_Boolean(x_.thisptr)
+    return c2py(<RCP[const symengine.Basic]>(symengine.logical_not(_x)))
 
 def logical_xor(*args):
     cdef symengine.vec_boolean v
@@ -3588,15 +3584,13 @@ def logical_xor(*args):
         v.push_back(symengine.rcp_static_cast_Boolean(e_.thisptr))
     return c2py(<RCP[const symengine.Basic]>(symengine.logical_xor(v)))
 
-def logical_xnor(*args):
+def Xnor(*args):
     cdef symengine.vec_boolean v
     cdef Boolean e_
     for e in args:
         e_ = sympify(e)
         v.push_back(symengine.rcp_static_cast_Boolean(e_.thisptr))
     return c2py(<RCP[const symengine.Basic]>(symengine.logical_xnor(v)))
-
-Xnor = logical_xnor
 
 def eval_double(x):
     cdef Basic X = sympify(x)
@@ -3998,7 +3992,6 @@ def powermod(a, b, m):
     cdef RCP[const symengine.Integer] m1 = symengine.rcp_static_cast_Integer(_m.thisptr)
     cdef RCP[const symengine.Number] b1 = symengine.rcp_static_cast_Number(_b.thisptr)
     cdef RCP[const symengine.Integer] root
-    
     cdef cppbool ret_val = symengine.powermod(symengine.outArg_Integer(root), a1, b1, m1)
     if ret_val == 0:
         return None
@@ -4405,6 +4398,10 @@ def piecewise(*v):
 
 
 def interval(start, end, left_open=False, right_open=False):
+    if isinstance(start, NegativeInfinity):
+        left_open = True
+    if isinstance(end, Infinity):
+        right_open = True
     cdef Number start_ = sympify(start)
     cdef Number end_ = sympify(end)
     cdef cppbool left_open_ = left_open
@@ -4427,7 +4424,7 @@ def finiteset(*args):
     cdef Basic e_
     for e in args:
         e_ = sympify(e)
-        s.insert(e_.thisptr)
+        s.insert(<RCP[symengine.const_Basic]>(e_.thisptr))
     return c2py(<RCP[const symengine.Basic]>(symengine.finiteset(s)))
 
 
@@ -4485,6 +4482,19 @@ def imageset(sym, expr, base):
     cdef Set base_ = sympify(base)
     cdef RCP[const symengine.Set] b = symengine.rcp_static_cast_Set(base_.thisptr)
     return c2py(<RCP[const symengine.Basic]>(symengine.imageset(sym_.thisptr, expr_.thisptr, b)))
+
+
+def solve(f, sym, domain=None):
+    cdef Basic f_ = sympify(f)
+    cdef Basic sym_ = sympify(sym)
+    require(sym_, Symbol)
+    cdef RCP[const symengine.Symbol] x = symengine.rcp_static_cast_Symbol(sym_.thisptr)
+    if domain is None:
+        return c2py(<RCP[const symengine.Basic]>(symengine.solve(f_.thisptr, x)))
+    cdef Set domain_ = sympify(domain)
+    cdef RCP[const symengine.Set] d = symengine.rcp_static_cast_Set(domain_.thisptr)
+    return c2py(<RCP[const symengine.Basic]>(symengine.solve(f_.thisptr, x, d)))
+
 
 # Turn on nice stacktraces:
 symengine.print_stack_on_segfault()

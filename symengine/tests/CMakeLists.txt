@@ -11,6 +11,8 @@ install(FILES __init__.py
     test_printing.py
     test_sage.py
     test_series_expansion.py
+    test_sets.py
+    test_solve.py
     test_subs.py
     test_symbol.py
     test_sympify.py
