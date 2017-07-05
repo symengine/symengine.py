@@ -526,6 +526,38 @@ def test_Lambdify_heterogeneous_output():
         return
     _Lambdify_heterogeneous_output(se.Lambdify)
 
+def test_Lambdify_scalar_vector_matrix():
+    if not have_numpy:
+        return
+    args = x, y = symbols('x y')
+    vec = Matrix([x+y, x*y])
+    jac = vec.jacobian(Matrix(args))
+    f = Lambdify(args, x**y, vec, jac)
+    s, v, m = f([2,3])
+    assert s == 2**3
+    assert np.allclose(v, [2+3, 2*3])
+    assert np.allclose(v, [
+        [1, 1],
+        [3, 2]
+    ])
+
+    s2, v2, m2 = f([[2,3], [5, 7]])
+    assert np.allclose(s2, [2**3, 5**7])
+    assert np.allclose(v2, [
+        [2+3, 2*3],
+        [5+7, 5*7]
+    ])
+    assert np.allclose(m2, [
+        [
+            [1, 1],
+            [3, 2]
+        ],
+        [
+            [1, 1],
+            [7, 5]
+        ]
+    ])
+
 
 def test_LambdifyCSE_heterogeneous_output():
     if not have_numpy:
