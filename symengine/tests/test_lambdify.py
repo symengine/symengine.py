@@ -596,6 +596,7 @@ def _test_Lambdify_scalar_vector_matrix(Lambdify):
 
 def test_Lambdify_scalar_vector_matrix():
     _test_Lambdify_scalar_vector_matrix(lambda *args: se.Lambdify(*args, backend='lambda'))
-    _test_Lambdify_scalar_vector_matrix(lambda *args: se.Lambdify(*args, backend='llvm'))
     _test_Lambdify_scalar_vector_matrix(lambda *args: se.LambdifyCSE(*args, backend='lambda'))
-    _test_Lambdify_scalar_vector_matrix(lambda *args: se.LambdifyCSE(*args, backend='llvm'))
+    if se.have_llvm:
+        _test_Lambdify_scalar_vector_matrix(lambda *args: se.Lambdify(*args, backend='llvm'))
+        _test_Lambdify_scalar_vector_matrix(lambda *args: se.LambdifyCSE(*args, backend='llvm'))
