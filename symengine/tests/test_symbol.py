@@ -1,4 +1,4 @@
-from symengine import Symbol, symbols, symarray, has_symbol
+from symengine import Symbol, symbols, symarray, has_symbol, Dummy
 from symengine.utilities import raises
 
 
@@ -147,3 +147,15 @@ def test_has_symbol():
     assert not has_symbol(2, a)
     assert not has_symbol(c, a)
     assert has_symbol(a+b, b)
+
+def test_dummy():
+    x1 = Symbol('x')
+    x2 = Symbol('x')
+    xdummy1 = Dummy('x')
+    xdummy2 = Dummy('x')
+
+    assert x1 == x2
+    assert x1 != xdummy1
+    assert xdummy1 != xdummy2
+    assert Dummy() != Dummy()
+    assert Dummy('x') != Dummy('x')

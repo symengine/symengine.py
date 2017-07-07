@@ -42,6 +42,8 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = Number.__new__(Rational)
     elif (symengine.is_a_Complex(deref(o))):
         r = Complex.__new__(Complex)
+    elif (symengine.is_a_Dummy(deref(o))):
+        r = Symbol.__new__(Dummy)
     elif (symengine.is_a_Symbol(deref(o))):
         if (symengine.is_a_PySymbol(deref(o))):
             return <object>(deref(symengine.rcp_static_cast_PySymbol(o)).get_py_object())
@@ -197,6 +199,8 @@ def sympy2symengine(a, raise_error=False):
     from sympy.core.function import AppliedUndef as sympy_AppliedUndef
     if isinstance(a, sympy.Symbol):
         return Symbol(a.name)
+    elif isinstance(a, sympy.Dummy):
+        return Dummy(a.name)
     elif isinstance(a, sympy.Mul):
         return mul(*[sympy2symengine(x, raise_error) for x in a.args])
     elif isinstance(a, sympy.Add):
@@ -710,6 +714,8 @@ cdef class Basic(object):
         else:
             return eval(self, prec)
 
+    evalf = n
+
     @property
     def args(self):
         cdef symengine.vec_basic args = deref(self.thisptr).get_args()
@@ -888,6 +894,27 @@ class Symbol(Basic):
 
     @property
     def is_Symbol(self):
+        return True
+
+    @property
+    def func(self):
+        return self.__class__
+
+
+class Dummy(Symbol):
+    
+    def __init__(Basic self, name=None, *args, **kwargs):
+        if name is None:
+            self.thisptr = symengine.make_rcp_Dummy()
+        else:
+            self.thisptr = symengine.make_rcp_Dummy(name.encode("utf-8"))
+
+    def _sympy_(self):
+        import sympy
+        return sympy.Dummy(str(self))
+
+    @property
+    def is_Dummy(self):
         return True
 
     @property
@@ -2956,6 +2983,8 @@ def diff(ex, *x):
 def expand(x):
     return sympify(x).expand()
 
+expand_mul = expand
+
 def function_symbol(name, *args):
     cdef symengine.vec_basic v
     cdef Basic e_
@@ -2972,6 +3001,23 @@ def sqrt(x):
 def exp(x):
     cdef Basic X = sympify(x)
     return c2py(symengine.exp(X.thisptr))
+
+def perfect_power(n):
+    cdef Basic _n = sympify(n)
+    require(_n, Integer)
+    return symengine.perfect_power(deref(symengine.rcp_static_cast_Integer(_n.thisptr)))
+
+def is_square(n):
+    cdef Basic _n = sympify(n)
+    require(_n, Integer)
+    return symengine.perfect_square(deref(symengine.rcp_static_cast_Integer(_n.thisptr)))
+
+def integer_nthroot(a, n):
+    cdef Basic _a = sympify(a)
+    require(_a, Integer)
+    cdef RCP[const symengine.Integer] _r
+    cdef int ret_val = symengine.i_nth_root(symengine.outArg_Integer(_r), deref(symengine.rcp_static_cast_Integer(_a.thisptr)), n)
+    return (c2py(<RCP[const symengine.Basic]>_r), ret_val == 1)
 
 def _max(*args):
     cdef symengine.vec_basic v
@@ -3103,6 +3149,8 @@ def probab_prime_p(n, reps = 25):
     require(_n, Integer)
     return symengine.probab_prime_p(deref(symengine.rcp_static_cast_Integer(_n.thisptr)), reps) >= 1
 
+isprime = probab_prime_p
+
 def nextprime(n):
     cdef Basic _n = sympify(n)
     require(_n, Integer)
@@ -3132,7 +3180,9 @@ def gcd_ext(a, b):
     cdef RCP[const symengine.Integer] g, s, t
     symengine.gcd_ext(symengine.outArg_Integer(g), symengine.outArg_Integer(s), symengine.outArg_Integer(t),
         deref(symengine.rcp_static_cast_Integer(_a.thisptr)), deref(symengine.rcp_static_cast_Integer(_b.thisptr)))
-    return [c2py(<RCP[const symengine.Basic]>g), c2py(<RCP[const symengine.Basic]>s), c2py(<RCP[const symengine.Basic]>t)]
+    return (c2py(<RCP[const symengine.Basic]>s), c2py(<RCP[const symengine.Basic]>t), c2py(<RCP[const symengine.Basic]>g))
+
+igcdex = gcd_ext
 
 def mod(a, b):
     if b == 0:
@@ -3417,6 +3467,11 @@ def nthroot_mod_list(a, n, m):
     for i in range(root_list.size()):
         s.append(c2py(<RCP[const symengine.Basic]>(root_list[i])))
     return s
+
+def sqrt_mod(a, p, all_roots=False):
+    if all_roots:
+        return nthroot_mod_list(a, 2, p)
+    return nthroot_mod(a, 2, p)
 
 def powermod(a, b, m):
     cdef Basic _a = sympify(a)

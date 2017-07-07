@@ -1,18 +1,19 @@
 from symengine.utilities import raises
 
-from symengine.lib.symengine_wrapper import (probab_prime_p, nextprime, gcd,
+from symengine.lib.symengine_wrapper import (isprime, nextprime, gcd,
     lcm, gcd_ext, mod, quotient, quotient_mod, mod_inverse, crt, fibonacci,
     fibonacci2, lucas, lucas2, binomial, factorial, divides, factor,
     factor_lehman_method, factor_pollard_pm1_method, factor_pollard_rho_method,
     prime_factors, prime_factor_multiplicities, Sieve, Sieve_iterator,
     bernoulli, primitive_root, primitive_root_list, totient, carmichael,
     multiplicative_order, legendre, jacobi, kronecker, nthroot_mod,
-    nthroot_mod_list, powermod, powermod_list, Integer)
+    nthroot_mod_list, powermod, powermod_list, Integer, sqrt_mod)
 
 
 def test_probab_prime_p():
-    assert probab_prime_p(101) is True
-    assert probab_prime_p(100) is False
+    s = set(Sieve.generate_primes(1000))
+    for n in range(1001):
+        assert (n in s) == isprime(n)
 
 
 def test_nextprime():
@@ -32,10 +33,13 @@ def test_lcm():
 
 
 def test_gcd_ext():
-    [p, q, r] = gcd_ext(6, 9)
+    (q, r, p) = gcd_ext(6, 9)
     assert p == q * 6 + r * 9
-    [p, q, r] = gcd_ext(-15, 10)
+    (q, r, p) = gcd_ext(-15, 10)
     assert p == q * -15 + r * 10
+    assert gcd_ext(2, 3) == (-1, 1, 1)
+    assert gcd_ext(10, 12) == (-1, 1, 2)
+    assert gcd_ext(100, 2004) == (-20, 1, 4)
 
 
 def test_mod():
@@ -210,6 +214,22 @@ def test_kronecker():
 def test_nthroot_mod():
     assert nthroot_mod(12, 5, 77) in [3, 31, 38, 45, 59]
     assert nthroot_mod(3, 2, 5) is None
+
+
+def test_sqrt_mod():
+    assert sqrt_mod(3, 13) == 9
+    assert sqrt_mod(6, 23) == 12
+    assert sqrt_mod(345, 690) == 345
+    assert sqrt_mod(9, 27, True) == [3, 6, 12, 15, 21, 24]
+    assert sqrt_mod(9, 81, True) == [3, 24, 30, 51, 57, 78]
+    assert sqrt_mod(9, 3**5, True) == [3, 78, 84, 159, 165, 240]
+    assert sqrt_mod(81, 3**4, True) == [0, 9, 18, 27, 36, 45, 54, 63, 72]
+    assert sqrt_mod(81, 3**5, True) == [9, 18, 36, 45, 63, 72, 90, 99, 117,\
+            126, 144, 153, 171, 180, 198, 207, 225, 234]
+    assert sqrt_mod(81, 3**6, True) == [9, 72, 90, 153, 171, 234, 252, 315,\
+            333, 396, 414, 477, 495, 558, 576, 639, 657, 720]
+    assert sqrt_mod(81, 3**7, True) == [9, 234, 252, 477, 495, 720, 738, 963,\
+            981, 1206, 1224, 1449, 1467, 1692, 1710, 1935, 1953, 2178]
 
 
 def test_nthroot_mod_list():
