@@ -3389,17 +3389,17 @@ cdef class _Lambdify(object):
             raise ValueError("Size of out incompatible with number of exprs.")
         self.unsafe_complex(inp, out)
 
-    def __call__(self, inp, out=None):
+    def __call__(self, inp, *, out=None):
         """
         Parameters
         ----------
         inp: array_like
             last dimension must be equal to number of arguments.
         out: array_like or None (default)
-            Allows for for low-overhead use (output argument, must be contiguous).
+            Allows for low-overhead use (output argument, must be contiguous).
             If ``None``: an output container will be allocated (NumPy ndarray).
             If ``len(exprs) > 0`` output is found in the corresponding
-            order. Note that ``out`` is not reshaped.
+            order.
 
         Returns
         -------
@@ -3407,7 +3407,6 @@ cdef class _Lambdify(object):
 
         """
         cdef:
-            bint reshape_outs
             size_t idx, new_tot_out_size, nbroadcast = 1
             long inp_size
             tuple inp_shape
@@ -3432,12 +3431,10 @@ cdef class _Lambdify(object):
         else:
             inp_shape = inp.shape
         new_tot_out_size = nbroadcast * self.tot_out_size
+        new_out_shapes = [inp_shape[:-1] + out_shape for out_shape in self.out_shapes]
         if out is None:
-            new_out_shapes = [inp_shape[:-1] + out_shape for out_shape in self.out_shapes]
-            reshape_outs = len(new_out_shapes[0]) > 1
             out = np.empty(new_tot_out_size, dtype=self.numpy_dtype)
         else:
-            reshape_outs = False
             if out.size < new_tot_out_size:
                 raise ValueError("Incompatible size of output argument")
             if not (out.flags['C_CONTIGUOUS'] or out.flags['F_CONTIGUOUS']):
@@ -3460,12 +3457,9 @@ cdef class _Lambdify(object):
                 self.unsafe_complex(cmplx_inp, cmplx_out,
                                     idx*self.args_size, idx*self.tot_out_size)
 
-        if reshape_outs:
-            out = out.reshape((nbroadcast, self.tot_out_size))
-            result = [out[:, self.accum_out_sizes[idx]:self.accum_out_sizes[idx+1]].reshape(
-                new_out_shapes[idx]) for idx in range(self.n_exprs)]
-        else:
-            result = [out]
+        out = out.reshape((nbroadcast, self.tot_out_size))
+        result = [out[:, self.accum_out_sizes[idx]:self.accum_out_sizes[idx+1]].reshape(
+            new_out_shapes[idx]) for idx in range(self.n_exprs)]
 
         if self.n_exprs == 1:
             return result[0]
@@ -3569,11 +3563,11 @@ def LambdifyCSE(args, *exprs, cse=None, concatenate=None, **kwargs):
             n_taken += size
         lmb = Lambdify(tuple(args) + cse_symbs, *new_exprs, **kwargs)
         cse_lambda = Lambdify(args, [expr.xreplace(explicit_subs) for expr in cse_exprs], **kwargs)
-        def cb(inp, out=None, **kw):
+        def cb(inp, *, out=None, **kw):
             cse_vals = cse_lambda(inp, **kw)
             print(inp, cse_vals) # DO-NOT-MERGE!
             new_inp = concatenate((inp, cse_vals), axis=-1)
-            return lmb(new_inp, out, **kw)
+            return lmb(new_inp, out=out, **kw)
 
         return cb
     else:

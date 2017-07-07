@@ -140,24 +140,24 @@ def test_numpy_array_out_exceptions():
     lmb = se.Lambdify(args, exprs)
 
     all_right = np.empty(len(exprs))
-    lmb(inp, all_right)
+    lmb(inp, out=all_right)
 
     too_short = np.empty(len(exprs) - 1)
-    raises(ValueError, lambda: (lmb(inp, too_short)))
+    raises(ValueError, lambda: (lmb(inp, out=too_short)))
 
     wrong_dtype = np.empty(len(exprs), dtype=int)
-    raises(ValueError, lambda: (lmb(inp, wrong_dtype)))
+    raises(ValueError, lambda: (lmb(inp, out=wrong_dtype)))
 
     read_only = np.empty(len(exprs))
     read_only.flags['WRITEABLE'] = False
-    raises(ValueError, lambda: (lmb(inp, read_only)))
+    raises(ValueError, lambda: (lmb(inp, out=read_only)))
 
     all_right_broadcast = np.empty((4, len(exprs)))
     inp_bcast = [[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]]
-    lmb(np.array(inp_bcast), all_right_broadcast)
+    lmb(np.array(inp_bcast), out=all_right_broadcast)
 
     noncontig_broadcast = np.empty((4, len(exprs), 3)).transpose((1, 2, 0))
-    raises(ValueError, lambda: (lmb(inp_bcast, noncontig_broadcast)))
+    raises(ValueError, lambda: (lmb(inp_bcast, out=noncontig_broadcast)))
 
 
 def test_broadcast():
@@ -337,7 +337,7 @@ def test_jacobian():
     lmb = se.Lambdify(args, jac)
     out = np.empty((2, 2))
     inp = X, Y = 7, 11
-    lmb(inp, out)
+    lmb(inp, out=out)
     assert np.allclose(out, [[3 * X**2 * Y, X**3],
                              [Y + 1, X + 1]])
 
@@ -355,7 +355,7 @@ def test_jacobian__broadcast():
     inp1 = 8, 13
     inp2 = 5, 9
     inp = np.array([inp0, inp1, inp2])
-    lmb(inp, out)
+    lmb(inp, out=out)
     for idx, (X, Y) in enumerate([inp0, inp1, inp2]):
         assert np.allclose(out[idx, ...], [[3 * X**2 * Y, X**3],
                                            [Y + 1, X + 1]])
@@ -380,9 +380,8 @@ def test_excessive_out():
     lmb = se.Lambdify([x], [-x])
     inp = np.ones(1)
     out = np.ones(2)
-    out = lmb(inp, out)
+    _ = lmb(inp, out=out[:inp.size])
     assert np.allclose(inp, [1, 1])
-    assert out.shape == (2,)
     assert out[0] == -1
     assert out[1] == 1
 
@@ -526,38 +525,6 @@ def test_Lambdify_heterogeneous_output():
         return
     _Lambdify_heterogeneous_output(se.Lambdify)
 
-def test_Lambdify_scalar_vector_matrix():
-    if not have_numpy:
-        return
-    args = x, y = symbols('x y')
-    vec = Matrix([x+y, x*y])
-    jac = vec.jacobian(Matrix(args))
-    f = Lambdify(args, x**y, vec, jac)
-    s, v, m = f([2,3])
-    assert s == 2**3
-    assert np.allclose(v, [2+3, 2*3])
-    assert np.allclose(v, [
-        [1, 1],
-        [3, 2]
-    ])
-
-    s2, v2, m2 = f([[2,3], [5, 7]])
-    assert np.allclose(s2, [2**3, 5**7])
-    assert np.allclose(v2, [
-        [2+3, 2*3],
-        [5+7, 5*7]
-    ])
-    assert np.allclose(m2, [
-        [
-            [1, 1],
-            [3, 2]
-        ],
-        [
-            [1, 1],
-            [7, 5]
-        ]
-    ])
-
 
 def test_LambdifyCSE_heterogeneous_output():
     if not have_numpy:
@@ -590,3 +557,45 @@ def test_lambdify__sympy():
     import sympy as sp
     _sympy_lambdify_heterogeneous_output(se.lambdify, se.DenseMatrix)
     _sympy_lambdify_heterogeneous_output(sp.lambdify, sp.Matrix)
+
+
+def _test_Lambdify_scalar_vector_matrix(Lambdify):
+    if not have_numpy:
+        return
+    args = x, y = se.symbols('x y')
+    vec = se.DenseMatrix([x+y, x*y])
+    jac = vec.jacobian(se.DenseMatrix(args))
+    f = Lambdify(args, x**y, vec, jac)
+    assert f.n_exprs == 3
+    s, v, m = f([2, 3])
+    print(s, v, m)
+    assert s == 2**3
+    assert np.allclose(v, [[2+3], [2*3]])
+    assert np.allclose(m, [
+        [1, 1],
+        [3, 2]
+    ])
+
+    s2, v2, m2 = f([[2, 3], [5, 7]])
+    assert np.allclose(s2, [2**3, 5**7])
+    assert np.allclose(v2, [
+        [[2+3], [2*3]],
+        [[5+7], [5*7]]
+    ])
+    assert np.allclose(m2, [
+        [
+            [1, 1],
+            [3, 2]
+        ],
+        [
+            [1, 1],
+            [7, 5]
+        ]
+    ])
+
+
+def test_Lambdify_scalar_vector_matrix():
+    _test_Lambdify_scalar_vector_matrix(lambda *args: se.Lambdify(*args, backend='lambda'))
+    _test_Lambdify_scalar_vector_matrix(lambda *args: se.Lambdify(*args, backend='llvm'))
+    _test_Lambdify_scalar_vector_matrix(lambda *args: se.LambdifyCSE(*args, backend='lambda'))
+    _test_Lambdify_scalar_vector_matrix(lambda *args: se.LambdifyCSE(*args, backend='llvm'))
