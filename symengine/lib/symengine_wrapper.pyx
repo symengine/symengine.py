@@ -538,6 +538,9 @@ cdef class Basic(object):
     def __dealloc__(self):
         self.thisptr.reset()
 
+    def _unsafe_reset(self):
+        self.thisptr.reset()
+
     def __add__(a, b):
         cdef Basic A = _sympify(a, False)
         B_ = _sympify(b, False)
@@ -2717,6 +2720,7 @@ false = c2py(symengine.boolFalse)
 
 def module_cleanup():
     global I, E, pi, oo, zoo, nan, true, false, sympy_module, sage_module
+    funcs.clear()
     del I, E, pi, oo, zoo, nan, true, false, sympy_module, sage_module
 
 import atexit

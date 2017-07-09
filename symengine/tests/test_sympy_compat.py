@@ -192,7 +192,8 @@ def test_subclass_symbol():
     two_x = 2 * x
     # Check that after arithmetic, same subclass is returned
     assert two_x.args[1] is x
-
+    del two_x
+    x._unsafe_reset()
 
 def test_Abs():
     x = symbols("x")
