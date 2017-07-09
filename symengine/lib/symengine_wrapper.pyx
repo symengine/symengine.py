@@ -376,7 +376,15 @@ def _sympify(a, raise_error=True):
         return _sympify(a._sympy_(), raise_error)
     elif hasattr(a, 'pyobject'):
         return _sympify(a.pyobject(), raise_error)
-    return sympy2symengine(a, raise_error)
+
+    try:
+        import sympy
+        return sympy2symengine(a, raise_error)
+    except ImportError:
+        pass
+
+    if raise_error:
+        raise SympifyError("sympify: Cannot convert '%r' to a symengine type." % a)
 
 funcs = {}
 

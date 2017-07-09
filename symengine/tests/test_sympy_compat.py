@@ -193,6 +193,7 @@ def test_subclass_symbol():
     # Check that after arithmetic, same subclass is returned
     assert two_x.args[1] is x
 
+
 def test_Abs():
     x = symbols("x")
     assert Abs(x) == Abs(-x)

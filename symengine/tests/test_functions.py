@@ -1,6 +1,15 @@
 from symengine import Symbol, sin, cos, sqrt, Add, Mul, function_symbol, Integer, log, E, symbols
 from symengine.lib.symengine_wrapper import Subs, Derivative
+import unittest
 
+try:
+    import sympy
+    from sympy.core.cache import clear_cache
+    import atexit
+    atexit.register(clear_cache)
+    have_sympy = True
+except ImportError:
+    have_sympy = False
 
 def test_sin():
     x = Symbol("x")
@@ -105,6 +114,7 @@ def test_Subs():
     assert s.point == (2*x,)
 
 
+@unittest.skipUnless(have_sympy, "SymPy not installed")
 def test_FunctionWrapper():
     import sympy
     n, m, theta, phi = sympy.symbols("n, m, theta, phi")
