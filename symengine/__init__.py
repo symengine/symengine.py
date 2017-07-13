@@ -9,7 +9,7 @@ from .lib.symengine_wrapper import (Symbol, sympify as S, sympify,
         UndefFunction, Function, FunctionSymbol as AppliedUndef,
         have_numpy, true, false, Equality, Unequality, GreaterThan,
         LessThan, StrictGreaterThan, StrictLessThan, Eq, Ne, Ge, Le,
-        Gt, Lt)
+        Gt, Lt, GoldenRatio, Catalan, EulerGamma)
 from .utilities import var, symbols
 from .functions import *
 

@@ -2,7 +2,9 @@ from symengine import (Integer, symbols, sin, cos, pi, E, I, oo, zoo,
     nan, true, false, Add, function_symbol, DenseMatrix,
     sympify, log)
 from symengine.lib.symengine_wrapper import (PyNumber, PyFunction,
-    sage_module, wrap_sage_function)
+    sage_module, wrap_sage_function, Catalan, GoldenRatio, EulerGamma,
+    LambertW, KroneckerDelta, erf, lowergamma, uppergamma, loggamma,
+    beta, floor, ceiling, conjugate)
 
 
 def test_sage_conversions():
@@ -66,6 +68,36 @@ def test_sage_conversions():
     assert (function_symbol('f', 2 * x1, x1 + y1).diff(x1)._sage_() ==
             sage.function('f', 2 * x, x + y).diff(x))
 
+    assert LambertW(x1) == LambertW(x)
+    assert LambertW(x1)._sage_() == sage.lambert_w(x)
+
+    assert KroneckerDelta(x1, y1) == KroneckerDelta(x, y)
+    assert KroneckerDelta(x1, y1)._sage_() == sage.kronecker_delta(x, y)
+
+    assert erf(x1) == erf(x)
+    assert erf(x1)._sage_() == sage.erf(x)
+
+    assert lowergamma(x1, y1) == lowergamma(x, y)
+    assert lowergamma(x1, y1)._sage_() == sage.gamma_inc_lower(x, y)
+
+    assert uppergamma(x1, y1) == uppergamma(x, y)
+    assert uppergamma(x1, y1)._sage_() == sage.gamma_inc(x, y)
+
+    assert loggamma(x1) == loggamma(x)
+    assert loggamma(x1)._sage_() == sage.log_gamma(x)
+
+    assert beta(x1, y1) == beta(x, y)
+    assert beta(x1, y1)._sage_() == sage.beta(x, y)
+
+    assert floor(x1) == floor(x)
+    assert floor(x1)._sage_() == sage.floor(x)
+
+    assert ceiling(x1) == ceiling(x)
+    assert ceiling(x1)._sage_() == sage.ceil(x)
+
+    assert conjugate(x1) == conjugate(x)
+    assert conjugate(x1)._sage_() == sage.conjugate(x)
+
     # For the following test, sage needs to be modified
     # assert sage.sin(x) == sage.sin(x1)
 
@@ -73,6 +105,9 @@ def test_sage_conversions():
     assert pi._sage_() == sage.pi
     assert E._sage_() == sage.e
     assert I._sage_() == sage.I
+    assert GoldenRatio._sage_() == sage.golden_ratio
+    assert Catalan._sage_() == sage.catalan
+    assert EulerGamma._sage_() == sage.euler_gamma
     assert oo._sage_() == sage.oo
     assert zoo._sage_() == sage.unsigned_infinity
     assert nan._sage_() == sage.NaN
@@ -81,6 +116,9 @@ def test_sage_conversions():
 
     assert pi == sympify(sage.pi)
     assert E == sympify(sage.e)
+    assert GoldenRatio == sympify(sage.golden_ratio)
+    assert Catalan == sympify(sage.catalan)
+    assert EulerGamma == sympify(sage.euler_gamma)
     assert oo == sympify(sage.oo)
     assert zoo == sympify(sage.unsigned_infinity)
     assert nan == sympify(sage.NaN)
