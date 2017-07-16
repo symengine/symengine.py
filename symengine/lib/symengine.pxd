@@ -227,6 +227,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_Rational "SymEngine::is_a<SymEngine::Rational>"(const Basic &b) nogil
     bool is_a_Complex "SymEngine::is_a<SymEngine::Complex>"(const Basic &b) nogil
     bool is_a_Symbol "SymEngine::is_a<SymEngine::Symbol>"(const Basic &b) nogil
+    bool is_a_Dummy "SymEngine::is_a<SymEngine::Dummy>"(const Basic &b) nogil
     bool is_a_Constant "SymEngine::is_a<SymEngine::Constant>"(const Basic &b) nogil
     bool is_a_Infty "SymEngine::is_a<SymEngine::Infty>"(const Basic &b) nogil
     bool is_a_NaN "SymEngine::is_a<SymEngine::NaN>"(const Basic &b) nogil
@@ -305,6 +306,8 @@ cdef extern from "<symengine/symbol.h>" namespace "SymEngine":
     cdef cppclass Symbol(Basic):
         Symbol(string name) nogil
         string get_name() nogil
+    cdef cppclass Dummy(Symbol):
+        pass
 
 cdef extern from "<symengine/number.h>" namespace "SymEngine":
     cdef cppclass Number(Basic):
@@ -339,6 +342,9 @@ cdef extern from "<symengine/integer.h>" namespace "SymEngine":
         integer_class as_mpz() nogil
     cdef RCP[const Integer] integer(int i) nogil
     cdef RCP[const Integer] integer(integer_class i) nogil
+    int i_nth_root(const Ptr[RCP[Integer]] &r, const Integer &a, unsigned long int n) nogil
+    bool perfect_square(const Integer &n) nogil
+    bool perfect_power(const Integer &n) nogil
 
 cdef extern from "<symengine/rational.h>" namespace "SymEngine":
     cdef cppclass Rational(Number):
@@ -414,20 +420,17 @@ cdef extern from "<symengine/pow.h>" namespace "SymEngine":
     cdef RCP[const Basic] pow(RCP[const Basic] &a, RCP[const Basic] &b) nogil except+
     cdef RCP[const Basic] sqrt(RCP[const Basic] &x) nogil except+
     cdef RCP[const Basic] exp(RCP[const Basic] &x) nogil except+
-    cdef RCP[const Basic] log(RCP[const Basic] &x) nogil except+
-    cdef RCP[const Basic] log(RCP[const Basic] &x, RCP[const Basic] &y) nogil except+
 
     cdef cppclass Pow(Basic):
         RCP[const Basic] get_base() nogil
         RCP[const Basic] get_exp() nogil
 
-    cdef cppclass Log(Basic):
-        RCP[const Basic] get_arg() nogil
-
 
 cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     # We need to specialize these for our classes:
     RCP[const Basic] make_rcp_Symbol "SymEngine::make_rcp<const SymEngine::Symbol>"(string name) nogil
+    RCP[const Basic] make_rcp_Dummy "SymEngine::make_rcp<const SymEngine::Dummy>"() nogil
+    RCP[const Basic] make_rcp_Dummy "SymEngine::make_rcp<const SymEngine::Dummy>"(string name) nogil
     RCP[const Basic] make_rcp_PySymbol "SymEngine::make_rcp<const SymEngine::PySymbol>"(string name, PyObject * pyobj) nogil
     RCP[const Basic] make_rcp_Constant "SymEngine::make_rcp<const SymEngine::Constant>"(string name) nogil
     RCP[const Basic] make_rcp_Infty "SymEngine::make_rcp<const SymEngine::Infty>"(RCP[const Number] i) nogil
@@ -499,7 +502,8 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
     cdef RCP[const Basic] floor(RCP[const Basic] &x) nogil except+
     cdef RCP[const Basic] ceiling(RCP[const Basic] &x) nogil except+
     cdef RCP[const Basic] conjugate(RCP[const Basic] &x) nogil except+
-
+    cdef RCP[const Basic] log(RCP[const Basic] &x) nogil except+
+    cdef RCP[const Basic] log(RCP[const Basic] &x, RCP[const Basic] &y) nogil except+
 
     cdef cppclass Function(Basic):
         pass
@@ -665,6 +669,9 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
         pass
 
     cdef cppclass Conjugate(OneArgFunction):
+        pass
+
+    cdef cppclass Log(Function):
         pass
 
 IF HAVE_SYMENGINE_MPFR:
