@@ -66,6 +66,9 @@ matrix:
     - env: BUILD_TYPE="Release" PYTHON_VERSION="2.7" WITH_NUMPY="no"
       compiler: clang
       os: linux
+    - env: BUILD_TYPE="Debug" PYTHON_VERSION="3.6" WITH_SYMPY="no"
+      compiler: gcc
+      os: linux
     - env: BUILD_TYPE="Debug" PYTHON_VERSION="2.7"
       compiler: clang
       os: osx

@@ -42,6 +42,10 @@ environment:
       COMPILER: MinGW-w64
       PYTHON_VERSION: 35-x64
       WITH_NUMPY: no
+    - BUILD_TYPE: "Debug"
+      COMPILER: MinGW-w64
+      PYTHON_VERSION: 36-x64
+      WITH_SYMPY: no
 
 install:
 - set PYTHON_SOURCE_DIR=%CD%
@@ -76,9 +80,10 @@ install:
 - if NOT [%COMPILER%]==[MSVC15] 7z x -aoa -oC:\ pylibs.7z > NUL
 
 - set PATH=C:\Python%PYTHON_VERSION%;C:\Python%PYTHON_VERSION%\Scripts;%PATH%
-- pip install nose pytest sympy
+- pip install nose pytest
 - pip install --install-option="--no-cython-compile" cython
 - if NOT [%WITH_NUMPY%]==[no] pip install numpy
+- if NOT [%WITH_SYMPY%]==[no] pip install sympy
 
 - set /p commit=<symengine_version.txt
 - cd symengine-cpp
