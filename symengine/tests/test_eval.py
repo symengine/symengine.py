@@ -2,7 +2,7 @@ from symengine.utilities import raises
 from symengine import (Symbol, sin, cos, Integer, Add, I, RealDouble, ComplexDouble, sqrt)
 
 from symengine.lib.symengine_wrapper import eval_double
-
+from unittest.case import SkipTest
 
 def test_eval_double1():
     x = Symbol("x")
@@ -34,6 +34,8 @@ def test_n():
     y = 1.0 + 2.0*I
     assert x.n() == y
 
+
+def test_n_mpfr():
     try:
         from symengine import RealMPFR
         x = sqrt(Integer(2))
@@ -42,7 +44,10 @@ def test_n():
     except ImportError:
         x = sqrt(Integer(2))
         raises(ValueError, lambda: (x.n(75, real=True)))
+        raise SkipTest("No MPFR support")
 
+
+def test_n_mpc():
     try:
         from symengine import ComplexMPC
         x = sqrt(Integer(2)) + 3*I
@@ -51,6 +56,7 @@ def test_n():
     except ImportError:
         x = sqrt(Integer(2))
         raises(ValueError, lambda: (x.n(75)))
+        raise SkipTest("No MPC support")
 
 
 def test_rel():

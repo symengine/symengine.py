@@ -8,7 +8,7 @@ from symengine.lib.symengine_wrapper import (Subs, Derivative, RealMPFR,
         LambertW, zeta, dirichlet_eta, KroneckerDelta, LeviCivita, erf, erfc,
         lowergamma, uppergamma, loggamma, beta, polygamma, sign, floor,
         ceiling, conjugate)
-import sympy
+import unittest
 
 # Note: We test _sympy_() for SymEngine -> SymPy conversion, as those are
 # methods that are implemented in this library. Users can simply use
@@ -18,7 +18,17 @@ import sympy
 # For SymPy -> SymEngine, we test symengine.sympify(...) which
 # does the conversion.
 
+try:
+    import sympy
+    from sympy.core.cache import clear_cache
+    import atexit
+    atexit.register(clear_cache)
+    have_sympy = True
+except ImportError:
+    have_sympy = False
 
+
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv1():
     x = Symbol("x")
     assert x._sympy_() == sympy.Symbol("x")
@@ -28,6 +38,7 @@ def test_conv1():
     assert x._sympy_() == sympy.Symbol("y")
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv1b():
     x = sympy.Symbol("x")
     assert sympify(x) == Symbol("x")
@@ -37,6 +48,7 @@ def test_conv1b():
     assert sympify(x) == Symbol("y")
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv2():
     x = Symbol("x")
     y = Symbol("y")
@@ -47,6 +59,7 @@ def test_conv2():
     assert e._sympy_() == sympy.Symbol("x")*sympy.Symbol("y")*sympy.Symbol("z")
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv2b():
     x = sympy.Symbol("x")
     y = sympy.Symbol("y")
@@ -57,6 +70,7 @@ def test_conv2b():
     assert sympify(e) == Symbol("x")*Symbol("y")*Symbol("z")
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv3():
     x = Symbol("x")
     y = Symbol("y")
@@ -67,6 +81,7 @@ def test_conv3():
     assert e._sympy_() == sympy.Symbol("x")+sympy.Symbol("y")+sympy.Symbol("z")
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv3b():
     x = sympy.Symbol("x")
     y = sympy.Symbol("y")
@@ -77,6 +92,7 @@ def test_conv3b():
     assert sympify(e) == Symbol("x")+Symbol("y")+Symbol("z")
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv4():
     x = Symbol("x")
     y = Symbol("y")
@@ -88,6 +104,7 @@ def test_conv4():
             (sympy.Symbol("x")+sympy.Symbol("y"))**sympy.Symbol("z"))
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv4b():
     x = sympy.Symbol("x")
     y = sympy.Symbol("y")
@@ -98,6 +115,7 @@ def test_conv4b():
     assert sympify(e) == (Symbol("x")+Symbol("y"))**Symbol("z")
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv5():
     x = Integer(5)
     y = Integer(6)
@@ -105,6 +123,7 @@ def test_conv5():
     assert (x/y)._sympy_() == sympy.Integer(5) / sympy.Integer(6)
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv5b():
     x = sympy.Integer(5)
     y = sympy.Integer(6)
@@ -112,6 +131,7 @@ def test_conv5b():
     assert sympify(x/y) == Integer(5) / Integer(6)
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv6():
     x = Symbol("x")
     y = Symbol("y")
@@ -122,6 +142,7 @@ def test_conv6():
     assert (x/y)._sympy_() == sympy.Symbol("x") / sympy.Symbol("y")
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv6b():
     x = sympy.Symbol("x")
     y = sympy.Symbol("y")
@@ -132,6 +153,7 @@ def test_conv6b():
     assert sympify(x/y) == Symbol("x") / Symbol("y")
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv7():
     x = Symbol("x")
     y = Symbol("y")
@@ -163,6 +185,7 @@ def test_conv7():
     assert asec(x/3)._sympy_() == sympy.asec(sympy.Symbol("x") / 3)
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv7b():
     x = sympy.Symbol("x")
     y = sympy.Symbol("y")
@@ -181,6 +204,7 @@ def test_conv7b():
     assert sympify(sympy.asec(x/3)) == asec(Symbol("x") / 3)
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv8():
     e1 = function_symbol("f", Symbol("x"))
     e2 = function_symbol("g", Symbol("x"), Symbol("y"))
@@ -196,6 +220,7 @@ def test_conv8():
             sympy.Function("q")(sympy.Symbol("t"), sympy.Symbol("t")))
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv8b():
     e1 = sympy.Function("f")(sympy.Symbol("x"))
     e2 = sympy.Function("g")(sympy.Symbol("x"), sympy.Symbol("y"))
@@ -209,6 +234,7 @@ def test_conv8b():
     assert sympify(e3) != function_symbol("q", Symbol("t"), Symbol("t"))
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv9():
     x = Symbol("x")
     y = Symbol("y")
@@ -219,6 +245,7 @@ def test_conv9():
     assert (x+I*y)._sympy_() == sympy.Symbol("x") + sympy.I*sympy.Symbol("y")
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv9b():
     x = Symbol("x")
     y = Symbol("y")
@@ -229,6 +256,7 @@ def test_conv9b():
     assert sympify(sympy.Symbol("x") + sympy.I*sympy.Symbol("y")) == x+I*y
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv10():
     A = DenseMatrix(1, 4, [Integer(1), Integer(2), Integer(3), Integer(4)])
     assert (A._sympy_() == sympy.Matrix(1, 4,
@@ -251,6 +279,7 @@ def test_conv10():
                            1 + sympy.I]]))
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv10b():
     A = sympy.Matrix([[sympy.Symbol("x"), sympy.Symbol("y")],
                      [sympy.Symbol("z"), sympy.Symbol("t")]])
@@ -269,6 +298,7 @@ def test_conv10b():
                                             3 + 2*I])
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv11():
     x = sympy.Symbol("x")
     y = sympy.Symbol("y")
@@ -288,6 +318,7 @@ def test_conv11():
     assert e3._sympy_() != e1
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv12():
     x = Symbol("x")
     y = Symbol("y")
@@ -310,6 +341,7 @@ def test_conv12():
     assert acoth(x/3)._sympy_() == sympy.acoth(sympy.Symbol("x") / 3)
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv12b():
     x = sympy.Symbol("x")
     y = sympy.Symbol("y")
@@ -323,6 +355,7 @@ def test_conv12b():
     assert sympify(sympy.acoth(x/3)) == acoth(Symbol("x") / 3)
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_tuples_lists():
     x = sympy.Symbol("x")
     y = sympy.Symbol("y")
@@ -345,6 +378,7 @@ def test_tuples_lists():
     assert t != l2
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_exp():
     x = Symbol("x")
     e1 = sympy.exp(sympy.Symbol("x"))
@@ -358,6 +392,7 @@ def test_exp():
     assert e1 == e2._sympy_()
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_gamma():
     x = Symbol("x")
     e1 = sympy.gamma(sympy.Symbol("x"))
@@ -366,6 +401,7 @@ def test_gamma():
     assert e1 == e2._sympy_()
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_constants():
     assert sympify(sympy.E) == E
     assert sympy.E == E._sympy_()
@@ -392,6 +428,7 @@ def test_constants():
     assert sympy.nan == nan._sympy_()
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_booleans():
     assert sympify(sympy.S.true) == true
     assert sympy.S.true == true._sympy_()
@@ -400,6 +437,7 @@ def test_booleans():
     assert sympy.S.false == false._sympy_()
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_abs():
     x = Symbol("x")
     e1 = abs(sympy.Symbol("x"))
@@ -419,6 +457,7 @@ def test_abs():
     assert e1 == e2._sympy_()
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_mpfr():
     if have_mpfr:
         a = RealMPFR('100', 100)
@@ -427,6 +466,7 @@ def test_mpfr():
         assert b == a._sympy_()
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_mpc():
     if have_mpc:
         a = ComplexMPC('1', '2', 100)
@@ -435,6 +475,7 @@ def test_mpc():
         assert b == a._sympy_()
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_log():
     x = Symbol("x")
     x1 = sympy.Symbol("x")
@@ -452,6 +493,7 @@ def test_log():
     assert sympify(sympy.log(x1, y1)) == log(x, y)
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_lambertw():
     x = Symbol("x")
     e1 = sympy.LambertW(sympy.Symbol("x"))
@@ -460,6 +502,7 @@ def test_lambertw():
     assert e2._sympy_() == e1
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_zeta():
     x = Symbol("x")
     y = Symbol("y")
@@ -473,6 +516,7 @@ def test_zeta():
     assert e2._sympy_() == e1   
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_dirichlet_eta():
     x = Symbol("x")
     e1 = sympy.dirichlet_eta(sympy.Symbol("x"))
@@ -481,6 +525,7 @@ def test_dirichlet_eta():
     assert e2._sympy_() == e1
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_kronecker_delta():
     x = Symbol("x")
     y = Symbol("y")
@@ -490,6 +535,7 @@ def test_kronecker_delta():
     assert e2._sympy_() == e1
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_levi_civita():
     x = Symbol("x")
     y = Symbol("y")
@@ -500,6 +546,7 @@ def test_levi_civita():
     assert e2._sympy_() == e1
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_erf():
     x = Symbol("x")
     e1 = sympy.erf(sympy.Symbol("x"))
@@ -508,6 +555,7 @@ def test_erf():
     assert e2._sympy_() == e1
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_erfc():
     x = Symbol("x")
     e1 = sympy.erfc(sympy.Symbol("x"))
@@ -516,6 +564,7 @@ def test_erfc():
     assert e2._sympy_() == e1
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_lowergamma():
     x = Symbol("x")
     y = Symbol("y")
@@ -525,6 +574,7 @@ def test_lowergamma():
     assert e2._sympy_() == e1
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_uppergamma():
     x = Symbol("x")
     y = Symbol("y")
@@ -534,6 +584,7 @@ def test_uppergamma():
     assert e2._sympy_() == e1
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_loggamma():
     x = Symbol("x")
     e1 = sympy.loggamma(sympy.Symbol("x"))
@@ -542,6 +593,7 @@ def test_loggamma():
     assert e2._sympy_() == e1
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_beta():
     x = Symbol("x")
     y = Symbol("y")
@@ -551,6 +603,7 @@ def test_beta():
     assert e2._sympy_() == e1
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_polygamma():
     x = Symbol("x")
     y = Symbol("y")
@@ -560,6 +613,7 @@ def test_polygamma():
     assert e2._sympy_() == e1
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_sign():
     x = Symbol("x")
     e1 = sympy.sign(sympy.Symbol("x"))
@@ -568,6 +622,7 @@ def test_sign():
     assert e2._sympy_() == e1
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_floor():
     x = Symbol("x")
     e1 = sympy.floor(sympy.Symbol("x"))
@@ -576,6 +631,7 @@ def test_floor():
     assert e2._sympy_() == e1
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_ceiling():
     x = Symbol("x")
     e1 = sympy.ceiling(sympy.Symbol("x"))
@@ -584,6 +640,7 @@ def test_ceiling():
     assert e2._sympy_() == e1
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conjugate():
     x = Symbol("x")
     e1 = sympy.conjugate(sympy.Symbol("x"))
@@ -592,6 +649,7 @@ def test_conjugate():
     assert e2._sympy_() == e1
 
 
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_pynumber():
     a = sympy.FF(7)(3)
     b = sympify(a)

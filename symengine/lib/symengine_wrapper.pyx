@@ -450,7 +450,15 @@ def _sympify(a, raise_error=True):
         return _sympify(a._sympy_(), raise_error)
     elif hasattr(a, 'pyobject'):
         return _sympify(a.pyobject(), raise_error)
-    return sympy2symengine(a, raise_error)
+
+    try:
+        import sympy
+        return sympy2symengine(a, raise_error)
+    except ImportError:
+        pass
+
+    if raise_error:
+        raise SympifyError("sympify: Cannot convert '%r' to a symengine type." % a)
 
 funcs = {}
 
@@ -602,6 +610,9 @@ cdef class Basic(object):
         return deref(self.thisptr).hash()
 
     def __dealloc__(self):
+        self.thisptr.reset()
+
+    def _unsafe_reset(self):
         self.thisptr.reset()
 
     def __add__(a, b):
@@ -2969,6 +2980,7 @@ false = c2py(symengine.boolFalse)
 
 def module_cleanup():
     global I, E, pi, oo, zoo, nan, true, false, GoldenRatio, Catalan, EulerGamma, sympy_module, sage_module
+    funcs.clear()
     del I, E, pi, oo, zoo, nan, true, false, GoldenRatio, Catalan, EulerGamma, sympy_module, sage_module
 
 import atexit

@@ -11,6 +11,18 @@ import sys
 import symengine as se
 from symengine.utilities import raises
 from symengine import have_numpy
+import unittest
+from unittest.case import SkipTest
+
+try:
+    import sympy
+    from sympy.core.cache import clear_cache
+    import atexit
+    atexit.register(clear_cache)
+    have_sympy = True
+except ImportError:
+    have_sympy = False
+
 if have_numpy:
     import numpy as np
 
@@ -37,10 +49,8 @@ def allclose(vec1, vec2, rtol=1e-13, atol=1e-13):
             return False
     return True
 
-
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_get_shape():
-    if not have_numpy:
-        return
     get_shape = se.lib.symengine_wrapper.get_shape
     assert get_shape([1]) == (1,)
     assert get_shape([1, 1, 1]) == (3,)
@@ -53,9 +63,8 @@ def test_get_shape():
     assert get_shape(A) == (2, 3)
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_ravel():
-    if not have_numpy:
-        return
     x = se.symbols('x')
     ravel = se.lib.symengine_wrapper.ravel
     exprs = [x+1, x+2, x+3, 1/x, 1/(x*x), 1/(x**3.0)]
@@ -63,9 +72,8 @@ def test_ravel():
     assert ravel(A) == exprs
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_Lambdify():
-    if not have_numpy:
-        return
     n = 7
     args = x, y, z = se.symbols('x y z')
     L = se.Lambdify(args, [x+y+z, x**2, (x-y)/z, x*y*z], backend='lambda')
@@ -73,16 +81,15 @@ def test_Lambdify():
                     [3*n+3, n**2, -1/(n+2), n*(n+1)*(n+2)])
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_Lambdify_LLVM():
-    if not have_numpy:
-        return
     n = 7
     args = x, y, z = se.symbols('x y z')
     if not se.have_llvm:
         raises(ValueError, lambda: se.Lambdify(args, [x+y+z, x**2,
                                                       (x-y)/z, x*y*z],
                                                backend='llvm'))
-        return
+        raise SkipTest("No LLVM support")
     L = se.Lambdify(args, [x+y+z, x**2, (x-y)/z, x*y*z], backend='llvm')
     assert allclose(L(range(n, n+len(args))),
                     [3*n+3, n**2, -1/(n+2), n*(n+1)*(n+2)])
@@ -103,9 +110,8 @@ def _get_2_to_2by2():
     return L, check
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_Lambdify_2dim():
-    if not have_numpy:
-        return
     lmb, check = _get_2_to_2by2()
     for inp in [(5, 7), np.array([5, 7]), [5.0, 7.0]]:
         A = lmb(inp)
@@ -124,18 +130,16 @@ def _get_array():
     return args, exprs, inp, check
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_array():
-    if not have_numpy:
-        return
     args, exprs, inp, check = _get_array()
     lmb = se.Lambdify(args, exprs)
     out = lmb(inp)
     check(out)
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_numpy_array_out_exceptions():
-    if not have_numpy:
-        return
     args, exprs, inp, check = _get_array()
     lmb = se.Lambdify(args, exprs)
 
@@ -160,9 +164,8 @@ def test_numpy_array_out_exceptions():
     raises(ValueError, lambda: (lmb(inp_bcast, out=noncontig_broadcast)))
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_broadcast():
-    if not have_numpy:
-        return
     a = np.linspace(-np.pi, np.pi)
     inp = np.vstack((np.cos(a), np.sin(a))).T  # 50 rows 2 cols
     x, y = se.symbols('x y')
@@ -173,9 +176,8 @@ def test_broadcast():
     assert np.allclose(dists, 1)
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_broadcast_multiple_extra_dimensions():
-    if not have_numpy:
-        return
     inp = np.arange(12.).reshape((4, 3, 1))
     x = se.symbols('x')
     cb = se.Lambdify([x], [x**2, x**3])
@@ -188,6 +190,7 @@ def test_broadcast_multiple_extra_dimensions():
     assert abs(out[-1, -1, 1] - 11**3) < 1e-14
 
 
+@unittest.skipUnless(have_sympy, "SymPy not installed")
 def _get_cse_exprs():
     import sympy as sp
     args = x, y = sp.symbols('x y')
@@ -197,9 +200,9 @@ def _get_cse_exprs():
     return args, exprs, inp, ref
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
+@unittest.skipUnless(have_sympy, "SymPy not installed")
 def test_cse():
-    if not have_numpy:
-        return
     args, exprs, inp, ref = _get_cse_exprs()
     lmb = se.LambdifyCSE(args, exprs)
     out = lmb(inp)
@@ -231,9 +234,9 @@ def _get_cse_exprs_big():
     return tuple(x) + tuple(p), exprs, np.ones(len(x) + len(p))
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
+@unittest.skipUnless(have_sympy, "SymPy not installed")
 def test_cse_big():
-    if not have_numpy:
-        return
     args, exprs, inp = _get_cse_exprs_big()
     lmb = se.LambdifyCSE(args, exprs)
     out = lmb(inp)
@@ -241,9 +244,8 @@ def test_cse_big():
     assert allclose(out, ref)
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_broadcast_c():
-    if not have_numpy:
-        return
     n = 3
     inp = np.arange(2*n).reshape((n, 2))
     lmb, check = _get_2_to_2by2()
@@ -253,9 +255,8 @@ def test_broadcast_c():
         check(A[i, ...], inp[i, :])
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_broadcast_fortran():
-    if not have_numpy:
-        return
     n = 3
     inp = np.arange(2*n).reshape((n, 2), order='F')
     lmb, check = _get_2_to_2by2()
@@ -283,17 +284,16 @@ def _get_1_to_2by3_matrix(Mtx=se.DenseMatrix):
     return L, check
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_2dim_Matrix():
-    if not have_numpy:
-        return
     L, check = _get_1_to_2by3_matrix()
     inp = [7]
     check(L(inp), inp)
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
+@unittest.skipUnless(have_sympy, "SymPy not installed")
 def test_2dim_Matrix__sympy():
-    if not have_numpy:
-        return
     import sympy as sp
     L, check = _get_1_to_2by3_matrix(sp.Matrix)
     inp = [7]
@@ -310,15 +310,13 @@ def _test_2dim_Matrix_broadcast():
 
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_2dim_Matrix_broadcast():
-    if not have_numpy:
-        return
     _test_2dim_Matrix_broadcast()
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_2dim_Matrix_broadcast_multiple_extra_dim():
-    if not have_numpy:
-        return
     L, check = _get_1_to_2by3_matrix()
     inp = np.arange(1, 4*5*6+1).reshape((4, 5, 6))
     out = L(inp)
@@ -327,9 +325,8 @@ def test_2dim_Matrix_broadcast_multiple_extra_dim():
         check(out[i, j, k, ...], (inp[i, j, k],))
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_jacobian():
-    if not have_numpy:
-        return
     x, y = se.symbols('x, y')
     args = se.DenseMatrix(2, 1, [x, y])
     v = se.DenseMatrix(2, 1, [x**3 * y, (x+1)*(y+1)])
@@ -342,9 +339,8 @@ def test_jacobian():
                              [Y + 1, X + 1]])
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_jacobian__broadcast():
-    if not have_numpy:
-        return
     x, y = se.symbols('x, y')
     args = se.DenseMatrix(2, 1, [x, y])
     v = se.DenseMatrix(2, 1, [x**3 * y, (x+1)*(y+1)])
@@ -361,9 +357,8 @@ def test_jacobian__broadcast():
                                            [Y + 1, X + 1]])
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_excessive_args():
-    if not have_numpy:
-        return
     x = se.symbols('x')
     lmb = se.Lambdify([x], [-x])
     inp = np.ones(2)
@@ -373,9 +368,8 @@ def test_excessive_args():
     assert np.allclose(out, -1)
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_excessive_out():
-    if not have_numpy:
-        return
     x = se.symbols('x')
     lmb = se.Lambdify([x], [-x])
     inp = np.ones(1)
@@ -417,18 +411,16 @@ def _get_2_to_2by2_list(real=True):
     return L, check
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_2_to_2by2():
-    if not have_numpy:
-        return
     L, check = _get_2_to_2by2_list()
     inp = [13, 17]
     A = L(inp)
     check(A, inp)
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_unsafe_real():
-    if not have_numpy:
-        return
     L, check = _get_2_to_2by2_list()
     inp = np.array([13., 17.])
     out = np.empty(4)
@@ -436,9 +428,8 @@ def test_unsafe_real():
     check(out.reshape((2, 2)), inp)
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_unsafe_complex():
-    if not have_numpy:
-        return
     L, check = _get_2_to_2by2_list(real=False)
     assert not L.real
     inp = np.array([13+11j, 7+4j], dtype=np.complex128)
@@ -447,9 +438,8 @@ def test_unsafe_complex():
     check(out.reshape((2, 2)), inp)
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_itertools_chain():
-    if not have_numpy:
-        return
     args, exprs, inp, check = _get_array()
     L = se.Lambdify(args, exprs)
     inp = itertools.chain([inp[0]], (inp[1],), [inp[2]])
@@ -457,32 +447,27 @@ def test_itertools_chain():
     check(A)
 
 
-# @pytest.mark.xfail(not have_numpy, reason='array.array lacks "Zd"')
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_complex_1():
-    if not have_numpy:
-        return
     x = se.Symbol('x')
     lmb = se.Lambdify([x], [1j + x], real=False)
     assert abs(lmb([11+13j])[0] -
                (11 + 14j)) < 1e-15
 
 
-# @pytest.mark.xfail(not have_numpy, reason='array.array lacks "Zd"')
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_complex_2():
-    if not have_numpy:
-        return
     x = se.Symbol('x')
     lmb = se.Lambdify([x], [3 + x - 1j], real=False)
     assert abs(lmb([11+13j])[0] -
                (14 + 12j)) < 1e-15
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_more_than_255_args():
     # SymPy's lambdify can handle at most 255 arguments
     # this is a proof of concept that this limitation does
     # not affect SymEngine's Lambdify class
-    if not have_numpy:
-        return
     n = 257
     x = se.symarray('x', n)
     p, q, r = 17, 42, 13
@@ -520,15 +505,14 @@ def _Lambdify_heterogeneous_output(Lambdify):
         assert np.allclose(o_xty[idx, ...], [(X+1)*(Y+1)])
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_Lambdify_heterogeneous_output():
-    if not have_numpy:
-        return
     _Lambdify_heterogeneous_output(se.Lambdify)
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
+@unittest.skipUnless(have_sympy, "SymPy not installed")
 def test_LambdifyCSE_heterogeneous_output():
-    if not have_numpy:
-        return
     _Lambdify_heterogeneous_output(se.LambdifyCSE)
 
 
@@ -551,9 +535,9 @@ def _sympy_lambdify_heterogeneous_output(cb, Mtx):
         assert np.allclose(o_xty, [(X+1)*(Y+1)])
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
+@unittest.skipUnless(have_sympy, "SymPy not installed")
 def test_lambdify__sympy():
-    if not have_numpy:
-        return
     import sympy as sp
     _sympy_lambdify_heterogeneous_output(se.lambdify, se.DenseMatrix)
     _sympy_lambdify_heterogeneous_output(sp.lambdify, sp.Matrix)
@@ -596,7 +580,12 @@ def _test_Lambdify_scalar_vector_matrix(Lambdify):
 
 def test_Lambdify_scalar_vector_matrix():
     _test_Lambdify_scalar_vector_matrix(lambda *args: se.Lambdify(*args, backend='lambda'))
-    _test_Lambdify_scalar_vector_matrix(lambda *args: se.LambdifyCSE(*args, backend='lambda'))
     if se.have_llvm:
         _test_Lambdify_scalar_vector_matrix(lambda *args: se.Lambdify(*args, backend='llvm'))
+
+
+@unittest.skipUnless(have_sympy, "SymPy not installed")
+def test_Lambdify_scalar_vector_matrix_cse():
+    _test_Lambdify_scalar_vector_matrix(lambda *args: se.LambdifyCSE(*args, backend='lambda'))
+    if se.have_llvm:
         _test_Lambdify_scalar_vector_matrix(lambda *args: se.LambdifyCSE(*args, backend='llvm'))

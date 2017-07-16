@@ -5,13 +5,16 @@ from symengine.lib.symengine_wrapper import (PyNumber, PyFunction,
     sage_module, wrap_sage_function, Catalan, GoldenRatio, EulerGamma,
     LambertW, KroneckerDelta, erf, lowergamma, uppergamma, loggamma,
     beta, floor, ceiling, conjugate)
+import unittest
 
+try:
+    import sage.all as sage
+    have_sage = True
+except ImportError:
+    have_sage = False
 
+@unittest.skipUnless(have_sage, "Sage not installed")
 def test_sage_conversions():
-    try:
-        import sage.all as sage
-    except ImportError:
-        return
 
     x, y = sage.SR.var('x y')
     x1, y1 = symbols('x, y')
