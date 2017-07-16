@@ -146,6 +146,38 @@ cdef c2py(RCP[const symengine.Basic] o):
         r = Function.__new__(ASech)
     elif (symengine.is_a_ATan2(deref(o))):
         r = Function.__new__(ATan2)
+    elif (symengine.is_a_LambertW(deref(o))):
+        r = Function.__new__(LambertW)
+    elif (symengine.is_a_Zeta(deref(o))):
+        r = Function.__new__(zeta)
+    elif (symengine.is_a_DirichletEta(deref(o))):
+        r = Function.__new__(dirichlet_eta)
+    elif (symengine.is_a_KroneckerDelta(deref(o))):
+        r = Function.__new__(KroneckerDelta)
+    elif (symengine.is_a_LeviCivita(deref(o))):
+        r = Function.__new__(LeviCivita)
+    elif (symengine.is_a_Erf(deref(o))):
+        r = Function.__new__(erf)
+    elif (symengine.is_a_Erfc(deref(o))):
+        r = Function.__new__(erfc)
+    elif (symengine.is_a_LowerGamma(deref(o))):
+        r = Function.__new__(lowergamma)
+    elif (symengine.is_a_UpperGamma(deref(o))):
+        r = Function.__new__(uppergamma)
+    elif (symengine.is_a_LogGamma(deref(o))):
+        r = Function.__new__(loggamma)
+    elif (symengine.is_a_Beta(deref(o))):
+        r = Function.__new__(beta)
+    elif (symengine.is_a_PolyGamma(deref(o))):
+        r = Function.__new__(polygamma)
+    elif (symengine.is_a_Sign(deref(o))):
+        r = Function.__new__(sign)
+    elif (symengine.is_a_Floor(deref(o))):
+        r = Function.__new__(floor)
+    elif (symengine.is_a_Ceiling(deref(o))):
+        r = Function.__new__(ceiling)
+    elif (symengine.is_a_Conjugate(deref(o))):
+        r = Function.__new__(conjugate)
     elif (symengine.is_a_PyNumber(deref(o))):
         r = PyNumber.__new__(PyNumber)
     else:
@@ -190,6 +222,12 @@ def sympy2symengine(a, raise_error=False):
         return E
     elif a is sympy.pi:
         return pi
+    elif a is sympy.GoldenRatio:
+        return GoldenRatio
+    elif a is sympy.Catalan:
+        return Catalan
+    elif a is sympy.EulerGamma:
+        return EulerGamma
     elif a is sympy.S.NegativeInfinity:
         return -oo
     elif a is sympy.S.Infinity:
@@ -271,6 +309,38 @@ def sympy2symengine(a, raise_error=False):
         return le(*a.args)
     elif isinstance(a, sympy.StrictLessThan):
         return lt(*a.args)
+    elif isinstance(a, sympy.LambertW):
+        return LambertW(a.args[0])
+    elif isinstance(a, sympy.zeta):
+        return zeta(*a.args)
+    elif isinstance(a, sympy.dirichlet_eta):
+        return dirichlet_eta(a.args[0])
+    elif isinstance(a, sympy.KroneckerDelta):
+        return KroneckerDelta(*a.args)
+    elif isinstance(a, sympy.LeviCivita):
+        return LeviCivita(*a.args)
+    elif isinstance(a, sympy.erf):
+        return erf(a.args[0])
+    elif isinstance(a, sympy.erfc):
+        return erfc(a.args[0])
+    elif isinstance(a, sympy.lowergamma):
+        return lowergamma(*a.args)
+    elif isinstance(a, sympy.uppergamma):
+        return uppergamma(*a.args)
+    elif isinstance(a, sympy.loggamma):
+        return loggamma(a.args[0])
+    elif isinstance(a, sympy.beta):
+        return beta(*a.args)
+    elif isinstance(a, sympy.polygamma):
+        return polygamma(*a.args)
+    elif isinstance(a, sympy.sign):
+        return sign(a.args[0])
+    elif isinstance(a, sympy.floor):
+        return floor(a.args[0])
+    elif isinstance(a, sympy.ceiling):
+        return ceiling(a.args[0])
+    elif isinstance(a, sympy.conjugate):
+        return conjugate(a.args[0])
     elif isinstance(a, sympy.gamma):
         return gamma(a.args[0])
     elif isinstance(a, sympy.Derivative):
@@ -871,6 +941,12 @@ cdef class Constant(Basic):
             return sympy.E
         elif self == pi:
             return sympy.pi
+        elif self == GoldenRatio:
+            return sympy.GoldenRatio
+        elif self == Catalan:
+            return sympy.Catalan
+        elif self == EulerGamma:
+            return sympy.EulerGamma
         else:
             raise Exception("Unknown Constant")
 
@@ -880,6 +956,12 @@ cdef class Constant(Basic):
             return sage.e
         elif self == pi:
             return sage.pi
+        elif self == GoldenRatio:
+            return sage.golden_ratio
+        elif self == Catalan:
+            return sage.catalan
+        elif self == EulerGamma:
+            return sage.euler_gamma
         else:
             raise Exception("Unknown Constant")
 
@@ -1532,7 +1614,7 @@ class OneArgFunction(Function):
 
     def _sympy_(self):
         import sympy
-        return getattr(sympy, self.__class__.__name__.lower())(self.get_arg()._sympy_())
+        return getattr(sympy, self.__class__.__name__)(self.get_arg()._sympy_())
 
     def _sage_(self):
         import sage.all as sage
@@ -1549,6 +1631,154 @@ class gamma(OneArgFunction):
     def __new__(cls, x):
         cdef Basic X = sympify(x)
         return c2py(symengine.gamma(X.thisptr))
+
+class LambertW(OneArgFunction):
+    def __new__(cls, x):
+        cdef Basic X = sympify(x)
+        return c2py(symengine.lambertw(X.thisptr))
+
+    def _sage_(self):
+        import sage.all as sage
+        return sage.lambert_w(self.get_arg()._sage_())
+
+class zeta(Function):
+    def __new__(cls, s, a = None):
+        cdef Basic S = sympify(s)
+        if a == None:
+            return c2py(symengine.zeta(S.thisptr))
+        cdef Basic A = sympify(a)
+        return c2py(symengine.zeta(S.thisptr, A.thisptr))
+
+    def _sympy_(self):
+        import sympy
+        return sympy.zeta(*self.args_as_sympy())
+
+class dirichlet_eta(OneArgFunction):
+    def __new__(cls, x):
+        cdef Basic X = sympify(x)
+        return c2py(symengine.dirichlet_eta(X.thisptr))
+
+class KroneckerDelta(Function):
+    def __new__(cls, x, y):
+        cdef Basic X = sympify(x)
+        cdef Basic Y = sympify(y)
+        return c2py(symengine.kronecker_delta(X.thisptr, Y.thisptr))
+
+    def _sympy_(self):
+        import sympy
+        return sympy.KroneckerDelta(*self.args_as_sympy())
+
+    def _sage_(self):
+        import sage.all as sage
+        return sage.kronecker_delta(*self.args_as_sage())
+
+class LeviCivita(Function):
+    def __new__(cls, *args):
+        cdef symengine.vec_basic v
+        cdef Basic e_
+        for e in args:
+            e_ = sympify(e)
+            v.push_back(e_.thisptr)
+        return c2py(symengine.levi_civita(v))
+
+    def _sympy_(self):
+        import sympy
+        return sympy.LeviCivita(*self.args_as_sympy())
+
+class erf(OneArgFunction):
+    def __new__(cls, x):
+        cdef Basic X = sympify(x)
+        return c2py(symengine.erf(X.thisptr))
+
+class erfc(OneArgFunction):
+    def __new__(cls, x):
+        cdef Basic X = sympify(x)
+        return c2py(symengine.erfc(X.thisptr))
+
+class lowergamma(Function):
+    def __new__(cls, x, y):
+        cdef Basic X = sympify(x)
+        cdef Basic Y = sympify(y)
+        return c2py(symengine.lowergamma(X.thisptr, Y.thisptr))
+
+    def _sympy_(self):
+        import sympy
+        return sympy.lowergamma(*self.args_as_sympy())
+
+    def _sage_(self):
+        import sage.all as sage
+        return sage.gamma_inc_lower(*self.args_as_sage())
+
+class uppergamma(Function):
+    def __new__(cls, x, y):
+        cdef Basic X = sympify(x)
+        cdef Basic Y = sympify(y)
+        return c2py(symengine.uppergamma(X.thisptr, Y.thisptr))
+
+    def _sympy_(self):
+        import sympy
+        return sympy.uppergamma(*self.args_as_sympy())
+
+    def _sage_(self):
+        import sage.all as sage
+        return sage.gamma_inc(*self.args_as_sage())
+
+class loggamma(OneArgFunction):
+    def __new__(cls, x):
+        cdef Basic X = sympify(x)
+        return c2py(symengine.loggamma(X.thisptr))
+
+    def _sage_(self):
+        import sage.all as sage
+        return sage.log_gamma(self.get_arg()._sage_())
+
+class beta(Function):
+    def __new__(cls, x, y):
+        cdef Basic X = sympify(x)
+        cdef Basic Y = sympify(y)
+        return c2py(symengine.beta(X.thisptr, Y.thisptr))
+
+    def _sympy_(self):
+        import sympy
+        return sympy.beta(*self.args_as_sympy())
+
+    def _sage_(self):
+        import sage.all as sage
+        return sage.beta(*self.args_as_sage())
+
+class polygamma(Function):
+    def __new__(cls, x, y):
+        cdef Basic X = sympify(x)
+        cdef Basic Y = sympify(y)
+        return c2py(symengine.polygamma(X.thisptr, Y.thisptr))
+
+    def _sympy_(self):
+        import sympy
+        return sympy.polygamma(*self.args_as_sympy())
+
+class sign(OneArgFunction):
+    def __new__(cls, x):
+        cdef Basic X = sympify(x)
+        return c2py(symengine.sign(X.thisptr))
+
+class floor(OneArgFunction):
+    def __new__(cls, x):
+        cdef Basic X = sympify(x)
+        return c2py(symengine.floor(X.thisptr))
+
+class ceiling(OneArgFunction):
+    def __new__(cls, x):
+        cdef Basic X = sympify(x)
+        return c2py(symengine.ceiling(X.thisptr))
+
+    def _sage_(self):
+        import sage.all as sage
+        return sage.ceil(self.get_arg()._sage_())
+
+class conjugate(OneArgFunction):
+    def __new__(cls, x):
+        cdef Basic X = sympify(x)
+        return c2py(symengine.conjugate(X.thisptr))
 
 class log(OneArgFunction):
     def __new__(cls, x, y=None):
@@ -2712,6 +2942,9 @@ cdef class Sieve_iterator:
 I = c2py(symengine.I)
 E = c2py(symengine.E)
 pi = c2py(symengine.pi)
+GoldenRatio = c2py(symengine.GoldenRatio)
+Catalan = c2py(symengine.Catalan)
+EulerGamma = c2py(symengine.EulerGamma)
 oo = c2py(symengine.Inf)
 zoo = c2py(symengine.ComplexInf)
 nan = c2py(symengine.Nan)
@@ -2719,9 +2952,9 @@ true = c2py(symengine.boolTrue)
 false = c2py(symengine.boolFalse)
 
 def module_cleanup():
-    global I, E, pi, oo, zoo, nan, true, false, sympy_module, sage_module
+    global I, E, pi, oo, zoo, nan, true, false, GoldenRatio, Catalan, EulerGamma, sympy_module, sage_module
     funcs.clear()
-    del I, E, pi, oo, zoo, nan, true, false, sympy_module, sage_module
+    del I, E, pi, oo, zoo, nan, true, false, GoldenRatio, Catalan, EulerGamma, sympy_module, sage_module
 
 import atexit
 atexit.register(module_cleanup)
@@ -2807,6 +3040,14 @@ def lt(lhs, rhs):
     cdef Basic X = sympify(lhs)
     cdef Basic Y = sympify(rhs)
     return c2py(<RCP[const symengine.Basic]>(symengine.Lt(X.thisptr, Y.thisptr)))
+
+def digamma(x):
+    cdef Basic X = sympify(x)
+    return c2py(symengine.digamma(X.thisptr))
+
+def trigamma(x):
+    cdef Basic X = sympify(x)
+    return c2py(symengine.trigamma(X.thisptr))
 
 def eval_double(x):
     cdef Basic X = sympify(x)
