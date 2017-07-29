@@ -1740,7 +1740,28 @@ class NaN(Number):
         import sage.all as sage
         return sage.NaN
 
-class Add(Basic):
+
+class AssocOp(Basic):
+    
+    @classmethod
+    def _from_args(cls, args):
+        if len(args) == 0:
+            return cls.identity
+        elif len(args) == 1:
+            return args[0]
+
+        obj = super(AssocOp, cls).__new__(cls, *args)
+        return obj
+
+    @classmethod
+    def make_args(cls, expr):
+        if isinstance(expr, cls):
+            return expr.args
+        else:
+            return (sympify(expr),)
+
+
+class Add(AssocOp):
 
     def __new__(cls, *args, **kwargs):
         cdef symengine.vec_basic v_
@@ -1783,7 +1804,7 @@ class Add(Basic):
             inc(iter)
         return d
 
-class Mul(Basic):
+class Mul(AssocOp):
 
     def __new__(cls, *args, **kwargs):
         cdef symengine.vec_basic v_
