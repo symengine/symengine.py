@@ -885,6 +885,9 @@ cdef class Basic(object):
     def is_Matrix(self):
         return False
 
+    def copy(self):
+        return self.func(*self.args)
+
     def _symbolic_(self, ring):
         return ring(self._sage_())
 
