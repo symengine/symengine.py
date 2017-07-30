@@ -369,6 +369,95 @@ def test_row_swap():
     assert A == B
 
 
+def test_row_col_del():
+    e = DenseMatrix(3, 3, [1, 2, 3, 4, 5, 6, 7, 8, 9])
+    raises(IndexError, lambda: e.row_del(5))
+    raises(IndexError, lambda: e.row_del(-5))
+    raises(IndexError, lambda: e.col_del(5))
+    raises(IndexError, lambda: e.col_del(-5))
+
+    assert e.row_del(-1) == DenseMatrix([[1, 2, 3], [4, 5, 6]])
+    assert e.col_del(-1) == DenseMatrix([[1, 2], [4, 5]])
+
+    e = DenseMatrix(3, 3, [1, 2, 3, 4, 5, 6, 7, 8, 9])
+    assert e.row_del(1) == DenseMatrix([[1, 2, 3], [7, 8, 9]])
+    assert e.col_del(1) == DenseMatrix([[1, 3], [7, 9]])
+
+
+def test_row_join():
+    assert eye(3).row_join(DenseMatrix([7, 7, 7])) == \
+           DenseMatrix([[1, 0, 0, 7],
+                        [0, 1, 0, 7],
+                        [0, 0, 1, 7]])
+
+
+def test_col_join():
+    assert eye(3).col_join(DenseMatrix([[7, 7, 7]])) == \
+           DenseMatrix([[1, 0, 0],
+                        [0, 1, 0],
+                        [0, 0, 1],
+                        [7, 7, 7]])
+
+
+def test_row_insert():
+    M = zeros(3)
+    V = ones(1, 3)
+    assert M.row_insert(1, V) == DenseMatrix([[0, 0, 0],
+                                              [1, 1, 1],
+                                              [0, 0, 0],
+                                              [0, 0, 0]])
+
+
+def test_col_insert():
+    M = zeros(3)
+    V = ones(3, 1)
+    assert M.col_insert(1, V) == DenseMatrix([[0, 1, 0, 0],
+                                              [0, 1, 0, 0],
+                                              [0, 1, 0, 0]])
+
+
+def test_rowmul():
+    M = ones(3)
+    assert M.rowmul(2, 2) == DenseMatrix([[1, 1, 1],
+                                          [1, 1, 1], 
+                                          [2, 2, 2]])
+
+
+def test_rowadd():
+    M = ones(3)
+    assert M.rowadd(2, 1, 1) == DenseMatrix([[1, 1, 1],
+                                             [1, 1, 1], 
+                                             [2, 2, 2]])
+
+
+def test_row_col():
+    m = DenseMatrix(3, 3, [1, 2, 3, 4, 5, 6, 7, 8, 9])
+    assert m.row(0) == DenseMatrix(1, 3, [1, 2, 3])
+    assert m.col(0) == DenseMatrix(3, 1, [1, 4, 7])
+
+
+def test_is_square():
+    m = DenseMatrix([[1],[1]])
+    m2 = DenseMatrix([[2, 2], [2, 2]])
+    assert not m.is_square
+    assert m2.is_square
+
+
+def test_dot():
+    A = DenseMatrix(2, 3, [1, 2, 3, 4, 5, 6])
+    B = DenseMatrix(2, 1, [7, 8])
+    assert A.dot(B) == DenseMatrix(1, 3, [39, 54, 69])
+    assert ones(1, 3).dot(ones(3, 1)) == 3
+
+
+def test_cross():
+    M = DenseMatrix(1, 3, [1, 2, 3])
+    V = DenseMatrix(1, 3, [3, 4, 5])
+    assert M.cross(V) == DenseMatrix(1, 3, [-2, 4, -2])
+    raises(ShapeError, lambda:
+        DenseMatrix(1, 2, [1, 1]).cross(DenseMatrix(1, 2, [1, 1])))
+
+
 def test_immutablematrix():
     A = ImmutableMatrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     assert A.shape == (3, 3)

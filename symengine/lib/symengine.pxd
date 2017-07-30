@@ -769,6 +769,12 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
         DenseMatrix(unsigned i, unsigned j) nogil
         DenseMatrix(unsigned i, unsigned j, const vec_basic &v) nogil
         void resize(unsigned i, unsigned j) nogil
+        void row_join(const DenseMatrix &B) nogil
+        void col_join(const DenseMatrix &B) nogil
+        void row_insert(const DenseMatrix &B, unsigned pos) nogil
+        void col_insert(const DenseMatrix &B, unsigned pos) nogil
+        void row_del(unsigned k) nogil
+        void col_del(unsigned k) nogil
 
     bool is_a_DenseMatrix "SymEngine::is_a<SymEngine::DenseMatrix>"(const MatrixBase &b) nogil
     DenseMatrix* static_cast_DenseMatrix "static_cast<SymEngine::DenseMatrix*>"(const MatrixBase *a)
@@ -792,6 +798,12 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
     void diag(DenseMatrix &A, vec_basic &v, int k) nogil
     void ones(DenseMatrix &A) nogil
     void zeros(DenseMatrix &A) nogil
+    void row_exchange_dense(DenseMatrix &A, unsigned i, unsigned j) nogil
+    void row_mul_scalar_dense(DenseMatrix &A, unsigned i, RCP[const Basic] &c) nogil
+    void row_add_row_dense(DenseMatrix &A, unsigned i, unsigned j, RCP[const Basic] &c) nogil
+    void column_exchange_dense(DenseMatrix &A, unsigned i, unsigned j) nogil
+    void dot(const DenseMatrix &A, const DenseMatrix &B, DenseMatrix &C) nogil
+    void cross(const DenseMatrix &A, const DenseMatrix &B, DenseMatrix &C) nogil
 
 cdef extern from "<symengine/ntheory.h>" namespace "SymEngine":
     int probab_prime_p(const Integer &a, int reps)

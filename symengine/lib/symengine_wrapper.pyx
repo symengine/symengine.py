@@ -2505,32 +2505,62 @@ cdef class DenseMatrixBase(MatrixBase):
         cdef DenseMatrixBase o = sympify(rhs)
         if self.rows != o.rows:
             raise ShapeError("`self` and `rhs` must have the same number of rows.")
-        cdef DenseMatrixBase result = self.__class__(self.rows, self.cols + o.cols)
-        cdef Basic e_
-        for i in range(self.rows):
-            for j in range(self.cols):
-                e_ = self._get(i, j)
-                deref(result.thisptr).set(i, j, e_.thisptr)
-        for i in range(o.rows):
-            for j in range(o.cols):
-                e_ = sympify(o._get(i, j))
-                deref(result.thisptr).set(i, j + self.cols, e_.thisptr)
-        return result
+        cdef DenseMatrixBase d = self.__class__(self)
+        deref(symengine.static_cast_DenseMatrix(d.thisptr)).row_join(deref(symengine.static_cast_DenseMatrix(o.thisptr)))
+        return d
 
     def col_join(self, bott):
         cdef DenseMatrixBase o = sympify(bott)
         if self.cols != o.cols:
             raise ShapeError("`self` and `rhs` must have the same number of columns.")
-        cdef DenseMatrixBase result = self.__class__(self.rows + o.rows, self.cols)
-        cdef Basic e_
-        for i in range(self.rows):
-            for j in range(self.cols):
-                e_ = self._get(i, j)
-                deref(result.thisptr).set(i, j, e_.thisptr)
-        for i in range(o.rows):
-            for j in range(o.cols):
-                e_ = sympify(o._get(i, j))
-                deref(result.thisptr).set(i + self.rows, j, e_.thisptr)
+        cdef DenseMatrixBase d = self.__class__(self)
+        deref(symengine.static_cast_DenseMatrix(d.thisptr)).col_join(deref(symengine.static_cast_DenseMatrix(o.thisptr)))
+        return d
+
+    def row_insert(self, pos, bott):
+        cdef DenseMatrixBase o = sympify(bott)
+        if pos < 0:
+            pos = self.rows + pos
+        if pos < 0:
+            pos = 0
+        elif pos > self.rows:
+            pos = self.rows
+        if self.cols != o.cols:
+            raise ShapeError("`self` and `other` must have the same number of columns.")
+        cdef DenseMatrixBase d = self.__class__(self)
+        deref(symengine.static_cast_DenseMatrix(d.thisptr)).row_insert(deref(symengine.static_cast_DenseMatrix(o.thisptr)), pos)
+        return d
+
+    def col_insert(self, pos, bott):
+        cdef DenseMatrixBase o = sympify(bott)
+        if pos < 0:
+            pos = self.cols + pos
+        if pos < 0:
+            pos = 0
+        elif pos > self.cols:
+            pos = self.cols
+        if self.rows != o.rows:
+            raise ShapeError("`self` and `other` must have the same number of rows.")
+        cdef DenseMatrixBase d = self.__class__(self)
+        deref(symengine.static_cast_DenseMatrix(d.thisptr)).col_insert(deref(symengine.static_cast_DenseMatrix(o.thisptr)), pos)
+        return d
+
+    def dot(self, b):
+        cdef DenseMatrixBase o = sympify(b)
+        cdef DenseMatrixBase result = self.__class__(self.rows, self.cols)
+        symengine.dot(deref(symengine.static_cast_DenseMatrix(self.thisptr)), deref(symengine.static_cast_DenseMatrix(o.thisptr)), deref(symengine.static_cast_DenseMatrix(result.thisptr)))
+        if len(result) == 1:
+            return result[0, 0]
+        else:
+            return result
+
+    def cross(self, b):
+        cdef DenseMatrixBase o = sympify(b)
+        if self.cols * self.rows != 3 or o.cols * o.rows != 3:
+            raise ShapeError("Dimensions incorrect for cross product: %s x %s" %
+                             ((self.rows, self.cols), (b.rows, b.cols)))
+        cdef DenseMatrixBase result = self.__class__(self.rows, self.cols)
+        symengine.cross(deref(symengine.static_cast_DenseMatrix(self.thisptr)), deref(symengine.static_cast_DenseMatrix(o.thisptr)), deref(symengine.static_cast_DenseMatrix(result.thisptr)))
         return result
 
     @property
@@ -2540,6 +2570,10 @@ cdef class DenseMatrixBase(MatrixBase):
     @property
     def cols(self):
         return self.ncols()
+
+    @property
+    def is_square(self):
+        return self.rows == self.cols
 
     def nrows(self):
         return deref(self.thisptr).nrows()
@@ -2588,6 +2622,12 @@ cdef class DenseMatrixBase(MatrixBase):
     def _get(self, i, j):
         # No error checking is done
         return c2py(deref(self.thisptr).get(i, j))
+
+    def col(self, j):
+        return self[:, j]
+
+    def row(self, i):
+        return self[i, :]
 
     def set(self, i, j, e):
         i, j = self._get_index(i, j)
@@ -2664,6 +2704,13 @@ cdef class DenseMatrixBase(MatrixBase):
                 if e_ is not None:
                     deref(out.thisptr).set(i, j, e_.thisptr)
         return out
+
+    def _applyfunc(self, f):
+        cdef int nr = self.nrows()
+        cdef int nc = self.ncols()
+        for i in range(nr):
+            for j in range(nc):
+                self._set(i, j, f(self._get(i, j)))
 
     def msubs(self, *args):
         cdef _DictBasic D = get_dict(*args)
@@ -2826,6 +2873,9 @@ cdef class DenseMatrixBase(MatrixBase):
     def tolist(self):
         return self[:]
 
+    def _mat(self):
+        return self
+
     def atoms(self, *types):
         if types:
             s = set()
@@ -2864,8 +2914,7 @@ class DenseMatrixBaseIter(object):
 cdef class MutableDenseMatrix(DenseMatrixBase):
 
     def col_swap(self, i, j):
-        for k in range(0, self.rows):
-            self[k, i], self[k, j] = self[k, j], self[k, i]
+        symengine.column_exchange_dense(deref(symengine.static_cast_DenseMatrix(self.thisptr)), i, j)
 
     def fill(self, value):
         for i in range(self.rows):
@@ -2873,27 +2922,41 @@ cdef class MutableDenseMatrix(DenseMatrixBase):
                 self[i, j] = value
 
     def row_swap(self, i, j):
-        for k in range(0, self.cols):
-            self[i, k], self[j, k] = self[j, k], self[i, k]
+        symengine.row_exchange_dense(deref(symengine.static_cast_DenseMatrix(self.thisptr)), i, j)
 
-    def _applyfunc(self, f):
-        cdef int nr = self.nrows()
-        cdef int nc = self.ncols()
-        for i in range(nr):
-            for j in range(nc):
-                self._set(i, j, f(self._get(i, j)))
+    def rowmul(self, i, c, *args):
+        cdef Basic _c = sympify(c)
+        symengine.row_mul_scalar_dense(deref(symengine.static_cast_DenseMatrix(self.thisptr)), i, _c.thisptr)
+        return self
+
+    def rowadd(self, i, j, c, *args):
+        cdef Basic _c = sympify(c)
+        symengine.row_add_row_dense(deref(symengine.static_cast_DenseMatrix(self.thisptr)), i, j, _c.thisptr)
+        return self
+
+    def row_del(self, i):
+        if i < -self.rows or i >= self.rows:
+            raise IndexError("Index out of range: 'i = %s', valid -%s <= i"
+                             " < %s" % (i, self.rows, self.rows))
+        if i < 0:
+            i += self.rows
+        deref(symengine.static_cast_DenseMatrix(self.thisptr)).row_del(i)
+        return self
+
+    def col_del(self, i):
+        if i < -self.cols or i >= self.cols:
+            raise IndexError("Index out of range: 'i=%s', valid -%s <= i < %s"
+                             % (i, self.cols, self.cols))
+        if i < 0:
+            i += self.cols
+        deref(symengine.static_cast_DenseMatrix(self.thisptr)).col_del(i)
+        return self
 
 Matrix = DenseMatrix = MutableDenseMatrix
 
 cdef class ImmutableDenseMatrix(DenseMatrixBase):
 
     def __setitem__(self, key, value):
-        raise TypeError("Cannot set values of {}".format(self.__class__))
-
-    def set(self, i, j, e):
-        raise TypeError("Cannot set values of {}".format(self.__class__))
-
-    def _set(self, i, j, e):
         raise TypeError("Cannot set values of {}".format(self.__class__))
 
 ImmutableMatrix = ImmutableDenseMatrix
