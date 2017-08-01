@@ -1363,6 +1363,10 @@ class Rational(Number):
                            symengine.outArg_Integer(_num), symengine.outArg_Integer(_den))
         return [c2py(<RCP[const symengine.Basic]>_num), c2py(<RCP[const symengine.Basic]>_den)]
 
+    def as_numer_denom(self):
+        r = self.get_num_den()
+        return r[0], r[1]
+
     def _sympy_(self):
         rat = self.get_num_den()
         return rat[0]._sympy_() / rat[1]._sympy_()
@@ -1408,6 +1412,10 @@ class Integer(Rational):
     @property
     def is_integer(self):
         return True
+
+    @property
+    def doit(self, **hints):
+        return self
 
     def __hash__(Basic self):
         return deref(self.thisptr).hash()
@@ -1478,8 +1486,8 @@ class Integer(Rational):
     def q(self):
         return 1
 
-    def get_num_den(Basic self):
-        return self, 1
+    def as_numer_denom(Basic self):
+        return self, Integer(1)
 
     @property
     def func(self):
