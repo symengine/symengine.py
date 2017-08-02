@@ -460,6 +460,16 @@ def sympify(a):
     """
     if isinstance(a, str):
         return c2py(symengine.parse(a.encode("utf-8")))
+    elif isinstance(a, tuple):
+        v = []
+        for e in a:
+            v.append(sympify(e))
+        return tuple(v)
+    elif isinstance(a, list):
+        v = []
+        for e in a:
+            v.append(sympify(e))
+        return v
     return _sympify(a, True)
 
 
@@ -494,16 +504,6 @@ def _sympify(a, raise_error=True):
         return RealDouble(a)
     elif isinstance(a, complex):
         return ComplexDouble(a)
-    elif isinstance(a, tuple):
-        v = []
-        for e in a:
-            v.append(_sympify(e, True))
-        return tuple(v)
-    elif isinstance(a, list):
-        v = []
-        for e in a:
-            v.append(_sympify(e, True))
-        return v
     elif hasattr(a, '_symengine_'):
         return _sympify(a._symengine_(), raise_error)
     elif hasattr(a, '_sympy_'):

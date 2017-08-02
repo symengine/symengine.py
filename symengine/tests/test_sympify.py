@@ -9,6 +9,8 @@ def test_sympify1():
     assert sympify(2) != Integer(1)
     assert sympify(-5) == Integer(-5)
     assert sympify(Integer(3)) == Integer(3)
+    assert sympify(('0', '0')) == (0, 0)
+    assert sympify(['0', '0']) == [0, 0]
     assert sympify("3+5") == Integer(8)
     assert true == sympify(True)
     assert false == sympify(False)
