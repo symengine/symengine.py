@@ -1861,6 +1861,16 @@ class Pow(Basic):
         return _sympify(a) ** b
 
     @property
+    def base(Basic self):
+        cdef RCP[const symengine.Pow] X = symengine.rcp_static_cast_Pow(self.thisptr)
+        return c2py(deref(X).get_base())
+
+    @property
+    def exp(Basic self):
+        cdef RCP[const symengine.Pow] X = symengine.rcp_static_cast_Pow(self.thisptr)
+        return c2py(deref(X).get_exp())
+
+    @property
     def is_Pow(self):
         return True
 
