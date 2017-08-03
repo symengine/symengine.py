@@ -773,11 +773,16 @@ cdef class Basic(object):
         cdef _DictBasic D = get_dict(*args)
         return c2py(symengine.ssubs(self.thisptr, D.c))
 
-    xreplace = subs
+    replace = xreplace = subs
 
     def msubs(Basic self not None, *args):
         cdef _DictBasic D = get_dict(*args)
         return c2py(symengine.msubs(self.thisptr, D.c))
+
+    def as_numer_denom(Basic self not None):
+        cdef RCP[const symengine.Basic] _num, _den
+        symengine.as_numer_denom(self.thisptr, symengine.outArg(_num), symengine.outArg(_den))
+        return c2py(<RCP[const symengine.Basic]>_num), c2py(<RCP[const symengine.Basic]>_den)
 
     def n(self, prec = 53, real = False):
         if real:
@@ -886,7 +891,7 @@ cdef class Basic(object):
         return False
 
     def copy(self):
-        return self.func(*self.args)
+        return self
 
     def _symbolic_(self, ring):
         return ring(self._sage_())
@@ -1363,10 +1368,6 @@ class Rational(Number):
                            symengine.outArg_Integer(_num), symengine.outArg_Integer(_den))
         return [c2py(<RCP[const symengine.Basic]>_num), c2py(<RCP[const symengine.Basic]>_den)]
 
-    def as_numer_denom(self):
-        r = self.get_num_den()
-        return r[0], r[1]
-
     def _sympy_(self):
         rat = self.get_num_den()
         return rat[0]._sympy_() / rat[1]._sympy_()
@@ -1486,8 +1487,8 @@ class Integer(Rational):
     def q(self):
         return 1
 
-    def as_numer_denom(Basic self):
-        return self, Integer(1)
+    def get_num_den(Basic self):
+        return self, 1
 
     @property
     def func(self):
@@ -1753,16 +1754,6 @@ class NaN(Number):
 
 
 class AssocOp(Basic):
-    
-    @classmethod
-    def _from_args(cls, args):
-        if len(args) == 0:
-            return cls.identity
-        elif len(args) == 1:
-            return args[0]
-
-        obj = super(AssocOp, cls).__new__(cls, *args)
-        return obj
 
     @classmethod
     def make_args(cls, expr):
@@ -1774,6 +1765,8 @@ class AssocOp(Basic):
 
 class Add(AssocOp):
 
+    identity = 0
+
     def __new__(cls, *args, **kwargs):
         cdef symengine.vec_basic v_
         cdef Basic e
@@ -1781,6 +1774,15 @@ class Add(AssocOp):
             e = _sympify(e_)
             v_.push_back(e.thisptr)
         return c2py(symengine.add(v_))
+
+    @classmethod
+    def _from_args(self, args):
+        if len(args) == 0:
+            return self.identity
+        elif len(args) == 1:
+            return args[0]
+
+        return Add(*args)
 
     @property
     def is_Add(self):
@@ -1817,6 +1819,8 @@ class Add(AssocOp):
 
 class Mul(AssocOp):
 
+    identity = 1
+
     def __new__(cls, *args, **kwargs):
         cdef symengine.vec_basic v_
         cdef Basic e
@@ -1824,6 +1828,15 @@ class Mul(AssocOp):
             e = _sympify(e_)
             v_.push_back(e.thisptr)
         return c2py(symengine.mul(v_))
+
+    @classmethod
+    def _from_args(self, args):
+        if len(args) == 0:
+            return self.identity
+        elif len(args) == 1:
+            return args[0]
+
+        return Mul(*args)
 
     @property
     def is_Mul(self):
@@ -1869,6 +1882,9 @@ class Pow(Basic):
     def exp(Basic self):
         cdef RCP[const symengine.Pow] X = symengine.rcp_static_cast_Pow(self.thisptr)
         return c2py(deref(X).get_exp())
+
+    def as_base_exp(self):
+        return self.base, self.exp
 
     @property
     def is_Pow(self):

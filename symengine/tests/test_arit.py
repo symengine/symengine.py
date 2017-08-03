@@ -1,6 +1,6 @@
 from symengine.utilities import raises
 
-from symengine import Symbol, Integer, Add, Pow
+from symengine import Symbol, Integer, Add, Mul, Pow, Rational, sqrt
 
 
 def test_arit1():
@@ -149,3 +149,62 @@ def test_free_symbols():
     z = Symbol("z")
     assert (x**2).free_symbols == set([x])
     assert (x**y + z).free_symbols == set([x, y, z])
+
+
+def test_as_numer_denom():
+    x, y = Rational(17, 26).as_numer_denom()
+    assert x == Integer(17)
+    assert y == Integer(26)
+
+    x, y = Integer(-5).as_numer_denom()
+    assert x == Integer(-5)
+    assert y == Integer(1)
+
+
+def test_from_args():
+    x = Symbol("x")
+    y = Symbol("y")
+    
+    assert Add._from_args([]) == 0
+    assert Add._from_args([x]) == x
+    assert Add._from_args([x, y]) == x + y
+
+    assert Mul._from_args([]) == 1
+    assert Mul._from_args([x]) == x
+    assert Mul._from_args([x, y]) == x * y
+
+
+def test_make_args():
+    x = Symbol("x")
+    y = Symbol("y")
+    z = Symbol("z")
+
+    assert Add.make_args(x) == (x,)
+    assert Mul.make_args(x) == (x,)
+
+    assert Add.make_args(x*y*z) == (x*y*z,)
+    assert Mul.make_args(x*y*z) == (x*y*z).args
+
+    assert Add.make_args(x + y + z) == (x + y + z).args
+    assert Mul.make_args(x + y + z) == (x + y + z,)
+
+    assert Add.make_args((x + y)**z) == ((x + y)**z,)
+    assert Mul.make_args((x + y)**z) == ((x + y)**z,)
+
+
+def test_Pow_base_exp():
+    x = Symbol("x")
+    y = Symbol("y")
+    e = Pow(x + y, 2)
+    assert isinstance(e, Pow)
+    assert e.exp == 2
+    assert e.base == x + y
+
+    assert sqrt(x - 1).as_base_exp() == (x - 1, Rational(1, 2))
+
+
+def test_copy():
+    b = Symbol("b")
+    a = b.copy()
+    assert a is b
+    assert type(a) == type(b)
