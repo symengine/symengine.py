@@ -746,6 +746,14 @@ cdef class Basic(object):
         return False
 
     @property
+    def is_symbol(self):
+        return False
+
+    @property
+    def is_Dummy(self):
+        return False
+
+    @property
     def is_Function(self):
         return False
 
@@ -766,6 +774,10 @@ cdef class Basic(object):
         return False
 
     @property
+    def is_number(self):
+        return None
+
+    @property
     def is_Float(self):
         return False
 
@@ -778,9 +790,37 @@ cdef class Basic(object):
         return False
 
     @property
+    def is_integer(self):
+        return False
+
+    @property
+    def is_finite(self):
+        return None
+
+    @property
     def is_Derivative(self):
         return False
 
+    @property
+    def is_AlgebraicNumber(self):
+        return False
+
+    @property
+    def is_Relational(self):
+        return False
+
+    @property
+    def is_Equality(self):
+        return False
+
+    @property
+    def is_Boolean(self):
+        return False
+
+    @property
+    def is_Not(self):
+        return False
+    
     @property
     def is_Matrix(self):
         return False
@@ -908,6 +948,14 @@ class Symbol(Basic):
         return True
 
     @property
+    def is_symbol(self):
+        return True
+
+    @property
+    def is_commutative(self):
+        return True
+
+    @property
     def func(self):
         return self.__class__
 
@@ -998,7 +1046,14 @@ class Boolean(Basic):
 
 
 class BooleanAtom(Boolean):
-    pass
+    
+    @property
+    def is_Boolean(self):
+        return True
+
+    @property
+    def is_Atom(self):
+        return True
 
 
 class BooleanTrue(BooleanAtom):
@@ -1022,7 +1077,10 @@ class BooleanFalse(BooleanAtom):
 
 
 class Relational(Boolean):
-    pass
+    
+    @property
+    def is_Relational(self):
+        return True
 
 Rel = Relational
 
@@ -1041,6 +1099,10 @@ class Equality(Relational):
         import sage.all as sage
         s = self.args_as_sage()
         return sage.eq(*s)
+
+    @property
+    def is_Equality(self):
+        return True
 
     func = __class__
 
@@ -1117,6 +1179,14 @@ cdef class Number(Basic):
         return True
 
     @property
+    def is_number(self):
+        return True
+
+    @property
+    def is_commutative(self):
+        return True
+
+    @property
     def is_positive(Basic self):
         return deref(symengine.rcp_static_cast_Number(self.thisptr)).is_positive()
 
@@ -1153,6 +1223,22 @@ class Rational(Number):
     @property
     def is_Rational(self):
         return True
+
+    @property
+    def is_rational(self):
+        return True
+
+    @property
+    def is_real(self):
+        return True
+
+    @property
+    def is_finite(self):
+        return True
+
+    @property
+    def is_integer(self):
+        return False
 
     @property
     def p(self):
@@ -1208,6 +1294,10 @@ class Integer(Rational):
 
     @property
     def is_Integer(self):
+        return True
+
+    @property
+    def is_integer(self):
         return True
 
     def __hash__(Basic self):
@@ -1298,6 +1388,22 @@ class BasicMeta(type):
 
 class Float(Number):
 
+    @property
+    def is_rational(self):
+        return None
+
+    @property
+    def is_irrational(self):
+        return None
+
+    @property
+    def is_real(self):
+        return True
+
+    @property
+    def is_Float(self):
+        return True
+
     def __new__(cls, num, dps=None, precision=None):
         if cls is not Float:
             return super(Float, cls).__new__(cls)
@@ -1327,10 +1433,6 @@ RealNumber = Float
 
 
 class RealDouble(Float):
-
-    @property
-    def is_Float(self):
-        return True
 
     def __new__(cls, i):
         cdef double i_ = i
@@ -1373,10 +1475,6 @@ cdef class ComplexDouble(Number):
 
 
 class RealMPFR(Float):
-
-    @property
-    def is_Float(self):
-        return True
 
     IF HAVE_SYMENGINE_MPFR:
         def __new__(cls, i = None, long prec = 53, unsigned base = 10):
@@ -1458,6 +1556,10 @@ cdef class Complex(Number):
 
 class Infinity(Number):
 
+    @property
+    def is_infinite(self):
+        return True
+
     def __new__(cls):
         return oo
 
@@ -1470,6 +1572,10 @@ class Infinity(Number):
         return sage.oo
 
 class NegativeInfinity(Number):
+
+    @property
+    def is_infinite(self):
+        return True
 
     def __new__(cls):
         return -oo
@@ -1484,6 +1590,10 @@ class NegativeInfinity(Number):
 
 class ComplexInfinity(Number):
 
+    @property
+    def is_infinite(self):
+        return True
+
     def __new__(cls):
         return zoo
 
@@ -1496,6 +1606,22 @@ class ComplexInfinity(Number):
         return sage.unsigned_infinity
 
 class NaN(Number):
+
+    @property
+    def is_rational(self):
+        return None
+
+    @property
+    def is_integer(self):
+        return None
+
+    @property
+    def is_real(self):
+        return None
+
+    @property
+    def is_finite(self):
+        return None
 
     def __new__(cls):
         return nan
@@ -1784,6 +1910,15 @@ class polygamma(Function):
         return sympy.polygamma(*self.args_as_sympy())
 
 class sign(OneArgFunction):
+    
+    @property
+    def is_complex(self):
+        return True
+
+    @property
+    def is_finite(self):
+        return True
+
     def __new__(cls, x):
         cdef Basic X = sympify(x)
         return c2py(symengine.sign(X.thisptr))
@@ -1976,6 +2111,14 @@ mul = Mul
 
 
 class Abs(OneArgFunction):
+
+    @property
+    def is_real(self):
+        return True
+
+    @property
+    def is_negative(self):
+        return False
 
     def __new__(cls, x):
         cdef Basic X = sympify(x)
