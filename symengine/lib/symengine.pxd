@@ -41,6 +41,7 @@ cdef extern from "<set>" namespace "std":
             bint operator!=(iterator) nogil
         iterator begin() nogil
         iterator end() nogil
+        iterator insert(T&) nogil
 
     cdef cppclass multiset[T, U]:
          cppclass iterator:
@@ -156,6 +157,8 @@ cdef extern from "<symengine/symengine_rcp.h>" namespace "SymEngine":
     RCP[const BooleanAtom] rcp_static_cast_BooleanAtom "SymEngine::rcp_static_cast<const SymEngine::BooleanAtom>"(RCP[const Basic] &b) nogil
     RCP[const PyNumber] rcp_static_cast_PyNumber "SymEngine::rcp_static_cast<const SymEngine::PyNumber>"(RCP[const Basic] &b) nogil
     RCP[const PyFunction] rcp_static_cast_PyFunction "SymEngine::rcp_static_cast<const SymEngine::PyFunction>"(RCP[const Basic] &b) nogil
+    RCP[const Boolean] rcp_static_cast_Boolean "SymEngine::rcp_static_cast<const SymEngine::Boolean>"(RCP[const Basic] &b) nogil
+    RCP[const Set] rcp_static_cast_Set "SymEngine::rcp_static_cast<const SymEngine::Set>"(RCP[const Basic] &b) nogil
     Ptr[RCP[Basic]] outArg(RCP[const Basic] &arg) nogil
     Ptr[RCP[Integer]] outArg_Integer "SymEngine::outArg<SymEngine::RCP<const SymEngine::Integer>>"(RCP[const Integer] &arg) nogil
 
@@ -292,7 +295,21 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_Floor "SymEngine::is_a<SymEngine::Floor>"(const Basic &b) nogil
     bool is_a_Ceiling "SymEngine::is_a<SymEngine::Ceiling>"(const Basic &b) nogil
     bool is_a_Conjugate "SymEngine::is_a<SymEngine::Conjugate>"(const Basic &b) nogil
+    bool is_a_Interval "SymEngine::is_a<SymEngine::Interval>"(const Basic &b) nogil
+    bool is_a_EmptySet "SymEngine::is_a<SymEngine::EmptySet>"(const Basic &b) nogil
+    bool is_a_UniversalSet "SymEngine::is_a<SymEngine::UniversalSet>"(const Basic &b) nogil
+    bool is_a_FiniteSet "SymEngine::is_a<SymEngine::FiniteSet>"(const Basic &b) nogil
+    bool is_a_Union "SymEngine::is_a<SymEngine::Union>"(const Basic &b) nogil
+    bool is_a_Complement "SymEngine::is_a<SymEngine::Complement>"(const Basic &b) nogil
+    bool is_a_ConditionSet "SymEngine::is_a<SymEngine::ConditionSet>"(const Basic &b) nogil
+    bool is_a_ImageSet "SymEngine::is_a<SymEngine::ImageSet>"(const Basic &b) nogil
 
+    bool is_a_Piecewise "SymEngine::is_a<SymEngine::Piecewise>"(const Basic &b) nogil
+    bool is_a_Contains "SymEngine::is_a<SymEngine::Contains>"(const Basic &b) nogil
+    bool is_a_And "SymEngine::is_a<SymEngine::And>"(const Basic &b) nogil
+    bool is_a_Not "SymEngine::is_a<SymEngine::Not>"(const Basic &b) nogil
+    bool is_a_Or "SymEngine::is_a<SymEngine::Or>"(const Basic &b) nogil
+    bool is_a_Xor "SymEngine::is_a<SymEngine::Xor>"(const Basic &b) nogil
     RCP[const Basic] expand(RCP[const Basic] &o) nogil except +
 
 cdef extern from "<symengine/subs.h>" namespace "SymEngine":
@@ -385,7 +402,7 @@ cdef extern from "<symengine/constants.h>" namespace "SymEngine":
     RCP[const Basic] Inf
     RCP[const Basic] ComplexInf
     RCP[const Basic] Nan
-  
+
 cdef extern from "<symengine/infinity.h>" namespace "SymEngine":
     cdef cppclass Infty(Number):
         pass
@@ -870,7 +887,7 @@ cdef extern from "<symengine/visitor.h>" namespace "SymEngine":
 
 cdef extern from "<symengine/logic.h>" namespace "SymEngine":
     cdef cppclass Boolean(Basic):
-        pass
+        RCP[const Boolean] logical_not() nogil except+
     cdef cppclass BooleanAtom(Boolean):
         bool get_val() nogil
     cdef cppclass Relational(Boolean):
@@ -883,6 +900,18 @@ cdef extern from "<symengine/logic.h>" namespace "SymEngine":
         pass
     cdef cppclass StrictLessThan(Relational):
         pass
+    cdef cppclass Piecewise(Basic):
+        pass
+    cdef cppclass Contains(Boolean):
+        pass
+    cdef cppclass And(Boolean):
+        pass
+    cdef cppclass Or(Boolean):
+        pass
+    cdef cppclass Not(Boolean):
+        pass
+    cdef cppclass Xor(Boolean):
+        pass
 
     RCP[const Basic] boolTrue
     RCP[const Basic] boolFalse
@@ -894,6 +923,20 @@ cdef extern from "<symengine/logic.h>" namespace "SymEngine":
     cdef RCP[const Boolean] Gt(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
     cdef RCP[const Boolean] Le(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
     cdef RCP[const Boolean] Lt(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
+    ctypedef Boolean const_Boolean "const SymEngine::Boolean"
+    ctypedef vector[pair[RCP[const_Basic], RCP[const_Boolean]]] PiecewiseVec;
+    ctypedef vector[RCP[Boolean]] vec_boolean "SymEngine::vec_boolean"
+    ctypedef set[RCP[Boolean], RCPBasicKeyLess] set_boolean "SymEngine::set_boolean"
+    cdef RCP[const Boolean] logical_and(set_boolean &s) nogil except+
+    cdef RCP[const Boolean] logical_nand(set_boolean &s) nogil except+
+    cdef RCP[const Boolean] logical_or(set_boolean &s) nogil except+
+    cdef RCP[const Boolean] logical_not(RCP[const Boolean] &s) nogil except+
+    cdef RCP[const Boolean] logical_nor(set_boolean &s) nogil except+
+    cdef RCP[const Boolean] logical_xor(vec_boolean &s) nogil except+
+    cdef RCP[const Boolean] logical_xnor(vec_boolean &s) nogil except+
+    cdef RCP[const Basic] piecewise(PiecewiseVec vec) nogil except +
+    cdef RCP[const Boolean] contains(RCP[const Basic] &expr,
+                                     RCP[const Set] &set) nogil
 
 cdef extern from "<utility>" namespace "std":
     cdef integer_class std_move_mpz "std::move" (integer_class) nogil
@@ -902,6 +945,7 @@ cdef extern from "<utility>" namespace "std":
     IF HAVE_SYMENGINE_MPC:
         cdef mpc_class std_move_mpc "std::move" (mpc_class) nogil
     cdef map_basic_basic std_move_map_basic_basic "std::move" (map_basic_basic) nogil
+    cdef PiecewiseVec std_move_PiecewiseVec "std::move" (PiecewiseVec) nogil
 
 cdef extern from "<symengine/eval_double.h>" namespace "SymEngine":
     double eval_double(const Basic &b) nogil except +
@@ -944,3 +988,41 @@ cdef extern from "<symengine/parser.h>" namespace "SymEngine":
 
 cdef extern from "<symengine/codegen.h>" namespace "SymEngine":
     string ccode(const Basic &x) nogil except +
+
+cdef extern from "<symengine/sets.h>" namespace "SymEngine":
+    cdef cppclass Set(Basic):
+        RCP[const Set] set_intersection(RCP[const Set] &o) nogil except +
+        RCP[const Set] set_union(RCP[const Set] &o) nogil except +
+        RCP[const Set] set_complement(RCP[const Set] &o) nogil except +
+        RCP[const Boolean] contains(RCP[const Basic] &a) nogil except +
+    cdef cppclass Interval(Set):
+        pass
+    cdef cppclass EmptySet(Set):
+        pass
+    cdef cppclass UniversalSet(Set):
+        pass
+    cdef cppclass FiniteSet(Set):
+        pass
+    cdef cppclass Union(Set):
+        pass
+    cdef cppclass Complement(Set):
+        pass
+    cdef cppclass ConditionSet(Set):
+        pass
+    cdef cppclass ImageSet(Set):
+        pass
+    ctypedef set[RCP[Set], RCPBasicKeyLess] set_set "SymEngine::set_set"
+    cdef RCP[const Basic] interval(RCP[const Number] &start, RCP[const Number] &end, bool l, bool r) nogil except +
+    cdef RCP[const EmptySet] emptyset() nogil except +
+    cdef RCP[const UniversalSet] universalset() nogil except +
+    cdef RCP[const Set] finiteset(set_basic &container) nogil except +
+    cdef RCP[const Set] set_union(set_set &a) nogil except +
+    cdef RCP[const Set] set_intersection(set_set &a) nogil except +
+    cdef RCP[const Set] set_complement_helper(RCP[const Set] &container, RCP[const Set] &universe) nogil except +
+    cdef RCP[const Set] set_complement(RCP[const Set] &universe, RCP[const Set] &container) nogil except +
+    cdef RCP[const Set] conditionset(RCP[const Basic] &sym, RCP[const Boolean] &condition) nogil except +
+    cdef RCP[const Set] imageset(RCP[const Basic] &sym, RCP[const Basic] &expr, RCP[const Set] &base) nogil except +
+
+cdef extern from "<symengine/solve.h>" namespace "SymEngine":
+    cdef RCP[const Set] solve(RCP[const Basic] &f, RCP[const Symbol] &sym) nogil except +
+    cdef RCP[const Set] solve(RCP[const Basic] &f, RCP[const Symbol] &sym, RCP[const Set] &domain) nogil except +
