@@ -3,7 +3,7 @@ from symengine import (Symbol, sin, cos, sqrt, Add, Mul, function_symbol, Intege
 from symengine.lib.symengine_wrapper import (Subs, Derivative, LambertW, zeta, dirichlet_eta,
                                             zoo, pi, KroneckerDelta, LeviCivita, erf, erfc,
                                             oo, lowergamma, uppergamma, exp, loggamma, beta,
-                                            polygamma, digamma, trigamma, EulerGamma, sign,
+                                            polygamma, digamma, trigamma, eulergamma, sign,
                                             floor, ceiling, conjugate, nan, Float)
 
 import unittest
@@ -281,8 +281,8 @@ def test_polygamma():
     assert polygamma(0, -9) == zoo
     assert polygamma(0, -1) == zoo
     assert polygamma(0, 0) == zoo
-    assert polygamma(0, 1) == -EulerGamma
-    assert polygamma(0, 7) == Rational(49, 20) - EulerGamma
+    assert polygamma(0, 1) == -eulergamma
+    assert polygamma(0, 7) == Rational(49, 20) - eulergamma
     assert polygamma(1, 1) == pi**2/6
     assert polygamma(1, 2) == pi**2/6 - 1
     assert polygamma(1, 3) == pi**2/6 - Rational(5, 4)
@@ -295,7 +295,7 @@ def test_digamma():
     x = Symbol("x")
     assert digamma(x) == polygamma(0, x)
     assert digamma(0) == zoo
-    assert digamma(1) == -EulerGamma
+    assert digamma(1) == -eulergamma
 
 
 def test_trigamma():

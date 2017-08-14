@@ -332,6 +332,8 @@ cdef extern from "<symengine/number.h>" namespace "SymEngine":
         bool is_positive() nogil
         bool is_negative() nogil
         bool is_zero() nogil
+        bool is_one() nogil
+        bool is_minus_one() nogil
         bool is_complex() nogil
         pass
     cdef cppclass NumberWrapper(Basic):

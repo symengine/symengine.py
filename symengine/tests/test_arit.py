@@ -1,6 +1,7 @@
 from symengine.utilities import raises
 
 from symengine import Symbol, Integer, Add, Mul, Pow, Rational, sqrt
+from symengine.lib.symengine_wrapper import Zero, One, NegativeOne, Half
 
 
 def test_arit1():
@@ -208,3 +209,10 @@ def test_copy():
     a = b.copy()
     assert a is b
     assert type(a) == type(b)
+
+
+def test_special_constants():
+    assert Zero() == Integer(0)
+    assert One() == Integer(1)
+    assert NegativeOne() == Integer(-1)
+    assert Half() == Rational(1, 2)

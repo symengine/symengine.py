@@ -4,7 +4,7 @@ from symengine import (Symbol, Integer, sympify, SympifyError, log,
         csc, sec, asin, acos, atan, acot, acsc, asec, sinh, cosh, tanh, coth,
         asinh, acosh, atanh, acoth, Add, Mul, Pow, diff)
 from symengine.lib.symengine_wrapper import (Subs, Derivative, RealMPFR,
-        ComplexMPC, PyNumber, Function, EulerGamma, Catalan, GoldenRatio,
+        ComplexMPC, PyNumber, Function, eulergamma, catalan, golden_ratio,
         LambertW, zeta, dirichlet_eta, KroneckerDelta, LeviCivita, erf, erfc,
         lowergamma, uppergamma, loggamma, beta, polygamma, sign, floor,
         ceiling, conjugate, And, Or, Not, Xor, Piecewise, Interval, EmptySet,
@@ -410,14 +410,14 @@ def test_constants():
     assert sympify(sympy.pi) == pi
     assert sympy.pi == pi._sympy_()
 
-    assert sympify(sympy.GoldenRatio) == GoldenRatio
-    assert sympy.GoldenRatio == GoldenRatio._sympy_()
+    assert sympify(sympy.GoldenRatio) == golden_ratio
+    assert sympy.GoldenRatio == golden_ratio._sympy_()
 
-    assert sympify(sympy.Catalan) == Catalan
-    assert sympy.Catalan == Catalan._sympy_()
+    assert sympify(sympy.Catalan) == catalan
+    assert sympy.Catalan == catalan._sympy_()
 
-    assert sympify(sympy.EulerGamma) == EulerGamma
-    assert sympy.EulerGamma == EulerGamma._sympy_()
+    assert sympify(sympy.EulerGamma) == eulergamma
+    assert sympy.EulerGamma == eulergamma._sympy_()
 
     assert sympify(sympy.oo) == oo
     assert sympy.oo == oo._sympy_()
