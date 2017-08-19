@@ -460,6 +460,16 @@ def sympify(a):
     """
     if isinstance(a, str):
         return c2py(symengine.parse(a.encode("utf-8")))
+    elif isinstance(a, tuple):
+        v = []
+        for e in a:
+            v.append(sympify(e))
+        return tuple(v)
+    elif isinstance(a, list):
+        v = []
+        for e in a:
+            v.append(sympify(e))
+        return v
     return _sympify(a, True)
 
 
@@ -494,16 +504,6 @@ def _sympify(a, raise_error=True):
         return RealDouble(a)
     elif isinstance(a, complex):
         return ComplexDouble(a)
-    elif isinstance(a, tuple):
-        v = []
-        for e in a:
-            v.append(_sympify(e, True))
-        return tuple(v)
-    elif isinstance(a, list):
-        v = []
-        for e in a:
-            v.append(_sympify(e, True))
-        return v
     elif hasattr(a, '_symengine_'):
         return _sympify(a._symengine_(), raise_error)
     elif hasattr(a, '_sympy_'):
@@ -773,11 +773,16 @@ cdef class Basic(object):
         cdef _DictBasic D = get_dict(*args)
         return c2py(symengine.ssubs(self.thisptr, D.c))
 
-    xreplace = subs
+    replace = xreplace = subs
 
     def msubs(Basic self not None, *args):
         cdef _DictBasic D = get_dict(*args)
         return c2py(symengine.msubs(self.thisptr, D.c))
+
+    def as_numer_denom(Basic self not None):
+        cdef RCP[const symengine.Basic] _num, _den
+        symengine.as_numer_denom(self.thisptr, symengine.outArg(_num), symengine.outArg(_den))
+        return c2py(<RCP[const symengine.Basic]>_num), c2py(<RCP[const symengine.Basic]>_den)
 
     def n(self, prec = 53, real = False):
         if real:
@@ -884,6 +889,9 @@ cdef class Basic(object):
     @property
     def is_Matrix(self):
         return False
+
+    def copy(self):
+        return self
 
     def _symbolic_(self, ring):
         return ring(self._sage_())
@@ -1406,6 +1414,10 @@ class Integer(Rational):
     def is_integer(self):
         return True
 
+    @property
+    def doit(self, **hints):
+        return self
+
     def __hash__(Basic self):
         return deref(self.thisptr).hash()
 
@@ -1740,7 +1752,20 @@ class NaN(Number):
         import sage.all as sage
         return sage.NaN
 
-class Add(Basic):
+
+class AssocOp(Basic):
+
+    @classmethod
+    def make_args(cls, expr):
+        if isinstance(expr, cls):
+            return expr.args
+        else:
+            return (sympify(expr),)
+
+
+class Add(AssocOp):
+
+    identity = 0
 
     def __new__(cls, *args, **kwargs):
         cdef symengine.vec_basic v_
@@ -1749,6 +1774,15 @@ class Add(Basic):
             e = _sympify(e_)
             v_.push_back(e.thisptr)
         return c2py(symengine.add(v_))
+
+    @classmethod
+    def _from_args(self, args):
+        if len(args) == 0:
+            return self.identity
+        elif len(args) == 1:
+            return args[0]
+
+        return Add(*args)
 
     @property
     def is_Add(self):
@@ -1783,7 +1817,9 @@ class Add(Basic):
             inc(iter)
         return d
 
-class Mul(Basic):
+class Mul(AssocOp):
+
+    identity = 1
 
     def __new__(cls, *args, **kwargs):
         cdef symengine.vec_basic v_
@@ -1792,6 +1828,15 @@ class Mul(Basic):
             e = _sympify(e_)
             v_.push_back(e.thisptr)
         return c2py(symengine.mul(v_))
+
+    @classmethod
+    def _from_args(self, args):
+        if len(args) == 0:
+            return self.identity
+        elif len(args) == 1:
+            return args[0]
+
+        return Mul(*args)
 
     @property
     def is_Mul(self):
@@ -1827,6 +1872,19 @@ class Pow(Basic):
 
     def __new__(cls, a, b):
         return _sympify(a) ** b
+
+    @property
+    def base(Basic self):
+        cdef RCP[const symengine.Pow] X = symengine.rcp_static_cast_Pow(self.thisptr)
+        return c2py(deref(X).get_base())
+
+    @property
+    def exp(Basic self):
+        cdef RCP[const symengine.Pow] X = symengine.rcp_static_cast_Pow(self.thisptr)
+        return c2py(deref(X).get_exp())
+
+    def as_base_exp(self):
+        return self.base, self.exp
 
     @property
     def is_Pow(self):

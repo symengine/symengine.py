@@ -311,6 +311,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_Or "SymEngine::is_a<SymEngine::Or>"(const Basic &b) nogil
     bool is_a_Xor "SymEngine::is_a<SymEngine::Xor>"(const Basic &b) nogil
     RCP[const Basic] expand(RCP[const Basic] &o) nogil except +
+    void as_numer_denom(RCP[const Basic] &x, const Ptr[RCP[Basic]] &numer, const Ptr[RCP[Basic]] &denom) nogil
 
 cdef extern from "<symengine/subs.h>" namespace "SymEngine":
     RCP[const Basic] msubs (RCP[const Basic] &x, const map_basic_basic &x) nogil
