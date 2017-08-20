@@ -1,7 +1,7 @@
 from symengine.utilities import raises
 
 from symengine import (Symbol, Integer, sympify, SympifyError, true, false, pi, nan, oo,
-                       zoo, E, I, golden_ratio, catalan, eulergamma, Rational, sqrt, Eq)
+                       zoo, E, I, GoldenRatio, Catalan, Rational, sqrt, Eq)
 from symengine.lib.symengine_wrapper import _sympify, S, One, polygamma
 
 
@@ -33,8 +33,8 @@ def test_S():
     assert S.ComplexInfinity is zoo
     assert S.Exp1 is (E + 1 - 1)
     assert S.ImaginaryUnit is sqrt(-1)
-    assert S.GoldenRatio * 2 / 2 is golden_ratio
-    assert S.Catalan * 1 is catalan
+    assert S.GoldenRatio * 2 / 2 is GoldenRatio
+    assert S.Catalan * 1 is Catalan
     assert S.EulerGamma is polygamma(0, 1) * -1
     assert S.true is Eq(2, 2)
     assert S.false is Eq(2, 3)

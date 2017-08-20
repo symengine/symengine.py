@@ -1174,92 +1174,96 @@ cdef class Constant(Basic):
         self.thisptr = symengine.make_rcp_Constant(name.encode("utf-8"))
 
     def _sympy_(self):
-        import sympy
-        if self == E:
-            return sympy.E
-        elif self == pi:
-            return sympy.pi
-        elif self == golden_ratio:
-            return sympy.GoldenRatio
-        elif self == catalan:
-            return sympy.Catalan
-        elif self == eulergamma:
-            return sympy.EulerGamma
-        else:
-            raise Exception("Unknown Constant")
+        raise Exception("Unknown Constant")
 
     def _sage_(self):
-        import sage.all as sage
-        if self == E:
-            return sage.e
-        elif self == pi:
-            return sage.pi
-        elif self == golden_ratio:
-            return sage.golden_ratio
-        elif self == catalan:
-            return sage.catalan
-        elif self == eulergamma:
-            return sage.euler_gamma
-        else:
-            raise Exception("Unknown Constant")
+        raise Exception("Unknown Constant")
 
 
-class ImaginaryUnit(Complex):
+cdef class ImaginaryUnit(Complex):
 
-    def __new__(cls):
-        cdef Basic r = Complex.__new__(ImaginaryUnit)
-        r.thisptr = symengine.I
-        return r
+    def __cinit__(Basic self):
+        self.thisptr = symengine.I
 
 I = ImaginaryUnit()
 
 
-class Pi(Constant):
+cdef class Pi(Constant):
 
-    def __new__(cls):
-        cdef Basic r = Constant.__new__(Pi)
-        r.thisptr = symengine.pi
-        return r
+    def __cinit__(Basic self):
+        self.thisptr = symengine.pi
+
+    def _sympy_(self):
+        import sympy
+        return sympy.pi
+
+    def _sage_(self):
+        import sage.all as sage
+        return sage.pi
 
 pi = Pi()
 
 
-class Exp1(Constant):
+cdef class Exp1(Constant):
 
-    def __new__(cls):
-        cdef Basic r = Constant.__new__(Exp1)
-        r.thisptr = symengine.E
-        return r
+    def __cinit__(Basic self):
+        self.thisptr = symengine.E
+
+    def _sympy_(self):
+        import sympy
+        return sympy.E
+
+    def _sage_(self):
+        import sage.all as sage
+        return sage.e
 
 E = Exp1()
 
 
-class GoldenRatio(Constant):
+cdef class GoldenRatio(Constant):
 
-    def __new__(cls):
-        cdef Basic r = Constant.__new__(GoldenRatio)
-        r.thisptr = symengine.GoldenRatio
-        return r
+    def __cinit__(Basic self):
+        self.thisptr = symengine.GoldenRatio
+
+    def _sympy_(self):
+        import sympy
+        return sympy.GoldenRatio
+
+    def _sage_(self):
+        import sage.all as sage
+        return sage.golden_ratio
 
 golden_ratio = GoldenRatio()
 
 
-class Catalan(Constant):
+cdef class Catalan(Constant):
 
-    def __new__(cls):
-        cdef Basic r = Constant.__new__(Catalan)
-        r.thisptr = symengine.Catalan
-        return r
+    def __cinit__(Basic self):
+        self.thisptr = symengine.Catalan
+
+    def _sympy_(self):
+        import sympy
+        return sympy.Catalan
+
+    def _sage_(self):
+        import sage.all as sage
+        return sage.catalan
 
 catalan = Catalan()
 
 
-class EulerGamma(Constant):
+cdef class EulerGamma(Constant):
 
-    def __new__(cls):
-        cdef Basic r = Constant.__new__(EulerGamma)
-        r.thisptr = symengine.EulerGamma
-        return r
+    def __cinit__(Basic self):
+        self.thisptr = symengine.EulerGamma
+
+    def _sympy_(self):
+        import sympy
+        return sympy.EulerGamma
+
+    def _sage_(self):
+        import sage.all as sage
+        return sage.euler_gamma
 
 eulergamma = EulerGamma()
 
@@ -1270,7 +1274,7 @@ cdef class Boolean(Basic):
         return c2py(<RCP[const symengine.Basic]>(deref(symengine.rcp_static_cast_Boolean(self.thisptr)).logical_not()))
 
 
-class BooleanAtom(Boolean):
+cdef class BooleanAtom(Boolean):
     
     @property
     def is_Boolean(self):
@@ -1281,12 +1285,10 @@ class BooleanAtom(Boolean):
         return True
 
 
-class BooleanTrue(BooleanAtom):
+cdef class BooleanTrue(BooleanAtom):
 
-    def __new__(cls):
-        cdef Basic r = BooleanAtom.__new__(BooleanTrue)
-        r.thisptr = symengine.boolTrue
-        return r
+    def __cinit__(Basic self):
+        self.thisptr = symengine.boolTrue
 
     def _sympy_(self):
         import sympy
@@ -1298,12 +1300,10 @@ class BooleanTrue(BooleanAtom):
 true = BooleanTrue()
 
 
-class BooleanFalse(BooleanAtom):
+cdef class BooleanFalse(BooleanAtom):
 
-    def __new__(cls):
-        cdef Basic r = BooleanAtom.__new__(BooleanFalse)
-        r.thisptr = symengine.boolFalse
-        return r
+    def __cinit__(Basic self):
+        self.thisptr = symengine.boolFalse
 
     def _sympy_(self):
         import sympy
@@ -1842,16 +1842,14 @@ cdef class Complex(Number):
         return self.real_part()._sage_() + sage.I * self.imaginary_part()._sage_()
 
 
-class Infinity(Number):
+cdef class Infinity(Number):
 
     @property
     def is_infinite(self):
         return True
 
-    def __new__(cls):
-        cdef Basic r = Number.__new__(Infinity)
-        r.thisptr = symengine.Inf
-        return r
+    def __cinit__(Basic self):
+        self.thisptr = symengine.Inf
 
     def _sympy_(self):
         import sympy
@@ -1864,16 +1862,14 @@ class Infinity(Number):
 oo = Infinity()
 
 
-class NegativeInfinity(Number):
+cdef class NegativeInfinity(Number):
 
     @property
     def is_infinite(self):
         return True
 
-    def __new__(cls):
-        cdef Basic r = Number.__new__(NegativeInfinity)
-        r.thisptr = symengine.neg(symengine.Inf)
-        return r
+    def __cinit__(Basic self):
+        self.thisptr = symengine.neg(symengine.Inf)
 
     def _sympy_(self):
         import sympy
@@ -1886,16 +1882,14 @@ class NegativeInfinity(Number):
 minus_oo = NegativeInfinity()
 
 
-class ComplexInfinity(Number):
+cdef class ComplexInfinity(Number):
 
     @property
     def is_infinite(self):
         return True
 
-    def __new__(cls):
-        cdef Basic r = Number.__new__(ComplexInfinity)
-        r.thisptr = symengine.ComplexInf
-        return r
+    def __cinit__(Basic self):
+        self.thisptr = symengine.ComplexInf
 
     def _sympy_(self):
         import sympy
@@ -1908,7 +1902,7 @@ class ComplexInfinity(Number):
 zoo = ComplexInfinity()
 
 
-class NaN(Number):
+cdef class NaN(Number):
 
     @property
     def is_rational(self):
@@ -1926,10 +1920,8 @@ class NaN(Number):
     def is_finite(self):
         return None
 
-    def __new__(cls):
-        cdef Basic r = Number.__new__(NaN)
-        r.thisptr = symengine.Nan
-        return r
+    def __cinit__(Basic self):
+        self.thisptr = symengine.Nan
 
     def _sympy_(self):
         import sympy
@@ -1971,12 +1963,8 @@ minus_one = NegativeOne()
 
 class Half(Rational):
     def __new__(cls):
-        cdef Basic r = Number.__new__(Integer)
-        cdef Basic s = Number.__new__(Integer)
         cdef Basic q = Number.__new__(Half)
-        r.thisptr = <RCP[const symengine.Basic]>symengine.integer(1)
-        s.thisptr = <RCP[const symengine.Basic]>symengine.integer(2)
-        q.thisptr = symengine.div(r.thisptr, s.thisptr)
+        q.thisptr = <RCP[const symengine.Basic]>symengine.rational(1, 2)
         return q
 
 half = Half()
@@ -3698,9 +3686,9 @@ cdef class Sieve_iterator:
 
 
 def module_cleanup():
-    global I, E, pi, oo, zoo, nan, true, false, golden_ratio, catalan, eulergamma, sympy_module, sage_module
+    global I, E, pi, oo, minus_oo, zoo, nan, true, false, golden_ratio, catalan, eulergamma, sympy_module, sage_module
     funcs.clear()
-    del I, E, pi, oo, zoo, nan, true, false, golden_ratio, catalan, eulergamma, sympy_module, sage_module
+    del I, E, pi, oo, minus_oo, zoo, nan, true, false, golden_ratio, catalan, eulergamma, sympy_module, sage_module
 
 import atexit
 atexit.register(module_cleanup)

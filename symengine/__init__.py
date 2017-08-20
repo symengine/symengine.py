@@ -9,8 +9,9 @@ from .lib.symengine_wrapper import (Symbol, S, sympify,
         UndefFunction, Function, FunctionSymbol as AppliedUndef,
         have_numpy, true, false, Equality, Unequality, GreaterThan,
         LessThan, StrictGreaterThan, StrictLessThan, Eq, Ne, Ge, Le,
-        Gt, Lt, golden_ratio, catalan, eulergamma, Dummy, perfect_power,
-        integer_nthroot, isprime, sqrt_mod)
+        Gt, Lt, golden_ratio as GoldenRatio, catalan as Catalan,
+        eulergamma as EulerGamma, Dummy, perfect_power, integer_nthroot,
+        isprime, sqrt_mod)
 from .utilities import var, symbols
 from .functions import *
 

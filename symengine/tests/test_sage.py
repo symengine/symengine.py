@@ -1,10 +1,9 @@
 from symengine import (Integer, symbols, sin, cos, pi, E, I, oo, zoo,
     nan, true, false, Add, function_symbol, DenseMatrix,
-    sympify, log)
+    sympify, log, EulerGamma, Catalan, GoldenRatio)
 from symengine.lib.symengine_wrapper import (PyNumber, PyFunction,
-    sage_module, wrap_sage_function, catalan, golden_ratio, eulergamma,
-    LambertW, KroneckerDelta, erf, lowergamma, uppergamma, loggamma,
-    beta, floor, ceiling, conjugate)
+    sage_module, wrap_sage_function, LambertW, KroneckerDelta, erf,
+    lowergamma, uppergamma, loggamma, beta, floor, ceiling, conjugate)
 import unittest
 
 try:
@@ -108,9 +107,9 @@ def test_sage_conversions():
     assert pi._sage_() == sage.pi
     assert E._sage_() == sage.e
     assert I._sage_() == sage.I
-    assert golden_ratio._sage_() == sage.golden_ratio
-    assert catalan._sage_() == sage.catalan
-    assert eulergamma._sage_() == sage.euler_gamma
+    assert GoldenRatio._sage_() == sage.golden_ratio
+    assert Catalan._sage_() == sage.catalan
+    assert EulerGamma._sage_() == sage.euler_gamma
     assert oo._sage_() == sage.oo
     assert zoo._sage_() == sage.unsigned_infinity
     assert nan._sage_() == sage.NaN
@@ -119,9 +118,9 @@ def test_sage_conversions():
 
     assert pi == sympify(sage.pi)
     assert E == sympify(sage.e)
-    assert golden_ratio == sympify(sage.golden_ratio)
-    assert catalan == sympify(sage.catalan)
-    assert eulergamma == sympify(sage.euler_gamma)
+    assert GoldenRatio == sympify(sage.golden_ratio)
+    assert Catalan == sympify(sage.catalan)
+    assert EulerGamma == sympify(sage.euler_gamma)
     assert oo == sympify(sage.oo)
     assert zoo == sympify(sage.unsigned_infinity)
     assert nan == sympify(sage.NaN)
