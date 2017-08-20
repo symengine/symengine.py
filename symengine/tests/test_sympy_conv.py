@@ -2,13 +2,14 @@ from symengine import (Symbol, Integer, sympify, SympifyError, log,
         function_symbol, I, E, pi, oo, zoo, nan, true, false,
         exp, gamma, have_mpfr, have_mpc, DenseMatrix, sin, cos, tan, cot,
         csc, sec, asin, acos, atan, acot, acsc, asec, sinh, cosh, tanh, coth,
-        asinh, acosh, atanh, acoth, Add, Mul, Pow, diff)
+        asinh, acosh, atanh, acoth, Add, Mul, Pow, diff, GoldenRatio,
+        Catalan, EulerGamma)
 from symengine.lib.symengine_wrapper import (Subs, Derivative, RealMPFR,
-        ComplexMPC, PyNumber, Function, EulerGamma, Catalan, GoldenRatio,
-        LambertW, zeta, dirichlet_eta, KroneckerDelta, LeviCivita, erf, erfc,
-        lowergamma, uppergamma, loggamma, beta, polygamma, sign, floor,
-        ceiling, conjugate, And, Or, Not, Xor, Piecewise, Interval, EmptySet,
-        FiniteSet, Contains, Union, Complement)
+        ComplexMPC, PyNumber, Function, LambertW, zeta, dirichlet_eta,
+        KroneckerDelta, LeviCivita, erf, erfc, lowergamma, uppergamma,
+        loggamma, beta, polygamma, sign, floor, ceiling, conjugate, And,
+        Or, Not, Xor, Piecewise, Interval, EmptySet, FiniteSet, Contains,
+        Union, Complement)
 import unittest
 
 # Note: We test _sympy_() for SymEngine -> SymPy conversion, as those are

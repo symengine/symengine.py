@@ -1,10 +1,9 @@
 from symengine import (Integer, symbols, sin, cos, pi, E, I, oo, zoo,
     nan, true, false, Add, function_symbol, DenseMatrix,
-    sympify, log)
+    sympify, log, EulerGamma, Catalan, GoldenRatio)
 from symengine.lib.symengine_wrapper import (PyNumber, PyFunction,
-    sage_module, wrap_sage_function, Catalan, GoldenRatio, EulerGamma,
-    LambertW, KroneckerDelta, erf, lowergamma, uppergamma, loggamma,
-    beta, floor, ceiling, conjugate)
+    sage_module, wrap_sage_function, LambertW, KroneckerDelta, erf,
+    lowergamma, uppergamma, loggamma, beta, floor, ceiling, conjugate)
 import unittest
 
 try:

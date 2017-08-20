@@ -332,6 +332,8 @@ cdef extern from "<symengine/number.h>" namespace "SymEngine":
         bool is_positive() nogil
         bool is_negative() nogil
         bool is_zero() nogil
+        bool is_one() nogil
+        bool is_minus_one() nogil
         bool is_complex() nogil
         pass
     cdef cppclass NumberWrapper(Basic):
@@ -370,6 +372,7 @@ cdef extern from "<symengine/rational.h>" namespace "SymEngine":
     cdef RCP[const Number] from_mpq "SymEngine::Rational::from_mpq"(rational_class r) nogil
     cdef void get_num_den(const Rational &rat, const Ptr[RCP[Integer]] &num,
                      const Ptr[RCP[Integer]] &den) nogil
+    cdef RCP[const Number] rational(long n, long d) nogil
 
 cdef extern from "<symengine/complex.h>" namespace "SymEngine":
     cdef cppclass Complex(Number):

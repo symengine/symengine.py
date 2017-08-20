@@ -1,4 +1,4 @@
-from .lib.symengine_wrapper import (Symbol, sympify as S, sympify,
+from .lib.symengine_wrapper import (Symbol, S, sympify,
         SympifyError, Add, Mul, Pow, function_symbol, I, E, pi, oo,
         zoo, nan, have_mpfr, have_mpc, have_flint, have_piranha,
         have_llvm, Integer, Rational, Float, Number, RealNumber,
@@ -9,8 +9,9 @@ from .lib.symengine_wrapper import (Symbol, sympify as S, sympify,
         UndefFunction, Function, FunctionSymbol as AppliedUndef,
         have_numpy, true, false, Equality, Unequality, GreaterThan,
         LessThan, StrictGreaterThan, StrictLessThan, Eq, Ne, Ge, Le,
-        Gt, Lt, GoldenRatio, Catalan, EulerGamma, Dummy, perfect_power,
-        integer_nthroot, isprime, sqrt_mod)
+        Gt, Lt, golden_ratio as GoldenRatio, catalan as Catalan,
+        eulergamma as EulerGamma, Dummy, perfect_power, integer_nthroot,
+        isprime, sqrt_mod)
 from .utilities import var, symbols
 from .functions import *
 
