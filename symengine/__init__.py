@@ -11,7 +11,7 @@ from .lib.symengine_wrapper import (Symbol, S, sympify,
         LessThan, StrictGreaterThan, StrictLessThan, Eq, Ne, Ge, Le,
         Gt, Lt, golden_ratio as GoldenRatio, catalan as Catalan,
         eulergamma as EulerGamma, Dummy, perfect_power, integer_nthroot,
-        isprime, sqrt_mod)
+        isprime, sqrt_mod, Expr)
 from .utilities import var, symbols
 from .functions import *
 
