@@ -31,11 +31,11 @@ class SympifyError(Exception):
 cdef c2py(RCP[const symengine.Basic] o):
     cdef Basic r
     if (symengine.is_a_Add(deref(o))):
-        r = Basic.__new__(Add)
+        r = Expr.__new__(Add)
     elif (symengine.is_a_Mul(deref(o))):
-        r = Basic.__new__(Mul)
+        r = Expr.__new__(Mul)
     elif (symengine.is_a_Pow(deref(o))):
-        r = Basic.__new__(Pow)
+        r = Expr.__new__(Pow)
     elif (symengine.is_a_Integer(deref(o))):
         if (deref(symengine.rcp_static_cast_Integer(o)).is_zero()):
             return S.Zero
@@ -59,7 +59,7 @@ cdef c2py(RCP[const symengine.Basic] o):
     elif (symengine.is_a_Symbol(deref(o))):
         if (symengine.is_a_PySymbol(deref(o))):
             return <object>(deref(symengine.rcp_static_cast_PySymbol(o)).get_py_object())
-        r = Basic.__new__(Symbol)
+        r = Expr.__new__(Symbol)
     elif (symengine.is_a_Constant(deref(o))):
         r = S.Pi
         if (symengine.eq(deref(o), deref(r.thisptr))):
@@ -110,9 +110,9 @@ cdef c2py(RCP[const symengine.Basic] o):
     elif (symengine.is_a_Gamma(deref(o))):
         r = Function.__new__(Gamma)
     elif (symengine.is_a_Derivative(deref(o))):
-        r = Basic.__new__(Derivative)
+        r = Expr.__new__(Derivative)
     elif (symengine.is_a_Subs(deref(o))):
-        r = Basic.__new__(Subs)
+        r = Expr.__new__(Subs)
     elif (symengine.is_a_RealDouble(deref(o))):
         r = Number.__new__(RealDouble)
     elif (symengine.is_a_ComplexDouble(deref(o))):
@@ -208,7 +208,7 @@ cdef c2py(RCP[const symengine.Basic] o):
     elif (symengine.is_a_PyNumber(deref(o))):
         r = PyNumber.__new__(PyNumber)
     elif (symengine.is_a_Piecewise(deref(o))):
-        r = Basic.__new__(Piecewise)
+        r = Function.__new__(Piecewise)
     elif (symengine.is_a_Contains(deref(o))):
         r = Boolean.__new__(Contains)
     elif (symengine.is_a_Interval(deref(o))):
@@ -1078,7 +1078,11 @@ def series(ex, x=None, x0=0, n=6, as_deg_coef_pair=False):
     return add(*l)
 
 
-class Symbol(Basic):
+cdef class Expr(Basic):
+    pass
+
+
+class Symbol(Expr):
 
     """
     Symbol is a class to store a symbolic variable with a given name.
@@ -1166,7 +1170,7 @@ def symarray(prefix, shape, **kwargs):
     return arr
 
 
-cdef class Constant(Basic):
+cdef class Constant(Expr):
 
     def __cinit__(self, name = None):
         if name is None:
@@ -1268,7 +1272,7 @@ cdef class EulerGamma(Constant):
 eulergamma = EulerGamma()
 
 
-cdef class Boolean(Basic):
+cdef class Boolean(Expr):
     
     def logical_not(self):
         return c2py(<RCP[const symengine.Basic]>(deref(symengine.rcp_static_cast_Boolean(self.thisptr)).logical_not()))
@@ -1452,7 +1456,7 @@ class StrictLessThan(Relational):
 Lt = StrictLessThan
 
 
-cdef class Number(Basic):
+cdef class Number(Expr):
     @property
     def is_Atom(self):
         return True
@@ -1583,7 +1587,6 @@ class Integer(Rational):
     def is_integer(self):
         return True
 
-    @property
     def doit(self, **hints):
         return self
 
@@ -1970,7 +1973,7 @@ class Half(Rational):
 half = Half()
 
 
-class AssocOp(Basic):
+class AssocOp(Expr):
 
     @classmethod
     def make_args(cls, expr):
@@ -2086,7 +2089,7 @@ class Mul(AssocOp):
         return d
 
 
-class Pow(Basic):
+class Pow(Expr):
 
     def __new__(cls, a, b):
         return _sympify(a) ** b
@@ -2108,6 +2111,10 @@ class Pow(Basic):
     def is_Pow(self):
         return True
 
+    @property
+    def is_commutative(self):
+        return (self.base.is_commutative and self.exp.is_commutative)
+
     def _sympy_(Basic self):
         cdef RCP[const symengine.Pow] X = symengine.rcp_static_cast_Pow(self.thisptr)
         base = c2py(deref(X).get_base())
@@ -2125,7 +2132,7 @@ class Pow(Basic):
         return self.__class__
 
 
-class Function(Basic):
+class Function(Expr):
 
     def __new__(cls, *args, **kwargs):
         if cls == Function and len(args) == 1:
@@ -2694,7 +2701,7 @@ class Min(Function):
         return self.__class__
 
 
-class Derivative(Basic):
+class Derivative(Expr):
 
     def __new__(self, expr, *variables):
         if len(variables) == 1 and is_sequence(variables[0]):
@@ -2740,7 +2747,7 @@ class Derivative(Basic):
         return self.__class__
 
 
-class Subs(Basic):
+class Subs(Expr):
 
     def __new__(self, expr, variables, point):
         return sympify(expr).subs(variables, point)
@@ -2791,7 +2798,7 @@ class Subs(Basic):
         return self.__class__
 
 
-class Piecewise(Basic):
+class Piecewise(Function):
 
     def __new__(self, *args):
         return piecewise(*args)
@@ -2805,7 +2812,7 @@ class Piecewise(Basic):
         return sympy.Piecewise(*l)
 
 
-cdef class Set(Basic):
+cdef class Set(Expr):
 
     def intersection(self, a):
         cdef Set other = sympify(a)
