@@ -741,8 +741,12 @@ def get_dict(*args):
                 len(args))
     if isinstance(arg, DictBasic):
         return arg
-    for k, v in arg.items():
-        D.add(k, v)
+    if isinstance(arg, dict):
+        for k, v in arg.items():
+            D.add(k, v)
+    else:
+        for k, v in arg:
+            D.add(k, v)
     return D
 
 
