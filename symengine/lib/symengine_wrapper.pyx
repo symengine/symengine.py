@@ -3087,6 +3087,21 @@ cdef class DenseMatrixBase(MatrixBase):
         else:
             return NotImplemented
 
+    def __div__(a, b):
+        a = _sympify(a, False)
+        b = _sympify(b, False)
+        if isinstance(a, MatrixBase):
+            if isinstance(b, MatrixBase):
+                return a.mul_matrix(b.inv())
+            elif isinstance(b, Basic):
+                return a.mul_scalar(1/b)
+            else:
+                return NotImplemented
+        else:
+            return NotImplemented
+
+    __truediv__ = __div__
+
     def __sub__(a, b):
         a = _sympify(a, False)
         b = _sympify(b, False)

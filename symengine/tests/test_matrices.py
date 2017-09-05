@@ -217,6 +217,19 @@ def test_sub():
     raises(TypeError, lambda: 5 - A)
 
 
+def test_div():
+    w, x, y, z = symbols("w, x, y, z")
+    A = DenseMatrix([[w, x], [y, z]])
+    B = DenseMatrix([[1, 1], [1, 0]])
+    C = DenseMatrix([[x, w - x], [z, y - z]])
+
+    assert A / 2 == DenseMatrix([[w/2, x/2], [y/2, z/2]])
+    assert C * B == A
+    assert A / B == C
+
+    raises(TypeError, lambda: 2/A)
+
+
 def test_transpose():
     A = DenseMatrix(3, 3, [1, 2, 3, 4, 5, 6, 7, 8, 9])
 
