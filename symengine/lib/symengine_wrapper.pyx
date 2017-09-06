@@ -3087,6 +3087,12 @@ cdef class DenseMatrixBase(MatrixBase):
         else:
             return NotImplemented
 
+    def __div__(a, b):
+        return div_matrices(a, b)
+
+    def __truediv__(a, b):
+        return div_matrices(a, b)
+
     def __sub__(a, b):
         a = _sympify(a, False)
         b = _sympify(b, False)
@@ -3555,6 +3561,20 @@ cdef class DenseMatrixBase(MatrixBase):
 
     def expand(self, *args, **kwargs):
         return self.applyfunc(lambda x : x.expand())
+
+
+def div_matrices(a, b):
+    a = _sympify(a, False)
+    b = _sympify(b, False)
+    if isinstance(a, MatrixBase):
+        if isinstance(b, MatrixBase):
+            return a.mul_matrix(b.inv())
+        elif isinstance(b, Basic):
+            return a.mul_scalar(1/b)
+        else:
+            return NotImplemented
+    else:
+        return NotImplemented
 
 class DenseMatrixBaseIter(object):
 
