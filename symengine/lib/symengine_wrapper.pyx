@@ -844,8 +844,8 @@ cdef class Basic(object):
         elif (op == 5):
             return c2py(<RCP[const symengine.Basic]>(symengine.Ge(A.thisptr, B.thisptr)))
 
-    def expand(Basic self not None):
-        return c2py(symengine.expand(self.thisptr))
+    def expand(Basic self not None, cppbool deep=True):
+        return c2py(symengine.expand(self.thisptr, deep))
 
     def diff(Basic self not None, x = None):
         if x is None:
@@ -3560,7 +3560,7 @@ cdef class DenseMatrixBase(MatrixBase):
         return self._applyfunc(lambda x : x.simplify(*args, **kwargs))
 
     def expand(self, *args, **kwargs):
-        return self.applyfunc(lambda x : x.expand())
+        return self.applyfunc(lambda x : x.expand(*args, **kwargs))
 
 
 def div_matrices(a, b):
@@ -3726,8 +3726,8 @@ def diff(ex, *x):
         ex = ex.diff(i)
     return ex
 
-def expand(x):
-    return sympify(x).expand()
+def expand(x, deep=True):
+    return sympify(x).expand(deep)
 
 expand_mul = expand
 
