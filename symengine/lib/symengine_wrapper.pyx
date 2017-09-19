@@ -3264,8 +3264,15 @@ cdef class DenseMatrixBase(MatrixBase):
         def __get__(self):
             return self.nrows()*self.ncols()
 
-    def ravel(self):
-        return [self._get(i, j) for i in range(self.nrows()) for j in range(self.ncols())]
+    def ravel(self, order='C'):
+        if order == 'C':
+            return [self._get(i, j) for i in range(self.nrows())
+                    for j in range(self.ncols())]
+        elif order == 'F':
+            return [self._get(i, j) for j in range(self.ncols())
+                    for i in range(self.nrows())]
+        else:
+            raise NotImplementedError("Unknown order '%s'" % order)
 
     def reshape(self, rows, cols):
         if len(self) != rows*cols:
@@ -4389,28 +4396,14 @@ cdef class _Lambdify(object):
             RCP[const symengine.Basic] b_
             symengine.vec_basic args_, outs_
 
-        if isinstance(args, DenseMatrixBase):
-            nr = args.nrows()
-            nc = args.ncols()
-            mtx = (<DenseMatrixBase>args).thisptr
-            for ri in range(nr):
-                for ci in range(nc):
-                   args_.push_back(deref(mtx).get(ri, ci))
-        else:
-            for arg in np.ravel(args, order=order):
-                e_ = _sympify(arg)
-                args_.push_back(e_.thisptr)
+        for arg in np.ravel(args, order=order):
+            e_ = _sympify(arg)
+            args_.push_back(e_.thisptr)
 
-
-        for curr_expr in exprs:
-            if isinstance(curr_expr, DenseMatrixBase):
-                nr = curr_expr.nrows()
-                nc = curr_expr.ncols()
-                mtx = (<DenseMatrixBase>curr_expr).thisptr
-                for ri in range(nr):
-                    for ci in range(nc):
-                        b_ = deref(mtx).get(ri, ci)
-                        outs_.push_back(b_)
+        for curr_expr in map(np.array, exprs):
+            if curr_expr.ndim == 0:
+                e_ = _sympify(curr_expr.item())
+                outs_.push_back(e_.thisptr)
             else:
                 for e in np.ravel(curr_expr, order=order):
                     e_ = _sympify(e)
@@ -4509,7 +4502,7 @@ cdef class _Lambdify(object):
                     extra_dim = inp.shape[1:]
             else:
                 extra_dim = inp.shape
-       else:
+        else:
             if nbroadcast > 1 and inp.ndim == 1:
                 extra_dim = (nbroadcast,)  # special case
             else:
