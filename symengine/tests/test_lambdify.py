@@ -202,6 +202,18 @@ def test_cse():
     out = lmb(inp)
     assert allclose(out, ref)
 
+
+@unittest.skipUnless(have_numpy, "Numpy not installed")
+@unittest.skipUnless(have_sympy, "SymPy not installed")
+def test_cse_gh174():
+    x = se.symbols('x')
+    funcs = [se.cos(x)**i for i in range(5)]
+    f_lmb = se.Lambdify([x], funcs)
+    f_cse = se.LambdifyCSE([x], funcs)
+    a = np.array([1, 2, 3])
+    assert np.allclose(f_lmb(a), f_cse(a))
+
+
 def _get_cse_exprs_big():
     # this is essentially a performance test (can be replaced by a benchmark)
     x, p = se.symarray('x', 14), se.symarray('p', 14)

@@ -4637,15 +4637,16 @@ def LambdifyCSE(args, *exprs, cse=None, order='C', **kwargs):
     if cse is None:
         from sympy import cse
     _exprs = [np.asanyarray(e) for e in exprs]
+    _args = np.ravel(args, order=order)
     from sympy import sympify as s_sympify
     flat_exprs = list(itertools.chain(*[np.ravel(e, order=order) for e in _exprs]))
     subs, flat_new_exprs = cse([s_sympify(expr) for expr in flat_exprs])
 
-    explicit_subs = {}
-    for k, v in subs:
-        explicit_subs[k] = v.xreplace(explicit_subs)
-
     if subs:
+        explicit_subs = {}
+        for k, v in subs:
+            explicit_subs[k] = v.xreplace(explicit_subs)
+
         cse_symbs, cse_exprs = zip(*subs)
         new_exprs = []
         n_taken = 0
@@ -4653,13 +4654,19 @@ def LambdifyCSE(args, *exprs, cse=None, order='C', **kwargs):
             new_exprs.append(np.reshape(flat_new_exprs[n_taken:n_taken+expr.size],
                                         expr.shape, order=order))
             n_taken += expr.size
-        lmb = Lambdify(tuple(args) + cse_symbs, *new_exprs, order=order, **kwargs)
-        cse_lambda = Lambdify(args, [expr.xreplace(explicit_subs) for expr in cse_exprs],
-                              **kwargs)
+        new_lmb = Lambdify(tuple(_args) + cse_symbs, *new_exprs, order=order, **kwargs)
+        cse_lambda = Lambdify(_args, [ce.xreplace(explicit_subs) for ce in cse_exprs], **kwargs)
         def cb(inp, *, out=None, **kw):
-            cse_vals = cse_lambda(inp, **kw)
-            new_inp = np.concatenate((inp, cse_vals), axis=-1)
-            return lmb(new_inp, out=out, **kw)
+            _order = kw.pop('order', order)
+            _inp = np.asanyarray(inp)
+            cse_vals = cse_lambda(_inp, order=_order, **kw)
+            if order == 'C':
+                new_inp = np.concatenate((_inp[(Ellipsis,) + (np.newaxis,)*(cse_vals.ndim - _inp.ndim)],
+                                          cse_vals), axis=-1)
+            else:
+                new_inp = np.concatenate((_inp[(np.newaxis,)*(cse_vals.ndim - _inp.ndim) + (Ellipsis,)],
+                                          cse_vals), axis=0)
+            return new_lmb(new_inp, out=out, order=_order, **kw)
         return cb
     else:
         return Lambdify(args, *exprs, **kwargs)
