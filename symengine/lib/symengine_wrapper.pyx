@@ -4365,7 +4365,7 @@ cdef class _Lambdify(object):
     cdef list out_shapes
     cdef readonly bint real
     cdef readonly int n_exprs
-    cdef readonly str order
+    cdef public str order
     cdef vector[int] accum_out_sizes
     cdef object numpy_dtype
 
@@ -4440,7 +4440,7 @@ cdef class _Lambdify(object):
             raise ValueError("Size of out incompatible with number of exprs.")
         self.unsafe_complex(inp, out)
 
-    def __call__(self, inp, *, out=None, order=None):
+    def __call__(self, inp, *, out=None):
         """
         Parameters
         ----------
@@ -4469,9 +4469,7 @@ cdef class _Lambdify(object):
             tuple inp_shape
             double[::1] real_out, real_inp
             double complex[::1] cmplx_out, cmplx_inp
-        if order is None:
-            order = self.order
-        if order not in ('C', 'F'):
+        if self.order not in ('C', 'F'):
             raise NotImplementedError("Only C & F order supported for now.")
 
         try:
@@ -4480,9 +4478,9 @@ cdef class _Lambdify(object):
             inp = np.fromiter(inp, dtype=self.numpy_dtype)
 
         if self.real:
-            real_inp = np.ascontiguousarray(inp.ravel(order=order))
+            real_inp = np.ascontiguousarray(inp.ravel(order=self.order))
         else:
-            cmplx_inp = np.ascontiguousarray(inp.ravel(order=order))
+            cmplx_inp = np.ascontiguousarray(inp.ravel(order=self.order))
 
         if inp.size < self.args_size or inp.size % self.args_size != 0:
             raise ValueError("Broadcasting failed (input/arg size mismatch)")
@@ -4490,12 +4488,12 @@ cdef class _Lambdify(object):
 
         if inp.ndim > 1:
             if self.args_size > 1:
-                if order == 'C':
+                if self.order == 'C':
                     if inp.shape[inp.ndim-1] != self.args_size:
                         raise ValueError(("C order implies last dim (%d) == len(args)"
                                           " (%d)") % (inp.shape[inp.ndim-1], self.args_size))
                     extra_dim = inp.shape[:inp.ndim-1]
-                elif order == 'F':
+                elif self.order == 'F':
                     if inp.shape[0] != self.args_size:
                         raise ValueError("F order implies first dim (%d) == len(args) (%d)"
                                          % (inp.shape[0], self.args_size))
@@ -4507,35 +4505,37 @@ cdef class _Lambdify(object):
                 extra_dim = (nbroadcast,)  # special case
             else:
                 extra_dim = ()
-        extra_left = extra_dim if order == 'C' else ()
-        extra_right = () if order == 'C' else extra_dim
+        extra_left = extra_dim if self.order == 'C' else ()
+        extra_right = () if self.order == 'C' else extra_dim
         new_out_shapes = [extra_left + out_shape + extra_right
                           for out_shape in self.out_shapes]
 
         new_tot_out_size = nbroadcast * self.tot_out_size
         if out is None:
-            out = np.empty(new_tot_out_size, dtype=self.numpy_dtype, order=order)
+            out = np.empty(new_tot_out_size, dtype=self.numpy_dtype, order=self.order)
         else:
             if out.size < new_tot_out_size:
                 raise ValueError("Incompatible size of output argument")
             if out.ndim > 1:
-                if order == 'C' and not out.flags['C_CONTIGUOUS']:
-                    raise ValueError("Output argument needs to be C-contiguous")
-                elif order == 'F' and not out.flags['F_CONTIGUOUS']:
-                    raise ValueError("Output argument needs to be F-contiguous")
                 if len(self.out_shapes) > 1:
                     raise ValueError("output array with ndim > 1 assumes one output")
                 out_shape, = self.out_shapes
-                if order == 'C' and out.shape[-len(out_shape):] != tuple(out_shape):
-                    raise ValueError("shape mismatch for output array")
-                elif order == 'F' and out.shape[:len(out_shape)] != tuple(out_shape):
-                    raise ValueError("shape mismatch for output array")
+                if self.order == 'C':
+                    if not out.flags['C_CONTIGUOUS']:
+                        raise ValueError("Output argument needs to be C-contiguous")
+                    if out.shape[-len(out_shape):] != tuple(out_shape):
+                        raise ValueError("shape mismatch for output array")
+                elif self.order == 'F':
+                    if not out.flags['F_CONTIGUOUS']:
+                        raise ValueError("Output argument needs to be F-contiguous")
+                    if out.shape[:len(out_shape)] != tuple(out_shape):
+                        raise ValueError("shape mismatch for output array")
             else:
                 if not out.flags['F_CONTIGUOUS']:  # or C_CONTIGUOUS (ndim <= 1)
                     raise ValueError("Output array need to be contiguous")
             if not out.flags['WRITEABLE']:
                 raise ValueError("Output argument needs to be writeable")
-            out = out.ravel(order=order)
+            out = out.ravel(order=self.order)
 
         if self.real:
             real_out = out
@@ -4551,13 +4551,13 @@ cdef class _Lambdify(object):
                 self.unsafe_complex(cmplx_inp, cmplx_out,
                                     idx*self.args_size, idx*self.tot_out_size)
 
-        if order == 'C':
+        if self.order == 'C':
             out = out.reshape((nbroadcast, self.tot_out_size), order='C')
             result = [
                 out[:, self.accum_out_sizes[idx]:self.accum_out_sizes[idx+1]].reshape(
                     new_out_shapes[idx], order='C') for idx in range(self.n_exprs)
             ]
-        elif order == 'F':
+        elif self.order == 'F':
             out = out.reshape((self.tot_out_size, nbroadcast), order='F')
             result = [
                 out[self.accum_out_sizes[idx]:self.accum_out_sizes[idx+1], :].reshape(
@@ -4657,16 +4657,15 @@ def LambdifyCSE(args, *exprs, cse=None, order='C', **kwargs):
         new_lmb = Lambdify(tuple(_args) + cse_symbs, *new_exprs, order=order, **kwargs)
         cse_lambda = Lambdify(_args, [ce.xreplace(explicit_subs) for ce in cse_exprs], **kwargs)
         def cb(inp, *, out=None, **kw):
-            _order = kw.pop('order', order)
             _inp = np.asanyarray(inp)
-            cse_vals = cse_lambda(_inp, order=_order, **kw)
+            cse_vals = cse_lambda(_inp, **kw)
             if order == 'C':
                 new_inp = np.concatenate((_inp[(Ellipsis,) + (np.newaxis,)*(cse_vals.ndim - _inp.ndim)],
                                           cse_vals), axis=-1)
             else:
                 new_inp = np.concatenate((_inp[(np.newaxis,)*(cse_vals.ndim - _inp.ndim) + (Ellipsis,)],
                                           cse_vals), axis=0)
-            return new_lmb(new_inp, out=out, order=_order, **kw)
+            return new_lmb(new_inp, out=out, **kw)
         return cb
     else:
         return Lambdify(args, *exprs, **kwargs)

@@ -147,13 +147,15 @@ def test_numpy_array_out_exceptions():
 
     all_right_broadcast_C = np.empty((4, len(exprs)), order='C')
     inp_bcast = [[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]]
-    lmb(np.array(inp_bcast), out=all_right_broadcast_C, order='C')
-
-    all_right_broadcast_F = np.empty((len(exprs), 4), order='F')
-    lmb(np.array(np.array(inp_bcast).T), out=all_right_broadcast_F, order='F')
+    lmb(np.array(inp_bcast), out=all_right_broadcast_C)
 
     noncontig_broadcast = np.empty((4, len(exprs), 3)).transpose((1, 2, 0))
     raises(ValueError, lambda: (lmb(inp_bcast, out=noncontig_broadcast)))
+
+    all_right_broadcast_F = np.empty((len(exprs), 4), order='F')
+    lmb.order = 'F'
+    lmb(np.array(np.array(inp_bcast).T), out=all_right_broadcast_F)
+
 
 
 @unittest.skipUnless(have_numpy, "Numpy not installed")
@@ -613,7 +615,9 @@ def test_Lambdify_gh174():
     out1 = lmb1(3)
     assert out1.shape == (3, 1)
     assert np.all(out1 == [[3], [9], [27]])
-    out1a = lmb1([2, 3], order='F')  # another dimension
+    assert lmb1([2, 3]).shape == (2, 3, 1)
+    lmb1.order = 'F'  # change order
+    out1a = lmb1([2, 3])
     assert out1a.shape == (3, 1, 2)
     ref1a_squeeze = [[2, 3],
                      [4, 9],
@@ -661,7 +665,7 @@ def test_Lambdify_gh174():
     assert out3c[0].shape == (5,)
     assert out3c[1].shape == (5, 4, 3)
     assert out3c[2].shape == (5, 3, 1)  # user can apply numpy.squeeze if they want to.
-    for a, b in zip(out3c, lmb3c(np.ravel(inp3c, order='C'))):
+    for a, b in zip(out3c, lmb3c(np.ravel(inp3c))):
         assert np.all(a == b)
 
     out3f = lmb3f(inp3f)
@@ -779,5 +783,5 @@ def test_Lambdify_inp_exceptions():
         assert out3b.shape == (3, 2, 4)
         for i in range(4):
             assert np.all(out3b[..., i] == _mtx(*inp3b[2*i:2*(i+1)]))
-    raises(ValueError, lambda: lmb3(inp3b.reshape((4, 2), order='F')))
+    raises(ValueError, lambda: lmb3(inp3b.reshape((4, 2))))
     raises(ValueError, lambda: lmb3(inp3b.reshape((2, 4)).T))
