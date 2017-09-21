@@ -4331,36 +4331,6 @@ def has_symbol(obj, symbol=None):
 
 
 cdef class _Lambdify(object):
-    """
-    Lambdify instances are callbacks that numerically evaluate their symbolic
-    expressions from user provided input (real or complex) into (possibly user
-    provided) output buffers (real or complex). Multidimensional data are
-    processed in their most cache-friendly way (i.e. "ravelled").
-
-    Parameters
-    ----------
-    args: iterable of Symbols
-    \*exprs: array_like of expressions
-        the shape of exprs is preserved
-    real : bool
-        Whether datatype is ``double`` (``double complex`` otherwise).
-
-    Returns
-    -------
-    callback instance with signature f(inp, out=None)
-
-    Examples
-    --------
-    >>> from symengine import var, Lambdify
-    >>> var('x y z')
-    >>> f = Lambdify([x, y, z], [x+y+z, x*y*z])
-    >>> f([2, 3, 4])
-    [ 9., 24.]
-    >>> out = np.array(2)
-    >>> f(x, out); out
-    [ 9., 24.]
-
-    """
     cdef size_t args_size, tot_out_size
     cdef list out_shapes
     cdef readonly bint real
@@ -4368,15 +4338,19 @@ cdef class _Lambdify(object):
     cdef public str order
     cdef vector[int] accum_out_sizes
     cdef object numpy_dtype
+    cdef args
+    cdef tuple exprs
 
     def __cinit__(self, args, *exprs, cppbool real=True, order='C'):
         cdef vector[int] out_sizes
+        self.args = np.asanyarray(args)
+        self.args_size = self.args.size
+        self.exprs = tuple(np.asanyarray(expr) for expr in exprs)
+        self.out_shapes = [expr.shape for expr in self.exprs]
+        self.n_exprs = len(self.exprs)
         self.real = real
         self.order = order
         self.numpy_dtype = np.float64 if self.real else np.complex128
-        self.out_shapes = [np.asarray(expr).shape for expr in exprs]
-        self.n_exprs = len(exprs)
-        self.args_size = np.asarray(args).size
         if self.args_size == 0:
             raise NotImplementedError("Support for zero arguments not yet supported")
         self.tot_out_size = 0
@@ -4388,7 +4362,7 @@ cdef class _Lambdify(object):
             for j in range(i):
                 self.accum_out_sizes[i] += out_sizes[j]
 
-    def __init__(self, args, *exprs, cppbool real=True, order='C'):
+    def __init__(self, *args, **kwargs):
         cdef:
             Basic e_
             size_t ri, ci, nr, nc
@@ -4396,16 +4370,16 @@ cdef class _Lambdify(object):
             RCP[const symengine.Basic] b_
             symengine.vec_basic args_, outs_
 
-        for arg in np.ravel(args, order=order):
+        for arg in np.ravel(self.args, order=self.order):
             e_ = _sympify(arg)
             args_.push_back(e_.thisptr)
 
-        for curr_expr in map(np.array, exprs):
+        for curr_expr in self.exprs:
             if curr_expr.ndim == 0:
                 e_ = _sympify(curr_expr.item())
                 outs_.push_back(e_.thisptr)
             else:
-                for e in np.ravel(curr_expr, order=order):
+                for e in np.ravel(curr_expr, order=self.order):
                     e_ = _sympify(e)
                     outs_.push_back(e_.thisptr)
         self._init(args_, outs_)
@@ -4422,18 +4396,14 @@ cdef class _Lambdify(object):
                          int inp_offset=0, int out_offset=0):
         raise ValueError("Not supported")
 
-    cpdef eval_real(self,
-                    inp,
-                    out):
+    cpdef eval_real(self, inp, out):
         if inp.size != self.args_size:
             raise ValueError("Size of inp incompatible with number of args.")
         if out.size != self.tot_out_size:
             raise ValueError("Size of out incompatible with number of exprs.")
         self.unsafe_real(inp, out)
 
-    cpdef eval_complex(self,
-                       inp,
-                       out):
+    cpdef eval_complex(self, inp, out):
         if inp.size != self.args_size:
             raise ValueError("Size of inp incompatible with number of args.")
         if out.size != self.tot_out_size:
@@ -4451,12 +4421,6 @@ cdef class _Lambdify(object):
             If ``None``: an output container will be allocated (NumPy ndarray).
             If ``len(exprs) > 0`` output is found in the corresponding
             order.
-        order : 'C' or 'F'
-            C- or Fortran-contiguous memory layout. Note that this affects
-            broadcasting: e.g. a (m, n) matrix taking 3 arguments and given a
-            (k, l, 3) (C-contiguous) input will give a (k, l, m, n) shaped output,
-            whereas a (3, k, l) (C-contiguous) input will give a (m, n, k, l) shaped
-            output. If ``None`` order is taken as ``self.order`` (from initialization).
 
         Returns
         -------
@@ -4603,6 +4567,45 @@ IF HAVE_SYMENGINE_LLVM:
 
 
 def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C'):
+    """
+    Lambdify instances are callbacks that numerically evaluate their symbolic
+    expressions from user provided input (real or complex) into (possibly user
+    provided) output buffers (real or complex). Multidimensional data are
+    processed in their most cache-friendly way (i.e. "ravelled").
+
+    Parameters
+    ----------
+    args: iterable of Symbols
+    \*exprs: array_like of expressions
+        the shape of exprs is preserved
+    real : bool
+        Whether datatype is ``double`` (``double complex`` otherwise).
+    backend : str
+        'llvm' or 'lambda'. When ``None`` the environment variable
+        'SYMENGINE_LAMBDIFY_BACKEND' is used (taken as 'lambda' if unset).
+    order : 'C' or 'F'
+        C- or Fortran-contiguous memory layout. Note that this affects
+        broadcasting: e.g. a (m, n) matrix taking 3 arguments and given a
+        (k, l, 3) (C-contiguous) input will give a (k, l, m, n) shaped output,
+        whereas a (3, k, l) (C-contiguous) input will give a (m, n, k, l) shaped
+        output. If ``None`` order is taken as ``self.order`` (from initialization).
+
+    Returns
+    -------
+    callback instance with signature f(inp, out=None)
+
+    Examples
+    --------
+    >>> from symengine import var, Lambdify
+    >>> var('x y z')
+    >>> f = Lambdify([x, y, z], [x+y+z, x*y*z])
+    >>> f([2, 3, 4])
+    [ 9., 24.]
+    >>> out = np.array(2)
+    >>> f(x, out); out
+    [ 9., 24.]
+
+    """
     if backend is None:
         backend = os.getenv('SYMENGINE_LAMBDIFY_BACKEND', "lambda")
     if backend == "llvm":
