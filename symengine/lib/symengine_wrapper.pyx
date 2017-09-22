@@ -9,6 +9,7 @@ from cpython cimport PyObject, Py_XINCREF, Py_XDECREF, \
 from libc.string cimport memcpy
 import cython
 import itertools
+import numbers
 from operator import mul
 from functools import reduce
 import collections
@@ -462,7 +463,8 @@ def sympy2symengine(a, raise_error=False):
             return conditionset(*(a.args))
 
     if raise_error:
-        raise SympifyError("sympy2symengine: Cannot convert '%r' to a symengine type." % a)
+        raise SympifyError(("sympy2symengine: Cannot convert '%r' (of type %s)"
+                            " to a symengine type.") % (a, type(a)))
 
 
 def sympify(a):
@@ -523,7 +525,7 @@ def _sympify(a, raise_error=True):
         return a
     elif isinstance(a, bool):
         return (true if a else false)
-    elif isinstance(a, (int, long)):
+    elif isinstance(a, numbers.Integral):
         return Integer(a)
     elif isinstance(a, float):
         return RealDouble(a)
@@ -543,7 +545,9 @@ def _sympify(a, raise_error=True):
         pass
 
     if raise_error:
-        raise SympifyError("sympify: Cannot convert '%r' to a symengine type." % a)
+        raise SympifyError(
+            "sympify: Cannot convert '%r' (of type %s) to a symengine type." % (
+                a, type(a)))
 
 funcs = {}
 
@@ -553,7 +557,7 @@ def get_function_class(function, module):
     return funcs[function]
 
 class Singleton(object):
-    
+
     __call__ = staticmethod(sympify)
 
     @property
@@ -980,7 +984,7 @@ cdef class Basic(object):
     @property
     def is_Not(self):
         return False
-    
+
     @property
     def is_Matrix(self):
         return False
@@ -1128,7 +1132,7 @@ class Symbol(Expr):
 
 
 class Dummy(Symbol):
-    
+
     def __init__(Basic self, name=None, *args, **kwargs):
         if name is None:
             self.thisptr = symengine.make_rcp_Dummy()
@@ -1163,7 +1167,6 @@ def symarray(prefix, shape, **kwargs):
     This function requires NumPy.
 
     """
-    import numpy as np
     arr = np.empty(shape, dtype=object)
     for index in np.ndindex(shape):
         arr[index] = Symbol('%s_%s' % (prefix, '_'.join(map(str, index))), **kwargs)
@@ -1273,13 +1276,13 @@ eulergamma = EulerGamma()
 
 
 cdef class Boolean(Expr):
-    
+
     def logical_not(self):
         return c2py(<RCP[const symengine.Basic]>(deref(symengine.rcp_static_cast_Boolean(self.thisptr)).logical_not()))
 
 
 cdef class BooleanAtom(Boolean):
-    
+
     @property
     def is_Boolean(self):
         return True
@@ -1364,7 +1367,7 @@ class Xor(Boolean):
 
 
 class Relational(Boolean):
-    
+
     @property
     def is_Relational(self):
         return True
@@ -2299,7 +2302,7 @@ class polygamma(Function):
         return sympy.polygamma(*self.args_as_sympy())
 
 class sign(OneArgFunction):
-    
+
     @property
     def is_complex(self):
         return True
@@ -2877,17 +2880,17 @@ class UniversalSet(Set):
 
 
 class FiniteSet(Set):
-    
+
     def __new__(self, *args):
         return finiteset(*args)
 
     def _sympy_(self):
         import sympy
-        return sympy.FiniteSet(*[arg._sympy_() for arg in self.args])    
+        return sympy.FiniteSet(*[arg._sympy_() for arg in self.args])
 
 
 class Contains(Boolean):
-    
+
     def __new__(self, expr, sset):
         return contains(expr, sset)
 
@@ -2897,7 +2900,7 @@ class Contains(Boolean):
 
 
 class Union(Set):
-    
+
     def __new__(self, *args):
         return set_union(*args)
 
@@ -2907,7 +2910,7 @@ class Union(Set):
 
 
 class Complement(Set):
-    
+
     def __new__(self, universe, container):
         return set_complement(universe, container)
 
@@ -2917,13 +2920,13 @@ class Complement(Set):
 
 
 class ConditionSet(Set):
-    
+
     def __new__(self, sym, condition):
         return conditionset(sym, condition)
 
 
 class ImageSet(Set):
-    
+
     def __new__(self, sym, expr, base):
         return imageset(sym, expr, base)
 
@@ -3261,8 +3264,15 @@ cdef class DenseMatrixBase(MatrixBase):
         def __get__(self):
             return self.nrows()*self.ncols()
 
-    def ravel(self):
-        return [self._get(i, j) for i in range(self.nrows()) for j in range(self.ncols())]
+    def ravel(self, order='C'):
+        if order == 'C':
+            return [self._get(i, j) for i in range(self.nrows())
+                    for j in range(self.ncols())]
+        elif order == 'F':
+            return [self._get(i, j) for j in range(self.ncols())
+                    for i in range(self.nrows())]
+        else:
+            raise NotImplementedError("Unknown order '%s'" % order)
 
     def reshape(self, rows, cols):
         if len(self) != rows*cols:
@@ -3540,7 +3550,11 @@ cdef class DenseMatrixBase(MatrixBase):
         return ImmutableDenseMatrix(self)
 
     def tolist(self):
-        return self[:]
+        return [[self[rowi, coli] for coli in range(self.ncols())]
+                for rowi in range(self.nrows())]
+
+    def __array__(self):
+        return np.array(self.tolist())
 
     def _mat(self):
         return self
@@ -4316,99 +4330,34 @@ def has_symbol(obj, symbol=None):
                 deref(symengine.rcp_static_cast_Symbol(s.thisptr)))
 
 
-cdef size_t _size(n):
-    try:
-        return n.size
-    except AttributeError:
-        return len(n)  # e.g. array.array
-
-
-def _get_shape_nested(ndarr):
-    # no checking of shape consistency is done
-    if isinstance(ndarr, (list, tuple)):
-        return (len(ndarr),) + _get_shape_nested(ndarr[0])
-    else:
-        return ()
-
-
-def get_shape(ndarr):
-    try:
-        return ndarr.shape
-    except AttributeError:
-        return _get_shape_nested(ndarr)
-
-
-def _nested_getitem(ndarr, indices):
-    if len(indices) == 0:
-        return ndarr
-    else:
-        return _nested_getitem(ndarr[indices[0]], indices[1:])
-
-
-def all_indices_from_shape(shape):
-    return itertools.product(*(range(dim) for dim in shape))
-
-
-def _ravel_nested(ndarr):
-    return [_nested_getitem(ndarr, indices) for indices in
-            all_indices_from_shape(get_shape(ndarr))]
-
-
-def ravel(ndarr):
-    try:
-        return ndarr.ravel()
-    except AttributeError:
-        try:
-            return _ravel_nested(ndarr.tolist())
-        except AttributeError:
-            return _ravel_nested(ndarr)
-
-
 cdef class _Lambdify(object):
-    """
-    Lambdify instances are callbacks that numerically evaluate their symbolic
-    expressions from user provided input (real or complex) into (possibly user
-    provided) output buffers (real or complex). Multidimensional data are
-    processed in their most cache-friendly way (i.e. "ravelled").
-
-    Parameters
-    ----------
-    args: iterable of Symbols
-    \*exprs: array_like of expressions
-        the shape of exprs is preserved
-    real : bool
-        Whether datatype is ``double`` (``double complex`` otherwise).
-
-    Returns
-    -------
-    callback instance with signature f(inp, out=None)
-
-    Examples
-    --------
-    >>> from symengine import var, Lambdify
-    >>> var('x y z')
-    >>> f = Lambdify([x, y, z], [x+y+z, x*y*z])
-    >>> f([2, 3, 4])
-    [ 9., 24.]
-    >>> out = np.array(2)
-    >>> f(x, out); out
-    [ 9., 24.]
-
-    """
     cdef size_t args_size, tot_out_size
     cdef list out_shapes
     cdef readonly bint real
     cdef readonly int n_exprs
+    cdef public str order
     cdef vector[int] accum_out_sizes
     cdef object numpy_dtype
 
-    def __cinit__(self, args, *exprs, cppbool real=True):
-        cdef vector[int] out_sizes
-        self.real = real
-        self.numpy_dtype = np.float64 if self.real else np.complex128
-        self.out_shapes = [get_shape(expr) for expr in exprs]
+    def __init__(self, args, *exprs, cppbool real=True, order='C'):
+        cdef:
+            Basic e_
+            size_t ri, ci, nr, nc
+            symengine.MatrixBase *mtx
+            RCP[const symengine.Basic] b_
+            symengine.vec_basic args_, outs_
+            vector[int] out_sizes
+
+        args = np.asanyarray(args)
+        self.args_size = args.size
+        exprs = tuple(np.asanyarray(expr) for expr in exprs)
+        self.out_shapes = [expr.shape for expr in exprs]
         self.n_exprs = len(exprs)
-        self.args_size = _size(args)
+        self.real = real
+        self.order = order
+        self.numpy_dtype = np.float64 if self.real else np.complex128
+        if self.args_size == 0:
+            raise NotImplementedError("Support for zero arguments not yet supported")
         self.tot_out_size = 0
         for idx, shape in enumerate(self.out_shapes):
             out_sizes.push_back(reduce(mul, shape or (1,)))
@@ -4418,38 +4367,16 @@ cdef class _Lambdify(object):
             for j in range(i):
                 self.accum_out_sizes[i] += out_sizes[j]
 
-    def __init__(self, args, *exprs, cppbool real=True):
-        cdef:
-            Basic e_
-            size_t ri, ci, nr, nc
-            symengine.MatrixBase *mtx
-            RCP[const symengine.Basic] b_
-            symengine.vec_basic args_, outs_
-
-        if isinstance(args, DenseMatrixBase):
-            nr = args.nrows()
-            nc = args.ncols()
-            mtx = (<DenseMatrixBase>args).thisptr
-            for ri in range(nr):
-                for ci in range(nc):
-                   args_.push_back(deref(mtx).get(ri, ci))
-        else:
-            for arg in args:
-                e_ = _sympify(arg)
-                args_.push_back(e_.thisptr)
-
+        for arg in np.ravel(args, order=self.order):
+            e_ = _sympify(arg)
+            args_.push_back(e_.thisptr)
 
         for curr_expr in exprs:
-            if isinstance(curr_expr, DenseMatrixBase):
-                nr = curr_expr.nrows()
-                nc = curr_expr.ncols()
-                mtx = (<DenseMatrixBase>curr_expr).thisptr
-                for ri in range(nr):
-                    for ci in range(nc):
-                        b_ = deref(mtx).get(ri, ci)
-                        outs_.push_back(b_)
+            if curr_expr.ndim == 0:
+                e_ = _sympify(curr_expr.item())
+                outs_.push_back(e_.thisptr)
             else:
-                for e in ravel(curr_expr):
+                for e in np.ravel(curr_expr, order=self.order):
                     e_ = _sympify(e)
                     outs_.push_back(e_.thisptr)
         self._init(args_, outs_)
@@ -4466,18 +4393,14 @@ cdef class _Lambdify(object):
                          int inp_offset=0, int out_offset=0):
         raise ValueError("Not supported")
 
-    cpdef eval_real(self,
-                    inp,
-                    out):
+    cpdef eval_real(self, inp, out):
         if inp.size != self.args_size:
             raise ValueError("Size of inp incompatible with number of args.")
         if out.size != self.tot_out_size:
             raise ValueError("Size of out incompatible with number of exprs.")
         self.unsafe_real(inp, out)
 
-    cpdef eval_complex(self,
-                       inp,
-                       out):
+    cpdef eval_complex(self, inp, out):
         if inp.size != self.args_size:
             raise ValueError("Size of inp incompatible with number of args.")
         if out.size != self.tot_out_size:
@@ -4507,36 +4430,73 @@ cdef class _Lambdify(object):
             tuple inp_shape
             double[::1] real_out, real_inp
             double complex[::1] cmplx_out, cmplx_inp
+        if self.order not in ('C', 'F'):
+            raise NotImplementedError("Only C & F order supported for now.")
+
         try:
-            inp = np.ascontiguousarray(inp, dtype=self.numpy_dtype)
+            inp = np.asanyarray(inp, dtype=self.numpy_dtype)
         except TypeError:
             inp = np.fromiter(inp, dtype=self.numpy_dtype)
-        inp_shape = inp.shape
 
         if self.real:
-            real_inp = inp.ravel()
+            real_inp = np.ascontiguousarray(inp.ravel(order=self.order))
         else:
-            cmplx_inp = inp.ravel()
+            cmplx_inp = np.ascontiguousarray(inp.ravel(order=self.order))
 
-        if inp.size % self.args_size != 0:
-            raise ValueError("Broadcasting failed")
+        if inp.size < self.args_size or inp.size % self.args_size != 0:
+            raise ValueError("Broadcasting failed (input/arg size mismatch)")
         nbroadcast = inp.size // self.args_size
-        if nbroadcast > 1 and self.args_size == 1 and inp.shape[-1] != 1:  # Implicit reshape
-            inp_shape = inp.shape + (1,)
+
+        if inp.ndim > 1:
+            if self.args_size > 1:
+                if self.order == 'C':
+                    if inp.shape[inp.ndim-1] != self.args_size:
+                        raise ValueError(("C order implies last dim (%d) == len(args)"
+                                          " (%d)") % (inp.shape[inp.ndim-1], self.args_size))
+                    extra_dim = inp.shape[:inp.ndim-1]
+                elif self.order == 'F':
+                    if inp.shape[0] != self.args_size:
+                        raise ValueError("F order implies first dim (%d) == len(args) (%d)"
+                                         % (inp.shape[0], self.args_size))
+                    extra_dim = inp.shape[1:]
+            else:
+                extra_dim = inp.shape
         else:
-            inp_shape = inp.shape
+            if nbroadcast > 1 and inp.ndim == 1:
+                extra_dim = (nbroadcast,)  # special case
+            else:
+                extra_dim = ()
+        extra_left = extra_dim if self.order == 'C' else ()
+        extra_right = () if self.order == 'C' else extra_dim
+        new_out_shapes = [extra_left + out_shape + extra_right
+                          for out_shape in self.out_shapes]
+
         new_tot_out_size = nbroadcast * self.tot_out_size
-        new_out_shapes = [inp_shape[:-1] + out_shape for out_shape in self.out_shapes]
         if out is None:
-            out = np.empty(new_tot_out_size, dtype=self.numpy_dtype)
+            out = np.empty(new_tot_out_size, dtype=self.numpy_dtype, order=self.order)
         else:
             if out.size < new_tot_out_size:
                 raise ValueError("Incompatible size of output argument")
-            if not (out.flags['C_CONTIGUOUS'] or out.flags['F_CONTIGUOUS']):
-                raise ValueError("Output argument needs to be C-contiguous")
+            if out.ndim > 1:
+                if len(self.out_shapes) > 1:
+                    raise ValueError("output array with ndim > 1 assumes one output")
+                out_shape, = self.out_shapes
+                if self.order == 'C':
+                    if not out.flags['C_CONTIGUOUS']:
+                        raise ValueError("Output argument needs to be C-contiguous")
+                    if out.shape[-len(out_shape):] != tuple(out_shape):
+                        raise ValueError("shape mismatch for output array")
+                elif self.order == 'F':
+                    if not out.flags['F_CONTIGUOUS']:
+                        raise ValueError("Output argument needs to be F-contiguous")
+                    if out.shape[:len(out_shape)] != tuple(out_shape):
+                        raise ValueError("shape mismatch for output array")
+            else:
+                if not out.flags['F_CONTIGUOUS']:  # or C_CONTIGUOUS (ndim <= 1)
+                    raise ValueError("Output array need to be contiguous")
             if not out.flags['WRITEABLE']:
                 raise ValueError("Output argument needs to be writeable")
-            out = out.ravel()
+            out = out.ravel(order=self.order)
 
         if self.real:
             real_out = out
@@ -4552,10 +4512,18 @@ cdef class _Lambdify(object):
                 self.unsafe_complex(cmplx_inp, cmplx_out,
                                     idx*self.args_size, idx*self.tot_out_size)
 
-        out = out.reshape((nbroadcast, self.tot_out_size))
-        result = [out[:, self.accum_out_sizes[idx]:self.accum_out_sizes[idx+1]].reshape(
-            new_out_shapes[idx]) for idx in range(self.n_exprs)]
-
+        if self.order == 'C':
+            out = out.reshape((nbroadcast, self.tot_out_size), order='C')
+            result = [
+                out[:, self.accum_out_sizes[idx]:self.accum_out_sizes[idx+1]].reshape(
+                    new_out_shapes[idx], order='C') for idx in range(self.n_exprs)
+            ]
+        elif self.order == 'F':
+            out = out.reshape((self.tot_out_size, nbroadcast), order='F')
+            result = [
+                out[self.accum_out_sizes[idx]:self.accum_out_sizes[idx+1], :].reshape(
+                    new_out_shapes[idx], order='F') for idx in range(self.n_exprs)
+            ]
         if self.n_exprs == 1:
             return result[0]
         else:
@@ -4595,12 +4563,51 @@ IF HAVE_SYMENGINE_LLVM:
             self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
 
 
-def Lambdify(args, *exprs, cppbool real=True, backend=None):
+def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C'):
+    """
+    Lambdify instances are callbacks that numerically evaluate their symbolic
+    expressions from user provided input (real or complex) into (possibly user
+    provided) output buffers (real or complex). Multidimensional data are
+    processed in their most cache-friendly way (i.e. "ravelled").
+
+    Parameters
+    ----------
+    args: iterable of Symbols
+    \*exprs: array_like of expressions
+        the shape of exprs is preserved
+    real : bool
+        Whether datatype is ``double`` (``double complex`` otherwise).
+    backend : str
+        'llvm' or 'lambda'. When ``None`` the environment variable
+        'SYMENGINE_LAMBDIFY_BACKEND' is used (taken as 'lambda' if unset).
+    order : 'C' or 'F'
+        C- or Fortran-contiguous memory layout. Note that this affects
+        broadcasting: e.g. a (m, n) matrix taking 3 arguments and given a
+        (k, l, 3) (C-contiguous) input will give a (k, l, m, n) shaped output,
+        whereas a (3, k, l) (C-contiguous) input will give a (m, n, k, l) shaped
+        output. If ``None`` order is taken as ``self.order`` (from initialization).
+
+    Returns
+    -------
+    callback instance with signature f(inp, out=None)
+
+    Examples
+    --------
+    >>> from symengine import var, Lambdify
+    >>> var('x y z')
+    >>> f = Lambdify([x, y, z], [x+y+z, x*y*z])
+    >>> f([2, 3, 4])
+    [ 9., 24.]
+    >>> out = np.array(2)
+    >>> f(x, out); out
+    [ 9., 24.]
+
+    """
     if backend is None:
         backend = os.getenv('SYMENGINE_LAMBDIFY_BACKEND', "lambda")
     if backend == "llvm":
         IF HAVE_SYMENGINE_LLVM:
-            return LLVMDouble(args, *exprs, real=real)
+            return LLVMDouble(args, *exprs, real=real, order=order)
         ELSE:
             raise ValueError("""llvm backend is chosen, but symengine is not compiled
                                 with llvm support.""")
@@ -4608,13 +4615,13 @@ def Lambdify(args, *exprs, cppbool real=True, backend=None):
         pass
     else:
         warnings.warn("Unknown SymEngine backend: %s\nUsing backend='lambda'" % backend)
-    return LambdaDouble(args, *exprs, real=real)
+    return LambdaDouble(args, *exprs, real=real, order=order)
 
 
-def LambdifyCSE(args, *exprs, cse=None, concatenate=None, **kwargs):
-    """
-    Analogous with Lambdify but performs common subexpression elimination
-    internally. See docstring of Lambdify.
+def LambdifyCSE(args, *exprs, cse=None, order='C', **kwargs):
+    """ Analogous with Lambdify but performs common subexpression elimination.
+
+    See docstring of Lambdify.
 
     Parameters
     ----------
@@ -4622,48 +4629,43 @@ def LambdifyCSE(args, *exprs, cse=None, concatenate=None, **kwargs):
     exprs: iterable of expressions (with symbols from args)
     cse: callback (default: None)
         defaults to sympy.cse (see SymPy documentation)
-    concatenate: callback (default: numpy.concatenate)
-        Examples when not using numpy:
-        ``lambda tup: tup[0]+list(tup[1])``
-        ``lambda tup: tup[0]+array.array('d', tup[1])``
-    \*\*kwargs: Keyword arguments passed onto Lambdify
+    order : str
+        order (passed to numpy.ravel and numpy.reshape).
+    \\*\\*kwargs: Keyword arguments passed onto Lambdify
 
     """
     if cse is None:
         from sympy import cse
-    if concatenate is None:
-        from numpy import concatenate
+    _exprs = [np.asanyarray(e) for e in exprs]
+    _args = np.ravel(args, order=order)
     from sympy import sympify as s_sympify
-    flat_exprs = list(itertools.chain(*map(ravel, exprs)))
+    flat_exprs = list(itertools.chain(*[np.ravel(e, order=order) for e in _exprs]))
     subs, flat_new_exprs = cse([s_sympify(expr) for expr in flat_exprs])
 
-    explicit_subs = {}
-    for k, v in subs:
-        explicit_subs[k] = v.xreplace(explicit_subs)
-
     if subs:
+        explicit_subs = {}
+        for k, v in subs:
+            explicit_subs[k] = v.xreplace(explicit_subs)
+
         cse_symbs, cse_exprs = zip(*subs)
         new_exprs = []
         n_taken = 0
-        for expr in exprs:
-            shape = get_shape(expr) or (1,)
-            size = long(reduce(mul, shape))
-            if len(shape) == 1:
-                new_exprs.append(flat_new_exprs[n_taken:n_taken+size])
-            elif len(shape) == 2:
-                new_exprs.append(DenseMatrix(
-                    shape[0], shape[1], flat_new_exprs[n_taken:n_taken+size]))
-            else:
-                raise NotImplementedError("n-dimensional output not yet supported.")
-            n_taken += size
-        lmb = Lambdify(tuple(args) + cse_symbs, *new_exprs, **kwargs)
-        cse_lambda = Lambdify(args, [expr.xreplace(explicit_subs) for expr in cse_exprs], **kwargs)
+        for expr in _exprs:
+            new_exprs.append(np.reshape(flat_new_exprs[n_taken:n_taken+expr.size],
+                                        expr.shape, order=order))
+            n_taken += expr.size
+        new_lmb = Lambdify(tuple(_args) + cse_symbs, *new_exprs, order=order, **kwargs)
+        cse_lambda = Lambdify(_args, [ce.xreplace(explicit_subs) for ce in cse_exprs], **kwargs)
         def cb(inp, *, out=None, **kw):
-            cse_vals = cse_lambda(inp, **kw)
-            print(inp, cse_vals) # DO-NOT-MERGE!
-            new_inp = concatenate((inp, cse_vals), axis=-1)
-            return lmb(new_inp, out=out, **kw)
-
+            _inp = np.asanyarray(inp)
+            cse_vals = cse_lambda(_inp, **kw)
+            if order == 'C':
+                new_inp = np.concatenate((_inp[(Ellipsis,) + (np.newaxis,)*(cse_vals.ndim - _inp.ndim)],
+                                          cse_vals), axis=-1)
+            else:
+                new_inp = np.concatenate((_inp[(np.newaxis,)*(cse_vals.ndim - _inp.ndim) + (Ellipsis,)],
+                                          cse_vals), axis=0)
+            return new_lmb(new_inp, out=out, **kw)
         return cb
     else:
         return Lambdify(args, *exprs, **kwargs)
@@ -4724,7 +4726,7 @@ def contains(expr, sset):
     cdef Set sset_ = sympify(sset)
     cdef RCP[const symengine.Set] s = symengine.rcp_static_cast_Set(sset_.thisptr)
     return c2py(<RCP[const symengine.Basic]>(symengine.contains(expr_.thisptr, s)))
-    
+
 
 def set_union(*args):
     cdef symengine.set_set s

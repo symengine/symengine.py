@@ -37,6 +37,12 @@ def test_get():
     raises(IndexError, lambda: A.get(-3, 0))
 
 
+def test_tolist():
+    A = DenseMatrix([2, 3])
+    assert A.shape == (2, 1)
+    assert A.tolist() == [[2], [3]]
+
+
 def test_get_item():
     A = DenseMatrix(3, 3, [1, 2, 3, 4, 5, 6, 7, 8, 9])
 
@@ -432,14 +438,14 @@ def test_col_insert():
 def test_rowmul():
     M = ones(3)
     assert M.rowmul(2, 2) == DenseMatrix([[1, 1, 1],
-                                          [1, 1, 1], 
+                                          [1, 1, 1],
                                           [2, 2, 2]])
 
 
 def test_rowadd():
     M = ones(3)
     assert M.rowadd(2, 1, 1) == DenseMatrix([[1, 1, 1],
-                                             [1, 1, 1], 
+                                             [1, 1, 1],
                                              [2, 2, 2]])
 
 

@@ -4,7 +4,9 @@ from __future__ import (absolute_import, division, print_function)
 
 import array
 import cmath
+from functools import reduce
 import itertools
+from operator import mul
 import math
 import sys
 
@@ -49,27 +51,13 @@ def allclose(vec1, vec2, rtol=1e-13, atol=1e-13):
             return False
     return True
 
-@unittest.skipUnless(have_numpy, "Numpy not installed")
-def test_get_shape():
-    get_shape = se.lib.symengine_wrapper.get_shape
-    assert get_shape([1]) == (1,)
-    assert get_shape([1, 1, 1]) == (3,)
-    assert get_shape([[1], [1], [1]]) == (3, 1)
-    assert get_shape([[1, 1, 1]]) == (1, 3)
-
-    x = se.symbols('x')
-    exprs = [x+1, x+2, x+3, 1/x, 1/(x*x), 1/(x**3.0)]
-    A = se.DenseMatrix(2, 3, exprs)
-    assert get_shape(A) == (2, 3)
-
 
 @unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_ravel():
     x = se.symbols('x')
-    ravel = se.lib.symengine_wrapper.ravel
     exprs = [x+1, x+2, x+3, 1/x, 1/(x*x), 1/(x**3.0)]
     A = se.DenseMatrix(2, 3, exprs)
-    assert ravel(A) == exprs
+    assert np.all(np.ravel(A, order='C') == exprs)
 
 
 @unittest.skipUnless(have_numpy, "Numpy not installed")
@@ -141,6 +129,7 @@ def test_array():
 @unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_numpy_array_out_exceptions():
     args, exprs, inp, check = _get_array()
+    assert len(args) == 3 and len(exprs) == 2
     lmb = se.Lambdify(args, exprs)
 
     all_right = np.empty(len(exprs))
@@ -156,18 +145,24 @@ def test_numpy_array_out_exceptions():
     read_only.flags['WRITEABLE'] = False
     raises(ValueError, lambda: (lmb(inp, out=read_only)))
 
-    all_right_broadcast = np.empty((4, len(exprs)))
+    all_right_broadcast_C = np.empty((4, len(exprs)), order='C')
     inp_bcast = [[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]]
-    lmb(np.array(inp_bcast), out=all_right_broadcast)
+    lmb(np.array(inp_bcast), out=all_right_broadcast_C)
 
     noncontig_broadcast = np.empty((4, len(exprs), 3)).transpose((1, 2, 0))
     raises(ValueError, lambda: (lmb(inp_bcast, out=noncontig_broadcast)))
+
+    all_right_broadcast_F = np.empty((len(exprs), 4), order='F')
+    lmb.order = 'F'
+    lmb(np.array(np.array(inp_bcast).T), out=all_right_broadcast_F)
+
 
 
 @unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_broadcast():
     a = np.linspace(-np.pi, np.pi)
-    inp = np.vstack((np.cos(a), np.sin(a))).T  # 50 rows 2 cols
+    inp = np.ascontiguousarray(np.vstack((np.cos(a), np.sin(a))).T)  # 50 rows 2 cols
+    assert inp.flags['C_CONTIGUOUS']
     x, y = se.symbols('x y')
     distance = se.Lambdify([x, y], [se.sqrt(x**2 + y**2)])
     assert np.allclose(distance([inp[0, 0], inp[0, 1]]), [1])
@@ -183,7 +178,8 @@ def test_broadcast_multiple_extra_dimensions():
     cb = se.Lambdify([x], [x**2, x**3])
     assert np.allclose(cb([inp[0, 2]]), [4, 8])
     out = cb(inp)
-    assert out.shape == (4, 3, 2)
+    assert out.shape == (4, 3, 1, 2)
+    out = out.squeeze()
     assert abs(out[2, 1, 0] - 7**2) < 1e-14
     assert abs(out[2, 1, 1] - 7**3) < 1e-14
     assert abs(out[-1, -1, 0] - 11**2) < 1e-14
@@ -207,6 +203,18 @@ def test_cse():
     lmb = se.LambdifyCSE(args, exprs)
     out = lmb(inp)
     assert allclose(out, ref)
+
+
+@unittest.skipUnless(have_numpy, "Numpy not installed")
+@unittest.skipUnless(have_sympy, "SymPy not installed")
+def test_cse_gh174():
+    x = se.symbols('x')
+    funcs = [se.cos(x)**i for i in range(5)]
+    f_lmb = se.Lambdify([x], funcs)
+    f_cse = se.LambdifyCSE([x], funcs)
+    a = np.array([1, 2, 3])
+    assert np.allclose(f_lmb(a), f_cse(a))
+
 
 def _get_cse_exprs_big():
     # this is essentially a performance test (can be replaced by a benchmark)
@@ -248,6 +256,7 @@ def test_cse_big():
 def test_broadcast_c():
     n = 3
     inp = np.arange(2*n).reshape((n, 2))
+    assert inp.flags['C_CONTIGUOUS']
     lmb, check = _get_2_to_2by2()
     A = lmb(inp)
     assert A.shape == (3, 2, 2)
@@ -552,7 +561,6 @@ def _test_Lambdify_scalar_vector_matrix(Lambdify):
     f = Lambdify(args, x**y, vec, jac)
     assert f.n_exprs == 3
     s, v, m = f([2, 3])
-    print(s, v, m)
     assert s == 2**3
     assert np.allclose(v, [[2+3], [2*3]])
     assert np.allclose(m, [
@@ -560,22 +568,23 @@ def _test_Lambdify_scalar_vector_matrix(Lambdify):
         [3, 2]
     ])
 
-    s2, v2, m2 = f([[2, 3], [5, 7]])
-    assert np.allclose(s2, [2**3, 5**7])
-    assert np.allclose(v2, [
-        [[2+3], [2*3]],
-        [[5+7], [5*7]]
-    ])
-    assert np.allclose(m2, [
-        [
-            [1, 1],
-            [3, 2]
-        ],
-        [
-            [1, 1],
-            [7, 5]
-        ]
-    ])
+    for inp in [[2, 3, 5, 7], np.array([[2, 3], [5, 7]])]:
+        s2, v2, m2 = f(inp)
+        assert np.allclose(s2, [2**3, 5**7])
+        assert np.allclose(v2, [
+            [[2+3], [2*3]],
+            [[5+7], [5*7]]
+        ])
+        assert np.allclose(m2, [
+            [
+                [1, 1],
+                [3, 2]
+            ],
+            [
+                [1, 1],
+                [7, 5]
+            ]
+        ])
 
 
 def test_Lambdify_scalar_vector_matrix():
@@ -589,3 +598,190 @@ def test_Lambdify_scalar_vector_matrix_cse():
     _test_Lambdify_scalar_vector_matrix(lambda *args: se.LambdifyCSE(*args, backend='lambda'))
     if se.have_llvm:
         _test_Lambdify_scalar_vector_matrix(lambda *args: se.LambdifyCSE(*args, backend='llvm'))
+
+
+@unittest.skipUnless(have_numpy, "Numpy not installed")
+def test_Lambdify_gh174():
+    # Tests array broadcasting if the expressions form an N-dimensional array
+    # of say shape (k, l, m) and it contains 'n' arguments (x1, ... xn), then
+    # if the user provides a Fortran ordered (column-major) input array of shape
+    # (n, o, p, q), then the returned array will be of shape (k, l, m, o, p, q)
+    args = x, y = se.symbols('x y')
+    nargs = len(args)
+    vec1 = se.DenseMatrix([x, x**2, x**3])
+    assert vec1.shape == (3, 1)
+    assert np.asarray(vec1).shape == (3, 1)
+    lmb1 = se.Lambdify([x], vec1)
+    out1 = lmb1(3)
+    assert out1.shape == (3, 1)
+    assert np.all(out1 == [[3], [9], [27]])
+    assert lmb1([2, 3]).shape == (2, 3, 1)
+    lmb1.order = 'F'  # change order
+    out1a = lmb1([2, 3])
+    assert out1a.shape == (3, 1, 2)
+    ref1a_squeeze = [[2, 3],
+                     [4, 9],
+                     [8, 27]]
+    assert np.all(out1a.squeeze() == ref1a_squeeze)
+    assert out1a.flags['F_CONTIGUOUS']
+    assert not out1a.flags['C_CONTIGUOUS']
+
+    lmb2c = se.Lambdify(args, vec1, x+y, order='C')
+    lmb2f = se.Lambdify(args, vec1, x+y, order='F')
+    for out2a in [lmb2c([2, 3]), lmb2f([2, 3])]:
+        assert np.all(out2a[0] == [[2], [4], [8]])
+        assert out2a[0].ndim == 2
+        assert out2a[1] == 5
+        assert out2a[1].ndim == 0
+    inp2b = np.array([
+        [2.0, 3.0],
+        [1.0, 2.0],
+        [0.0, 6.0]
+    ])
+    raises(ValueError, lambda: (lmb2c(inp2b.T)))
+    out2c = lmb2c(inp2b)
+    out2f = lmb2f(np.asfortranarray(inp2b.T))
+    assert out2c[0].shape == (3, 3, 1)
+    assert out2f[0].shape == (3, 1, 3)
+    for idx, (_x, _y) in enumerate(inp2b):
+        assert np.all(out2c[0][idx, ...] == [[_x], [_x**2], [_x**3]])
+
+    assert np.all(out2c[1] == [5, 3, 6])
+    assert np.all(out2f[1] == [5, 3, 6])
+    assert out2c[1].shape == (3,)
+    assert out2f[1].shape == (3,)
+
+    def _mtx3(_x, _y):
+        return [[_x**row_idx + _y**col_idx for col_idx in range(3)]
+                for row_idx in range(4)]
+    mtx3c = np.array(_mtx3(x, y), order='C')
+    mtx3f = np.array(_mtx3(x, y), order='F')
+    lmb3c = se.Lambdify([x, y], x*y, mtx3c, vec1, order='C')
+    lmb3f = se.Lambdify([x, y], x*y, mtx3f, vec1, order='F')
+    inp3c = np.array([[2., 3], [3, 4], [5, 7], [6, 2], [3, 1]])
+    inp3f = np.asfortranarray(inp3c.T)
+    raises(ValueError, lambda: (lmb3c(inp3c.T)))
+    out3c = lmb3c(inp3c)
+    assert out3c[0].shape == (5,)
+    assert out3c[1].shape == (5, 4, 3)
+    assert out3c[2].shape == (5, 3, 1)  # user can apply numpy.squeeze if they want to.
+    for a, b in zip(out3c, lmb3c(np.ravel(inp3c))):
+        assert np.all(a == b)
+
+    out3f = lmb3f(inp3f)
+    assert out3f[0].shape == (5,)
+    assert out3f[1].shape == (4, 3, 5)
+    assert out3f[2].shape == (3, 1, 5)  # user can apply numpy.squeeze if they want to.
+    for a, b in zip(out3f, lmb3f(np.ravel(inp3f, order='F'))):
+        assert np.all(a == b)
+
+    for idx, (_x, _y) in enumerate(inp3c):
+        assert out3c[0][idx] == _x*_y
+        assert out3f[0][idx] == _x*_y
+        assert np.all(out3c[1][idx, ...] == _mtx3(_x, _y))
+        assert np.all(out3f[1][..., idx] == _mtx3(_x, _y))
+        assert np.all(out3c[2][idx, ...] == [[_x],[_x**2],[_x**3]])
+        assert np.all(out3f[2][..., idx] == [[_x],[_x**2],[_x**3]])
+
+
+def _get_Ndim_args_exprs_funcs(order):
+    args = x, y = se.symbols('x y')
+
+    # Higher dimensional inputs
+    def f_a(index, _x, _y):
+        a, b, c, d = index
+        return _x**a + _y**b + (_x+_y)**-d
+
+    nd_exprs_a = np.zeros((3, 5, 1, 4), dtype=object, order=order)
+    for index in np.ndindex(*nd_exprs_a.shape):
+        nd_exprs_a[index] = f_a(index, x, y)
+
+    def f_b(index, _x, _y):
+        a, b, c = index
+        return b/(_x + _y)
+
+    nd_exprs_b = np.zeros((1, 7, 1), dtype=object, order=order)
+    for index in np.ndindex(*nd_exprs_b.shape):
+        nd_exprs_b[index] = f_b(index, x, y)
+    return args, nd_exprs_a, nd_exprs_b, f_a, f_b
+
+@unittest.skipUnless(have_numpy, "Numpy not installed")
+def test_Lambdify_Ndimensional_order_C():
+    args, nd_exprs_a, nd_exprs_b, f_a, f_b = _get_Ndim_args_exprs_funcs(order='C')
+    lmb4 = se.Lambdify(args, nd_exprs_a, nd_exprs_b, order='C')
+    nargs = len(args)
+
+    inp_extra_shape = (3, 5, 4)
+    inp_shape = inp_extra_shape + (nargs,)
+    inp4 = np.arange(reduce(mul, inp_shape)*1.0).reshape(inp_shape, order='C')
+    out4a, out4b = lmb4(inp4)
+    assert out4a.ndim == 7
+    assert out4a.shape == inp_extra_shape + nd_exprs_a.shape
+    assert out4b.ndim == 6
+    assert out4b.shape == inp_extra_shape + nd_exprs_b.shape
+    raises(ValueError, lambda: (lmb4(inp4.T)))
+    for b, c, d in np.ndindex(inp_extra_shape):
+        _x, _y = inp4[b, c, d, :]
+        for index in np.ndindex(*nd_exprs_a.shape):
+            assert np.isclose(out4a[(b, c, d) + index], f_a(index, _x, _y))
+        for index in np.ndindex(*nd_exprs_b.shape):
+            assert np.isclose(out4b[(b, c, d) + index], f_b(index, _x, _y))
+
+
+@unittest.skipUnless(have_numpy, "Numpy not installed")
+def test_Lambdify_Ndimensional_order_F():
+    args, nd_exprs_a, nd_exprs_b, f_a, f_b = _get_Ndim_args_exprs_funcs(order='F')
+    lmb4 = se.Lambdify(args, nd_exprs_a, nd_exprs_b, order='F')
+    nargs = len(args)
+
+    inp_extra_shape = (3, 5, 4)
+    inp_shape = (nargs,)+inp_extra_shape
+    inp4 = np.arange(reduce(mul, inp_shape)*1.0).reshape(inp_shape, order='F')
+    out4a, out4b = lmb4(inp4)
+    assert out4a.ndim == 7
+    assert out4a.shape == nd_exprs_a.shape + inp_extra_shape
+    assert out4b.ndim == 6
+    assert out4b.shape == nd_exprs_b.shape + inp_extra_shape
+    raises(ValueError, lambda: (lmb4(inp4.T)))
+    for b, c, d in np.ndindex(inp_extra_shape):
+        _x, _y = inp4[:, b, c, d]
+        for index in np.ndindex(*nd_exprs_a.shape):
+            assert np.isclose(out4a[index + (b, c, d)], f_a(index, _x, _y))
+        for index in np.ndindex(*nd_exprs_b.shape):
+            assert np.isclose(out4b[index + (b, c, d)], f_b(index, _x, _y))
+
+
+@unittest.skipUnless(have_numpy, "Numpy not installed")
+def test_Lambdify_inp_exceptions():
+    args = x, y = se.symbols('x y')
+    lmb1 = se.Lambdify([x], x**2)
+    raises(ValueError, lambda: (lmb1([])))
+    assert lmb1(4) == 16
+    assert np.all(lmb1([4, 2]) == [16, 4])
+
+    lmb2 = se.Lambdify(args, x**2+y**2)
+    assert lmb2([2, 3]) == 13
+    raises(ValueError, lambda: lmb2([]))
+    raises(ValueError, lambda: lmb2([2]))
+    raises(ValueError, lambda: lmb2([2, 3, 4]))
+    assert np.all(lmb2([2, 3, 4, 5]) == [13, 16+25])
+
+    def _mtx(_x, _y):
+        return [
+            [_x-_y, _y**2],
+            [_x+_y, _x**2],
+            [_x*_y, _x**_y]
+        ]
+
+    mtx = np.array(_mtx(x, y), order='F')
+    lmb3 = se.Lambdify(args, mtx, order='F')
+    inp3a = [2, 3]
+    assert np.all(lmb3(inp3a) == _mtx(*inp3a))
+    inp3b = np.array([2, 3, 4, 5, 3, 2, 1, 5])
+    for inp in [inp3b, inp3b.tolist(), inp3b.reshape((2, 4), order='F')]:
+        out3b = lmb3(inp)
+        assert out3b.shape == (3, 2, 4)
+        for i in range(4):
+            assert np.all(out3b[..., i] == _mtx(*inp3b[2*i:2*(i+1)]))
+    raises(ValueError, lambda: lmb3(inp3b.reshape((4, 2))))
+    raises(ValueError, lambda: lmb3(inp3b.reshape((2, 4)).T))
