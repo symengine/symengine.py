@@ -4338,16 +4338,21 @@ cdef class _Lambdify(object):
     cdef public str order
     cdef vector[int] accum_out_sizes
     cdef object numpy_dtype
-    cdef args
-    cdef tuple exprs
 
-    def __cinit__(self, args, *exprs, cppbool real=True, order='C'):
-        cdef vector[int] out_sizes
-        self.args = np.asanyarray(args)
-        self.args_size = self.args.size
-        self.exprs = tuple(np.asanyarray(expr) for expr in exprs)
-        self.out_shapes = [expr.shape for expr in self.exprs]
-        self.n_exprs = len(self.exprs)
+    def __init__(self, args, *exprs, cppbool real=True, order='C'):
+        cdef:
+            Basic e_
+            size_t ri, ci, nr, nc
+            symengine.MatrixBase *mtx
+            RCP[const symengine.Basic] b_
+            symengine.vec_basic args_, outs_
+            vector[int] out_sizes
+
+        args = np.asanyarray(args)
+        self.args_size = args.size
+        exprs = tuple(np.asanyarray(expr) for expr in exprs)
+        self.out_shapes = [expr.shape for expr in exprs]
+        self.n_exprs = len(exprs)
         self.real = real
         self.order = order
         self.numpy_dtype = np.float64 if self.real else np.complex128
@@ -4362,19 +4367,11 @@ cdef class _Lambdify(object):
             for j in range(i):
                 self.accum_out_sizes[i] += out_sizes[j]
 
-    def __init__(self, *args, **kwargs):
-        cdef:
-            Basic e_
-            size_t ri, ci, nr, nc
-            symengine.MatrixBase *mtx
-            RCP[const symengine.Basic] b_
-            symengine.vec_basic args_, outs_
-
-        for arg in np.ravel(self.args, order=self.order):
+        for arg in np.ravel(args, order=self.order):
             e_ = _sympify(arg)
             args_.push_back(e_.thisptr)
 
-        for curr_expr in self.exprs:
+        for curr_expr in exprs:
             if curr_expr.ndim == 0:
                 e_ = _sympify(curr_expr.item())
                 outs_.push_back(e_.thisptr)
