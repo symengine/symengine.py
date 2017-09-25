@@ -1,6 +1,9 @@
 from cython.operator cimport dereference as deref, preincrement as inc
 cimport symengine
-from symengine cimport RCP, pair, map_basic_basic, umap_int_basic, umap_int_basic_iterator, umap_basic_num, umap_basic_num_iterator, rcp_const_basic, std_pair_short_rcp_const_basic, rcp_const_seriescoeffinterface
+from symengine cimport (RCP, pair, map_basic_basic, umap_int_basic,
+    umap_int_basic_iterator, umap_basic_num, umap_basic_num_iterator,
+    rcp_const_basic, std_pair_short_rcp_const_basic,
+    rcp_const_seriescoeffinterface)
 from libcpp cimport bool as cppbool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -751,10 +754,24 @@ def get_dict(*args):
 
 
 cdef tuple vec_basic_to_tuple(symengine.vec_basic& vec):
+    return tuple(vec_basic_to_list(vec))
+
+
+cdef list vec_basic_to_list(symengine.vec_basic& vec):
     result = []
     for i in range(vec.size()):
         result.append(c2py(<RCP[const symengine.Basic]>(vec[i])))
-    return tuple(result)
+    return result
+
+
+cdef list vec_pair_to_list(symengine.vec_pair& vec):
+    result = []
+    cdef RCP[const symengine.Basic] a, b
+    for i in range(vec.size()):
+        a = <RCP[const symengine.Basic]>vec[i].first
+        b = <RCP[const symengine.Basic]>vec[i].second
+        result.append((c2py(a), c2py(b)))
+    return result
 
 
 cdef class Basic(object):
@@ -4787,6 +4804,18 @@ def solve(f, sym, domain=None):
     cdef Set domain_ = sympify(domain)
     cdef RCP[const symengine.Set] d = symengine.rcp_static_cast_Set(domain_.thisptr)
     return c2py(<RCP[const symengine.Basic]>(symengine.solve(f_.thisptr, x, d)))
+
+
+def cse(exprs):
+    cdef symengine.vec_basic vec
+    cdef symengine.vec_pair replacements
+    cdef symengine.vec_basic reduced_exprs
+    cdef Basic b
+    for expr in exprs:
+        b = sympify(expr)
+        vec.push_back(b.thisptr)
+    symengine.cse(replacements, reduced_exprs, vec)
+    return (vec_pair_to_list(replacements), vec_basic_to_list(reduced_exprs))
 
 
 # Turn on nice stacktraces:
