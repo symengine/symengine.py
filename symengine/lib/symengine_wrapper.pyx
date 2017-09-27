@@ -3550,7 +3550,7 @@ cdef class DenseMatrixBase(MatrixBase):
             s = set()
             if (isinstance(self, types)):
                 s.add(self)
-            for arg in self.tolist():
+            for arg in self:
                 s.update(arg.atoms(*types))
             return s
         else:

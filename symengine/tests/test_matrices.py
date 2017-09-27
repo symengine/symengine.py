@@ -514,3 +514,9 @@ def test_immutablematrix():
     Z = X.col_join(Y)
     assert isinstance(Z, ImmutableMatrix)
     assert Z == ImmutableMatrix([[1, 2], [3, 4], [5, 6]])
+
+def test_atoms():
+    a = Symbol("a")
+    b = Symbol("b")
+    X = DenseMatrix([[a, 2], [b, 4]])
+    assert X.atoms(Symbol) == set([a, b])
