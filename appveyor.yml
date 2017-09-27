@@ -81,7 +81,7 @@ install:
 
 - set PATH=C:\Python%PYTHON_VERSION%;C:\Python%PYTHON_VERSION%\Scripts;%PATH%
 - pip install nose pytest
-- if [%COMPILER%]==[MinGW-w64] pip install --install-option="--no-cython-compile" cython=0.26
+- if [%COMPILER%]==[MinGW-w64] pip install --install-option="--no-cython-compile" cython==0.26
 - if NOT [%COMPILER%]==[MinGW-w64] pip install --install-option="--no-cython-compile" cython
 - if NOT [%WITH_NUMPY%]==[no] pip install numpy
 - if NOT [%WITH_SYMPY%]==[no] pip install sympy
