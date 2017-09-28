@@ -220,3 +220,11 @@ def test_special_constants():
     assert One() == Integer(1)
     assert NegativeOne() == Integer(-1)
     assert Half() == Rational(1, 2)
+
+
+def test_bool():
+    x = Symbol('x')
+    if (x**2).args[1] > 0:
+        assert True
+    if (x**2).args[1] < 0:
+        assert False
