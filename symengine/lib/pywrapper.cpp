@@ -261,7 +261,7 @@ hash_t PyFunction::__hash__() const {
 bool PyFunction::__eq__(const Basic &o) const {
     if (is_a<PyFunction>(o) and
         pyfunction_class_->__eq__(*static_cast<const PyFunction &>(o).get_pyfunction_class()) and
-        unified_eq(arg_, static_cast<const PyFunction &>(o).arg_))
+        unified_eq(get_vec(), static_cast<const PyFunction &>(o).get_vec()))
         return true;
     return false;
 }
@@ -271,7 +271,7 @@ int PyFunction::compare(const Basic &o) const {
     const PyFunction &s = static_cast<const PyFunction &>(o);
     int cmp = pyfunction_class_->compare(*s.get_pyfunction_class());
     if (cmp != 0) return cmp;
-    return unified_compare(arg_, s.arg_);
+    return unified_compare(get_vec(), s.get_vec());
 }
 
 } // SymEngine

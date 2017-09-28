@@ -219,6 +219,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     ctypedef unordered_map[int, rcp_const_basic].iterator umap_int_basic_iterator "SymEngine::umap_int_basic::iterator"
     ctypedef unordered_map[rcp_const_basic, rcp_const_number] umap_basic_num "SymEngine::umap_basic_num"
     ctypedef unordered_map[rcp_const_basic, rcp_const_number].iterator umap_basic_num_iterator "SymEngine::umap_basic_num::iterator"
+    ctypedef vector[pair[rcp_const_basic, rcp_const_basic]] vec_pair "SymEngine::vec_pair"
 
     bool eq(const Basic &a, const Basic &b) nogil except +
     bool neq(const Basic &a, const Basic &b) nogil except +
@@ -312,6 +313,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_Xor "SymEngine::is_a<SymEngine::Xor>"(const Basic &b) nogil
     RCP[const Basic] expand(RCP[const Basic] &o, bool deep) nogil except +
     void as_numer_denom(RCP[const Basic] &x, const Ptr[RCP[Basic]] &numer, const Ptr[RCP[Basic]] &denom) nogil
+    void cse(vec_pair &replacements, vec_basic &reduced_exprs, const vec_basic &exprs) nogil except +
 
 cdef extern from "<symengine/subs.h>" namespace "SymEngine":
     RCP[const Basic] msubs (RCP[const Basic] &x, const map_basic_basic &x) nogil
