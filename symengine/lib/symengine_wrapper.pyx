@@ -1301,6 +1301,13 @@ cdef class BooleanTrue(BooleanAtom):
     def _sage_(self):
         return True
 
+    def __nonzero__(self):
+        return True
+
+    def __bool__(self):
+        return True
+
+
 true = BooleanTrue()
 
 
@@ -1314,6 +1321,12 @@ cdef class BooleanFalse(BooleanAtom):
         return sympy.S.false
 
     def _sage_(self):
+        return False
+
+    def __nonzero__(self):
+        return False
+
+    def __bool__(self):
         return False
 
 false = BooleanFalse()
