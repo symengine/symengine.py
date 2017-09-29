@@ -9,6 +9,10 @@ if [[ "${WITH_SYMPY}" != "no" ]]; then
     export conda_pkgs="${conda_pkgs} sympy";
 fi
 
+if [[ "${TEST_SYMPY}" == "yes" ]]; then
+    export TEST_SYMPY = 1;
+fi
+
 if [[ "${WITH_NUMPY}" != "no" ]]; then
     export conda_pkgs="${conda_pkgs} numpy";
 fi

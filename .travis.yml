@@ -26,8 +26,8 @@ env:
   ## executed.
   matrix:
   # Debug builds:
-  - BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="2.7" TRIGGER_FEEDSTOCK="yes"
-  - BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="3.6"
+  - BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="2.7" TRIGGER_FEEDSTOCK="yes" TEST_SYMPY="yes"
+  - BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="3.6" TEST_SYMPY="yes"
 
   # Release builds:
   - PYTHON_VERSION="2.7" BUILD_SHARED_LIBS="yes"
