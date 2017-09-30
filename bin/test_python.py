@@ -1,5 +1,5 @@
 import os
-TEST_SYMPY = os.getenv('TEST_SYMPY', '0')
+TEST_SYMPY = os.getenv('TEST_SYMPY', False)
 
 import symengine
 if not symengine.test():
