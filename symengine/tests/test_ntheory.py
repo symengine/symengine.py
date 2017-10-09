@@ -37,9 +37,15 @@ def test_gcd_ext():
     assert p == q * 6 + r * 9
     (q, r, p) = gcd_ext(-15, 10)
     assert p == q * -15 + r * 10
-    assert gcd_ext(2, 3) == (-1, 1, 1)
-    assert gcd_ext(10, 12) == (-1, 1, 2)
-    assert gcd_ext(100, 2004) == (-20, 1, 4)
+    (q, r, p) = gcd_ext(2, 3)
+    assert p == q * 2 + r * 3
+    assert p == 1
+    (q, r, p) = gcd_ext(10, 12)
+    assert p == q * 10 + r * 12
+    assert p == 2
+    (q, r, p) = gcd_ext(100, 2004)
+    assert p == q * 100 + r * 2004
+    assert p == 4
 
 
 def test_mod():
