@@ -4560,7 +4560,7 @@ cdef class _Lambdify(object):
             return result
 
 
-cdef double _scipy_callback_lambda_real(int n, double *x, void *user_data):
+cdef double _scipy_callback_lambda_real(int n, double *x, void *user_data) nogil:
     cdef symengine.LambdaRealDoubleVisitor* lamb = <symengine.LambdaRealDoubleVisitor *>user_data
     cdef double result
     deref(lamb).call(&result, x)
@@ -4568,7 +4568,7 @@ cdef double _scipy_callback_lambda_real(int n, double *x, void *user_data):
 
 
 IF HAVE_SYMENGINE_LLVM:
-    cdef double _scipy_callback_llvm_real(int n, double *x, void *user_data):
+    cdef double _scipy_callback_llvm_real(int n, double *x, void *user_data) nogil:
         cdef symengine.LLVMDoubleVisitor* lamb = <symengine.LLVMDoubleVisitor *>user_data
         cdef double result
         deref(lamb).call(&result, x)
