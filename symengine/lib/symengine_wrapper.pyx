@@ -4605,7 +4605,6 @@ cdef class LambdaDouble(_Lambdify):
         self.lambda_double_complex[0].call(&out[out_offset], &inp[inp_offset])
 
     cpdef as_scipy_low_level_callable(self):
-        from scipy import LowLevelCallable
         from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
         if not self.real:
             raise RuntimeError("Lambda function has to be real")
@@ -4630,7 +4629,6 @@ IF HAVE_SYMENGINE_LLVM:
             self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
 
         cpdef as_scipy_low_level_callable(self):
-            from scipy import LowLevelCallable
             from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
             if not self.real:
                 raise RuntimeError("Lambda function has to be real")
