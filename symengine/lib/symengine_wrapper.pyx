@@ -4569,7 +4569,7 @@ cdef double _scipy_callback_lambda_real(int n, double *x, void *user_data):
 
 IF HAVE_SYMENGINE_LLVM:
     cdef double _scipy_callback_llvm_real(int n, double *x, void *user_data):
-        cdef symengine.LLVMRealDoubleVisitor* lamb = <symengine.LLVMDoubleVisitor *>user_data
+        cdef symengine.LLVMDoubleVisitor* lamb = <symengine.LLVMDoubleVisitor *>user_data
         cdef double result
         deref(lamb).call(&result, x)
         return result
