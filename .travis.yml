@@ -52,7 +52,7 @@ matrix:
           packages:
           - binutils-dev
           - g++-4.8
-    - env: BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="3.5" WITH_LLVM="yes"
+    - env: BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="3.5" WITH_LLVM="yes" WITH_SCIPY="yes"
       compiler: clang
       os: linux
       addons:
