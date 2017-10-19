@@ -4609,6 +4609,8 @@ cdef class LambdaDouble(_Lambdify):
         from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
         if not self.real:
             raise RuntimeError("Lambda function has to be real")
+        if self.tot_out_size > 1:
+            raise RuntimeError("SciPy LowLevelCallable supports only functions with 1 output")
         addr1 = cast(<size_t>&_scipy_callback_lambda_real,
                         CFUNCTYPE(c_double, c_int, POINTER(c_double), c_void_p))
         addr2 = cast(<size_t>&self.lambda_double[0], c_void_p)
@@ -4632,6 +4634,8 @@ IF HAVE_SYMENGINE_LLVM:
             from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
             if not self.real:
                 raise RuntimeError("Lambda function has to be real")
+            if self.tot_out_size > 1:
+                raise RuntimeError("SciPy LowLevelCallable supports only functions with 1 output")
             addr1 = cast(<size_t>&_scipy_callback_lambda_real,
                             CFUNCTYPE(c_double, c_int, POINTER(c_double), c_void_p))
             addr2 = cast(<size_t>&self.lambda_double[0], c_void_p)
