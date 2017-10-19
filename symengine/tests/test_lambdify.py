@@ -25,6 +25,13 @@ try:
 except ImportError:
     have_sympy = False
 
+try:
+    import scipy
+    from scipy import LowLevelCallable
+    have_scipy = True
+except ImportError:
+    have_scipy = False
+
 if have_numpy:
     import numpy as np
 
@@ -785,3 +792,13 @@ def test_Lambdify_inp_exceptions():
             assert np.all(out3b[..., i] == _mtx(*inp3b[2*i:2*(i+1)]))
     raises(ValueError, lambda: lmb3(inp3b.reshape((4, 2))))
     raises(ValueError, lambda: lmb3(inp3b.reshape((2, 4)).T))
+
+
+@unittest.skipUnless(have_scipy, "Scipy not installed")
+def test_scipy():
+    from scipy import integrate
+    import numpy as np
+    args = t, x = se.symbols('t, x')
+    lmb = se.Lambdify(args, [se.exp(-x*t)/t**5], as_scipy=True)
+    res = integrate.nquad(lmb, [[1, np.inf], [0, np.inf]])
+    assert abs(res[0] - 0.2) < 1e-7
