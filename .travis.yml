@@ -78,7 +78,7 @@ matrix:
     - env: BUILD_TYPE="Debug" PYTHON_VERSION="2.7" WITH_NUMPY="no"
       compiler: gcc
       os: osx
-    - env: BUILD_TYPE="Release" PYTHON_VERSION="3.5" INTEGER_CLASS="flint" WITH_FLINT="yes"
+    - env: BUILD_TYPE="Release" PYTHON_VERSION="3.5"
       compiler: gcc
       os: osx
     - env: BUILD_TYPE="Release" WITH_SAGE="yes" WITH_MPC="yes" PYTHON_VERSION="2.7"
