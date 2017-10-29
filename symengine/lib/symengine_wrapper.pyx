@@ -4560,6 +4560,31 @@ cdef class _Lambdify(object):
             return result
 
 
+cdef double _scipy_callback_lambda_real(int n, double *x, void *user_data) nogil:
+    cdef symengine.LambdaRealDoubleVisitor* lamb = <symengine.LambdaRealDoubleVisitor *>user_data
+    cdef double result
+    deref(lamb).call(&result, x)
+    return result
+
+
+IF HAVE_SYMENGINE_LLVM:
+    cdef double _scipy_callback_llvm_real(int n, double *x, void *user_data) nogil:
+        cdef symengine.LLVMDoubleVisitor* lamb = <symengine.LLVMDoubleVisitor *>user_data
+        cdef double result
+        deref(lamb).call(&result, x)
+        return result
+
+
+def create_low_level_callable(lambdify, *args):
+    from scipy import LowLevelCallable
+    class LambdifyLowLevelCallable(LowLevelCallable):
+        def __init__(self, lambdify, *args):
+            self.lambdify = lambdify
+        def __new__(cls, value, *args, **kwargs):
+            return super(LambdifyLowLevelCallable, cls).__new__(cls, *args)
+    return LambdifyLowLevelCallable(lambdify, *args)
+
+
 cdef class LambdaDouble(_Lambdify):
 
     cdef vector[symengine.LambdaRealDoubleVisitor] lambda_double
@@ -4579,6 +4604,17 @@ cdef class LambdaDouble(_Lambdify):
     cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out, int inp_offset=0, int out_offset=0):
         self.lambda_double_complex[0].call(&out[out_offset], &inp[inp_offset])
 
+    cpdef as_scipy_low_level_callable(self):
+        from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
+        if not self.real:
+            raise RuntimeError("Lambda function has to be real")
+        if self.tot_out_size > 1:
+            raise RuntimeError("SciPy LowLevelCallable supports only functions with 1 output")
+        addr1 = cast(<size_t>&_scipy_callback_lambda_real,
+                        CFUNCTYPE(c_double, c_int, POINTER(c_double), c_void_p))
+        addr2 = cast(<size_t>&self.lambda_double[0], c_void_p)
+        return create_low_level_callable(self, addr1, addr2)
+
 
 IF HAVE_SYMENGINE_LLVM:
     cdef class LLVMDouble(_Lambdify):
@@ -4592,8 +4628,19 @@ IF HAVE_SYMENGINE_LLVM:
         cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=0, int out_offset=0):
             self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
 
+        cpdef as_scipy_low_level_callable(self):
+            from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
+            if not self.real:
+                raise RuntimeError("Lambda function has to be real")
+            if self.tot_out_size > 1:
+                raise RuntimeError("SciPy LowLevelCallable supports only functions with 1 output")
+            addr1 = cast(<size_t>&_scipy_callback_lambda_real,
+                            CFUNCTYPE(c_double, c_int, POINTER(c_double), c_void_p))
+            addr2 = cast(<size_t>&self.lambda_double[0], c_void_p)
+            return create_low_level_callable(self, addr1, addr2)
 
-def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C'):
+
+def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C', as_scipy=False):
     """
     Lambdify instances are callbacks that numerically evaluate their symbolic
     expressions from user provided input (real or complex) into (possibly user
@@ -4616,6 +4663,9 @@ def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C'):
         (k, l, 3) (C-contiguous) input will give a (k, l, m, n) shaped output,
         whereas a (3, k, l) (C-contiguous) input will give a (m, n, k, l) shaped
         output. If ``None`` order is taken as ``self.order`` (from initialization).
+    as_scipy : bool
+        return a SciPy LowLevelCallable which can be used in SciPy's integrate
+        methods
 
     Returns
     -------
@@ -4637,7 +4687,10 @@ def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C'):
         backend = os.getenv('SYMENGINE_LAMBDIFY_BACKEND', "lambda")
     if backend == "llvm":
         IF HAVE_SYMENGINE_LLVM:
-            return LLVMDouble(args, *exprs, real=real, order=order)
+            ret = LLVMDouble(args, *exprs, real=real, order=order)
+            if as_scipy:
+                return ret.as_scipy_low_level_callable()
+            return ret
         ELSE:
             raise ValueError("""llvm backend is chosen, but symengine is not compiled
                                 with llvm support.""")
@@ -4645,7 +4698,10 @@ def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C'):
         pass
     else:
         warnings.warn("Unknown SymEngine backend: %s\nUsing backend='lambda'" % backend)
-    return LambdaDouble(args, *exprs, real=real, order=order)
+    ret = LambdaDouble(args, *exprs, real=real, order=order)
+    if as_scipy:
+        return ret.as_scipy_low_level_callable()
+    return ret
 
 
 def LambdifyCSE(args, *exprs, cse=None, order='C', **kwargs):
