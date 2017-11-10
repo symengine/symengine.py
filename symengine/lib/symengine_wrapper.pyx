@@ -4741,7 +4741,7 @@ def LambdifyCSE(args, *exprs, cse=None, order='C', **kwargs):
                                         expr.shape, order=order))
             n_taken += expr.size
         new_lmb = Lambdify(tuple(_args) + cse_symbs, *new_exprs, order=order, **kwargs)
-        cse_lambda = Lambdify(_args, [ce.xreplace(explicit_subs) for ce in cse_exprs], **kwargs)
+        cse_lambda = Lambdify(_args, [ce.xreplace(explicit_subs) for ce in cse_exprs], order=order, **kwargs)
         def cb(inp, *, out=None, **kw):
             _inp = np.asanyarray(inp)
             cse_vals = cse_lambda(_inp, **kw)
@@ -4754,7 +4754,7 @@ def LambdifyCSE(args, *exprs, cse=None, order='C', **kwargs):
             return new_lmb(new_inp, out=out, **kw)
         return cb
     else:
-        return Lambdify(args, *exprs, **kwargs)
+        return Lambdify(args, *exprs, order=order, **kwargs)
 
 
 def ccode(expr):
