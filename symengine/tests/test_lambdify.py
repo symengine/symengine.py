@@ -193,10 +193,8 @@ def test_broadcast_multiple_extra_dimensions():
     assert abs(out[-1, -1, 1] - 11**3) < 1e-14
 
 
-@unittest.skipUnless(have_sympy, "SymPy not installed")
 def _get_cse_exprs():
-    import sympy as sp
-    args = x, y = sp.symbols('x y')
+    args = x, y = se.symbols('x y')
     exprs = [x*x + y, y/(x*x), y*x*x+x]
     inp = [11, 13]
     ref = [121+13, 13/121, 13*121 + 11]
@@ -204,21 +202,19 @@ def _get_cse_exprs():
 
 
 @unittest.skipUnless(have_numpy, "Numpy not installed")
-@unittest.skipUnless(have_sympy, "SymPy not installed")
 def test_cse():
     args, exprs, inp, ref = _get_cse_exprs()
-    lmb = se.LambdifyCSE(args, exprs)
+    lmb = se.Lambdify(args, exprs, cse=True)
     out = lmb(inp)
     assert allclose(out, ref)
 
 
 @unittest.skipUnless(have_numpy, "Numpy not installed")
-@unittest.skipUnless(have_sympy, "SymPy not installed")
 def test_cse_gh174():
     x = se.symbols('x')
     funcs = [se.cos(x)**i for i in range(5)]
     f_lmb = se.Lambdify([x], funcs)
-    f_cse = se.LambdifyCSE([x], funcs)
+    f_cse = se.Lambdify([x], funcs, cse=True)
     a = np.array([1, 2, 3])
     assert np.allclose(f_lmb(a), f_cse(a))
 
@@ -250,10 +246,9 @@ def _get_cse_exprs_big():
 
 
 @unittest.skipUnless(have_numpy, "Numpy not installed")
-@unittest.skipUnless(have_sympy, "SymPy not installed")
 def test_cse_big():
     args, exprs, inp = _get_cse_exprs_big()
-    lmb = se.LambdifyCSE(args, exprs)
+    lmb = se.Lambdify(args, exprs, cse=True)
     out = lmb(inp)
     ref = [expr.xreplace(dict(zip(args, inp))) for expr in exprs]
     assert allclose(out, ref)
@@ -526,12 +521,6 @@ def test_Lambdify_heterogeneous_output():
     _Lambdify_heterogeneous_output(se.Lambdify)
 
 
-@unittest.skipUnless(have_numpy, "Numpy not installed")
-@unittest.skipUnless(have_sympy, "SymPy not installed")
-def test_LambdifyCSE_heterogeneous_output():
-    _Lambdify_heterogeneous_output(se.LambdifyCSE)
-
-
 def _sympy_lambdify_heterogeneous_output(cb, Mtx):
     x, y = se.symbols('x, y')
     args = Mtx(2, 1, [x, y])
@@ -600,11 +589,10 @@ def test_Lambdify_scalar_vector_matrix():
         _test_Lambdify_scalar_vector_matrix(lambda *args: se.Lambdify(*args, backend='llvm'))
 
 
-@unittest.skipUnless(have_sympy, "SymPy not installed")
 def test_Lambdify_scalar_vector_matrix_cse():
-    _test_Lambdify_scalar_vector_matrix(lambda *args: se.LambdifyCSE(*args, backend='lambda'))
+    _test_Lambdify_scalar_vector_matrix(lambda *args: se.Lambdify(*args, backend='lambda', cse=True))
     if se.have_llvm:
-        _test_Lambdify_scalar_vector_matrix(lambda *args: se.LambdifyCSE(*args, backend='llvm'))
+        _test_Lambdify_scalar_vector_matrix(lambda *args: se.Lambdify(*args, backend='llvm', cse=True))
 
 
 @unittest.skipUnless(have_numpy, "Numpy not installed")

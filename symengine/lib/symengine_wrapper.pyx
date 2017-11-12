@@ -4369,7 +4369,7 @@ cdef class _Lambdify(object):
     cdef vector[int] accum_out_sizes
     cdef object numpy_dtype
 
-    def __init__(self, args, *exprs, cppbool real=True, order='C'):
+    def __init__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False):
         cdef:
             Basic e_
             size_t ri, ci, nr, nc
@@ -4409,9 +4409,9 @@ cdef class _Lambdify(object):
                 for e in np.ravel(curr_expr, order=self.order):
                     e_ = _sympify(e)
                     outs_.push_back(e_.thisptr)
-        self._init(args_, outs_)
+        self._init(args_, outs_, cse)
 
-    cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_):
+    cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
         raise ValueError("Not supported")
 
     cpdef unsafe_real(self,
@@ -4590,13 +4590,13 @@ cdef class LambdaDouble(_Lambdify):
     cdef vector[symengine.LambdaRealDoubleVisitor] lambda_double
     cdef vector[symengine.LambdaComplexDoubleVisitor] lambda_double_complex
 
-    cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_):
+    cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
         if self.real:
             self.lambda_double.resize(1)
-            self.lambda_double[0].init(args_, outs_)
+            self.lambda_double[0].init(args_, outs_, cse)
         else:
             self.lambda_double_complex.resize(1)
-            self.lambda_double_complex[0].init(args_, outs_)
+            self.lambda_double_complex[0].init(args_, outs_, cse)
 
     cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=0, int out_offset=0):
         self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
@@ -4621,9 +4621,9 @@ IF HAVE_SYMENGINE_LLVM:
 
         cdef vector[symengine.LLVMDoubleVisitor] lambda_double
 
-        cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_):
+        cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
             self.lambda_double.resize(1)
-            self.lambda_double[0].init(args_, outs_)
+            self.lambda_double[0].init(args_, outs_, cse)
 
         cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=0, int out_offset=0):
             self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
@@ -4640,7 +4640,7 @@ IF HAVE_SYMENGINE_LLVM:
             return create_low_level_callable(self, addr1, addr2)
 
 
-def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C', as_scipy=False):
+def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C', as_scipy=False, cse=False):
     """
     Lambdify instances are callbacks that numerically evaluate their symbolic
     expressions from user provided input (real or complex) into (possibly user
@@ -4666,6 +4666,9 @@ def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C', as_scipy=
     as_scipy : bool
         return a SciPy LowLevelCallable which can be used in SciPy's integrate
         methods
+    cse : bool
+        Run Common Subexpression Elimination on the output before generating
+        the callback.
 
     Returns
     -------
@@ -4687,7 +4690,7 @@ def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C', as_scipy=
         backend = os.getenv('SYMENGINE_LAMBDIFY_BACKEND', "lambda")
     if backend == "llvm":
         IF HAVE_SYMENGINE_LLVM:
-            ret = LLVMDouble(args, *exprs, real=real, order=order)
+            ret = LLVMDouble(args, *exprs, real=real, order=order, cse=cse)
             if as_scipy:
                 return ret.as_scipy_low_level_callable()
             return ret
@@ -4698,63 +4701,17 @@ def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C', as_scipy=
         pass
     else:
         warnings.warn("Unknown SymEngine backend: %s\nUsing backend='lambda'" % backend)
-    ret = LambdaDouble(args, *exprs, real=real, order=order)
+    ret = LambdaDouble(args, *exprs, real=real, order=order, cse=cse)
     if as_scipy:
         return ret.as_scipy_low_level_callable()
     return ret
 
 
-def LambdifyCSE(args, *exprs, cse=None, order='C', **kwargs):
+def LambdifyCSE(args, *exprs, order='C', **kwargs):
     """ Analogous with Lambdify but performs common subexpression elimination.
-
-    See docstring of Lambdify.
-
-    Parameters
-    ----------
-    args: iterable of symbols
-    exprs: iterable of expressions (with symbols from args)
-    cse: callback (default: None)
-        defaults to sympy.cse (see SymPy documentation)
-    order : str
-        order (passed to numpy.ravel and numpy.reshape).
-    \\*\\*kwargs: Keyword arguments passed onto Lambdify
-
     """
-    if cse is None:
-        from sympy import cse
-    _exprs = [np.asanyarray(e) for e in exprs]
-    _args = np.ravel(args, order=order)
-    from sympy import sympify as s_sympify
-    flat_exprs = list(itertools.chain(*[np.ravel(e, order=order) for e in _exprs]))
-    subs, flat_new_exprs = cse([s_sympify(expr) for expr in flat_exprs])
-
-    if subs:
-        explicit_subs = {}
-        for k, v in subs:
-            explicit_subs[k] = v.xreplace(explicit_subs)
-
-        cse_symbs, cse_exprs = zip(*subs)
-        new_exprs = []
-        n_taken = 0
-        for expr in _exprs:
-            new_exprs.append(np.reshape(flat_new_exprs[n_taken:n_taken+expr.size],
-                                        expr.shape, order=order))
-            n_taken += expr.size
-        new_lmb = Lambdify(tuple(_args) + cse_symbs, *new_exprs, order=order, **kwargs)
-        cse_lambda = Lambdify(_args, [ce.xreplace(explicit_subs) for ce in cse_exprs], **kwargs)
-        def cb(inp, *, out=None, **kw):
-            _inp = np.asanyarray(inp)
-            cse_vals = cse_lambda(_inp, **kw)
-            if order == 'C':
-                new_inp = np.concatenate((_inp[(Ellipsis,) + (np.newaxis,)*(cse_vals.ndim - _inp.ndim)],
-                                          cse_vals), axis=-1)
-            else:
-                new_inp = np.concatenate((_inp[(np.newaxis,)*(cse_vals.ndim - _inp.ndim) + (Ellipsis,)],
-                                          cse_vals), axis=0)
-            return new_lmb(new_inp, out=out, **kw)
-        return cb
-    else:
-        return Lambdify(args, *exprs, **kwargs)
+    warnings.warn("LambdifyCSE is deprecated. Use Lambdify(..., cse=True)", DeprecationWarning)
+    return Lambdify(args, *exprs, cse=True, order=order, **kwargs)
 
 
 def ccode(expr):
