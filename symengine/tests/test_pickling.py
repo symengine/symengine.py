@@ -1,4 +1,4 @@
-from symengine import symbols, sin, sinh, Lambdify, have_numpy, have_llvm
+from symengine import symbols, sin, sinh, have_numpy, have_llvm
 import pickle
 import unittest
 
@@ -6,6 +6,7 @@ import unittest
 @unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_llvm_double():
     import numpy as np
+    from symengine import Lambdify
     args = x, y, z = symbols('x y z')
     expr = sin(sinh(x+y) + z)
     l = Lambdify(args, expr, cse=True, backend='llvm')
