@@ -1,7 +1,8 @@
-from symengine import symbols, sin, sinh, Lambdify, have_numpy
+from symengine import symbols, sin, sinh, Lambdify, have_numpy, have_llvm
 import pickle
 import unittest
 
+@unittest.skipUnless(have_llvm, "No LLVM support")
 @unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_llvm_double():
     import numpy as np
