@@ -4369,7 +4369,7 @@ cdef class _Lambdify(object):
     cdef vector[int] accum_out_sizes
     cdef object numpy_dtype
 
-    def __init__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool load=False):
+    def __init__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False):
         cdef:
             Basic e_
             size_t ri, ci, nr, nc
@@ -4378,7 +4378,7 @@ cdef class _Lambdify(object):
             symengine.vec_basic args_, outs_
             vector[int] out_sizes
 
-        if load:
+        if _load:
             self.args_size, self.tot_out_size, self.out_shapes, self.real, \
                 self.n_exprs, self.order, self.accum_out_sizes, self.numpy_dtype, \
                 llvm_function = args
@@ -4662,7 +4662,7 @@ IF HAVE_SYMENGINE_LLVM:
             return create_low_level_callable(self, addr1, addr2)
 
     def llvm_loading_func(*args):
-        return LLVMDouble(args, load=True)
+        return LLVMDouble(args, _load=True)
 
 def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C', as_scipy=False, cse=False):
     """
