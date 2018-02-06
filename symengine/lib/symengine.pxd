@@ -972,6 +972,8 @@ cdef extern from "<symengine/llvm_double.h>" namespace "SymEngine":
         LLVMDoubleVisitor() nogil
         void init(const vec_basic &x, const vec_basic &b, bool cse) nogil except +
         void call(double *r, const double *x) nogil
+        const string& dumps() nogil
+        void loads(const string&) nogil
 
 cdef extern from "<symengine/series.h>" namespace "SymEngine":
     cdef cppclass SeriesCoeffInterface:
