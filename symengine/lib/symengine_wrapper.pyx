@@ -4447,7 +4447,7 @@ cdef class _Lambdify(object):
             raise ValueError("Size of out incompatible with number of exprs.")
         self.unsafe_complex(inp, out)
 
-    def __call__(self, inp, *, out=None):
+    def __call__(self, *args, out=None):
         """
         Parameters
         ----------
@@ -4473,10 +4473,13 @@ cdef class _Lambdify(object):
         if self.order not in ('C', 'F'):
             raise NotImplementedError("Only C & F order supported for now.")
 
+        if len(args) == 1:
+            args = args[0]
+
         try:
-            inp = np.asanyarray(inp, dtype=self.numpy_dtype)
+            inp = np.asanyarray(args, dtype=self.numpy_dtype)
         except TypeError:
-            inp = np.fromiter(inp, dtype=self.numpy_dtype)
+            inp = np.fromiter(args, dtype=self.numpy_dtype)
 
         if self.real:
             real_inp = np.ascontiguousarray(inp.ravel(order=self.order))

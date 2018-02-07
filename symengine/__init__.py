@@ -22,21 +22,10 @@ if have_mpc:
     from .lib.symengine_wrapper import ComplexMPC
 
 if have_numpy:
-    from .lib.symengine_wrapper import Lambdify, LambdifyCSE
+    from .lib.symengine_wrapper import (Lambdify, LambdifyCSE)
 
-    def lambdify(args, exprs, real=True, backend=None, as_scipy=False):
-        try:
-            len(args)
-        except TypeError:
-            args = [args]
-        if as_scipy:
-            return Lambdify(args, *exprs, real=real, backend=backend, as_scipy=True)
-        lmb = Lambdify(args, *exprs, real=real, backend=backend)
-        def f(*inner_args):
-            if len(inner_args) != len(args):
-                raise TypeError("Incorrect number of arguments")
-            return lmb(inner_args)
-        return f
+    def lambdify(args, exprs, **kwargs):
+        return Lambdify(args, *exprs, **kwargs)
 
 
 __version__ = "0.3.0"
