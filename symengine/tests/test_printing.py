@@ -9,7 +9,7 @@ def test_ccode():
     assert ccode(x**3) == "pow(x, 3)"
     assert ccode(x**(y**3)) == "pow(x, pow(y, 3))"
     assert ccode(x**-1.0) == "pow(x, -1.0)"
-    assert ccode(Max(x, x*x)) == "max(x, pow(x, 2))"
+    assert ccode(Max(x, x*x)) == "fmax(x, pow(x, 2))"
     assert ccode(sin(x)) == "sin(x)"
     assert ccode(Integer(67)) == "67"
     assert ccode(Integer(-1)) == "-1"

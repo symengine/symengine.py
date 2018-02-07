@@ -4369,7 +4369,7 @@ cdef class _Lambdify(object):
     cdef vector[int] accum_out_sizes
     cdef object numpy_dtype
 
-    def __init__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False):
+    def __init__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False):
         cdef:
             Basic e_
             size_t ri, ci, nr, nc
@@ -4377,6 +4377,13 @@ cdef class _Lambdify(object):
             RCP[const symengine.Basic] b_
             symengine.vec_basic args_, outs_
             vector[int] out_sizes
+
+        if _load:
+            self.args_size, self.tot_out_size, self.out_shapes, self.real, \
+                self.n_exprs, self.order, self.accum_out_sizes, self.numpy_dtype, \
+                llvm_function = args
+            self._load(llvm_function)
+            return
 
         args = np.asanyarray(args)
         self.args_size = args.size
@@ -4412,6 +4419,9 @@ cdef class _Lambdify(object):
         self._init(args_, outs_, cse)
 
     cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
+        raise ValueError("Not supported")
+
+    cdef _load(self, const string &s):
         raise ValueError("Not supported")
 
     cpdef unsafe_real(self,
@@ -4625,6 +4635,18 @@ IF HAVE_SYMENGINE_LLVM:
             self.lambda_double.resize(1)
             self.lambda_double[0].init(args_, outs_, cse)
 
+        cdef _load(self, const string &s):
+            self.lambda_double.resize(1)
+            self.lambda_double[0].loads(s)
+
+        def __reduce__(self):
+            """
+            Interface for pickle. Note that the resulting object is platform dependent.
+            """
+            cdef bytes s = self.lambda_double[0].dumps()
+            return llvm_loading_func, (self.args_size, self.tot_out_size, self.out_shapes, self.real, \
+                self.n_exprs, self.order, self.accum_out_sizes, self.numpy_dtype, s)
+
         cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=0, int out_offset=0):
             self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
 
@@ -4639,6 +4661,8 @@ IF HAVE_SYMENGINE_LLVM:
             addr2 = cast(<size_t>&self.lambda_double[0], c_void_p)
             return create_low_level_callable(self, addr1, addr2)
 
+    def llvm_loading_func(*args):
+        return LLVMDouble(args, _load=True)
 
 def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C', as_scipy=False, cse=False):
     """

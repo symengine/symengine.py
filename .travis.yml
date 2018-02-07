@@ -6,6 +6,7 @@ os:
   - linux
   - osx
 sudo: false
+osx_image: xcode6.4
 addons:
   apt:
     sources:
@@ -52,7 +53,7 @@ matrix:
           packages:
           - binutils-dev
           - g++-4.8
-    - env: BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="3.5" WITH_LLVM="yes" WITH_SCIPY="yes"
+    - env: BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="3.5" WITH_LLVM="3.8" WITH_SCIPY="yes"
       compiler: clang
       os: linux
       addons:
@@ -84,6 +85,13 @@ matrix:
     - env: BUILD_TYPE="Release" WITH_SAGE="yes" WITH_MPC="yes" PYTHON_VERSION="2.7"
       compiler: gcc
       os: linux
+
+before_install:
+- |
+   if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
+     command curl -sSL https://rvm.io/mpapis.asc | gpg --import -;
+     rvm get head || true
+   fi
 
 install:
   - export PYTHON_SOURCE_DIR=`pwd`
