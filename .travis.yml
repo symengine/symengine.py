@@ -6,6 +6,7 @@ os:
   - linux
   - osx
 sudo: false
+osx_image: xcode6.4
 addons:
   apt:
     sources:
