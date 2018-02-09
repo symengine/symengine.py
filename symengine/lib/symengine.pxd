@@ -130,52 +130,21 @@ cdef extern from "<symengine/symengine_rcp.h>" namespace "SymEngine":
     cdef cppclass Ptr[T]:
         T& operator*() nogil except +
 
-    RCP[const Symbol] rcp_static_cast_Symbol "SymEngine::rcp_static_cast<const SymEngine::Symbol>"(RCP[const Basic] &b) nogil
-    RCP[const PySymbol] rcp_static_cast_PySymbol "SymEngine::rcp_static_cast<const SymEngine::PySymbol>"(RCP[const Basic] &b) nogil
-    RCP[const Integer] rcp_static_cast_Integer "SymEngine::rcp_static_cast<const SymEngine::Integer>"(RCP[const Basic] &b) nogil
-    RCP[const Rational] rcp_static_cast_Rational "SymEngine::rcp_static_cast<const SymEngine::Rational>"(RCP[const Basic] &b) nogil
-    RCP[const Complex] rcp_static_cast_Complex "SymEngine::rcp_static_cast<const SymEngine::Complex>"(RCP[const Basic] &b) nogil
-    RCP[const Number] rcp_static_cast_Number "SymEngine::rcp_static_cast<const SymEngine::Number>"(RCP[const Basic] &b) nogil
-    RCP[const Add] rcp_static_cast_Add "SymEngine::rcp_static_cast<const SymEngine::Add>"(RCP[const Basic] &b) nogil
-    RCP[const Mul] rcp_static_cast_Mul "SymEngine::rcp_static_cast<const SymEngine::Mul>"(RCP[const Basic] &b) nogil
-    RCP[const Pow] rcp_static_cast_Pow "SymEngine::rcp_static_cast<const SymEngine::Pow>"(RCP[const Basic] &b) nogil
-    RCP[const OneArgFunction] rcp_static_cast_OneArgFunction "SymEngine::rcp_static_cast<const SymEngine::OneArgFunction>"(RCP[const Basic] &b) nogil
-    RCP[const FunctionSymbol] rcp_static_cast_FunctionSymbol "SymEngine::rcp_static_cast<const SymEngine::FunctionSymbol>"(RCP[const Basic] &b) nogil
-    RCP[const FunctionWrapper] rcp_static_cast_FunctionWrapper "SymEngine::rcp_static_cast<const SymEngine::FunctionWrapper>"(RCP[const Basic] &b) nogil
-    RCP[const Abs] rcp_static_cast_Abs "SymEngine::rcp_static_cast<const SymEngine::Abs>"(RCP[const Basic] &b) nogil
-    RCP[const Max] rcp_static_cast_Max "SymEngine::rcp_static_cast<const SymEngine::Max>"(RCP[const Basic] &b) nogil
-    RCP[const Min] rcp_static_cast_Min "SymEngine::rcp_static_cast<const SymEngine::Min>"(RCP[const Basic] &b) nogil
-    RCP[const Infty] rcp_static_cast_Infty "SymEngine::rcp_static_cast<const SymEngine::Infty>"(RCP[const Basic] &b) nogil
-    RCP[const Gamma] rcp_static_cast_Gamma "SymEngine::rcp_static_cast<const SymEngine::Gamma>"(RCP[const Basic] &b) nogil
-    RCP[const Derivative] rcp_static_cast_Derivative "SymEngine::rcp_static_cast<const SymEngine::Derivative>"(RCP[const Basic] &b) nogil
-    RCP[const Subs] rcp_static_cast_Subs "SymEngine::rcp_static_cast<const SymEngine::Subs>"(RCP[const Basic] &b) nogil
-    RCP[const RealDouble] rcp_static_cast_RealDouble "SymEngine::rcp_static_cast<const SymEngine::RealDouble>"(RCP[const Basic] &b) nogil
-    RCP[const ComplexDouble] rcp_static_cast_ComplexDouble "SymEngine::rcp_static_cast<const SymEngine::ComplexDouble>"(RCP[const Basic] &b) nogil
-    RCP[const RealMPFR] rcp_static_cast_RealMPFR "SymEngine::rcp_static_cast<const SymEngine::RealMPFR>"(RCP[const Basic] &b) nogil
-    RCP[const ComplexMPC] rcp_static_cast_ComplexMPC "SymEngine::rcp_static_cast<const SymEngine::ComplexMPC>"(RCP[const Basic] &b) nogil
-    RCP[const Log] rcp_static_cast_Log "SymEngine::rcp_static_cast<const SymEngine::Log>"(RCP[const Basic] &b) nogil
-    RCP[const BooleanAtom] rcp_static_cast_BooleanAtom "SymEngine::rcp_static_cast<const SymEngine::BooleanAtom>"(RCP[const Basic] &b) nogil
-    RCP[const PyNumber] rcp_static_cast_PyNumber "SymEngine::rcp_static_cast<const SymEngine::PyNumber>"(RCP[const Basic] &b) nogil
-    RCP[const PyFunction] rcp_static_cast_PyFunction "SymEngine::rcp_static_cast<const SymEngine::PyFunction>"(RCP[const Basic] &b) nogil
-    RCP[const Boolean] rcp_static_cast_Boolean "SymEngine::rcp_static_cast<const SymEngine::Boolean>"(RCP[const Basic] &b) nogil
-    RCP[const Set] rcp_static_cast_Set "SymEngine::rcp_static_cast<const SymEngine::Set>"(RCP[const Basic] &b) nogil
-    Ptr[RCP[Basic]] outArg(RCP[const Basic] &arg) nogil
-    Ptr[RCP[Integer]] outArg_Integer "SymEngine::outArg<SymEngine::RCP<const SymEngine::Integer>>"(RCP[const Integer] &arg) nogil
-
     void print_stack_on_segfault() nogil
 
 cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     ctypedef Basic const_Basic "const SymEngine::Basic"
+    ctypedef RCP[const Basic] rcp_const_basic "SymEngine::RCP<const SymEngine::Basic>"
     # Cython has broken support for the following:
-    # ctypedef map[RCP[const Basic], RCP[const Basic]] map_basic_basic
+    # ctypedef map[rcp_const_basic, rcp_const_basic] map_basic_basic
     # So instead we replicate the map features we need here
     cdef cppclass std_pair_short_rcp_const_basic "std::pair<short, SymEngine::RCP<const SymEngine::Basic>>":
         short first
-        RCP[const Basic] second
+        rcp_const_basic second
 
     cdef cppclass std_pair_rcp_const_basic_rcp_const_basic "std::pair<SymEngine::RCP<const SymEngine::Basic>, SymEngine::RCP<const SymEngine::Basic>>":
-        RCP[const Basic] first
-        RCP[const Basic] second
+        rcp_const_basic first
+        rcp_const_basic second
 
     cdef cppclass map_basic_basic:
         map_basic_basic() except +
@@ -186,34 +155,34 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
             iterator operator--()
             bint operator==(iterator)
             bint operator!=(iterator)
-        RCP[const Basic]& operator[](RCP[const Basic]&)
+        rcp_const_basic& operator[](rcp_const_basic&)
         void clear()
         bint empty()
         size_t size()
         void swap(map_basic_basic&)
         iterator begin()
         iterator end()
-        iterator find(RCP[const Basic]&)
+        iterator find(rcp_const_basic&)
         void erase(iterator, iterator)
         void erase_it(iterator)
-        size_t erase(RCP[const Basic]&)
+        size_t erase(rcp_const_basic&)
         pair[iterator, bint] insert(std_pair_rcp_const_basic_rcp_const_basic) except +
         iterator insert(iterator, std_pair_rcp_const_basic_rcp_const_basic) except +
         void insert(iterator, iterator) except +
 
-    ctypedef vector[RCP[Basic]] vec_basic "SymEngine::vec_basic"
+    ctypedef vector[rcp_const_basic] vec_basic "SymEngine::vec_basic"
     ctypedef vector[RCP[Integer]] vec_integer "SymEngine::vec_integer"
     ctypedef map[RCP[Integer], unsigned] map_integer_uint "SymEngine::map_integer_uint"
     cdef struct RCPIntegerKeyLess
     cdef struct RCPBasicKeyLess
-    ctypedef set[RCP[const_Basic], RCPBasicKeyLess] set_basic "SymEngine::set_basic"
-    ctypedef multiset[RCP[const_Basic], RCPBasicKeyLess] multiset_basic "SymEngine::multiset_basic"
+    ctypedef set[rcp_const_basic, RCPBasicKeyLess] set_basic "SymEngine::set_basic"
+    ctypedef multiset[rcp_const_basic, RCPBasicKeyLess] multiset_basic "SymEngine::multiset_basic"
     cdef cppclass Basic:
         string __str__() nogil except +
         unsigned int hash() nogil except +
         vec_basic get_args() nogil
         int __cmp__(const Basic &o) nogil
-    ctypedef RCP[const Basic] rcp_const_basic "SymEngine::RCP<const SymEngine::Basic>"
+    ctypedef rcp_const_basic rcp_const_basic "SymEngine::RCP<const SymEngine::Basic>"
     ctypedef RCP[const Number] rcp_const_number "SymEngine::RCP<const SymEngine::Number>"
     ctypedef unordered_map[int, rcp_const_basic] umap_int_basic "SymEngine::umap_int_basic"
     ctypedef unordered_map[int, rcp_const_basic].iterator umap_int_basic_iterator "SymEngine::umap_int_basic::iterator"
@@ -223,6 +192,39 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
 
     bool eq(const Basic &a, const Basic &b) nogil except +
     bool neq(const Basic &a, const Basic &b) nogil except +
+
+
+    RCP[const Symbol] rcp_static_cast_Symbol "SymEngine::rcp_static_cast<const SymEngine::Symbol>"(rcp_const_basic &b) nogil
+    RCP[const PySymbol] rcp_static_cast_PySymbol "SymEngine::rcp_static_cast<const SymEngine::PySymbol>"(rcp_const_basic &b) nogil
+    RCP[const Integer] rcp_static_cast_Integer "SymEngine::rcp_static_cast<const SymEngine::Integer>"(rcp_const_basic &b) nogil
+    RCP[const Rational] rcp_static_cast_Rational "SymEngine::rcp_static_cast<const SymEngine::Rational>"(rcp_const_basic &b) nogil
+    RCP[const Complex] rcp_static_cast_Complex "SymEngine::rcp_static_cast<const SymEngine::Complex>"(rcp_const_basic &b) nogil
+    RCP[const Number] rcp_static_cast_Number "SymEngine::rcp_static_cast<const SymEngine::Number>"(rcp_const_basic &b) nogil
+    RCP[const Add] rcp_static_cast_Add "SymEngine::rcp_static_cast<const SymEngine::Add>"(rcp_const_basic &b) nogil
+    RCP[const Mul] rcp_static_cast_Mul "SymEngine::rcp_static_cast<const SymEngine::Mul>"(rcp_const_basic &b) nogil
+    RCP[const Pow] rcp_static_cast_Pow "SymEngine::rcp_static_cast<const SymEngine::Pow>"(rcp_const_basic &b) nogil
+    RCP[const OneArgFunction] rcp_static_cast_OneArgFunction "SymEngine::rcp_static_cast<const SymEngine::OneArgFunction>"(rcp_const_basic &b) nogil
+    RCP[const FunctionSymbol] rcp_static_cast_FunctionSymbol "SymEngine::rcp_static_cast<const SymEngine::FunctionSymbol>"(rcp_const_basic &b) nogil
+    RCP[const FunctionWrapper] rcp_static_cast_FunctionWrapper "SymEngine::rcp_static_cast<const SymEngine::FunctionWrapper>"(rcp_const_basic &b) nogil
+    RCP[const Abs] rcp_static_cast_Abs "SymEngine::rcp_static_cast<const SymEngine::Abs>"(rcp_const_basic &b) nogil
+    RCP[const Max] rcp_static_cast_Max "SymEngine::rcp_static_cast<const SymEngine::Max>"(rcp_const_basic &b) nogil
+    RCP[const Min] rcp_static_cast_Min "SymEngine::rcp_static_cast<const SymEngine::Min>"(rcp_const_basic &b) nogil
+    RCP[const Infty] rcp_static_cast_Infty "SymEngine::rcp_static_cast<const SymEngine::Infty>"(rcp_const_basic &b) nogil
+    RCP[const Gamma] rcp_static_cast_Gamma "SymEngine::rcp_static_cast<const SymEngine::Gamma>"(rcp_const_basic &b) nogil
+    RCP[const Derivative] rcp_static_cast_Derivative "SymEngine::rcp_static_cast<const SymEngine::Derivative>"(rcp_const_basic &b) nogil
+    RCP[const Subs] rcp_static_cast_Subs "SymEngine::rcp_static_cast<const SymEngine::Subs>"(rcp_const_basic &b) nogil
+    RCP[const RealDouble] rcp_static_cast_RealDouble "SymEngine::rcp_static_cast<const SymEngine::RealDouble>"(rcp_const_basic &b) nogil
+    RCP[const ComplexDouble] rcp_static_cast_ComplexDouble "SymEngine::rcp_static_cast<const SymEngine::ComplexDouble>"(rcp_const_basic &b) nogil
+    RCP[const RealMPFR] rcp_static_cast_RealMPFR "SymEngine::rcp_static_cast<const SymEngine::RealMPFR>"(rcp_const_basic &b) nogil
+    RCP[const ComplexMPC] rcp_static_cast_ComplexMPC "SymEngine::rcp_static_cast<const SymEngine::ComplexMPC>"(rcp_const_basic &b) nogil
+    RCP[const Log] rcp_static_cast_Log "SymEngine::rcp_static_cast<const SymEngine::Log>"(rcp_const_basic &b) nogil
+    RCP[const BooleanAtom] rcp_static_cast_BooleanAtom "SymEngine::rcp_static_cast<const SymEngine::BooleanAtom>"(rcp_const_basic &b) nogil
+    RCP[const PyNumber] rcp_static_cast_PyNumber "SymEngine::rcp_static_cast<const SymEngine::PyNumber>"(rcp_const_basic &b) nogil
+    RCP[const PyFunction] rcp_static_cast_PyFunction "SymEngine::rcp_static_cast<const SymEngine::PyFunction>"(rcp_const_basic &b) nogil
+    RCP[const Boolean] rcp_static_cast_Boolean "SymEngine::rcp_static_cast<const SymEngine::Boolean>"(rcp_const_basic &b) nogil
+    RCP[const Set] rcp_static_cast_Set "SymEngine::rcp_static_cast<const SymEngine::Set>"(rcp_const_basic &b) nogil
+    Ptr[RCP[Basic]] outArg(rcp_const_basic &arg) nogil
+    Ptr[RCP[Integer]] outArg_Integer "SymEngine::outArg<SymEngine::RCP<const SymEngine::Integer>>"(RCP[const Integer] &arg) nogil
 
     bool is_a_Add "SymEngine::is_a<SymEngine::Add>"(const Basic &b) nogil
     bool is_a_Mul "SymEngine::is_a<SymEngine::Mul>"(const Basic &b) nogil
@@ -311,16 +313,16 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_Not "SymEngine::is_a<SymEngine::Not>"(const Basic &b) nogil
     bool is_a_Or "SymEngine::is_a<SymEngine::Or>"(const Basic &b) nogil
     bool is_a_Xor "SymEngine::is_a<SymEngine::Xor>"(const Basic &b) nogil
-    RCP[const Basic] expand(RCP[const Basic] &o, bool deep) nogil except +
-    void as_numer_denom(RCP[const Basic] &x, const Ptr[RCP[Basic]] &numer, const Ptr[RCP[Basic]] &denom) nogil
+    rcp_const_basic expand(rcp_const_basic &o, bool deep) nogil except +
+    void as_numer_denom(rcp_const_basic &x, const Ptr[RCP[Basic]] &numer, const Ptr[RCP[Basic]] &denom) nogil
     void cse(vec_pair &replacements, vec_basic &reduced_exprs, const vec_basic &exprs) nogil except +
 
 cdef extern from "<symengine/subs.h>" namespace "SymEngine":
-    RCP[const Basic] msubs (RCP[const Basic] &x, const map_basic_basic &x) nogil
-    RCP[const Basic] ssubs (RCP[const Basic] &x, const map_basic_basic &x) nogil
+    rcp_const_basic msubs (rcp_const_basic &x, const map_basic_basic &x) nogil
+    rcp_const_basic ssubs (rcp_const_basic &x, const map_basic_basic &x) nogil
 
 cdef extern from "<symengine/derivative.h>" namespace "SymEngine":
-    RCP[const Basic] diff "SymEngine::sdiff"(RCP[const Basic] &arg, RCP[const Basic] &x) nogil except +
+    rcp_const_basic diff "SymEngine::sdiff"(rcp_const_basic &arg, rcp_const_basic &x) nogil except +
 
 cdef extern from "<symengine/symbol.h>" namespace "SymEngine":
     cdef cppclass Symbol(Basic):
@@ -399,15 +401,15 @@ cdef extern from "<symengine/constants.h>" namespace "SymEngine":
     cdef cppclass Constant(Basic):
         Constant(string name) nogil
         string get_name() nogil
-    RCP[const Basic] I
-    RCP[const Basic] E
-    RCP[const Basic] pi
-    RCP[const Basic] GoldenRatio
-    RCP[const Basic] Catalan
-    RCP[const Basic] EulerGamma
-    RCP[const Basic] Inf
-    RCP[const Basic] ComplexInf
-    RCP[const Basic] Nan
+    rcp_const_basic I
+    rcp_const_basic E
+    rcp_const_basic pi
+    rcp_const_basic GoldenRatio
+    rcp_const_basic Catalan
+    rcp_const_basic EulerGamma
+    rcp_const_basic Inf
+    rcp_const_basic ComplexInf
+    rcp_const_basic Nan
 
 cdef extern from "<symengine/infinity.h>" namespace "SymEngine":
     cdef cppclass Infty(Number):
@@ -418,9 +420,9 @@ cdef extern from "<symengine/nan.h>" namespace "SymEngine":
         pass
 
 cdef extern from "<symengine/add.h>" namespace "SymEngine":
-    cdef RCP[const Basic] add(RCP[const Basic] &a, RCP[const Basic] &b) nogil except+
-    cdef RCP[const Basic] sub(RCP[const Basic] &a, RCP[const Basic] &b) nogil except+
-    cdef RCP[const Basic] add(const vec_basic &a) nogil except+
+    cdef rcp_const_basic add(rcp_const_basic &a, rcp_const_basic &b) nogil except+
+    cdef rcp_const_basic sub(rcp_const_basic &a, rcp_const_basic &b) nogil except+
+    cdef rcp_const_basic add(const vec_basic &a) nogil except+
 
     cdef cppclass Add(Basic):
         void as_two_terms(const Ptr[RCP[Basic]] &a, const Ptr[RCP[Basic]] &b)
@@ -428,10 +430,10 @@ cdef extern from "<symengine/add.h>" namespace "SymEngine":
         const umap_basic_num &get_dict()
 
 cdef extern from "<symengine/mul.h>" namespace "SymEngine":
-    cdef RCP[const Basic] mul(RCP[const Basic] &a, RCP[const Basic] &b) nogil except+
-    cdef RCP[const Basic] div(RCP[const Basic] &a, RCP[const Basic] &b) nogil except+
-    cdef RCP[const Basic] neg(RCP[const Basic] &a) nogil except+
-    cdef RCP[const Basic] mul(const vec_basic &a) nogil except+
+    cdef rcp_const_basic mul(rcp_const_basic &a, rcp_const_basic &b) nogil except+
+    cdef rcp_const_basic div(rcp_const_basic &a, rcp_const_basic &b) nogil except+
+    cdef rcp_const_basic neg(rcp_const_basic &a) nogil except+
+    cdef rcp_const_basic mul(const vec_basic &a) nogil except+
 
     cdef cppclass Mul(Basic):
         void as_two_terms(const Ptr[RCP[Basic]] &a, const Ptr[RCP[Basic]] &b)
@@ -440,99 +442,99 @@ cdef extern from "<symengine/mul.h>" namespace "SymEngine":
     cdef RCP[const Mul] mul_from_dict "SymEngine::Mul::from_dict"(RCP[const Number] coef, map_basic_basic &&d) nogil
 
 cdef extern from "<symengine/pow.h>" namespace "SymEngine":
-    cdef RCP[const Basic] pow(RCP[const Basic] &a, RCP[const Basic] &b) nogil except+
-    cdef RCP[const Basic] sqrt(RCP[const Basic] &x) nogil except+
-    cdef RCP[const Basic] exp(RCP[const Basic] &x) nogil except+
+    cdef rcp_const_basic pow(rcp_const_basic &a, rcp_const_basic &b) nogil except+
+    cdef rcp_const_basic sqrt(rcp_const_basic &x) nogil except+
+    cdef rcp_const_basic exp(rcp_const_basic &x) nogil except+
 
     cdef cppclass Pow(Basic):
-        RCP[const Basic] get_base() nogil
-        RCP[const Basic] get_exp() nogil
+        rcp_const_basic get_base() nogil
+        rcp_const_basic get_exp() nogil
 
 
 cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     # We need to specialize these for our classes:
-    RCP[const Basic] make_rcp_Symbol "SymEngine::make_rcp<const SymEngine::Symbol>"(string name) nogil
-    RCP[const Basic] make_rcp_Dummy "SymEngine::make_rcp<const SymEngine::Dummy>"() nogil
-    RCP[const Basic] make_rcp_Dummy "SymEngine::make_rcp<const SymEngine::Dummy>"(string name) nogil
-    RCP[const Basic] make_rcp_PySymbol "SymEngine::make_rcp<const SymEngine::PySymbol>"(string name, PyObject * pyobj) nogil
-    RCP[const Basic] make_rcp_Constant "SymEngine::make_rcp<const SymEngine::Constant>"(string name) nogil
-    RCP[const Basic] make_rcp_Infty "SymEngine::make_rcp<const SymEngine::Infty>"(RCP[const Number] i) nogil
-    RCP[const Basic] make_rcp_NaN "SymEngine::make_rcp<const SymEngine::NaN>"() nogil
-    RCP[const Basic] make_rcp_Integer "SymEngine::make_rcp<const SymEngine::Integer>"(int i) nogil
-    RCP[const Basic] make_rcp_Integer "SymEngine::make_rcp<const SymEngine::Integer>"(integer_class i) nogil
-    RCP[const Basic] make_rcp_Subs "SymEngine::make_rcp<const SymEngine::Subs>"(RCP[const Basic] arg, const map_basic_basic &x) nogil
-    RCP[const Basic] make_rcp_Derivative "SymEngine::make_rcp<const SymEngine::Derivative>"(RCP[const Basic] arg, const multiset_basic &x) nogil
-    RCP[const Basic] make_rcp_FunctionWrapper "SymEngine::make_rcp<const SymEngine::FunctionWrapper>"(void* obj, string name, string hash_, const vec_basic &arg, \
+    rcp_const_basic make_rcp_Symbol "SymEngine::make_rcp<const SymEngine::Symbol>"(string name) nogil
+    rcp_const_basic make_rcp_Dummy "SymEngine::make_rcp<const SymEngine::Dummy>"() nogil
+    rcp_const_basic make_rcp_Dummy "SymEngine::make_rcp<const SymEngine::Dummy>"(string name) nogil
+    rcp_const_basic make_rcp_PySymbol "SymEngine::make_rcp<const SymEngine::PySymbol>"(string name, PyObject * pyobj) nogil
+    rcp_const_basic make_rcp_Constant "SymEngine::make_rcp<const SymEngine::Constant>"(string name) nogil
+    rcp_const_basic make_rcp_Infty "SymEngine::make_rcp<const SymEngine::Infty>"(RCP[const Number] i) nogil
+    rcp_const_basic make_rcp_NaN "SymEngine::make_rcp<const SymEngine::NaN>"() nogil
+    rcp_const_basic make_rcp_Integer "SymEngine::make_rcp<const SymEngine::Integer>"(int i) nogil
+    rcp_const_basic make_rcp_Integer "SymEngine::make_rcp<const SymEngine::Integer>"(integer_class i) nogil
+    rcp_const_basic make_rcp_Subs "SymEngine::make_rcp<const SymEngine::Subs>"(rcp_const_basic arg, const map_basic_basic &x) nogil
+    rcp_const_basic make_rcp_Derivative "SymEngine::make_rcp<const SymEngine::Derivative>"(rcp_const_basic arg, const multiset_basic &x) nogil
+    rcp_const_basic make_rcp_FunctionWrapper "SymEngine::make_rcp<const SymEngine::FunctionWrapper>"(void* obj, string name, string hash_, const vec_basic &arg, \
             void (*dec_ref)(void *), int (*comp)(void *, void *)) nogil
-    RCP[const Basic] make_rcp_RealDouble "SymEngine::make_rcp<const SymEngine::RealDouble>"(double x) nogil
-    RCP[const Basic] make_rcp_ComplexDouble "SymEngine::make_rcp<const SymEngine::ComplexDouble>"(double complex x) nogil
-    RCP[const PyModule] make_rcp_PyModule "SymEngine::make_rcp<const SymEngine::PyModule>"(PyObject* (*) (RCP[const Basic] x), \
-            RCP[const Basic] (*)(PyObject*), RCP[const Number] (*)(PyObject*, long bits),
-            RCP[const Basic] (*)(PyObject*, RCP[const Basic])) nogil
-    RCP[const Basic] make_rcp_PyNumber "SymEngine::make_rcp<const SymEngine::PyNumber>"(PyObject*, RCP[const PyModule] x) nogil
+    rcp_const_basic make_rcp_RealDouble "SymEngine::make_rcp<const SymEngine::RealDouble>"(double x) nogil
+    rcp_const_basic make_rcp_ComplexDouble "SymEngine::make_rcp<const SymEngine::ComplexDouble>"(double complex x) nogil
+    RCP[const PyModule] make_rcp_PyModule "SymEngine::make_rcp<const SymEngine::PyModule>"(PyObject* (*) (rcp_const_basic x), \
+            rcp_const_basic (*)(PyObject*), RCP[const Number] (*)(PyObject*, long bits),
+            rcp_const_basic (*)(PyObject*, rcp_const_basic)) nogil
+    rcp_const_basic make_rcp_PyNumber "SymEngine::make_rcp<const SymEngine::PyNumber>"(PyObject*, RCP[const PyModule] x) nogil
     RCP[const PyFunctionClass] make_rcp_PyFunctionClass "SymEngine::make_rcp<const SymEngine::PyFunctionClass>"(PyObject* pyobject,
             string name, RCP[const PyModule] pymodule) nogil
-    RCP[const Basic] make_rcp_PyFunction "SymEngine::make_rcp<const SymEngine::PyFunction>" (const vec_basic &vec,
+    rcp_const_basic make_rcp_PyFunction "SymEngine::make_rcp<const SymEngine::PyFunction>" (const vec_basic &vec,
             RCP[const PyFunctionClass] pyfunc_class, const PyObject* pyobject) nogil
 
 cdef extern from "<symengine/functions.h>" namespace "SymEngine":
-    cdef RCP[const Basic] sin(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] cos(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] tan(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] cot(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] csc(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] sec(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] asin(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] acos(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] atan(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] acot(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] acsc(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] asec(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] sinh(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] cosh(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] tanh(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] coth(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] csch(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] sech(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] asinh(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] acosh(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] atanh(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] acoth(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] acsch(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] asech(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] function_symbol(string name, const vec_basic &arg) nogil except+
-    cdef RCP[const Basic] abs(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] max(const vec_basic &arg) nogil except+
-    cdef RCP[const Basic] min(const vec_basic &arg) nogil except+
-    cdef RCP[const Basic] gamma(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] atan2(RCP[const Basic] &num, RCP[const Basic] &den) nogil except+
-    cdef RCP[const Basic] lambertw(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] zeta(RCP[const Basic] &s) nogil except+
-    cdef RCP[const Basic] zeta(RCP[const Basic] &s, RCP[const Basic] &a) nogil except+
-    cdef RCP[const Basic] dirichlet_eta(RCP[const Basic] &s) nogil except+
-    cdef RCP[const Basic] kronecker_delta(RCP[const Basic] &i, RCP[const Basic] &j) nogil except+
-    cdef RCP[const Basic] levi_civita(const vec_basic &arg) nogil except+
-    cdef RCP[const Basic] erf(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] erfc(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] lowergamma(RCP[const Basic] &s, RCP[const Basic] &x) nogil except+
-    cdef RCP[const Basic] uppergamma(RCP[const Basic] &s, RCP[const Basic] &x) nogil except+
-    cdef RCP[const Basic] loggamma(RCP[const Basic] &arg) nogil except+
-    cdef RCP[const Basic] beta(RCP[const Basic] &x, RCP[const Basic] &y) nogil except+
-    cdef RCP[const Basic] polygamma(RCP[const Basic] &n, RCP[const Basic] &x) nogil except+
-    cdef RCP[const Basic] digamma(RCP[const Basic] &x) nogil except+
-    cdef RCP[const Basic] trigamma(RCP[const Basic] &x) nogil except+
-    cdef RCP[const Basic] sign(RCP[const Basic] &x) nogil except+
-    cdef RCP[const Basic] floor(RCP[const Basic] &x) nogil except+
-    cdef RCP[const Basic] ceiling(RCP[const Basic] &x) nogil except+
-    cdef RCP[const Basic] conjugate(RCP[const Basic] &x) nogil except+
-    cdef RCP[const Basic] log(RCP[const Basic] &x) nogil except+
-    cdef RCP[const Basic] log(RCP[const Basic] &x, RCP[const Basic] &y) nogil except+
+    cdef rcp_const_basic sin(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic cos(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic tan(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic cot(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic csc(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic sec(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic asin(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic acos(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic atan(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic acot(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic acsc(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic asec(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic sinh(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic cosh(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic tanh(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic coth(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic csch(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic sech(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic asinh(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic acosh(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic atanh(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic acoth(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic acsch(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic asech(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic function_symbol(string name, const vec_basic &arg) nogil except+
+    cdef rcp_const_basic abs(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic max(const vec_basic &arg) nogil except+
+    cdef rcp_const_basic min(const vec_basic &arg) nogil except+
+    cdef rcp_const_basic gamma(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic atan2(rcp_const_basic &num, rcp_const_basic &den) nogil except+
+    cdef rcp_const_basic lambertw(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic zeta(rcp_const_basic &s) nogil except+
+    cdef rcp_const_basic zeta(rcp_const_basic &s, rcp_const_basic &a) nogil except+
+    cdef rcp_const_basic dirichlet_eta(rcp_const_basic &s) nogil except+
+    cdef rcp_const_basic kronecker_delta(rcp_const_basic &i, rcp_const_basic &j) nogil except+
+    cdef rcp_const_basic levi_civita(const vec_basic &arg) nogil except+
+    cdef rcp_const_basic erf(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic erfc(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic lowergamma(rcp_const_basic &s, rcp_const_basic &x) nogil except+
+    cdef rcp_const_basic uppergamma(rcp_const_basic &s, rcp_const_basic &x) nogil except+
+    cdef rcp_const_basic loggamma(rcp_const_basic &arg) nogil except+
+    cdef rcp_const_basic beta(rcp_const_basic &x, rcp_const_basic &y) nogil except+
+    cdef rcp_const_basic polygamma(rcp_const_basic &n, rcp_const_basic &x) nogil except+
+    cdef rcp_const_basic digamma(rcp_const_basic &x) nogil except+
+    cdef rcp_const_basic trigamma(rcp_const_basic &x) nogil except+
+    cdef rcp_const_basic sign(rcp_const_basic &x) nogil except+
+    cdef rcp_const_basic floor(rcp_const_basic &x) nogil except+
+    cdef rcp_const_basic ceiling(rcp_const_basic &x) nogil except+
+    cdef rcp_const_basic conjugate(rcp_const_basic &x) nogil except+
+    cdef rcp_const_basic log(rcp_const_basic &x) nogil except+
+    cdef rcp_const_basic log(rcp_const_basic &x, rcp_const_basic &y) nogil except+
 
     cdef cppclass Function(Basic):
         pass
 
     cdef cppclass OneArgFunction(Function):
-        RCP[const Basic] get_arg() nogil
+        rcp_const_basic get_arg() nogil
 
     cdef cppclass TrigFunction(OneArgFunction):
         pass
@@ -621,13 +623,13 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
         void* get_object()
 
     cdef cppclass Derivative(Basic):
-        Derivative(const RCP[const Basic] &arg, const vec_basic &x) nogil
-        RCP[const Basic] get_arg() nogil
+        Derivative(const rcp_const_basic &arg, const vec_basic &x) nogil
+        rcp_const_basic get_arg() nogil
         multiset_basic get_symbols() nogil
 
     cdef cppclass Subs(Basic):
-        Subs(const RCP[const Basic] &arg, const map_basic_basic &x) nogil
-        RCP[const Basic] get_arg() nogil
+        Subs(const rcp_const_basic &arg, const map_basic_basic &x) nogil
+        rcp_const_basic get_arg() nogil
         vec_basic get_variables() nogil
         vec_basic get_point() nogil
 
@@ -766,16 +768,16 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
     cdef cppclass MatrixBase:
         const unsigned nrows() nogil
         const unsigned ncols() nogil
-        RCP[const Basic] get(unsigned i, unsigned j) nogil
-        RCP[const Basic] set(unsigned i, unsigned j, RCP[const Basic] e) nogil
+        rcp_const_basic get(unsigned i, unsigned j) nogil
+        rcp_const_basic set(unsigned i, unsigned j, rcp_const_basic e) nogil
         string __str__() nogil except+
         bool eq(const MatrixBase &) nogil
-        RCP[const Basic] det() nogil
+        rcp_const_basic det() nogil
         void inv(MatrixBase &)
         void add_matrix(const MatrixBase &other, MatrixBase &result) nogil
         void mul_matrix(const MatrixBase &other, MatrixBase &result) nogil
-        void add_scalar(RCP[const Basic] k, MatrixBase &result) nogil
-        void mul_scalar(RCP[const Basic] k, MatrixBase &result) nogil
+        void add_scalar(rcp_const_basic k, MatrixBase &result) nogil
+        void mul_scalar(rcp_const_basic k, MatrixBase &result) nogil
         void transpose(MatrixBase &result) nogil
         void submatrix(MatrixBase &result,
                        unsigned row_start, unsigned col_start,
@@ -816,14 +818,14 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
     void jacobian "SymEngine::sjacobian"(const DenseMatrix &A,
             const DenseMatrix &x, DenseMatrix &result) nogil except +
     void diff "SymEngine::sdiff"(const DenseMatrix &A,
-            RCP[const Basic] &x, DenseMatrix &result) nogil except +
+            rcp_const_basic &x, DenseMatrix &result) nogil except +
     void eye (DenseMatrix &A, int k) nogil
     void diag(DenseMatrix &A, vec_basic &v, int k) nogil
     void ones(DenseMatrix &A) nogil
     void zeros(DenseMatrix &A) nogil
     void row_exchange_dense(DenseMatrix &A, unsigned i, unsigned j) nogil
-    void row_mul_scalar_dense(DenseMatrix &A, unsigned i, RCP[const Basic] &c) nogil
-    void row_add_row_dense(DenseMatrix &A, unsigned i, unsigned j, RCP[const Basic] &c) nogil
+    void row_mul_scalar_dense(DenseMatrix &A, unsigned i, rcp_const_basic &c) nogil
+    void row_add_row_dense(DenseMatrix &A, unsigned i, unsigned j, rcp_const_basic &c) nogil
     void column_exchange_dense(DenseMatrix &A, unsigned i, unsigned j) nogil
     void dot(const DenseMatrix &A, const DenseMatrix &B, DenseMatrix &C) nogil
     void cross(const DenseMatrix &A, const DenseMatrix &B, DenseMatrix &C) nogil
@@ -888,7 +890,7 @@ cdef extern from "<symengine/ntheory.h>" namespace "SymEngine":
 
 cdef extern from "<symengine/visitor.h>" namespace "SymEngine":
     bool has_symbol(const Basic &b, const Symbol &x) nogil except +
-    RCP[const Basic] coeff(const Basic &b, const Basic &x, const Basic &n) nogil except +
+    rcp_const_basic coeff(const Basic &b, const Basic &x, const Basic &n) nogil except +
     set_basic free_symbols(const Basic &b) nogil except +
 
 cdef extern from "<symengine/logic.h>" namespace "SymEngine":
@@ -919,18 +921,18 @@ cdef extern from "<symengine/logic.h>" namespace "SymEngine":
     cdef cppclass Xor(Boolean):
         pass
 
-    RCP[const Basic] boolTrue
-    RCP[const Basic] boolFalse
+    rcp_const_basic boolTrue
+    rcp_const_basic boolFalse
     bool is_a_Relational(const Basic &b) nogil
-    cdef RCP[const Boolean] Eq(RCP[const Basic] &lhs) nogil except+
-    cdef RCP[const Boolean] Eq(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
-    cdef RCP[const Boolean] Ne(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
-    cdef RCP[const Boolean] Ge(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
-    cdef RCP[const Boolean] Gt(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
-    cdef RCP[const Boolean] Le(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
-    cdef RCP[const Boolean] Lt(RCP[const Basic] &lhs, RCP[const Basic] &rhs) nogil except+
+    cdef RCP[const Boolean] Eq(rcp_const_basic &lhs) nogil except+
+    cdef RCP[const Boolean] Eq(rcp_const_basic &lhs, rcp_const_basic &rhs) nogil except+
+    cdef RCP[const Boolean] Ne(rcp_const_basic &lhs, rcp_const_basic &rhs) nogil except+
+    cdef RCP[const Boolean] Ge(rcp_const_basic &lhs, rcp_const_basic &rhs) nogil except+
+    cdef RCP[const Boolean] Gt(rcp_const_basic &lhs, rcp_const_basic &rhs) nogil except+
+    cdef RCP[const Boolean] Le(rcp_const_basic &lhs, rcp_const_basic &rhs) nogil except+
+    cdef RCP[const Boolean] Lt(rcp_const_basic &lhs, rcp_const_basic &rhs) nogil except+
     ctypedef Boolean const_Boolean "const SymEngine::Boolean"
-    ctypedef vector[pair[RCP[const_Basic], RCP[const_Boolean]]] PiecewiseVec;
+    ctypedef vector[pair[rcp_const_basic, RCP[const_Boolean]]] PiecewiseVec;
     ctypedef vector[RCP[Boolean]] vec_boolean "SymEngine::vec_boolean"
     ctypedef set[RCP[Boolean], RCPBasicKeyLess] set_boolean "SymEngine::set_boolean"
     cdef RCP[const Boolean] logical_and(set_boolean &s) nogil except+
@@ -940,8 +942,8 @@ cdef extern from "<symengine/logic.h>" namespace "SymEngine":
     cdef RCP[const Boolean] logical_nor(set_boolean &s) nogil except+
     cdef RCP[const Boolean] logical_xor(vec_boolean &s) nogil except+
     cdef RCP[const Boolean] logical_xnor(vec_boolean &s) nogil except+
-    cdef RCP[const Basic] piecewise(PiecewiseVec vec) nogil except +
-    cdef RCP[const Boolean] contains(RCP[const Basic] &expr,
+    cdef rcp_const_basic piecewise(PiecewiseVec vec) nogil except +
+    cdef RCP[const Boolean] contains(rcp_const_basic &expr,
                                      RCP[const Set] &set) nogil
 
 cdef extern from "<utility>" namespace "std":
@@ -981,7 +983,7 @@ cdef extern from "<symengine/series.h>" namespace "SymEngine":
         umap_int_basic as_dict() nogil except +
         rcp_const_basic get_coeff(int) nogil except +
     ctypedef RCP[const SeriesCoeffInterface] rcp_const_seriescoeffinterface "SymEngine::RCP<const SymEngine::SeriesCoeffInterface>"
-    rcp_const_seriescoeffinterface series "SymEngine::series"(RCP[const Basic] &ex, RCP[const Symbol] &var, unsigned int prec) nogil except +
+    rcp_const_seriescoeffinterface series "SymEngine::series"(rcp_const_basic &ex, RCP[const Symbol] &var, unsigned int prec) nogil except +
 
 IF HAVE_SYMENGINE_MPFR:
     cdef extern from "<symengine/eval_mpfr.h>" namespace "SymEngine":
@@ -992,7 +994,7 @@ IF HAVE_SYMENGINE_MPC:
         void eval_mpc(mpc_t result, const Basic &b, mpfr_rnd_t rnd) nogil except +
 
 cdef extern from "<symengine/parser.h>" namespace "SymEngine":
-    RCP[const Basic] parse(const string &n) nogil except +
+    rcp_const_basic parse(const string &n) nogil except +
 
 cdef extern from "<symengine/codegen.h>" namespace "SymEngine":
     string ccode(const Basic &x) nogil except +
@@ -1002,7 +1004,7 @@ cdef extern from "<symengine/sets.h>" namespace "SymEngine":
         RCP[const Set] set_intersection(RCP[const Set] &o) nogil except +
         RCP[const Set] set_union(RCP[const Set] &o) nogil except +
         RCP[const Set] set_complement(RCP[const Set] &o) nogil except +
-        RCP[const Boolean] contains(RCP[const Basic] &a) nogil except +
+        RCP[const Boolean] contains(rcp_const_basic &a) nogil except +
     cdef cppclass Interval(Set):
         pass
     cdef cppclass EmptySet(Set):
@@ -1020,7 +1022,7 @@ cdef extern from "<symengine/sets.h>" namespace "SymEngine":
     cdef cppclass ImageSet(Set):
         pass
     ctypedef set[RCP[Set], RCPBasicKeyLess] set_set "SymEngine::set_set"
-    cdef RCP[const Basic] interval(RCP[const Number] &start, RCP[const Number] &end, bool l, bool r) nogil except +
+    cdef rcp_const_basic interval(RCP[const Number] &start, RCP[const Number] &end, bool l, bool r) nogil except +
     cdef RCP[const EmptySet] emptyset() nogil except +
     cdef RCP[const UniversalSet] universalset() nogil except +
     cdef RCP[const Set] finiteset(set_basic &container) nogil except +
@@ -1028,9 +1030,9 @@ cdef extern from "<symengine/sets.h>" namespace "SymEngine":
     cdef RCP[const Set] set_intersection(set_set &a) nogil except +
     cdef RCP[const Set] set_complement_helper(RCP[const Set] &container, RCP[const Set] &universe) nogil except +
     cdef RCP[const Set] set_complement(RCP[const Set] &universe, RCP[const Set] &container) nogil except +
-    cdef RCP[const Set] conditionset(RCP[const Basic] &sym, RCP[const Boolean] &condition) nogil except +
-    cdef RCP[const Set] imageset(RCP[const Basic] &sym, RCP[const Basic] &expr, RCP[const Set] &base) nogil except +
+    cdef RCP[const Set] conditionset(rcp_const_basic &sym, RCP[const Boolean] &condition) nogil except +
+    cdef RCP[const Set] imageset(rcp_const_basic &sym, rcp_const_basic &expr, RCP[const Set] &base) nogil except +
 
 cdef extern from "<symengine/solve.h>" namespace "SymEngine":
-    cdef RCP[const Set] solve(RCP[const Basic] &f, RCP[const Symbol] &sym) nogil except +
-    cdef RCP[const Set] solve(RCP[const Basic] &f, RCP[const Symbol] &sym, RCP[const Set] &domain) nogil except +
+    cdef RCP[const Set] solve(rcp_const_basic &f, RCP[const Symbol] &sym) nogil except +
+    cdef RCP[const Set] solve(rcp_const_basic &f, RCP[const Symbol] &sym, RCP[const Set] &domain) nogil except +

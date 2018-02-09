@@ -1,8 +1,8 @@
 cimport symengine
-from symengine cimport RCP, map_basic_basic
+from symengine cimport RCP, map_basic_basic, rcp_const_basic
 
 cdef class Basic(object):
-    cdef RCP[const symengine.Basic] thisptr
+    cdef rcp_const_basic thisptr
 
 cdef class MatrixBase(object):
     cdef symengine.MatrixBase* thisptr
@@ -21,3 +21,4 @@ cdef class DictBasicIter(object):
     cdef map_basic_basic.iterator end
     cdef init(self, map_basic_basic.iterator begin, map_basic_basic.iterator end)
 
+cdef object c2py(rcp_const_basic o)

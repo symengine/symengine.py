@@ -32,7 +32,7 @@ include "config.pxi"
 class SympifyError(Exception):
     pass
 
-cdef c2py(RCP[const symengine.Basic] o):
+cdef object c2py(rcp_const_basic o):
     cdef Basic r
     if (symengine.is_a_Add(deref(o))):
         r = Expr.__new__(Add)
@@ -760,16 +760,16 @@ cdef tuple vec_basic_to_tuple(symengine.vec_basic& vec):
 cdef list vec_basic_to_list(symengine.vec_basic& vec):
     result = []
     for i in range(vec.size()):
-        result.append(c2py(<RCP[const symengine.Basic]>(vec[i])))
+        result.append(c2py(<rcp_const_basic>(vec[i])))
     return result
 
 
 cdef list vec_pair_to_list(symengine.vec_pair& vec):
     result = []
-    cdef RCP[const symengine.Basic] a, b
+    cdef rcp_const_basic a, b
     for i in range(vec.size()):
-        a = <RCP[const symengine.Basic]>vec[i].first
-        b = <RCP[const symengine.Basic]>vec[i].second
+        a = <rcp_const_basic>vec[i].first
+        b = <rcp_const_basic>vec[i].second
         result.append((c2py(a), c2py(b)))
     return result
 
@@ -857,13 +857,13 @@ cdef class Basic(object):
         elif (op == 3):
             return symengine.neq(deref(A.thisptr), deref(B.thisptr))
         if (op == 0):
-            return c2py(<RCP[const symengine.Basic]>(symengine.Lt(A.thisptr, B.thisptr)))
+            return c2py(<rcp_const_basic>(symengine.Lt(A.thisptr, B.thisptr)))
         elif (op == 1):
-            return c2py(<RCP[const symengine.Basic]>(symengine.Le(A.thisptr, B.thisptr)))
+            return c2py(<rcp_const_basic>(symengine.Le(A.thisptr, B.thisptr)))
         elif (op == 4):
-            return c2py(<RCP[const symengine.Basic]>(symengine.Gt(A.thisptr, B.thisptr)))
+            return c2py(<rcp_const_basic>(symengine.Gt(A.thisptr, B.thisptr)))
         elif (op == 5):
-            return c2py(<RCP[const symengine.Basic]>(symengine.Ge(A.thisptr, B.thisptr)))
+            return c2py(<rcp_const_basic>(symengine.Ge(A.thisptr, B.thisptr)))
 
     def expand(Basic self not None, cppbool deep=True):
         return c2py(symengine.expand(self.thisptr, deep))
@@ -896,9 +896,9 @@ cdef class Basic(object):
         return c2py(symengine.msubs(self.thisptr, D.c))
 
     def as_numer_denom(Basic self not None):
-        cdef RCP[const symengine.Basic] _num, _den
+        cdef rcp_const_basic _num, _den
         symengine.as_numer_denom(self.thisptr, symengine.outArg(_num), symengine.outArg(_den))
-        return c2py(<RCP[const symengine.Basic]>_num), c2py(<RCP[const symengine.Basic]>_den)
+        return c2py(<rcp_const_basic>_num), c2py(<rcp_const_basic>_den)
 
     def n(self, prec = 53, real = False):
         if real:
@@ -916,7 +916,7 @@ cdef class Basic(object):
     @property
     def free_symbols(self):
         cdef symengine.set_basic _set = symengine.free_symbols(deref(self.thisptr))
-        return {c2py(<RCP[const symengine.Basic]>(elem)) for elem in _set}
+        return {c2py(<rcp_const_basic>(elem)) for elem in _set}
 
     @property
     def is_Atom(self):
@@ -1044,14 +1044,14 @@ cdef class Basic(object):
         cdef symengine.vec_basic Y = deref(self.thisptr).get_args()
         s = []
         for i in range(Y.size()):
-            s.append(c2py(<RCP[const symengine.Basic]>(Y[i]))._sage_())
+            s.append(c2py(<rcp_const_basic>(Y[i]))._sage_())
         return s
 
     def args_as_sympy(Basic self):
         cdef symengine.vec_basic Y = deref(self.thisptr).get_args()
         s = []
         for i in range(Y.size()):
-            s.append(c2py(<RCP[const symengine.Basic]>(Y[i]))._sympy_())
+            s.append(c2py(<rcp_const_basic>(Y[i]))._sympy_())
         return s
 
 def series(ex, x=None, x0=0, n=6, as_deg_coef_pair=False):
@@ -1080,7 +1080,7 @@ def series(ex, x=None, x0=0, n=6, as_deg_coef_pair=False):
     cdef umap_int_basic_iterator iter, iterend
 
     if not as_deg_coef_pair:
-        b = c2py(<symengine.RCP[const symengine.Basic]>deref(symengine.series(_ex.thisptr, X, n)).as_basic())
+        b = c2py(<symengine.rcp_const_basic>deref(symengine.series(_ex.thisptr, X, n)).as_basic())
         if x0 != 0:
             b = b.subs({_x: _x - x0})
         return b
@@ -1092,7 +1092,7 @@ def series(ex, x=None, x0=0, n=6, as_deg_coef_pair=False):
     poly = 0
     l = []
     while iter != iterend:
-        l.append([deref(iter).first, c2py(<symengine.RCP[const symengine.Basic]>(deref(iter).second))])
+        l.append([deref(iter).first, c2py(<symengine.rcp_const_basic>(deref(iter).second))])
         inc(iter)
     if as_deg_coef_pair:
         return l
@@ -1295,7 +1295,7 @@ eulergamma = EulerGamma()
 cdef class Boolean(Expr):
 
     def logical_not(self):
-        return c2py(<RCP[const symengine.Basic]>(deref(symengine.rcp_static_cast_Boolean(self.thisptr)).logical_not()))
+        return c2py(<rcp_const_basic>(deref(symengine.rcp_static_cast_Boolean(self.thisptr)).logical_not()))
 
 
 cdef class BooleanAtom(Boolean):
@@ -1572,7 +1572,7 @@ class Rational(Number):
         cdef RCP[const symengine.Integer] _num, _den
         symengine.get_num_den(deref(symengine.rcp_static_cast_Rational(self.thisptr)),
                            symengine.outArg_Integer(_num), symengine.outArg_Integer(_den))
-        return [c2py(<RCP[const symengine.Basic]>_num), c2py(<RCP[const symengine.Basic]>_den)]
+        return [c2py(<rcp_const_basic>_num), c2py(<rcp_const_basic>_den)]
 
     def _sympy_(self):
         rat = self.get_num_den()
@@ -1608,9 +1608,9 @@ class Integer(Rational):
             i__ = symengine.integer_class(tmp)
         # Note: all other exceptions are left intact
         if int_ok:
-            return c2py(<RCP[const symengine.Basic]>symengine.integer(i_))
+            return c2py(<rcp_const_basic>symengine.integer(i_))
         else:
-            return c2py(<RCP[const symengine.Basic]>symengine.integer(i__))
+            return c2py(<rcp_const_basic>symengine.integer(i__))
 
     @property
     def is_Integer(self):
@@ -1783,10 +1783,10 @@ cdef class ComplexDouble(Number):
         self.thisptr = symengine.make_rcp_ComplexDouble(i_)
 
     def real_part(Basic self):
-        return c2py(<RCP[const symengine.Basic]>deref(symengine.rcp_static_cast_ComplexDouble(self.thisptr)).real_part())
+        return c2py(<rcp_const_basic>deref(symengine.rcp_static_cast_ComplexDouble(self.thisptr)).real_part())
 
     def imaginary_part(Basic self):
-        return c2py(<RCP[const symengine.Basic]>deref(symengine.rcp_static_cast_ComplexDouble(self.thisptr)).imaginary_part())
+        return c2py(<rcp_const_basic>deref(symengine.rcp_static_cast_ComplexDouble(self.thisptr)).imaginary_part())
 
     def _sympy_(self):
         import sympy
@@ -1806,7 +1806,7 @@ class RealMPFR(Float):
             cdef string i_ = str(i).encode("utf-8")
             cdef symengine.mpfr_class m
             m = symengine.mpfr_class(i_, prec, base)
-            return c2py(<RCP[const symengine.Basic]>symengine.real_mpfr(symengine.std_move_mpfr(m)))
+            return c2py(<rcp_const_basic>symengine.real_mpfr(symengine.std_move_mpfr(m)))
 
         def get_prec(Basic self):
             return Integer(deref(symengine.rcp_static_cast_RealMPFR(self.thisptr)).get_prec())
@@ -1838,13 +1838,13 @@ cdef class ComplexMPC(Number):
                 return
             cdef string i_ = ("(" + str(i) + " " + str(j) + ")").encode("utf-8")
             cdef symengine.mpc_class m = symengine.mpc_class(i_, prec, base)
-            self.thisptr = <RCP[const symengine.Basic]>symengine.complex_mpc(symengine.std_move_mpc(m))
+            self.thisptr = <rcp_const_basic>symengine.complex_mpc(symengine.std_move_mpc(m))
 
         def real_part(self):
-            return c2py(<RCP[const symengine.Basic]>deref(symengine.rcp_static_cast_ComplexMPC(self.thisptr)).real_part())
+            return c2py(<rcp_const_basic>deref(symengine.rcp_static_cast_ComplexMPC(self.thisptr)).real_part())
 
         def imaginary_part(self):
-            return c2py(<RCP[const symengine.Basic]>deref(symengine.rcp_static_cast_ComplexMPC(self.thisptr)).imaginary_part())
+            return c2py(<rcp_const_basic>deref(symengine.rcp_static_cast_ComplexMPC(self.thisptr)).imaginary_part())
 
         def _sympy_(self):
             import sympy
@@ -1864,10 +1864,10 @@ cdef class ComplexMPC(Number):
 cdef class Complex(Number):
 
     def real_part(self):
-        return c2py(<RCP[const symengine.Basic]>deref(symengine.rcp_static_cast_Complex(self.thisptr)).real_part())
+        return c2py(<rcp_const_basic>deref(symengine.rcp_static_cast_Complex(self.thisptr)).real_part())
 
     def imaginary_part(self):
-        return c2py(<RCP[const symengine.Basic]>deref(symengine.rcp_static_cast_Complex(self.thisptr)).imaginary_part())
+        return c2py(<rcp_const_basic>deref(symengine.rcp_static_cast_Complex(self.thisptr)).imaginary_part())
 
     def _sympy_(self):
         import sympy
@@ -1973,7 +1973,7 @@ nan = NaN()
 class Zero(Integer):
     def __new__(cls):
         cdef Basic r = Number.__new__(Zero)
-        r.thisptr = <RCP[const symengine.Basic]>symengine.integer(0)
+        r.thisptr = <rcp_const_basic>symengine.integer(0)
         return r
 
 zero = Zero()
@@ -1982,7 +1982,7 @@ zero = Zero()
 class One(Integer):
     def __new__(cls):
         cdef Basic r = Number.__new__(One)
-        r.thisptr = <RCP[const symengine.Basic]>symengine.integer(1)
+        r.thisptr = <rcp_const_basic>symengine.integer(1)
         return r
 
 one = One()
@@ -1991,7 +1991,7 @@ one = One()
 class NegativeOne(Integer):
     def __new__(cls):
         cdef Basic r = Number.__new__(NegativeOne)
-        r.thisptr = <RCP[const symengine.Basic]>symengine.integer(-1)
+        r.thisptr = <rcp_const_basic>symengine.integer(-1)
         return r
 
 minus_one = NegativeOne()
@@ -2000,7 +2000,7 @@ minus_one = NegativeOne()
 class Half(Rational):
     def __new__(cls):
         cdef Basic q = Number.__new__(Half)
-        q.thisptr = <RCP[const symengine.Basic]>symengine.rational(1, 2)
+        q.thisptr = <rcp_const_basic>symengine.rational(1, 2)
         return q
 
 half = Half()
@@ -2047,7 +2047,7 @@ class Add(AssocOp):
 
     def _sage_(Basic self):
         cdef RCP[const symengine.Add] X = symengine.rcp_static_cast_Add(self.thisptr)
-        cdef RCP[const symengine.Basic] a, b
+        cdef rcp_const_basic a, b
         deref(X).as_two_terms(symengine.outArg(a), symengine.outArg(b))
         return c2py(a)._sage_() + c2py(b)._sage_()
 
@@ -2060,13 +2060,13 @@ class Add(AssocOp):
         cdef umap_basic_num umap
         cdef umap_basic_num_iterator iter, iterend
         d = collections.defaultdict(int)
-        d[Integer(1)] = c2py(<RCP[const symengine.Basic]>(deref(X).get_coef()))
+        d[Integer(1)] = c2py(<rcp_const_basic>(deref(X).get_coef()))
         umap = deref(X).get_dict()
         iter = umap.begin()
         iterend = umap.end()
         while iter != iterend:
-            d[c2py(<RCP[const symengine.Basic]>(deref(iter).first))] =\
-                    c2py(<RCP[const symengine.Basic]>(deref(iter).second))
+            d[c2py(<rcp_const_basic>(deref(iter).first))] =\
+                    c2py(<rcp_const_basic>(deref(iter).second))
             inc(iter)
         return d
 
@@ -2102,7 +2102,7 @@ class Mul(AssocOp):
 
     def _sage_(Basic self):
         cdef RCP[const symengine.Mul] X = symengine.rcp_static_cast_Mul(self.thisptr)
-        cdef RCP[const symengine.Basic] a, b
+        cdef rcp_const_basic a, b
         deref(X).as_two_terms(symengine.outArg(a), symengine.outArg(b))
         return c2py(a)._sage_() * c2py(b)._sage_()
 
@@ -2115,10 +2115,10 @@ class Mul(AssocOp):
         cdef RCP[const symengine.Integer] one = symengine.integer(1)
         cdef map_basic_basic dict = deref(X).get_dict()
         d = collections.defaultdict(int)
-        d[c2py(<RCP[const symengine.Basic]>symengine.mul_from_dict(\
+        d[c2py(<rcp_const_basic>symengine.mul_from_dict(\
                 <RCP[const symengine.Number]>(one),
                 symengine.std_move_map_basic_basic(dict)))] =\
-                c2py(<RCP[const symengine.Basic]>deref(X).get_coef())
+                c2py(<rcp_const_basic>deref(X).get_coef())
         return d
 
 
@@ -2592,17 +2592,17 @@ class UndefFunction(object):
         return function_symbol(self.name, *values)
 
 
-cdef RCP[const symengine.Basic] pynumber_to_symengine(PyObject* o1):
+cdef rcp_const_basic pynumber_to_symengine(PyObject* o1):
     cdef Basic X = sympify(<object>o1)
     return X.thisptr
 
-cdef PyObject* symengine_to_sage(RCP[const symengine.Basic] o1):
+cdef PyObject* symengine_to_sage(rcp_const_basic o1):
     import sage.all as sage
     t = sage.SR(c2py(o1)._sage_())
     Py_XINCREF(<PyObject*>t)
     return <PyObject*>(t)
 
-cdef PyObject* symengine_to_sympy(RCP[const symengine.Basic] o1):
+cdef PyObject* symengine_to_sympy(rcp_const_basic o1):
     t = c2py(o1)._sympy_()
     Py_XINCREF(<PyObject*>t)
     return <PyObject*>(t)
@@ -2616,11 +2616,11 @@ cdef RCP[const symengine.Number] sage_eval(PyObject* o1, long bits):
     cdef Number X = sympify((<object>o1).n(bits))
     return symengine.rcp_static_cast_Number(X.thisptr)
 
-cdef RCP[const symengine.Basic] sage_diff(PyObject* o1, RCP[const symengine.Basic] symbol):
+cdef rcp_const_basic sage_diff(PyObject* o1, rcp_const_basic symbol):
     cdef Basic X = sympify((<object>o1).diff(c2py(symbol)._sage_()))
     return X.thisptr
 
-cdef RCP[const symengine.Basic] sympy_diff(PyObject* o1, RCP[const symengine.Basic] symbol):
+cdef rcp_const_basic sympy_diff(PyObject* o1, rcp_const_basic symbol):
     cdef Basic X = sympify((<object>o1).diff(c2py(symbol)._sympy_()))
     return X.thisptr
 
@@ -2761,7 +2761,7 @@ class Derivative(Expr):
         cdef symengine.multiset_basic Y = deref(X).get_symbols()
         s = []
         for i in Y:
-            s.append(c2py(<RCP[const symengine.Basic]>(i))._sympy_())
+            s.append(c2py(<rcp_const_basic>(i))._sympy_())
         import sympy
         return sympy.Derivative(arg, *s)
 
@@ -2772,7 +2772,7 @@ class Derivative(Expr):
         cdef symengine.multiset_basic Y = deref(X).get_symbols()
         s = []
         for i in Y:
-            s.append(c2py(<RCP[const symengine.Basic]>(i))._sage_())
+            s.append(c2py(<rcp_const_basic>(i))._sage_())
         return arg.diff(*s)
 
     @property
@@ -2810,8 +2810,8 @@ class Subs(Expr):
         v = []
         p = []
         for i in range(V.size()):
-            v.append(c2py(<RCP[const symengine.Basic]>(V[i]))._sympy_())
-            p.append(c2py(<RCP[const symengine.Basic]>(P[i]))._sympy_())
+            v.append(c2py(<rcp_const_basic>(V[i]))._sympy_())
+            p.append(c2py(<rcp_const_basic>(P[i]))._sympy_())
         import sympy
         return sympy.Subs(arg, v, p)
 
@@ -2822,8 +2822,8 @@ class Subs(Expr):
         cdef symengine.vec_basic P = deref(X).get_point()
         v = {}
         for i in range(V.size()):
-            v[c2py(<RCP[const symengine.Basic]>(V[i]))._sage_()] = \
-                c2py(<RCP[const symengine.Basic]>(P[i]))._sage_()
+            v[c2py(<rcp_const_basic>(V[i]))._sage_()] = \
+                c2py(<rcp_const_basic>(P[i]))._sage_()
         return arg.subs(v)
 
     @property
@@ -2850,24 +2850,24 @@ cdef class Set(Expr):
     def intersection(self, a):
         cdef Set other = sympify(a)
         cdef RCP[const symengine.Set] other_ = symengine.rcp_static_cast_Set(other.thisptr)
-        return c2py(<RCP[const symengine.Basic]>(deref(symengine.rcp_static_cast_Set(self.thisptr))
+        return c2py(<rcp_const_basic>(deref(symengine.rcp_static_cast_Set(self.thisptr))
                     .set_intersection(other_)))
 
     def union(self, a):
         cdef Set other = sympify(a)
         cdef RCP[const symengine.Set] other_ = symengine.rcp_static_cast_Set(other.thisptr)
-        return c2py(<RCP[const symengine.Basic]>(deref(symengine.rcp_static_cast_Set(self.thisptr))
+        return c2py(<rcp_const_basic>(deref(symengine.rcp_static_cast_Set(self.thisptr))
                     .set_union(other_)))
 
     def complement(self, a):
         cdef Set other = sympify(a)
         cdef RCP[const symengine.Set] other_ = symengine.rcp_static_cast_Set(other.thisptr)
-        return c2py(<RCP[const symengine.Basic]>(deref(symengine.rcp_static_cast_Set(self.thisptr))
+        return c2py(<rcp_const_basic>(deref(symengine.rcp_static_cast_Set(self.thisptr))
                     .set_complement(other_)))
 
     def contains(self, a):
         cdef Basic a_ = sympify(a)
-        return c2py(<RCP[const symengine.Basic]>(deref(symengine.rcp_static_cast_Set(self.thisptr))
+        return c2py(<rcp_const_basic>(deref(symengine.rcp_static_cast_Set(self.thisptr))
                     .contains(a_.thisptr)))
 
 
@@ -3557,7 +3557,7 @@ cdef class DenseMatrixBase(MatrixBase):
         for ri in range(nr):
             for ci in range(nc):
                 out[ri*nc + ci] = symengine.eval_double(deref(
-                    <symengine.RCP[const symengine.Basic]>(deref(self.thisptr).get(ri, ci))))
+                    <symengine.rcp_const_basic>(deref(self.thisptr).get(ri, ci))))
 
     def dump_complex(self, double complex[::1] out):
         cdef size_t ri, ci, nr, nc
@@ -3568,7 +3568,7 @@ cdef class DenseMatrixBase(MatrixBase):
         for ri in range(nr):
             for ci in range(nc):
                 out[ri*nc + ci] = symengine.eval_complex_double(deref(
-                    <symengine.RCP[const symengine.Basic]>(deref(self.thisptr).get(ri, ci))))
+                    <symengine.rcp_const_basic>(deref(self.thisptr).get(ri, ci))))
 
     def __iter__(self):
         return DenseMatrixBaseIter(self)
@@ -3807,7 +3807,7 @@ def integer_nthroot(a, n):
     require(_a, Integer)
     cdef RCP[const symengine.Integer] _r
     cdef int ret_val = symengine.i_nth_root(symengine.outArg_Integer(_r), deref(symengine.rcp_static_cast_Integer(_a.thisptr)), n)
-    return (c2py(<RCP[const symengine.Basic]>_r), ret_val == 1)
+    return (c2py(<rcp_const_basic>_r), ret_val == 1)
 
 def _max(*args):
     cdef symengine.vec_basic v
@@ -3832,38 +3832,38 @@ def gamma(x):
 def eq(lhs, rhs = None):
     cdef Basic X = sympify(lhs)
     if rhs is None:
-        return c2py(<RCP[const symengine.Basic]>(symengine.Eq(X.thisptr)))
+        return c2py(<rcp_const_basic>(symengine.Eq(X.thisptr)))
     cdef Basic Y = sympify(rhs)
-    return c2py(<RCP[const symengine.Basic]>(symengine.Eq(X.thisptr, Y.thisptr)))
+    return c2py(<rcp_const_basic>(symengine.Eq(X.thisptr, Y.thisptr)))
 
 def ne(lhs, rhs):
     cdef Basic X = sympify(lhs)
     cdef Basic Y = sympify(rhs)
-    return c2py(<RCP[const symengine.Basic]>(symengine.Ne(X.thisptr, Y.thisptr)))
+    return c2py(<rcp_const_basic>(symengine.Ne(X.thisptr, Y.thisptr)))
 
 def ge(lhs, rhs):
     cdef Basic X = sympify(lhs)
     cdef Basic Y = sympify(rhs)
-    return c2py(<RCP[const symengine.Basic]>(symengine.Ge(X.thisptr, Y.thisptr)))
+    return c2py(<rcp_const_basic>(symengine.Ge(X.thisptr, Y.thisptr)))
 
 Ge = GreaterThan = ge
 
 def gt(lhs, rhs):
     cdef Basic X = sympify(lhs)
     cdef Basic Y = sympify(rhs)
-    return c2py(<RCP[const symengine.Basic]>(symengine.Gt(X.thisptr, Y.thisptr)))
+    return c2py(<rcp_const_basic>(symengine.Gt(X.thisptr, Y.thisptr)))
 
 Gt = StrictGreaterThan = gt
 
 def le(lhs, rhs):
     cdef Basic X = sympify(lhs)
     cdef Basic Y = sympify(rhs)
-    return c2py(<RCP[const symengine.Basic]>(symengine.Le(X.thisptr, Y.thisptr)))
+    return c2py(<rcp_const_basic>(symengine.Le(X.thisptr, Y.thisptr)))
 
 def lt(lhs, rhs):
     cdef Basic X = sympify(lhs)
     cdef Basic Y = sympify(rhs)
-    return c2py(<RCP[const symengine.Basic]>(symengine.Lt(X.thisptr, Y.thisptr)))
+    return c2py(<rcp_const_basic>(symengine.Lt(X.thisptr, Y.thisptr)))
 
 def digamma(x):
     cdef Basic X = sympify(x)
@@ -3879,7 +3879,7 @@ def logical_and(*args):
     for e in args:
         e_ = sympify(e)
         s.insert(symengine.rcp_static_cast_Boolean(e_.thisptr))
-    return c2py(<RCP[const symengine.Basic]>(symengine.logical_and(s)))
+    return c2py(<rcp_const_basic>(symengine.logical_and(s)))
 
 def logical_or(*args):
     cdef symengine.set_boolean s
@@ -3887,7 +3887,7 @@ def logical_or(*args):
     for e in args:
         e_ = sympify(e)
         s.insert(symengine.rcp_static_cast_Boolean(e_.thisptr))
-    return c2py(<RCP[const symengine.Basic]>(symengine.logical_or(s)))
+    return c2py(<rcp_const_basic>(symengine.logical_or(s)))
 
 def Nor(*args):
     cdef symengine.set_boolean s
@@ -3895,7 +3895,7 @@ def Nor(*args):
     for e in args:
         e_ = sympify(e)
         s.insert(symengine.rcp_static_cast_Boolean(e_.thisptr))
-    return c2py(<RCP[const symengine.Basic]>(symengine.logical_nor(s)))
+    return c2py(<rcp_const_basic>(symengine.logical_nor(s)))
 
 def Nand(*args):
     cdef symengine.set_boolean s
@@ -3903,13 +3903,13 @@ def Nand(*args):
     for e in args:
         e_ = sympify(e)
         s.insert(symengine.rcp_static_cast_Boolean(e_.thisptr))
-    return c2py(<RCP[const symengine.Basic]>(symengine.logical_nand(s)))
+    return c2py(<rcp_const_basic>(symengine.logical_nand(s)))
 
 def logical_not(x):
     cdef Basic x_ = sympify(x)
     require(x_, Boolean)
     cdef RCP[const symengine.Boolean] _x = symengine.rcp_static_cast_Boolean(x_.thisptr)
-    return c2py(<RCP[const symengine.Basic]>(symengine.logical_not(_x)))
+    return c2py(<rcp_const_basic>(symengine.logical_not(_x)))
 
 def logical_xor(*args):
     cdef symengine.vec_boolean v
@@ -3917,7 +3917,7 @@ def logical_xor(*args):
     for e in args:
         e_ = sympify(e)
         v.push_back(symengine.rcp_static_cast_Boolean(e_.thisptr))
-    return c2py(<RCP[const symengine.Basic]>(symengine.logical_xor(v)))
+    return c2py(<rcp_const_basic>(symengine.logical_xor(v)))
 
 def Xnor(*args):
     cdef symengine.vec_boolean v
@@ -3925,15 +3925,15 @@ def Xnor(*args):
     for e in args:
         e_ = sympify(e)
         v.push_back(symengine.rcp_static_cast_Boolean(e_.thisptr))
-    return c2py(<RCP[const symengine.Basic]>(symengine.logical_xnor(v)))
+    return c2py(<rcp_const_basic>(symengine.logical_xnor(v)))
 
 def eval_double(x):
     cdef Basic X = sympify(x)
-    return c2py(<RCP[const symengine.Basic]>(symengine.real_double(symengine.eval_double(deref(X.thisptr)))))
+    return c2py(<rcp_const_basic>(symengine.real_double(symengine.eval_double(deref(X.thisptr)))))
 
 def eval_complex_double(x):
     cdef Basic X = sympify(x)
-    return c2py(<RCP[const symengine.Basic]>(symengine.complex_double(symengine.eval_complex_double(deref(X.thisptr)))))
+    return c2py(<rcp_const_basic>(symengine.complex_double(symengine.eval_complex_double(deref(X.thisptr)))))
 
 have_mpfr = False
 have_mpc = False
@@ -3947,7 +3947,7 @@ IF HAVE_SYMENGINE_MPFR:
         cdef Basic X = sympify(x)
         cdef symengine.mpfr_class a = symengine.mpfr_class(prec)
         symengine.eval_mpfr(a.get_mpfr_t(), deref(X.thisptr), symengine.MPFR_RNDN)
-        return c2py(<RCP[const symengine.Basic]>(symengine.real_mpfr(symengine.std_move_mpfr(a))))
+        return c2py(<rcp_const_basic>(symengine.real_mpfr(symengine.std_move_mpfr(a))))
 
 IF HAVE_SYMENGINE_MPC:
     have_mpc = True
@@ -3955,7 +3955,7 @@ IF HAVE_SYMENGINE_MPC:
         cdef Basic X = sympify(x)
         cdef symengine.mpc_class a = symengine.mpc_class(prec)
         symengine.eval_mpc(a.get_mpc_t(), deref(X.thisptr), symengine.MPFR_RNDN)
-        return c2py(<RCP[const symengine.Basic]>(symengine.complex_mpc(symengine.std_move_mpc(a))))
+        return c2py(<rcp_const_basic>(symengine.complex_mpc(symengine.std_move_mpc(a))))
 
 IF HAVE_SYMENGINE_PIRANHA:
     have_piranha = True
@@ -3998,14 +3998,14 @@ isprime = probab_prime_p
 def nextprime(n):
     cdef Basic _n = sympify(n)
     require(_n, Integer)
-    return c2py(<RCP[const symengine.Basic]>(symengine.nextprime(deref(symengine.rcp_static_cast_Integer(_n.thisptr)))))
+    return c2py(<rcp_const_basic>(symengine.nextprime(deref(symengine.rcp_static_cast_Integer(_n.thisptr)))))
 
 def gcd(a, b):
     cdef Basic _a = sympify(a)
     cdef Basic _b = sympify(b)
     require(_a, Integer)
     require(_b, Integer)
-    return c2py(<RCP[const symengine.Basic]>(symengine.gcd(deref(symengine.rcp_static_cast_Integer(_a.thisptr)),
+    return c2py(<rcp_const_basic>(symengine.gcd(deref(symengine.rcp_static_cast_Integer(_a.thisptr)),
         deref(symengine.rcp_static_cast_Integer(_b.thisptr)))))
 
 def lcm(a, b):
@@ -4013,7 +4013,7 @@ def lcm(a, b):
     cdef Basic _b = sympify(b)
     require(_a, Integer)
     require(_b, Integer)
-    return c2py(<RCP[const symengine.Basic]>(symengine.lcm(deref(symengine.rcp_static_cast_Integer(_a.thisptr)),
+    return c2py(<rcp_const_basic>(symengine.lcm(deref(symengine.rcp_static_cast_Integer(_a.thisptr)),
         deref(symengine.rcp_static_cast_Integer(_b.thisptr)))))
 
 def gcd_ext(a, b):
@@ -4024,7 +4024,7 @@ def gcd_ext(a, b):
     cdef RCP[const symengine.Integer] g, s, t
     symengine.gcd_ext(symengine.outArg_Integer(g), symengine.outArg_Integer(s), symengine.outArg_Integer(t),
         deref(symengine.rcp_static_cast_Integer(_a.thisptr)), deref(symengine.rcp_static_cast_Integer(_b.thisptr)))
-    return (c2py(<RCP[const symengine.Basic]>s), c2py(<RCP[const symengine.Basic]>t), c2py(<RCP[const symengine.Basic]>g))
+    return (c2py(<rcp_const_basic>s), c2py(<rcp_const_basic>t), c2py(<rcp_const_basic>g))
 
 igcdex = gcd_ext
 
@@ -4035,7 +4035,7 @@ def mod(a, b):
     cdef Basic _b = sympify(b)
     require(_a, Integer)
     require(_b, Integer)
-    return c2py(<RCP[const symengine.Basic]>(symengine.mod(deref(symengine.rcp_static_cast_Integer(_a.thisptr)),
+    return c2py(<rcp_const_basic>(symengine.mod(deref(symengine.rcp_static_cast_Integer(_a.thisptr)),
         deref(symengine.rcp_static_cast_Integer(_b.thisptr)))))
 
 def quotient(a, b):
@@ -4045,7 +4045,7 @@ def quotient(a, b):
     cdef Basic _b = sympify(b)
     require(_a, Integer)
     require(_b, Integer)
-    return c2py(<RCP[const symengine.Basic]>(symengine.quotient(deref(symengine.rcp_static_cast_Integer(_a.thisptr)),
+    return c2py(<rcp_const_basic>(symengine.quotient(deref(symengine.rcp_static_cast_Integer(_a.thisptr)),
         deref(symengine.rcp_static_cast_Integer(_b.thisptr)))))
 
 def quotient_mod(a, b):
@@ -4058,7 +4058,7 @@ def quotient_mod(a, b):
     require(_b, Integer)
     symengine.quotient_mod(symengine.outArg_Integer(q), symengine.outArg_Integer(r),
         deref(symengine.rcp_static_cast_Integer(_a.thisptr)), deref(symengine.rcp_static_cast_Integer(_b.thisptr)))
-    return (c2py(<RCP[const symengine.Basic]>q), c2py(<RCP[const symengine.Basic]>r))
+    return (c2py(<rcp_const_basic>q), c2py(<rcp_const_basic>r))
 
 def mod_inverse(a, b):
     cdef RCP[const symengine.Integer] inv
@@ -4070,7 +4070,7 @@ def mod_inverse(a, b):
         deref(symengine.rcp_static_cast_Integer(_a.thisptr)), deref(symengine.rcp_static_cast_Integer(_b.thisptr)))
     if ret_val == 0:
         return None
-    return c2py(<RCP[const symengine.Basic]>inv)
+    return c2py(<rcp_const_basic>inv)
 
 def crt(rem, mod):
     cdef symengine.vec_integer _rem, _mod
@@ -4088,43 +4088,43 @@ def crt(rem, mod):
     ret_val = symengine.crt(symengine.outArg_Integer(c), _rem, _mod)
     if not ret_val:
         return None
-    return c2py(<RCP[const symengine.Basic]>c)
+    return c2py(<rcp_const_basic>c)
 
 def fibonacci(n):
     if n < 0 :
         raise NotImplementedError
-    return c2py(<RCP[const symengine.Basic]>(symengine.fibonacci(n)))
+    return c2py(<rcp_const_basic>(symengine.fibonacci(n)))
 
 def fibonacci2(n):
     if n < 0 :
         raise NotImplementedError
     cdef RCP[const symengine.Integer] f1, f2
     symengine.fibonacci2(symengine.outArg_Integer(f1), symengine.outArg_Integer(f2), n)
-    return [c2py(<RCP[const symengine.Basic]>f1), c2py(<RCP[const symengine.Basic]>f2)]
+    return [c2py(<rcp_const_basic>f1), c2py(<rcp_const_basic>f2)]
 
 def lucas(n):
     if n < 0 :
         raise NotImplementedError
-    return c2py(<RCP[const symengine.Basic]>(symengine.lucas(n)))
+    return c2py(<rcp_const_basic>(symengine.lucas(n)))
 
 def lucas2(n):
     if n < 0 :
         raise NotImplementedError
     cdef RCP[const symengine.Integer] f1, f2
     symengine.lucas2(symengine.outArg_Integer(f1), symengine.outArg_Integer(f2), n)
-    return [c2py(<RCP[const symengine.Basic]>f1), c2py(<RCP[const symengine.Basic]>f2)]
+    return [c2py(<rcp_const_basic>f1), c2py(<rcp_const_basic>f2)]
 
 def binomial(n, k):
     if k < 0:
         raise ArithmeticError
     cdef Basic _n = sympify(n)
     require(_n, Integer)
-    return c2py(<RCP[const symengine.Basic]>symengine.binomial(deref(symengine.rcp_static_cast_Integer(_n.thisptr)), k))
+    return c2py(<rcp_const_basic>symengine.binomial(deref(symengine.rcp_static_cast_Integer(_n.thisptr)), k))
 
 def factorial(n):
     if n < 0:
         raise ArithmeticError
-    return c2py(<RCP[const symengine.Basic]>(symengine.factorial(n)))
+    return c2py(<rcp_const_basic>(symengine.factorial(n)))
 
 def divides(a, b):
     cdef Basic _a = sympify(a)
@@ -4141,7 +4141,7 @@ def factor(n, B1 = 1.0):
     cdef int ret_val = symengine.factor(symengine.outArg_Integer(f),
         deref(symengine.rcp_static_cast_Integer(_n.thisptr)), B1)
     if (ret_val == 1):
-        return c2py(<RCP[const symengine.Basic]>f)
+        return c2py(<rcp_const_basic>f)
     else:
         return None
 
@@ -4152,7 +4152,7 @@ def factor_lehman_method(n):
     cdef int ret_val = symengine.factor_lehman_method(symengine.outArg_Integer(f),
         deref(symengine.rcp_static_cast_Integer(_n.thisptr)))
     if (ret_val == 1):
-        return c2py(<RCP[const symengine.Basic]>f)
+        return c2py(<rcp_const_basic>f)
     else:
         return None
 
@@ -4163,7 +4163,7 @@ def factor_pollard_pm1_method(n, B = 10, retries = 5):
     cdef int ret_val = symengine.factor_pollard_pm1_method(symengine.outArg_Integer(f),
         deref(symengine.rcp_static_cast_Integer(_n.thisptr)), B, retries)
     if (ret_val == 1):
-        return c2py(<RCP[const symengine.Basic]>f)
+        return c2py(<rcp_const_basic>f)
     else:
         return None
 
@@ -4174,7 +4174,7 @@ def factor_pollard_rho_method(n, retries = 5):
     cdef int ret_val = symengine.factor_pollard_rho_method(symengine.outArg_Integer(f),
         deref(symengine.rcp_static_cast_Integer(_n.thisptr)), retries)
     if (ret_val == 1):
-        return c2py(<RCP[const symengine.Basic]>f)
+        return c2py(<rcp_const_basic>f)
     else:
         return None
 
@@ -4185,7 +4185,7 @@ def prime_factors(n):
     symengine.prime_factors(factors, deref(symengine.rcp_static_cast_Integer(_n.thisptr)))
     s = []
     for i in range(factors.size()):
-        s.append(c2py(<RCP[const symengine.Basic]>(factors[i])))
+        s.append(c2py(<rcp_const_basic>(factors[i])))
     return s
 
 def prime_factor_multiplicities(n):
@@ -4196,7 +4196,7 @@ def prime_factor_multiplicities(n):
     cdef Basic r
     dict = {}
     for i in range(factors.size()):
-        r = c2py(<RCP[const symengine.Basic]>(factors[i]))
+        r = c2py(<rcp_const_basic>(factors[i]))
         if (r not in dict):
             dict[r] = 1
         else:
@@ -4206,7 +4206,7 @@ def prime_factor_multiplicities(n):
 def bernoulli(n):
     if n < 0:
         raise ArithmeticError
-    return c2py(<RCP[const symengine.Basic]>(symengine.bernoulli(n)))
+    return c2py(<rcp_const_basic>(symengine.bernoulli(n)))
 
 def primitive_root(n):
     cdef RCP[const symengine.Integer] g
@@ -4216,7 +4216,7 @@ def primitive_root(n):
         deref(symengine.rcp_static_cast_Integer(_n.thisptr)))
     if ret_val == 0:
         return None
-    return c2py(<RCP[const symengine.Basic]>g)
+    return c2py(<rcp_const_basic>g)
 
 def primitive_root_list(n):
     cdef symengine.vec_integer root_list
@@ -4226,20 +4226,20 @@ def primitive_root_list(n):
         deref(symengine.rcp_static_cast_Integer(_n.thisptr)))
     s = []
     for i in range(root_list.size()):
-        s.append(c2py(<RCP[const symengine.Basic]>(root_list[i])))
+        s.append(c2py(<rcp_const_basic>(root_list[i])))
     return s
 
 def totient(n):
     cdef Basic _n = sympify(n)
     require(_n, Integer)
     cdef RCP[const symengine.Integer] m = symengine.rcp_static_cast_Integer(_n.thisptr)
-    return c2py(<RCP[const symengine.Basic]>symengine.totient(m))
+    return c2py(<rcp_const_basic>symengine.totient(m))
 
 def carmichael(n):
     cdef Basic _n = sympify(n)
     require(_n, Integer)
     cdef RCP[const symengine.Integer] m = symengine.rcp_static_cast_Integer(_n.thisptr)
-    return c2py(<RCP[const symengine.Basic]>symengine.carmichael(m))
+    return c2py(<rcp_const_basic>symengine.carmichael(m))
 
 def multiplicative_order(a, n):
     cdef Basic _n = sympify(n)
@@ -4253,7 +4253,7 @@ def multiplicative_order(a, n):
         a1, n1)
     if not c:
         return None
-    return c2py(<RCP[const symengine.Basic]>o)
+    return c2py(<rcp_const_basic>o)
 
 def legendre(a, n):
     cdef Basic _n = sympify(n)
@@ -4293,7 +4293,7 @@ def nthroot_mod(a, n, m):
     cdef cppbool ret_val = symengine.nthroot_mod(symengine.outArg_Integer(root), a1, n1, m1)
     if not ret_val:
         return None
-    return c2py(<RCP[const symengine.Basic]>root)
+    return c2py(<rcp_const_basic>root)
 
 def nthroot_mod_list(a, n, m):
     cdef symengine.vec_integer root_list
@@ -4309,7 +4309,7 @@ def nthroot_mod_list(a, n, m):
     symengine.nthroot_mod_list(root_list, a1, n1, m1)
     s = []
     for i in range(root_list.size()):
-        s.append(c2py(<RCP[const symengine.Basic]>(root_list[i])))
+        s.append(c2py(<rcp_const_basic>(root_list[i])))
     return s
 
 def sqrt_mod(a, p, all_roots=False):
@@ -4330,7 +4330,7 @@ def powermod(a, b, m):
     cdef cppbool ret_val = symengine.powermod(symengine.outArg_Integer(root), a1, b1, m1)
     if ret_val == 0:
         return None
-    return c2py(<RCP[const symengine.Basic]>root)
+    return c2py(<rcp_const_basic>root)
 
 def powermod_list(a, b, m):
     cdef Basic _a = sympify(a)
@@ -4346,7 +4346,7 @@ def powermod_list(a, b, m):
     symengine.powermod_list(v, a1, b1, m1)
     s = []
     for i in range(v.size()):
-        s.append(c2py(<RCP[const symengine.Basic]>(v[i])))
+        s.append(c2py(<rcp_const_basic>(v[i])))
     return s
 
 def has_symbol(obj, symbol=None):
@@ -4374,7 +4374,7 @@ cdef class _Lambdify(object):
             Basic e_
             size_t ri, ci, nr, nc
             symengine.MatrixBase *mtx
-            RCP[const symengine.Basic] b_
+            rcp_const_basic b_
             symengine.vec_basic args_, outs_
             vector[int] out_sizes
 
@@ -4748,13 +4748,13 @@ def ccode(expr):
 
 def piecewise(*v):
     cdef symengine.PiecewiseVec vec
-    cdef pair[RCP[symengine.const_Basic], RCP[symengine.const_Boolean]] p
+    cdef pair[rcp_const_basic, RCP[symengine.const_Boolean]] p
     cdef Basic e
     cdef Boolean b
     for expr, rel in v:
         e = sympify(expr)
         b = sympify(rel)
-        p.first = <RCP[symengine.const_Basic]>e.thisptr
+        p.first = <rcp_const_basic>e.thisptr
         p.second = <RCP[symengine.const_Boolean]>symengine.rcp_static_cast_Boolean(b.thisptr)
         vec.push_back(p)
     return c2py(symengine.piecewise(symengine.std_move_PiecewiseVec(vec)))
@@ -4775,11 +4775,11 @@ def interval(start, end, left_open=False, right_open=False):
 
 
 def emptyset():
-    return c2py(<RCP[const symengine.Basic]>(symengine.emptyset()))
+    return c2py(<rcp_const_basic>(symengine.emptyset()))
 
 
 def universalset():
-    return c2py(<RCP[const symengine.Basic]>(symengine.universalset()))
+    return c2py(<rcp_const_basic>(symengine.universalset()))
 
 
 def finiteset(*args):
@@ -4787,15 +4787,15 @@ def finiteset(*args):
     cdef Basic e_
     for e in args:
         e_ = sympify(e)
-        s.insert(<RCP[symengine.const_Basic]>(e_.thisptr))
-    return c2py(<RCP[const symengine.Basic]>(symengine.finiteset(s)))
+        s.insert(<rcp_const_basic>(e_.thisptr))
+    return c2py(<rcp_const_basic>(symengine.finiteset(s)))
 
 
 def contains(expr, sset):
     cdef Basic expr_ = sympify(expr)
     cdef Set sset_ = sympify(sset)
     cdef RCP[const symengine.Set] s = symengine.rcp_static_cast_Set(sset_.thisptr)
-    return c2py(<RCP[const symengine.Basic]>(symengine.contains(expr_.thisptr, s)))
+    return c2py(<rcp_const_basic>(symengine.contains(expr_.thisptr, s)))
 
 
 def set_union(*args):
@@ -4804,7 +4804,7 @@ def set_union(*args):
     for e in args:
         e_ = sympify(e)
         s.insert(symengine.rcp_static_cast_Set(e_.thisptr))
-    return c2py(<RCP[const symengine.Basic]>(symengine.set_union(s)))
+    return c2py(<rcp_const_basic>(symengine.set_union(s)))
 
 
 def set_intersection(*args):
@@ -4813,7 +4813,7 @@ def set_intersection(*args):
     for e in args:
         e_ = sympify(e)
         s.insert(symengine.rcp_static_cast_Set(e_.thisptr))
-    return c2py(<RCP[const symengine.Basic]>(symengine.set_intersection(s)))
+    return c2py(<rcp_const_basic>(symengine.set_intersection(s)))
 
 
 def set_complement(universe, container):
@@ -4821,7 +4821,7 @@ def set_complement(universe, container):
     cdef Set container_ = sympify(container)
     cdef RCP[const symengine.Set] u = symengine.rcp_static_cast_Set(universe_.thisptr)
     cdef RCP[const symengine.Set] c = symengine.rcp_static_cast_Set(container_.thisptr)
-    return c2py(<RCP[const symengine.Basic]>(symengine.set_complement(u, c)))
+    return c2py(<rcp_const_basic>(symengine.set_complement(u, c)))
 
 
 def set_complement_helper(container, universe):
@@ -4829,14 +4829,14 @@ def set_complement_helper(container, universe):
     cdef Set universe_ = sympify(universe)
     cdef RCP[const symengine.Set] c = symengine.rcp_static_cast_Set(container_.thisptr)
     cdef RCP[const symengine.Set] u = symengine.rcp_static_cast_Set(universe_.thisptr)
-    return c2py(<RCP[const symengine.Basic]>(symengine.set_complement_helper(c, u)))
+    return c2py(<rcp_const_basic>(symengine.set_complement_helper(c, u)))
 
 
 def conditionset(sym, condition):
     cdef Basic sym_ = sympify(sym)
     cdef Boolean condition_ = sympify(condition)
     cdef RCP[const symengine.Boolean] c = symengine.rcp_static_cast_Boolean(condition_.thisptr)
-    return c2py(<RCP[const symengine.Basic]>(symengine.conditionset(sym_.thisptr, c)))
+    return c2py(<rcp_const_basic>(symengine.conditionset(sym_.thisptr, c)))
 
 
 def imageset(sym, expr, base):
@@ -4844,7 +4844,7 @@ def imageset(sym, expr, base):
     cdef Basic expr_ = sympify(expr)
     cdef Set base_ = sympify(base)
     cdef RCP[const symengine.Set] b = symengine.rcp_static_cast_Set(base_.thisptr)
-    return c2py(<RCP[const symengine.Basic]>(symengine.imageset(sym_.thisptr, expr_.thisptr, b)))
+    return c2py(<rcp_const_basic>(symengine.imageset(sym_.thisptr, expr_.thisptr, b)))
 
 
 def solve(f, sym, domain=None):
@@ -4853,10 +4853,10 @@ def solve(f, sym, domain=None):
     require(sym_, Symbol)
     cdef RCP[const symengine.Symbol] x = symengine.rcp_static_cast_Symbol(sym_.thisptr)
     if domain is None:
-        return c2py(<RCP[const symengine.Basic]>(symengine.solve(f_.thisptr, x)))
+        return c2py(<rcp_const_basic>(symengine.solve(f_.thisptr, x)))
     cdef Set domain_ = sympify(domain)
     cdef RCP[const symengine.Set] d = symengine.rcp_static_cast_Set(domain_.thisptr)
-    return c2py(<RCP[const symengine.Basic]>(symengine.solve(f_.thisptr, x, d)))
+    return c2py(<rcp_const_basic>(symengine.solve(f_.thisptr, x, d)))
 
 
 def cse(exprs):
