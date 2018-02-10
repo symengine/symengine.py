@@ -1,7 +1,7 @@
 from symengine.utilities import raises
 
 from symengine import Symbol, Integer, Add, Mul, Pow, Rational, sqrt
-from symengine.lib.symengine_wrapper import Zero, One, NegativeOne, Half
+from symengine.lib.symengine_wrapper import Zero, One, NegativeOne, Half, I
 
 
 def test_arit1():
@@ -165,6 +165,11 @@ def test_as_numer_denom():
     assert x == Integer(-5)
     assert y == Integer(1)
 
+def test_as_real_imag():
+    x, y = (5 + 6 * I).as_real_imag()
+
+    assert x == 5
+    assert y == 6
 
 def test_from_args():
     x = Symbol("x")
