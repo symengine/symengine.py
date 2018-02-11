@@ -900,6 +900,11 @@ cdef class Basic(object):
         symengine.as_numer_denom(self.thisptr, symengine.outArg(_num), symengine.outArg(_den))
         return c2py(<rcp_const_basic>_num), c2py(<rcp_const_basic>_den)
 
+    def as_real_imag(Basic self not None):
+        cdef rcp_const_basic _real, _imag
+        symengine.as_real_imag(self.thisptr, symengine.outArg(_real), symengine.outArg(_imag))
+        return c2py(<rcp_const_basic>_real), c2py(<rcp_const_basic>_imag)
+
     def n(self, prec = 53, real = False):
         if real:
             return eval_real(self, prec)

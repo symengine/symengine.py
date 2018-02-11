@@ -315,6 +315,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_Xor "SymEngine::is_a<SymEngine::Xor>"(const Basic &b) nogil
     rcp_const_basic expand(rcp_const_basic &o, bool deep) nogil except +
     void as_numer_denom(rcp_const_basic &x, const Ptr[RCP[Basic]] &numer, const Ptr[RCP[Basic]] &denom) nogil
+    void as_real_imag(rcp_const_basic &x, const Ptr[RCP[Basic]] &real, const Ptr[RCP[Basic]] &imag) nogil
     void cse(vec_pair &replacements, vec_basic &reduced_exprs, const vec_basic &exprs) nogil except +
 
 cdef extern from "<symengine/subs.h>" namespace "SymEngine":
