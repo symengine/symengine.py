@@ -28,7 +28,7 @@ if have_numpy:
         return Lambdify(args, *exprs, **kwargs)
 
 
-__version__ = "0.3.0"
+__version__ = "0.3.1.dev0"
 
 
 def test():
