@@ -22,7 +22,7 @@ add_custom_target(cython
     COMMAND cython symengine_wrapper.pyx
     )
 
-set(PY_PATH ${PYTHON_INSTALL_PATH}/symengine/lib)
+set(PY_PATH symengine/lib)
 install(TARGETS symengine_wrapper
             RUNTIME DESTINATION ${PY_PATH}
             ARCHIVE DESTINATION ${PY_PATH}
@@ -37,5 +37,5 @@ install(FILES __init__.py
 
 install(FILES
     pywrapper.h
-    DESTINATION ${PYTHON_INSTALL_PATH}/symengine/lib
+    DESTINATION symengine/lib
     )
