@@ -782,6 +782,12 @@ cdef class Basic(object):
     def __repr__(self):
         return self.__str__()
 
+    def _repr_latex_(self):
+        try:
+            return "${}$".format(latex(self))
+        except:
+            return None
+
     def __hash__(self):
         return deref(self.thisptr).hash()
 
