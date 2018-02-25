@@ -4875,6 +4875,9 @@ def cse(exprs):
     symengine.cse(replacements, reduced_exprs, vec)
     return (vec_pair_to_list(replacements), vec_basic_to_list(reduced_exprs))
 
+def latex(expr):
+    cdef Basic expr_ = sympify(expr)
+    return symengine.latex(deref(expr_.thisptr)).decode("utf-8")
 
 # Turn on nice stacktraces:
 symengine.print_stack_on_segfault()
