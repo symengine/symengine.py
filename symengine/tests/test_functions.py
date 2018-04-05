@@ -1,5 +1,5 @@
 from symengine import (Symbol, sin, cos, sqrt, Add, Mul, function_symbol, Integer, log, E, symbols, I,
-                      Rational, EulerGamma)
+                      Rational, EulerGamma, Function)
 from symengine.lib.symengine_wrapper import (Subs, Derivative, LambertW, zeta, dirichlet_eta,
                                             zoo, pi, KroneckerDelta, LeviCivita, erf, erfc,
                                             oo, lowergamma, uppergamma, exp, loggamma, beta,
@@ -77,6 +77,12 @@ def test_derivative():
     s = Derivative(function_symbol("f", x), x)
     assert s.expr == function_symbol("f", x)
     assert s.variables == (x,)
+
+    fxy = Function("f")(x, y)
+    g = Derivative(Function("f")(x, y), x, 2, y, 1)
+    assert g == fxy.diff(x, x, y)
+    assert g == fxy.diff(y, 1, x, 2)
+    assert g == fxy.diff(y, x, 2)
 
 
 def test_abs():
