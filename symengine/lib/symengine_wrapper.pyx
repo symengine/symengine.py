@@ -3766,9 +3766,13 @@ cdef class Sieve_iterator:
 
 
 def module_cleanup():
-    global I, E, pi, oo, minus_oo, zoo, nan, true, false, golden_ratio, catalan, eulergamma, sympy_module, sage_module
+    global I, E, pi, oo, minus_oo, zoo, nan, true, false, golden_ratio, \
+           catalan, eulergamma, sympy_module, sage_module, half, one, \
+           minus_one, zero
     funcs.clear()
-    del I, E, pi, oo, minus_oo, zoo, nan, true, false, golden_ratio, catalan, eulergamma, sympy_module, sage_module
+    del    I, E, pi, oo, minus_oo, zoo, nan, true, false, golden_ratio, \
+           catalan, eulergamma, sympy_module, sage_module, half, one, \
+           minus_one, zero
 
 import atexit
 atexit.register(module_cleanup)
