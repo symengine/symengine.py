@@ -4387,7 +4387,7 @@ cdef class _Lambdify(object):
     cdef size_t args_size, tot_out_size
     cdef list out_shapes
     cdef readonly bint real
-    cdef readonly int n_exprs
+    cdef readonly size_t n_exprs
     cdef public str order
     cdef vector[int] accum_out_sizes
     cdef object numpy_dtype
