@@ -868,14 +868,16 @@ cdef class Basic(object):
     def expand(Basic self not None, cppbool deep=True):
         return c2py(symengine.expand(self.thisptr, deep))
 
-    def diff(Basic self not None, x = None):
-        if x is None:
+    def _diff(Basic self not None, Basic x):
+        return c2py(symengine.diff(self.thisptr, x.thisptr))
+
+    def diff(self, *args):
+        if len(args) == 0:
             f = self.free_symbols
             if (len(f) != 1):
                 raise RuntimeError("Variable w.r.t should be given")
-            return self.diff(f.pop())
-        cdef Basic s = sympify(x)
-        return c2py(symengine.diff(self.thisptr, s.thisptr))
+            return self._diff(f.pop())
+        return diff(self, *args)
 
     def subs_dict(Basic self not None, *args):
         warnings.warn("subs_dict() is deprecated. Use subs() instead", DeprecationWarning)
@@ -3430,12 +3432,14 @@ cdef class DenseMatrixBase(MatrixBase):
         cdef _DictBasic D = get_dict(*args)
         return self.applyfunc(lambda x: x.msubs(D))
 
-    def diff(self, x):
-        cdef Basic x_ = sympify(x)
+    def _diff(self, Basic x):
         cdef DenseMatrixBase R = self.__class__(self.rows, self.cols)
         symengine.diff(<const symengine.DenseMatrix &>deref(self.thisptr),
-                x_.thisptr, <symengine.DenseMatrix &>deref(R.thisptr))
+                x.thisptr, <symengine.DenseMatrix &>deref(R.thisptr))
         return R
+
+    def diff(self, *args):
+        return diff(self, *args)
 
     #TODO: implement this in C++
     def subs(self, *args):
@@ -3762,17 +3766,31 @@ cdef class Sieve_iterator:
 
 
 def module_cleanup():
-    global I, E, pi, oo, minus_oo, zoo, nan, true, false, golden_ratio, catalan, eulergamma, sympy_module, sage_module
+    global I, E, pi, oo, minus_oo, zoo, nan, true, false, golden_ratio, \
+           catalan, eulergamma, sympy_module, sage_module, half, one, \
+           minus_one, zero
     funcs.clear()
-    del I, E, pi, oo, minus_oo, zoo, nan, true, false, golden_ratio, catalan, eulergamma, sympy_module, sage_module
+    del    I, E, pi, oo, minus_oo, zoo, nan, true, false, golden_ratio, \
+           catalan, eulergamma, sympy_module, sage_module, half, one, \
+           minus_one, zero
 
 import atexit
 atexit.register(module_cleanup)
 
-def diff(ex, *x):
+def diff(ex, *args):
     ex = sympify(ex)
-    for i in x:
-        ex = ex.diff(i)
+    prev = 0
+    cdef Basic b
+    cdef size_t i
+    for x in args:
+        b = sympify(x)
+        if isinstance(b, Integer):
+            i = int(b) - 1
+            for j in range(i):
+                ex = ex._diff(prev)
+        else:
+            ex = ex._diff(b)
+        prev = b
     return ex
 
 def expand(x, deep=True):
@@ -4369,7 +4387,7 @@ cdef class _Lambdify(object):
     cdef size_t args_size, tot_out_size
     cdef list out_shapes
     cdef readonly bint real
-    cdef readonly int n_exprs
+    cdef readonly size_t n_exprs
     cdef public str order
     cdef vector[int] accum_out_sizes
     cdef object numpy_dtype
