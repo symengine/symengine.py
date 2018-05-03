@@ -3154,7 +3154,28 @@ cdef class DenseMatrixBase(MatrixBase):
             return [self.get(i // self.ncols(), i % self.ncols()) for i in range(*item.indices(len(self)))]
         elif isinstance(item, int):
             return self.get(item // self.ncols(), item % self.ncols())
-        elif isinstance(item, tuple):
+        elif isinstance(item, tuple) and len(item) == 2:
+            if is_sequence(item[0]) or is_sequence(item[1]):
+                if isinstance(item[0], slice):
+                    row_iter = range(*item[0].indices(self.rows))
+                elif is_sequence(item[0]):
+                    row_iter = item[0]
+                else:
+                    row_iter = [item[0]]
+
+                if isinstance(item[1], slice):
+                    col_iter = range(*item[1].indices(self.rows))
+                elif is_sequence(item[1]):
+                    col_iter = item[1]
+                else:
+                    col_iter = [item[1]]
+
+                v = []
+                for row in row_iter:
+                    for col in col_iter:
+                        v.append(self.get(row, col))
+                return self.__class__(len(row_iter), len(col_iter), v)
+
             if isinstance(item[0], int) and isinstance(item[1], int):
                 return self.get(item[0], item[1])
             else:
@@ -3169,6 +3190,8 @@ cdef class DenseMatrixBase(MatrixBase):
                 if (s[1] < 0 or s[1] > self.cols or s[1] >= s[3] or s[3] < 0 or s[3] > self.cols):
                     raise IndexError
                 return self._submatrix(*s)
+        elif is_sequence(item):
+            return [self.get(ind // self.ncols(), ind % self.ncols()) for ind in item]
         else:
             raise NotImplementedError
 
@@ -3181,32 +3204,48 @@ cdef class DenseMatrixBase(MatrixBase):
             for i in range(*key.indices(len(self))):
                 self.set(i // self.ncols(), i % self.ncols(), value[k])
                 k = k + 1
-        elif isinstance(key, tuple):
-            if isinstance(key[0], int):
-                if isinstance(key[1], int):
-                    self.set(key[0], key[1], value)
-                else:
-                    k = 0
-                    for i in range(*key[1].indices(self.cols)):
-                        self.set(key[0], i, value[k])
-                        k = k + 1
+        elif isinstance(key, tuple) and len(key) == 2:
+            if isinstance(key[0], slice):
+                row_iter = range(*key[0].indices(self.rows))
+            elif is_sequence(key[0]):
+                row_iter = key[0]
             else:
-                if isinstance(key[1], int):
-                    k = 0
-                    for i in range(*key[0].indices(self.rows)):
-                        self.set(i, key[1], value[k])
-                        k = k + 1
-                else:
-                    k = 0
-                    for i in range(*key[0].indices(self.rows)):
-                        l = 0
-                        for j in range(*key[1].indices(self.cols)):
-                            try:
-                                self.set(i, j, value[k, l])
-                            except TypeError:
-                                self.set(i, j, value[k][l])
-                            l = l + 1
-                        k = k + 1
+                row_iter = [key[0]]
+
+            if isinstance(key[1], slice):
+                col_iter = range(*key[1].indices(self.rows))
+            elif is_sequence(key[1]):
+                col_iter = key[1]
+            else:
+                col_iter = [key[1]]
+
+            for r, row in enumerate(row_iter):
+                for c, col in enumerate(col_iter):
+                    if not is_sequence(value):
+                        self.set(row, col, value)
+                        continue
+                    try:
+                        self.set(row, col, value[r, c])
+                        continue
+                    except TypeError:
+                        pass
+                    try:
+                        self.set(row, col, value[r][c])
+                        continue
+                    except TypeError:
+                        pass
+
+                    if len(row_iter) == 1:
+                        self.set(row, col, value[c])
+                        continue
+
+                    if len(col_iter) == 1:
+                        self.set(row, col, value[r])
+                        continue
+
+        elif is_sequence(key) and is_sequence(value):
+            for val, ind in zip(value, key):
+                self.set(ind // self.ncols(), ind % self.ncols(), val)
         else:
             raise NotImplementedError
 

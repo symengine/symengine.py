@@ -62,6 +62,10 @@ def test_get_item():
     assert A[1:, :3] == DenseMatrix(2, 3, [4, 5, 6, 7, 8, 9])
     assert A[1:] == [2, 3, 4, 5, 6, 7, 8, 9]
     assert A[-2:] == [8, 9]
+    assert A[[0, 2], 0] == DenseMatrix(2, 1, [1, 7])
+    assert A[[0, 2], [0]] == DenseMatrix(2, 1, [1, 7])
+    assert A[0, [0, 2]] == DenseMatrix(1, 2, [1, 3])
+    assert A[[0], [0, 2]] == DenseMatrix(1, 2, [1, 3])
 
     raises(IndexError, lambda: A[-10])
     raises(IndexError, lambda: A[9])
@@ -88,6 +92,42 @@ def test_set_item():
 
     A[0::2, :] = [[1, 2, 3], [4, 5, 6]]
     assert A == DenseMatrix(3, 3, [1, 2, 3, 4, 14, 1, 4, 5, 6])
+
+    B = DenseMatrix(A)
+    B[[0, 2], 0] = -1
+    assert B == DenseMatrix(3, 3, [-1, 2, 3, 4, 14, 1, -1, 5, 6])
+
+    B = DenseMatrix(A)
+    B[[0, 2], 0] = [-1, -2]
+    assert B == DenseMatrix(3, 3, [-1, 2, 3, 4, 14, 1, -2, 5, 6])
+
+    B = DenseMatrix(A)
+    B[[0, 2], 0] = [[-1], [-2]]
+    assert B == DenseMatrix(3, 3, [-1, 2, 3, 4, 14, 1, -2, 5, 6])
+
+    B = DenseMatrix(A)
+    B[[0, 2], [0]] = [-1, -2]
+    assert B == DenseMatrix(3, 3, [-1, 2, 3, 4, 14, 1, -2, 5, 6])
+
+    B = DenseMatrix(A)
+    B[[0, 2], [0]] = [[-1], [-2]]
+    assert B == DenseMatrix(3, 3, [-1, 2, 3, 4, 14, 1, -2, 5, 6])
+
+    B = DenseMatrix(A)
+    B[0, [0, 2]] = [-1, -2]
+    assert B == DenseMatrix(3, 3, [-1, 2, -2, 4, 14, 1, 4, 5, 6])
+
+    B = DenseMatrix(A)
+    B[0, [0, 2]] = -1
+    assert B == DenseMatrix(3, 3, [-1, 2, -1, 4, 14, 1, 4, 5, 6])
+
+    B = DenseMatrix(A)
+    B[:, [0, 2]] = -1
+    assert B == DenseMatrix(3, 3, [-1, 2, -1, -1, 14, -1, -1, 5, -1])
+
+    B = DenseMatrix(A)
+    B[[0, 1], [0, 2]] = -1
+    assert B == DenseMatrix(3, 3, [-1, 2, -1, -1, 14, -1, 4, 5, 6])
 
 
 def test_set():
