@@ -1,7 +1,7 @@
 from symengine.utilities import raises
 
-from symengine import Symbol, Integer, Add, Mul, Pow, Rational, sqrt
-from symengine.lib.symengine_wrapper import Zero, One, NegativeOne, Half, I
+from symengine import (Symbol, Integer, Add, Mul, Pow, Rational, sqrt,
+    symbols, S, I, count_ops)
 
 
 def test_arit1():
@@ -221,10 +221,10 @@ def test_copy():
 
 
 def test_special_constants():
-    assert Zero() == Integer(0)
-    assert One() == Integer(1)
-    assert NegativeOne() == Integer(-1)
-    assert Half() == Rational(1, 2)
+    assert S.Zero == Integer(0)
+    assert S.One == Integer(1)
+    assert S.NegativeOne == Integer(-1)
+    assert S.Half == Rational(1, 2)
 
 
 def test_bool():
@@ -233,3 +233,12 @@ def test_bool():
         assert True
     if (x**2).args[1] < 0:
         assert False
+
+
+def test_count_ops():
+    x, y = symbols("x, y")
+    assert count_ops(x+y) == 1
+    assert count_ops((x+y, x*y)) == 2
+    assert count_ops([[x**y], [x+y-1]]) == 3
+    assert count_ops(x+y, x*y) == 2
+
