@@ -4935,7 +4935,6 @@ def cse(exprs):
 
 cdef _flattened_vec(symengine.vec_basic &vec, exprs):
     cdef Basic b
-    from symengine.compatibility import is_sequence
     if is_sequence(exprs):
         for expr in exprs:
             _flattened_vec(vec, expr)
