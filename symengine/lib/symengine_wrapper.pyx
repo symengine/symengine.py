@@ -4933,5 +4933,21 @@ def cse(exprs):
     return (vec_pair_to_list(replacements), vec_basic_to_list(reduced_exprs))
 
 
+cdef _flattened_vec(symengine.vec_basic &vec, exprs):
+    cdef Basic b
+    if is_sequence(exprs):
+        for expr in exprs:
+            _flattened_vec(vec, expr)
+    else:
+        b = sympify(exprs)
+        vec.push_back(b.thisptr)
+
+
+def count_ops(*exprs):
+    cdef symengine.vec_basic vec
+    _flattened_vec(vec, exprs)
+    return symengine.count_ops(vec)
+
+
 # Turn on nice stacktraces:
 symengine.print_stack_on_segfault()
