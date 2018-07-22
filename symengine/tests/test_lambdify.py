@@ -77,6 +77,16 @@ def test_Lambdify():
 
 
 @unittest.skipUnless(have_numpy, "Numpy not installed")
+def test_Lambdify_Piecewise():
+    x = se.symbols('x')
+    p = se.Piecewise((-x, x<0), (x*x*x, True))
+    f = se.Lambdify([x], [p])
+    arr = np.linspace(3, 7)
+    assert np.allclose(f(-arr).flat, arr, atol=1e-14, rtol=1e-15)
+    assert np.allclose(f(arr).flat, arr**3, atol=1e-14, rtol=1e-15)
+
+
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_Lambdify_LLVM():
     n = 7
     args = x, y, z = se.symbols('x y z')
