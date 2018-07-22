@@ -82,8 +82,8 @@ def test_Lambdify_Piecewise():
     p = se.Piecewise((-x, x<0), (x*x*x, True))
     f = se.Lambdify([x], [p])
     arr = np.linspace(3, 7)
-    assert np.all(f(-arr) == arr)
-    assert np.all(f(arr) == arr**3)
+    assert np.allclose(f(-arr).flat, arr, atol=1e-14, rtol=1e-15)
+    assert np.allclose(f(arr).flat, arr**3, atol=1e-14, rtol=1e-15)
 
 
 @unittest.skipUnless(have_numpy, "Numpy not installed")

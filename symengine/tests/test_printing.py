@@ -1,5 +1,5 @@
+from symengine import (ccode, Symbol, sqrt, Pow, Max, sin, Integer, MutableDenseMatrix)
 from symengine.utilities import raises
-from symengine.lib.symengine_wrapper import (ccode, Symbol, sqrt, Pow, Max, sin, Integer, MutableDenseMatrix)
 from symengine.printing import CCodePrinter
 
 def test_ccode():
@@ -24,4 +24,3 @@ def test_CCodePrinter():
     assert myprinter.doprint(MutableDenseMatrix(1, 2, [x, y]), "larry") == "larry[0] = x;\nlarry[1] = y;"
     raises(TypeError, lambda: myprinter.doprint(sin(x), Integer))
     raises(RuntimeError, lambda: myprinter.doprint(MutableDenseMatrix(1, 2, [x, y])))
-    
