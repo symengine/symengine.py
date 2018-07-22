@@ -752,11 +752,12 @@ def test_pynumber():
     assert b == a                  # Check equality via SymEngine
     assert a == b                  # Check equality via SymPy
 
-    a = 2 / a
-    b = 2 / b
-    assert isinstance(b, PyNumber)
-    assert b == a                  # Check equality via SymEngine
-    assert a == b                  # Check equality via SymPy
+    if sympy.__version__ != '1.2':
+        a = 2 / a
+        b = 2 / b
+        assert isinstance(b, PyNumber)
+        assert b == a                  # Check equality via SymEngine
+        assert a == b                  # Check equality via SymPy
 
     x = Symbol("x")
     b = x * sympy.FF(7)(3)
