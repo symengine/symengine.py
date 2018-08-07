@@ -28,7 +28,7 @@ See License section for information about wheels
 Install prerequisites.
 
     CMake       >= 2.8.7
-    Python2     >= 2.7      or Python3 >= 3.3
+    Python2     >= 2.7      or Python3 >= 3.4
     Cython      >= 0.19.1
     SymEngine   >= 0.2.0
 
