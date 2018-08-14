@@ -1110,7 +1110,7 @@ cdef class Expr(Basic):
     pass
 
 
-class Symbol(Expr):
+cdef class Symbol(Expr):
 
     """
     Symbol is a class to store a symbolic variable with a given name.
@@ -1155,7 +1155,7 @@ class Symbol(Expr):
         return self.__class__
 
 
-class Dummy(Symbol):
+cdef class Dummy(Symbol):
 
     def __init__(Basic self, name=None, *args, **kwargs):
         if name is None:
