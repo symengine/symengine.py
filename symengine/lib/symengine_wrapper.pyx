@@ -63,7 +63,7 @@ cdef object c2py(rcp_const_basic o):
     elif (symengine.is_a_Symbol(deref(o))):
         if (symengine.is_a_PySymbol(deref(o))):
             return <object>(deref(symengine.rcp_static_cast_PySymbol(o)).get_py_object())
-        r = Expr.__new__(Symbol)
+        r = Symbol.__new__(Symbol)
     elif (symengine.is_a_Constant(deref(o))):
         r = S.Pi
         if (symengine.eq(deref(o), deref(r.thisptr))):
@@ -1110,7 +1110,7 @@ cdef class Expr(Basic):
     pass
 
 
-class Symbol(Expr):
+cdef class Symbol(Expr):
 
     """
     Symbol is a class to store a symbolic variable with a given name.
@@ -1155,7 +1155,7 @@ class Symbol(Expr):
         return self.__class__
 
 
-class Dummy(Symbol):
+cdef class Dummy(Symbol):
 
     def __init__(Basic self, name=None, *args, **kwargs):
         if name is None:
