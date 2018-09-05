@@ -3574,6 +3574,21 @@ cdef class DenseMatrixBase(MatrixBase):
                 <symengine.DenseMatrix &>deref(R.thisptr))
         return R
 
+    def rref(self, cppbool normalize_last=True):
+        cdef DenseMatrixBase ret = self.__class__(self.nrows(), self.ncols())
+        cdef symengine.permutelist swaps
+        cdef Basic m
+        if normalize_last:
+            symengine.pivoted_FFGJ(<const symengine.DenseMatrix &>deref(self.thisptr),
+                    <symengine.DenseMatrix &>deref(ret.thisptr), swaps)
+            m = 1/ret[0, 0]
+            if m != 1 and m != 0:
+                deref(ret.thisptr).mul_scalar(m.thisptr, deref(ret.thisptr))
+        else:
+            symengine.pivoted_GJ(<const symengine.DenseMatrix &>deref(self.thisptr),
+                    <symengine.DenseMatrix &>deref(ret.thisptr), swaps)
+        return ret
+
     def _sympy_(self):
         s = []
         cdef symengine.DenseMatrix A = deref(symengine.static_cast_DenseMatrix(self.thisptr))
