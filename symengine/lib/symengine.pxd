@@ -182,7 +182,6 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
         unsigned int hash() nogil except +
         vec_basic get_args() nogil
         int __cmp__(const Basic &o) nogil
-    ctypedef rcp_const_basic rcp_const_basic "SymEngine::RCP<const SymEngine::Basic>"
     ctypedef RCP[const Number] rcp_const_number "SymEngine::RCP<const SymEngine::Number>"
     ctypedef unordered_map[int, rcp_const_basic] umap_int_basic "SymEngine::umap_int_basic"
     ctypedef unordered_map[int, rcp_const_basic].iterator umap_int_basic_iterator "SymEngine::umap_int_basic::iterator"
@@ -808,6 +807,9 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
         DenseMatrix &B) nogil except +
     void pivoted_LU (const DenseMatrix &A, DenseMatrix &L, DenseMatrix &U, vector[int] &P) nogil except +
     void pivoted_LU_solve (const DenseMatrix &A, const DenseMatrix &b, DenseMatrix &x) nogil except +
+    ctypedef vector[pair[int, int]] permutelist
+    void pivoted_FFGJ "pivoted_fraction_free_gauss_jordan_elimination"(const DenseMatrix &A, DenseMatrix &B, permutelist &P) nogil except +
+    void pivoted_GJ "pivoted_gauss_jordan_elimination"(const DenseMatrix &A, DenseMatrix &B, permutelist &P) nogil except +
     void inverse_GJ "SymEngine::inverse_gauss_jordan"(const DenseMatrix &A,
         DenseMatrix &B) nogil except +
     void FFLU_solve "SymEngine::fraction_free_LU_solve"(const DenseMatrix &A,
