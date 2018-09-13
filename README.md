@@ -25,7 +25,7 @@ See License section for information about wheels
 
 optionally, you may choose to install an early [developer preview](https://github.com/symengine/python-symengine-feedstock):
 
-    conda install python-symengine -c symengine/dev -c conda-forge
+    conda install python-symengine -c symengine/label/dev -c conda-forge
 
 ### Build from source
 
