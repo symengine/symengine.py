@@ -29,7 +29,7 @@ build*
 MANIFEST
 *.egg-info
 dist/
-.cache/
+.*cache/
 symengine.egg-info/
 
 # Temp files
