@@ -6,7 +6,9 @@ set -e
 set -x
 
 # Build inplace so that nosetests can be run inside source directory
-python setup.py install build_ext --inplace --symengine-dir=$our_install_dir
+pip install -U pip
+pip install -U cython scikit-build
+pip install -vvv -e .
 
 # Test python wrappers
 nosetests -v

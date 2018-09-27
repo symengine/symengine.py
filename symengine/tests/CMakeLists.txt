@@ -1,4 +1,4 @@
-set(PY_PATH ${PYTHON_INSTALL_PATH}/symengine/tests)
+set(PY_PATH symengine/tests)
 install(FILES __init__.py
     test_arit.py
     test_dict_basic.py
