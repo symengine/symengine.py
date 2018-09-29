@@ -27,4 +27,4 @@ fi
 conda install -q ${conda_pkgs}
 conda clean --all
 source activate $our_install_dir;
-pip install --upgrade https://github.com/cython/cython/archive/0.29rc2.tar.gz  # DO-NOT-MERGE!
+pip install --upgrade https://github.com/bjodah/cython/archive/73b3f207701a874ff0a2dc09b19ce8109297c9a0.tar.gz  # DO-NOT-MERGE! see https://github.com/cython/cython/pull/2637
