@@ -5,7 +5,7 @@
 # This finds the "cython" executable in your PATH, and then in some standard
 # paths:
 SET(CYTHON_BIN cython CACHE STRING "Cython executable name")
-SET(CYTHON_FLAGS --cplus --fast-fail -3 -X str_is_str=True)
+SET(CYTHON_FLAGS --cplus --fast-fail --3str)
 
 SET(Cython_FOUND FALSE)
 IF (CYTHON_BIN)
