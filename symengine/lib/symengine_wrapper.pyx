@@ -3164,7 +3164,7 @@ cdef class DenseMatrixBase(MatrixBase):
                     row_iter = [item[0]]
 
                 if isinstance(item[1], slice):
-                    col_iter = range(*item[1].indices(self.rows))
+                    col_iter = range(*item[1].indices(self.cols))
                 elif is_sequence(item[1]):
                     col_iter = item[1]
                 else:
@@ -3213,7 +3213,7 @@ cdef class DenseMatrixBase(MatrixBase):
                 row_iter = [key[0]]
 
             if isinstance(key[1], slice):
-                col_iter = range(*key[1].indices(self.rows))
+                col_iter = range(*key[1].indices(self.cols))
             elif is_sequence(key[1]):
                 col_iter = key[1]
             else:
