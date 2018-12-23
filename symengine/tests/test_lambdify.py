@@ -76,14 +76,20 @@ def test_Lambdify():
                     [3*n+3, n**2, -1/(n+2), n*(n+1)*(n+2)])
 
 
-@unittest.skipUnless(have_numpy, "Numpy not installed")
-def test_Lambdify_Piecewise():
+def _test_Lambdify_Piecewise(Lambdify):
     x = se.symbols('x')
     p = se.Piecewise((-x, x<0), (x*x*x, True))
-    f = se.Lambdify([x], [p])
+    f = Lambdify([x], [p])
     arr = np.linspace(3, 7)
     assert np.allclose(f(-arr).flat, arr, atol=1e-14, rtol=1e-15)
     assert np.allclose(f(arr).flat, arr**3, atol=1e-14, rtol=1e-15)
+
+
+@unittest.skipUnless(have_numpy, "Numpy not installed")
+def test_Lambdify_Piecewise():
+    _test_Lambdify_Piecewise(lambda *args: se.Lambdify(*args, backend='lambda'))
+    if se.have_llvm:
+        _test_Lambdify_Piecewise(lambda *args: se.Lambdify(*args, backend='llvm'))
 
 
 @unittest.skipUnless(have_numpy, "Numpy not installed")
