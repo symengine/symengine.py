@@ -19,6 +19,7 @@ from .lib.symengine_wrapper import (
 )
 from .utilities import var, symbols
 from .functions import *
+from .printing import init_printing
 
 if have_mpfr:
     from .lib.symengine_wrapper import RealMPFR

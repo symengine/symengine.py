@@ -774,6 +774,8 @@ cdef list vec_pair_to_list(symengine.vec_pair& vec):
     return result
 
 
+repr_latex=[False]
+
 cdef class Basic(object):
 
     def __str__(self):
@@ -783,9 +785,9 @@ cdef class Basic(object):
         return self.__str__()
 
     def _repr_latex_(self):
-        try:
+        if repr_latex[0]:
             return "${}$".format(latex(self))
-        except:
+        else:
             return None
 
     def __hash__(self):
