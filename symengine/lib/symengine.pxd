@@ -182,7 +182,6 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
         unsigned int hash() nogil except +
         vec_basic get_args() nogil
         int __cmp__(const Basic &o) nogil
-    ctypedef rcp_const_basic rcp_const_basic "SymEngine::RCP<const SymEngine::Basic>"
     ctypedef RCP[const Number] rcp_const_number "SymEngine::RCP<const SymEngine::Number>"
     ctypedef unordered_map[int, rcp_const_basic] umap_int_basic "SymEngine::umap_int_basic"
     ctypedef unordered_map[int, rcp_const_basic].iterator umap_int_basic_iterator "SymEngine::umap_int_basic::iterator"
@@ -957,6 +956,9 @@ cdef extern from "<utility>" namespace "std":
         cdef mpc_class std_move_mpc "std::move" (mpc_class) nogil
     cdef map_basic_basic std_move_map_basic_basic "std::move" (map_basic_basic) nogil
     cdef PiecewiseVec std_move_PiecewiseVec "std::move" (PiecewiseVec) nogil
+
+cdef extern from "<symengine/eval.h>" namespace "SymEngine":
+    rcp_const_basic evalf(const Basic &b, unsigned long bits, bool real) nogil except +
 
 cdef extern from "<symengine/eval_double.h>" namespace "SymEngine":
     double eval_double(const Basic &b) nogil except +
