@@ -33,6 +33,7 @@ env:
   # Release builds:
   - PYTHON_VERSION="2.7" BUILD_SHARED_LIBS="yes"
   - PYTHON_VERSION="2.7" WITH_MPFR="yes" INTEGER_CLASS="gmpxx" WITH_NUMPY="no"
+  - PYTHON_VERSION="3.7" WITH_MPC="yes"
   - PYTHON_VERSION="3.4" WITH_MPFR="yes"
   - PYTHON_VERSION="3.5" WITH_MPC="yes"
   - PYTHON_VERSION="3.6" WITH_MPC="yes" INTEGER_CLASS="flint" WITH_FLINT="yes"
@@ -84,6 +85,8 @@ matrix:
     - env: BUILD_TYPE="Release" WITH_SAGE="yes" WITH_MPC="yes" PYTHON_VERSION="2.7"
       compiler: gcc
       os: linux
+  allow_failures:
+    - env: BUILD_TYPE="Release" WITH_SAGE="yes" WITH_MPC="yes" PYTHON_VERSION="2.7"
 
 before_install:
 - |
