@@ -56,3 +56,8 @@ def test_sympify_error1b():
 def test_error1():
     # _sympify doesn't parse strings
     raises(SympifyError, lambda: _sympify("x"))
+
+
+def test_sympify_pow():
+    # https://github.com/symengine/symengine.py/issues/251
+    assert sympify('y*pow(x, -1)') == Symbol('y')/Symbol('x')

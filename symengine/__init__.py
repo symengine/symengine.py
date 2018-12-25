@@ -1,17 +1,22 @@
-from .lib.symengine_wrapper import (Symbol, S, sympify,
-        SympifyError, Add, Mul, Pow, function_symbol, I, E, pi, oo,
-        zoo, nan, have_mpfr, have_mpc, have_flint, have_piranha,
-        have_llvm, Integer, Rational, Float, Number, RealNumber,
-        RealDouble, ComplexDouble, Max, Min, DenseMatrix, Matrix,
-        ImmutableMatrix, ImmutableDenseMatrix, MutableDenseMatrix,
-        MatrixBase, Basic, DictBasic, symarray, series, diff, zeros,
-        eye, diag, ones, Derivative, Subs, add, expand, has_symbol,
-        UndefFunction, Function, FunctionSymbol as AppliedUndef,
-        have_numpy, true, false, Equality, Unequality, GreaterThan,
-        LessThan, StrictGreaterThan, StrictLessThan, Eq, Ne, Ge, Le,
-        Gt, Lt, golden_ratio as GoldenRatio, catalan as Catalan,
-        eulergamma as EulerGamma, Dummy, perfect_power, integer_nthroot,
-        isprime, sqrt_mod, Expr, cse, count_ops)
+from .lib.symengine_wrapper import (
+    have_mpfr, have_mpc, have_flint, have_piranha, have_llvm,
+    I, E, pi, oo, zoo, nan, Symbol, Dummy, S, sympify, SympifyError,
+    Integer, Rational, Float, Number, RealNumber, RealDouble, ComplexDouble,
+    add, Add, Mul, Pow, function_symbol,
+    Max, Min, DenseMatrix, Matrix,
+    ImmutableMatrix, ImmutableDenseMatrix, MutableDenseMatrix,
+    MatrixBase, Basic, DictBasic, symarray, series, diff, zeros,
+    eye, diag, ones, Derivative, Subs, expand, has_symbol,
+    UndefFunction, Function,
+    have_numpy, true, false, Equality, Unequality, GreaterThan,
+    LessThan, StrictGreaterThan, StrictLessThan, Eq, Ne, Ge, Le,
+    Gt, Lt, And, Or, Not, Nand, Nor, Xor, Xnor, perfect_power, integer_nthroot,
+    isprime, sqrt_mod, Expr, cse, count_ops, ccode, Piecewise, Contains, Interval, FiniteSet,
+    FunctionSymbol as AppliedUndef,
+    golden_ratio as GoldenRatio,
+    catalan as Catalan,
+    eulergamma as EulerGamma
+)
 from .utilities import var, symbols
 from .functions import *
 

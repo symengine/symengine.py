@@ -32,10 +32,6 @@ install(FILES __init__.py
     ${CMAKE_CURRENT_BINARY_DIR}/config.pxi
     symengine.pxd
     symengine_wrapper.pxd
-    DESTINATION ${PY_PATH}
-    )
-
-install(FILES
     pywrapper.h
-    DESTINATION ${PYTHON_INSTALL_PATH}/symengine/lib
+    DESTINATION ${PY_PATH}
     )

@@ -8,6 +8,9 @@ def test_symbol():
     assert str(x) == "x"
     assert str(x) != "y"
     assert repr(x) == str(x)
+    # Verify the successful use of slots.
+    assert not hasattr(x, "__dict__")
+    assert not hasattr(x, "__weakref__")
 
 
 def test_symbols():
@@ -148,6 +151,7 @@ def test_has_symbol():
     assert not has_symbol(c, a)
     assert has_symbol(a+b, b)
 
+
 def test_dummy():
     x1 = Symbol('x')
     x2 = Symbol('x')
@@ -159,3 +163,6 @@ def test_dummy():
     assert xdummy1 != xdummy2
     assert Dummy() != Dummy()
     assert Dummy('x') != Dummy('x')
+    # Verify the successful use of slots.
+    assert not hasattr(xdummy1, "__dict__")
+    assert not hasattr(xdummy1, "__weakref__")

@@ -73,6 +73,14 @@ def test_get_item():
     raises(IndexError, lambda: A[1:3, 3])
     raises(IndexError, lambda: A[1:3, -4])
 
+    A = zeros(3, 4)
+    assert list(A[0, :]) == [0, 0, 0, 0]
+    assert list(A[:, 0]) == [0, 0, 0]
+
+    A = zeros(4, 3)
+    assert list(A[:, 0]) == [0, 0, 0, 0]
+    assert list(A[0, :]) == [0, 0, 0]
+
 
 def test_set_item():
     A = DenseMatrix(3, 3, [1, 2, 3, 4, 5, 6, 7, 8, 9])
@@ -128,6 +136,16 @@ def test_set_item():
     B = DenseMatrix(A)
     B[[0, 1], [0, 2]] = -1
     assert B == DenseMatrix(3, 3, [-1, 2, -1, -1, 14, -1, 4, 5, 6])
+
+    A = zeros(3, 4)
+    B = ones(1, 4)
+    A[0, :] = B
+    assert A[0, :] == B
+
+    A = zeros(3, 4)
+    B = ones(3, 1)
+    A[:, 0] = B
+    assert A[:, 0] == B
 
 
 def test_set():

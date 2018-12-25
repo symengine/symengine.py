@@ -63,7 +63,7 @@ cdef object c2py(rcp_const_basic o):
     elif (symengine.is_a_Symbol(deref(o))):
         if (symengine.is_a_PySymbol(deref(o))):
             return <object>(deref(symengine.rcp_static_cast_PySymbol(o)).get_py_object())
-        r = Expr.__new__(Symbol)
+        r = Symbol.__new__(Symbol)
     elif (symengine.is_a_Constant(deref(o))):
         r = S.Pi
         if (symengine.eq(deref(o), deref(r.thisptr))):
@@ -1110,7 +1110,7 @@ cdef class Expr(Basic):
     pass
 
 
-class Symbol(Expr):
+cdef class Symbol(Expr):
 
     """
     Symbol is a class to store a symbolic variable with a given name.
@@ -1155,7 +1155,7 @@ class Symbol(Expr):
         return self.__class__
 
 
-class Dummy(Symbol):
+cdef class Dummy(Symbol):
 
     def __init__(Basic self, name=None, *args, **kwargs):
         if name is None:
@@ -3164,7 +3164,7 @@ cdef class DenseMatrixBase(MatrixBase):
                     row_iter = [item[0]]
 
                 if isinstance(item[1], slice):
-                    col_iter = range(*item[1].indices(self.rows))
+                    col_iter = range(*item[1].indices(self.cols))
                 elif is_sequence(item[1]):
                     col_iter = item[1]
                 else:
@@ -3213,7 +3213,7 @@ cdef class DenseMatrixBase(MatrixBase):
                 row_iter = [key[0]]
 
             if isinstance(key[1], slice):
-                col_iter = range(*key[1].indices(self.rows))
+                col_iter = range(*key[1].indices(self.cols))
             elif is_sequence(key[1]):
                 col_iter = key[1]
             else:

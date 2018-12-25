@@ -1,10 +1,10 @@
-from symengine import (Symbol, sin, cos, sqrt, Add, Mul, function_symbol, Integer, log, E, symbols, I,
-                      Rational, EulerGamma, Function)
-from symengine.lib.symengine_wrapper import (Subs, Derivative, LambertW, zeta, dirichlet_eta,
-                                            zoo, pi, KroneckerDelta, LeviCivita, erf, erfc,
-                                            oo, lowergamma, uppergamma, exp, loggamma, beta,
-                                            polygamma, digamma, trigamma, sign, floor, ceiling,
-                                            conjugate, nan, Float)
+from symengine import (
+    Symbol, sin, cos, sqrt, Add, Mul, function_symbol, Integer, log, E, symbols, I,
+    Rational, EulerGamma, Function, Subs, Derivative, LambertW, zeta, dirichlet_eta,
+    zoo, pi, KroneckerDelta, LeviCivita, erf, erfc, oo, lowergamma, uppergamma, exp,
+    loggamma, beta, polygamma, digamma, trigamma, sign, floor, ceiling, conjugate,
+    nan, Float
+)
 
 import unittest
 
