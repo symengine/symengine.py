@@ -7,7 +7,7 @@ from .lib.symengine_wrapper import (
     ImmutableMatrix, ImmutableDenseMatrix, MutableDenseMatrix,
     MatrixBase, Basic, DictBasic, symarray, series, diff, zeros,
     eye, diag, ones, Derivative, Subs, expand, has_symbol,
-    UndefFunction, Function,
+    UndefFunction, Function, latex,
     have_numpy, true, false, Equality, Unequality, GreaterThan,
     LessThan, StrictGreaterThan, StrictLessThan, Eq, Ne, Ge, Le,
     Gt, Lt, And, Or, Not, Nand, Nor, Xor, Xnor, perfect_power, integer_nthroot,
@@ -19,6 +19,7 @@ from .lib.symengine_wrapper import (
 )
 from .utilities import var, symbols
 from .functions import *
+from .printing import init_printing
 
 if have_mpfr:
     from .lib.symengine_wrapper import RealMPFR

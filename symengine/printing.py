@@ -1,4 +1,5 @@
 from symengine.lib.symengine_wrapper import ccode, sympify, Basic
+import symengine.lib.symengine_wrapper
 
 class CCodePrinter:
 
@@ -22,3 +23,12 @@ class CCodePrinter:
             code_line = '{}[{}] = {};'.format(assign_to, i, element)
             code_lines.append(code_line)
         return '\n'.join(code_lines)
+
+
+def init_printing(pretty_print=True, use_latex=True):
+    if pretty_print:
+        if not use_latex:
+            raise RuntimeError("Only latex is supported for pretty printing")
+        symengine.lib.symengine_wrapper.repr_latex[0] = True
+    else:
+        symengine.lib.symengine_wrapper.repr_latex[0] = False

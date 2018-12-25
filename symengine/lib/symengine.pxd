@@ -1038,3 +1038,6 @@ cdef extern from "<symengine/sets.h>" namespace "SymEngine":
 cdef extern from "<symengine/solve.h>" namespace "SymEngine":
     cdef RCP[const Set] solve(rcp_const_basic &f, RCP[const Symbol] &sym) nogil except +
     cdef RCP[const Set] solve(rcp_const_basic &f, RCP[const Symbol] &sym, RCP[const Set] &domain) nogil except +
+
+cdef extern from "<symengine/latex.h>" namespace "SymEngine":
+    string latex(const Basic &x) nogil except +

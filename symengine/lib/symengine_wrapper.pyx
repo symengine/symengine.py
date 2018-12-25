@@ -774,6 +774,8 @@ cdef list vec_pair_to_list(symengine.vec_pair& vec):
     return result
 
 
+repr_latex=[False]
+
 cdef class Basic(object):
 
     def __str__(self):
@@ -781,6 +783,12 @@ cdef class Basic(object):
 
     def __repr__(self):
         return self.__str__()
+
+    def _repr_latex_(self):
+        if repr_latex[0]:
+            return "${}$".format(latex(self))
+        else:
+            return None
 
     def __hash__(self):
         return deref(self.thisptr).hash()
@@ -4932,6 +4940,9 @@ def cse(exprs):
     symengine.cse(replacements, reduced_exprs, vec)
     return (vec_pair_to_list(replacements), vec_basic_to_list(reduced_exprs))
 
+def latex(expr):
+    cdef Basic expr_ = sympify(expr)
+    return symengine.latex(deref(expr_.thisptr)).decode("utf-8")
 
 cdef _flattened_vec(symengine.vec_basic &vec, exprs):
     cdef Basic b
