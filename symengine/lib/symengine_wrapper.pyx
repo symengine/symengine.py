@@ -3496,11 +3496,8 @@ cdef class DenseMatrixBase(MatrixBase):
 
     @property
     def free_symbols(self):
-        s = set()
-        for i in range(self.nrows()):
-            for j in range(self.ncols()):
-                s.update(self._get(i, j).free_symbols)
-        return s
+        cdef symengine.set_basic _set = symengine.free_symbols(deref(self.thisptr))
+        return {c2py(<rcp_const_basic>(elem)) for elem in _set}
 
     def _submatrix(self, unsigned r_i, unsigned c_i, unsigned r_j, unsigned c_j, unsigned r_s=1, unsigned c_s=1):
         r_j, c_j = r_j - 1, c_j - 1

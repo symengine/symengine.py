@@ -893,6 +893,7 @@ cdef extern from "<symengine/visitor.h>" namespace "SymEngine":
     bool has_symbol(const Basic &b, const Symbol &x) nogil except +
     rcp_const_basic coeff(const Basic &b, const Basic &x, const Basic &n) nogil except +
     set_basic free_symbols(const Basic &b) nogil except +
+    set_basic free_symbols(const MatrixBase &b) nogil except +
     unsigned count_ops(const vec_basic &a) nogil
 
 cdef extern from "<symengine/logic.h>" namespace "SymEngine":
