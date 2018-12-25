@@ -85,6 +85,8 @@ matrix:
     - env: BUILD_TYPE="Release" WITH_SAGE="yes" WITH_MPC="yes" PYTHON_VERSION="2.7"
       compiler: gcc
       os: linux
+  allow_failures:
+    - env: BUILD_TYPE="Release" WITH_SAGE="yes" WITH_MPC="yes" PYTHON_VERSION="2.7"
 
 before_install:
 - |
