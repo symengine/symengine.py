@@ -1001,9 +1001,6 @@ IF HAVE_SYMENGINE_MPC:
 cdef extern from "<symengine/parser.h>" namespace "SymEngine":
     rcp_const_basic parse(const string &n) nogil except +
 
-cdef extern from "<symengine/codegen.h>" namespace "SymEngine":
-    string ccode(const Basic &x) nogil except +
-
 cdef extern from "<symengine/sets.h>" namespace "SymEngine":
     cdef cppclass Set(Basic):
         RCP[const Set] set_intersection(RCP[const Set] &o) nogil except +
@@ -1042,5 +1039,6 @@ cdef extern from "<symengine/solve.h>" namespace "SymEngine":
     cdef RCP[const Set] solve(rcp_const_basic &f, RCP[const Symbol] &sym) nogil except +
     cdef RCP[const Set] solve(rcp_const_basic &f, RCP[const Symbol] &sym, RCP[const Set] &domain) nogil except +
 
-cdef extern from "<symengine/latex.h>" namespace "SymEngine":
+cdef extern from "<symengine/printers.h>" namespace "SymEngine":
+    string ccode(const Basic &x) nogil except +
     string latex(const Basic &x) nogil except +
