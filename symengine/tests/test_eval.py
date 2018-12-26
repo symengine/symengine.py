@@ -9,16 +9,19 @@ def test_eval_double1():
     e = sin(x)**2 + cos(x)**2
     e = e.subs(x, 7)
     assert abs(e.n(real=True) - 1) < 1e-9
+    assert abs(e.n() - 1) < 1e-9
 
 
 def test_eval_double2():
     x = Symbol("x")
     e = sin(x)**2 + sqrt(2)
-    assert abs(e.n(real=True) - x**2 - 1.414) < 1e-3
+    raises(RuntimeError, lambda: e.n(real=True))
+    assert abs(e.n() - x**2 - 1.414) < 1e-3
 
 def test_n():
     x = Symbol("x")
-    assert x.n(real=True) == x + 0.0
+    raises(RuntimeError, lambda: x.n(real=True))
+    assert x.n() == x + 0.0
 
     x = 2 + I
     raises(RuntimeError, lambda: (x.n(real=True)))

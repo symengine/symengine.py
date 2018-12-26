@@ -915,7 +915,7 @@ cdef class Basic(object):
         symengine.as_real_imag(self.thisptr, symengine.outArg(_real), symengine.outArg(_imag))
         return c2py(<rcp_const_basic>_real), c2py(<rcp_const_basic>_imag)
 
-    def n(self, unsigned long prec = 53, cppbool real=False):
+    def n(self, unsigned long prec = 53, real=None):
         return evalf(self, prec, real)
 
     evalf = n
@@ -3991,9 +3991,16 @@ def Xnor(*args):
         v.push_back(symengine.rcp_static_cast_Boolean(e_.thisptr))
     return c2py(<rcp_const_basic>(symengine.logical_xnor(v)))
 
-def evalf(x, unsigned long bits=53, cppbool real=False):
+def evalf(x, unsigned long bits=53, real=None):
     cdef Basic X = sympify(x)
-    return c2py(<rcp_const_basic>(symengine.evalf(deref(X.thisptr), bits, real)))
+    cdef symengine.EvalfDomain d
+    if real is None:
+        d = symengine.EvalfSymbolic
+    elif real:
+        d = symengine.EvalfReal
+    else:
+        d = symengine.EvalfComplex
+    return c2py(<rcp_const_basic>(symengine.evalf(deref(X.thisptr), bits, d)))
 
 def eval_double(x):
     warnings.warn("eval_double is deprecated. Use evalf(..., real=True)", DeprecationWarning)

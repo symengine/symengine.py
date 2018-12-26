@@ -958,7 +958,11 @@ cdef extern from "<utility>" namespace "std":
     cdef PiecewiseVec std_move_PiecewiseVec "std::move" (PiecewiseVec) nogil
 
 cdef extern from "<symengine/eval.h>" namespace "SymEngine":
-    rcp_const_basic evalf(const Basic &b, unsigned long bits, bool real) nogil except +
+    enum EvalfDomain:
+        EvalfComplex "SymEngine::EvalfDomain::Complex" = 0,
+        EvalfReal "SymEngine::EvalfDomain::Real" = 1,
+        EvalfSymbolic "SymEngine::EvalfDomain::Symbolic" = 2
+    rcp_const_basic evalf(const Basic &b, unsigned long bits, EvalfDomain domain) nogil except +
 
 cdef extern from "<symengine/eval_double.h>" namespace "SymEngine":
     double eval_double(const Basic &b) nogil except +
