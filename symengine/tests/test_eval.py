@@ -36,25 +36,26 @@ def test_n():
 
 
 def test_n_mpfr():
+    x = sqrt(Integer(2))
     try:
         from symengine import RealMPFR
-        x = sqrt(Integer(2))
         y = RealMPFR('1.41421356237309504880169', 75)
         assert x.n(75, real=True) == y
     except ImportError:
-        x = sqrt(Integer(2))
         raises(ValueError, lambda: (x.n(75, real=True)))
+        raises(ValueError, lambda: (x.n(75)))
         raise SkipTest("No MPFR support")
 
 
 def test_n_mpc():
+    x = sqrt(Integer(2)) + 3*I
     try:
         from symengine import ComplexMPC
-        x = sqrt(Integer(2)) + 3*I
         y = ComplexMPC('1.41421356237309504880169', '3.0', 75)
         assert x.n(75) == y
     except ImportError:
-        x = sqrt(Integer(2))
+        raises(ValueError, lambda: (x.n(75, real=True)))
+        raises(ValueError, lambda: (x.n(75, real=False)))
         raises(ValueError, lambda: (x.n(75)))
         raise SkipTest("No MPC support")
 
