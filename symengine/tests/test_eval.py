@@ -54,7 +54,7 @@ def test_n_mpc():
         y = ComplexMPC('1.41421356237309504880169', '3.0', 75)
         assert x.n(75) == y
     except ImportError:
-        raises(ValueError, lambda: (x.n(75, real=True)))
+        raises(Exception, lambda: (x.n(75, real=True)))
         raises(ValueError, lambda: (x.n(75, real=False)))
         raises(ValueError, lambda: (x.n(75)))
         raise SkipTest("No MPC support")
