@@ -915,11 +915,8 @@ cdef class Basic(object):
         symengine.as_real_imag(self.thisptr, symengine.outArg(_real), symengine.outArg(_imag))
         return c2py(<rcp_const_basic>_real), c2py(<rcp_const_basic>_imag)
 
-    def n(self, prec = 53, real = False):
-        if real:
-            return eval_real(self, prec)
-        else:
-            return eval(self, prec)
+    def n(self, unsigned long prec = 53, real=None):
+        return evalf(self, prec, real)
 
     evalf = n
 
@@ -3994,13 +3991,24 @@ def Xnor(*args):
         v.push_back(symengine.rcp_static_cast_Boolean(e_.thisptr))
     return c2py(<rcp_const_basic>(symengine.logical_xnor(v)))
 
-def eval_double(x):
+def evalf(x, unsigned long bits=53, real=None):
     cdef Basic X = sympify(x)
-    return c2py(<rcp_const_basic>(symengine.real_double(symengine.eval_double(deref(X.thisptr)))))
+    cdef symengine.EvalfDomain d
+    if real is None:
+        d = symengine.EvalfSymbolic
+    elif real:
+        d = symengine.EvalfReal
+    else:
+        d = symengine.EvalfComplex
+    return c2py(<rcp_const_basic>(symengine.evalf(deref(X.thisptr), bits, d)))
+
+def eval_double(x):
+    warnings.warn("eval_double is deprecated. Use evalf(..., real=True)", DeprecationWarning)
+    return evalf(x, 53, real=True)
 
 def eval_complex_double(x):
-    cdef Basic X = sympify(x)
-    return c2py(<rcp_const_basic>(symengine.complex_double(symengine.eval_complex_double(deref(X.thisptr)))))
+    warnings.warn("eval_complex_double is deprecated. Use evalf(..., real=False)", DeprecationWarning)
+    return evalf(x, 53, real=False)
 
 have_mpfr = False
 have_mpc = False
@@ -4010,19 +4018,15 @@ have_llvm = False
 
 IF HAVE_SYMENGINE_MPFR:
     have_mpfr = True
-    def eval_mpfr(x, long prec):
-        cdef Basic X = sympify(x)
-        cdef symengine.mpfr_class a = symengine.mpfr_class(prec)
-        symengine.eval_mpfr(a.get_mpfr_t(), deref(X.thisptr), symengine.MPFR_RNDN)
-        return c2py(<rcp_const_basic>(symengine.real_mpfr(symengine.std_move_mpfr(a))))
+    def eval_mpfr(x, unsigned long prec):
+        warnings.warn("eval_mpfr is deprecated. Use evalf(..., real=True)", DeprecationWarning)
+        return evalf(x, prec, real=True)
 
 IF HAVE_SYMENGINE_MPC:
     have_mpc = True
-    def eval_mpc(x, long prec):
-        cdef Basic X = sympify(x)
-        cdef symengine.mpc_class a = symengine.mpc_class(prec)
-        symengine.eval_mpc(a.get_mpc_t(), deref(X.thisptr), symengine.MPFR_RNDN)
-        return c2py(<rcp_const_basic>(symengine.complex_mpc(symengine.std_move_mpc(a))))
+    def eval_mpc(x, unsigned long prec):
+        warnings.warn("eval_mpc is deprecated. Use evalf(..., real=False)", DeprecationWarning)
+        return evalf(x, prec, real=True)
 
 IF HAVE_SYMENGINE_PIRANHA:
     have_piranha = True
@@ -4038,22 +4042,12 @@ def require(obj, t):
         raise TypeError("{} required. {} is of type {}".format(t, obj, type(obj)))
 
 def eval(x, long prec):
-    if prec <= 53:
-        return eval_complex_double(x)
-    else:
-        IF HAVE_SYMENGINE_MPC:
-            return eval_mpc(x, prec)
-        ELSE:
-            raise ValueError("Precision %s is only supported with MPC" % prec)
+    warnings.warn("eval is deprecated. Use evalf(..., real=False)", DeprecationWarning)
+    return evalf(x, prec, real=False)
 
 def eval_real(x, long prec):
-    if prec <= 53:
-        return eval_double(x)
-    else:
-        IF HAVE_SYMENGINE_MPFR:
-            return eval_mpfr(x, prec)
-        ELSE:
-            raise ValueError("Precision %s is only supported with MPFR" % prec)
+    warnings.warn("eval_real is deprecated. Use evalf(..., real=True)", DeprecationWarning)
+    return evalf(x, prec, real=True)
 
 def probab_prime_p(n, reps = 25):
     cdef Basic _n = sympify(n)

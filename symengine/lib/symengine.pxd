@@ -182,7 +182,6 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
         unsigned int hash() nogil except +
         vec_basic get_args() nogil
         int __cmp__(const Basic &o) nogil
-    ctypedef rcp_const_basic rcp_const_basic "SymEngine::RCP<const SymEngine::Basic>"
     ctypedef RCP[const Number] rcp_const_number "SymEngine::RCP<const SymEngine::Number>"
     ctypedef unordered_map[int, rcp_const_basic] umap_int_basic "SymEngine::umap_int_basic"
     ctypedef unordered_map[int, rcp_const_basic].iterator umap_int_basic_iterator "SymEngine::umap_int_basic::iterator"
@@ -958,6 +957,14 @@ cdef extern from "<utility>" namespace "std":
     cdef map_basic_basic std_move_map_basic_basic "std::move" (map_basic_basic) nogil
     cdef PiecewiseVec std_move_PiecewiseVec "std::move" (PiecewiseVec) nogil
 
+cdef extern from "<symengine/eval.h>" namespace "SymEngine":
+    cdef cppclass EvalfDomain:
+        pass
+    cdef EvalfDomain EvalfComplex "SymEngine::EvalfDomain::Complex"
+    cdef EvalfDomain EvalfReal "SymEngine::EvalfDomain::Real"
+    cdef EvalfDomain EvalfSymbolic "SymEngine::EvalfDomain::Symbolic"
+    rcp_const_basic evalf(const Basic &b, unsigned long bits, EvalfDomain domain) nogil except +
+
 cdef extern from "<symengine/eval_double.h>" namespace "SymEngine":
     double eval_double(const Basic &b) nogil except +
     double complex eval_complex_double(const Basic &b) nogil except +
@@ -999,9 +1006,6 @@ IF HAVE_SYMENGINE_MPC:
 cdef extern from "<symengine/parser.h>" namespace "SymEngine":
     rcp_const_basic parse(const string &n) nogil except +
 
-cdef extern from "<symengine/codegen.h>" namespace "SymEngine":
-    string ccode(const Basic &x) nogil except +
-
 cdef extern from "<symengine/sets.h>" namespace "SymEngine":
     cdef cppclass Set(Basic):
         RCP[const Set] set_intersection(RCP[const Set] &o) nogil except +
@@ -1040,5 +1044,6 @@ cdef extern from "<symengine/solve.h>" namespace "SymEngine":
     cdef RCP[const Set] solve(rcp_const_basic &f, RCP[const Symbol] &sym) nogil except +
     cdef RCP[const Set] solve(rcp_const_basic &f, RCP[const Symbol] &sym, RCP[const Set] &domain) nogil except +
 
-cdef extern from "<symengine/latex.h>" namespace "SymEngine":
+cdef extern from "<symengine/printers.h>" namespace "SymEngine":
+    string ccode(const Basic &x) nogil except +
     string latex(const Basic &x) nogil except +
