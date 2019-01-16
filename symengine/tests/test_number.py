@@ -1,12 +1,17 @@
 from symengine.utilities import raises
 
-from symengine import Integer, I
+from symengine import Integer, I, S
 from symengine.lib.symengine_wrapper import (perfect_power, is_square, integer_nthroot)
 
 
 def test_integer():
     i = Integer(5)
     assert str(i) == "5"
+    assert int(i) == 5
+    assert float(i) == 5.0
+    assert complex(i) == 5.0 + 0j
+    assert i.real == i
+    assert i.imag == S.Zero
 
 
 def test_integer_long():
@@ -16,6 +21,30 @@ def test_integer_long():
 
 def test_integer_string():
     assert Integer("133") == 133
+
+
+def test_rational():
+    i = Integer(5)/10
+    assert str(i) == "1/2"
+    assert int(i) == 0
+    assert float(i) == 0.5
+    assert complex(i) == 0.5 + 0j
+    assert i.real == i
+    assert i.imag == S.Zero
+
+
+def test_complex():
+    i = Integer(5)/10 + I
+    assert str(i) == "1/2 + I"
+    assert complex(i) == 0.5 + 1j
+    assert i.real == Integer(1)/2
+    assert i.imag == 1
+
+    i = 0.5 + I
+    assert str(i) == "0.5 + 1.0*I"
+    assert complex(i) == 0.5 + 1j
+    assert i.real == 0.5
+    assert i.imag == 1.0
 
 
 def test_smallfloat_valid():

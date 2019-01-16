@@ -1546,6 +1546,14 @@ cdef class Number(Expr):
     def is_complex(Basic self):
         return deref(symengine.rcp_static_cast_Number(self.thisptr)).is_complex()
 
+    @property
+    def real(self):
+        return self
+
+    @property
+    def imag(self):
+        return S.Zero
+
 
 class Rational(Number):
 
@@ -1601,6 +1609,18 @@ class Rational(Number):
     @property
     def func(self):
         return self.__class__
+
+    def __int__(Basic self):
+        return int(float(self))
+
+    def __long__(self):
+        return int(self)
+
+    def __float__(Basic self):
+        return symengine.mp_get_d(deref(symengine.rcp_static_cast_Rational(self.thisptr)).as_rational_class())
+
+    def __complex__(self):
+        return complex(float(self))
 
 class Integer(Rational):
 
@@ -1687,14 +1707,11 @@ class Integer(Rational):
             import sage.all as sage
             return sage.Integer(str(self))
 
-    def __int__(self):
-        return int(str(self))
+    def __int__(Basic self):
+        return symengine.mp_get_si(deref(symengine.rcp_static_cast_Integer(self.thisptr)).as_integer_class())
 
-    def __long__(self):
-        return long(str(self))
-
-    def __float__(self):
-        return float(str(self))
+    def __float__(Basic self):
+        return symengine.mp_get_d(deref(symengine.rcp_static_cast_Integer(self.thisptr)).as_integer_class())
 
     @property
     def p(self):
@@ -1779,26 +1796,54 @@ class RealDouble(Float):
 
     def _sage_(Basic self):
         import sage.all as sage
-        cdef double i = deref(symengine.rcp_static_cast_RealDouble(self.thisptr)).as_double()
-        return sage.RealDoubleField()(i)
+        return sage.RealDoubleField()(float(self))
+
+    def __float__(Basic self):
+        return deref(symengine.rcp_static_cast_RealDouble(self.thisptr)).as_double()
+
+    def __int__(self):
+        return int(float(self))
+
+    def __long__(self):
+        return long(float(self))
+
+    def __complex__(self):
+        return complex(float(self))
+
+
+cdef class ComplexBase(Number):
+
+    def __int__(self):
+        return int(complex(self))
+
+    def __long__(self):
+        return long(complex(self))
 
     def __float__(self):
-        return float(str(self))
+        return float(complex(self))
+
+    def real_part(Basic self):
+        return c2py(<rcp_const_basic>deref(symengine.rcp_static_cast_ComplexBase(self.thisptr)).real_part())
+
+    def imaginary_part(Basic self):
+        return c2py(<rcp_const_basic>deref(symengine.rcp_static_cast_ComplexBase(self.thisptr)).imaginary_part())
+
+    @property
+    def real(self):
+        return self.real_part()
+
+    @property
+    def imag(self):
+        return self.imaginary_part()
 
 
-cdef class ComplexDouble(Number):
+cdef class ComplexDouble(ComplexBase):
 
     def __cinit__(self, i = None):
         if i is None:
             return
         cdef double complex i_ = i
         self.thisptr = symengine.make_rcp_ComplexDouble(i_)
-
-    def real_part(Basic self):
-        return c2py(<rcp_const_basic>deref(symengine.rcp_static_cast_ComplexDouble(self.thisptr)).real_part())
-
-    def imaginary_part(Basic self):
-        return c2py(<rcp_const_basic>deref(symengine.rcp_static_cast_ComplexDouble(self.thisptr)).imaginary_part())
 
     def _sympy_(self):
         import sympy
@@ -1807,6 +1852,9 @@ cdef class ComplexDouble(Number):
     def _sage_(self):
         import sage.all as sage
         return self.real_part()._sage_() + sage.I * self.imaginary_part()._sage_()
+
+    def __complex__(Basic self):
+        return deref(symengine.rcp_static_cast_ComplexDouble(self.thisptr)).as_complex_double()
 
 
 class RealMPFR(Float):
@@ -1838,12 +1886,12 @@ class RealMPFR(Float):
                 return sage.RealField(int(self.get_prec()))(str(self))
 
         def __float__(self):
-            return float(str(self))
+            return float(self.n(real=True))
     ELSE:
         pass
 
 
-cdef class ComplexMPC(Number):
+cdef class ComplexMPC(ComplexBase):
     IF HAVE_SYMENGINE_MPC:
         def __cinit__(self, i = None, j = 0, long prec = 53, unsigned base = 10):
             if i is None:
@@ -1851,12 +1899,6 @@ cdef class ComplexMPC(Number):
             cdef string i_ = ("(" + str(i) + " " + str(j) + ")").encode("utf-8")
             cdef symengine.mpc_class m = symengine.mpc_class(i_, prec, base)
             self.thisptr = <rcp_const_basic>symengine.complex_mpc(symengine.std_move_mpc(m))
-
-        def real_part(self):
-            return c2py(<rcp_const_basic>deref(symengine.rcp_static_cast_ComplexMPC(self.thisptr)).real_part())
-
-        def imaginary_part(self):
-            return c2py(<rcp_const_basic>deref(symengine.rcp_static_cast_ComplexMPC(self.thisptr)).imaginary_part())
 
         def _sympy_(self):
             import sympy
@@ -1869,17 +1911,14 @@ cdef class ComplexMPC(Number):
             except ImportError:
                 import sage.all as sage
                 return sage.MPComplexField(int(self.get_prec()))(str(self.real_part()), str(self.imaginary_part()))
+
+        def __complex__(self):
+            return complex(self.n(real=False))
     ELSE:
         pass
 
 
-cdef class Complex(Number):
-
-    def real_part(self):
-        return c2py(<rcp_const_basic>deref(symengine.rcp_static_cast_Complex(self.thisptr)).real_part())
-
-    def imaginary_part(self):
-        return c2py(<rcp_const_basic>deref(symengine.rcp_static_cast_Complex(self.thisptr)).imaginary_part())
+cdef class Complex(ComplexBase):
 
     def _sympy_(self):
         import sympy
@@ -1888,6 +1927,9 @@ cdef class Complex(Number):
     def _sage_(self):
         import sage.all as sage
         return self.real_part()._sage_() + sage.I * self.imaginary_part()._sage_()
+
+    def __complex__(self):
+        return complex(self.n(real=False))
 
 
 cdef class Infinity(Number):
