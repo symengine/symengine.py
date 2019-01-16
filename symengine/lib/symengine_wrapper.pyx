@@ -1066,6 +1066,25 @@ cdef class Basic(object):
             s.append(c2py(<rcp_const_basic>(Y[i]))._sympy_())
         return s
 
+    def __float__(self):
+        f = self.n(real=True)
+        if not isinstance(f, RealDouble):
+            raise TypeError("Can't convert expression to float")
+        return float(f)
+
+    def __int__(self):
+        return int(float(self))
+
+    def __long__(self):
+        return long(float(self))
+
+    def __complex__(self):
+        f = self.n(real=False)
+        if not isinstance(f, (ComplexDouble, RealDouble)):
+            raise TypeError("Can't convert expression to float")
+        return complex(f)
+
+
 def series(ex, x=None, x0=0, n=6, as_deg_coef_pair=False):
     # TODO: check for x0 an infinity, see sympy/core/expr.py
     # TODO: nonzero x0
@@ -1610,17 +1629,6 @@ class Rational(Number):
     def func(self):
         return self.__class__
 
-    def __int__(Basic self):
-        return int(float(self))
-
-    def __long__(self):
-        return int(self)
-
-    def __float__(Basic self):
-        return symengine.mp_get_d(deref(symengine.rcp_static_cast_Rational(self.thisptr)).as_rational_class())
-
-    def __complex__(self):
-        return complex(float(self))
 
 class Integer(Rational):
 
@@ -1710,9 +1718,6 @@ class Integer(Rational):
     def __int__(Basic self):
         return symengine.mp_get_si(deref(symengine.rcp_static_cast_Integer(self.thisptr)).as_integer_class())
 
-    def __float__(Basic self):
-        return symengine.mp_get_d(deref(symengine.rcp_static_cast_Integer(self.thisptr)).as_integer_class())
-
     @property
     def p(self):
         return int(self)
@@ -1801,26 +1806,11 @@ class RealDouble(Float):
     def __float__(Basic self):
         return deref(symengine.rcp_static_cast_RealDouble(self.thisptr)).as_double()
 
-    def __int__(self):
-        return int(float(self))
-
-    def __long__(self):
-        return long(float(self))
-
     def __complex__(self):
         return complex(float(self))
 
 
 cdef class ComplexBase(Number):
-
-    def __int__(self):
-        return int(complex(self))
-
-    def __long__(self):
-        return long(complex(self))
-
-    def __float__(self):
-        return float(complex(self))
 
     def real_part(Basic self):
         return c2py(<rcp_const_basic>deref(symengine.rcp_static_cast_ComplexBase(self.thisptr)).real_part())
@@ -1884,9 +1874,6 @@ class RealMPFR(Float):
             except ImportError:
                 import sage.all as sage
                 return sage.RealField(int(self.get_prec()))(str(self))
-
-        def __float__(self):
-            return float(self.n(real=True))
     ELSE:
         pass
 
@@ -1911,9 +1898,6 @@ cdef class ComplexMPC(ComplexBase):
             except ImportError:
                 import sage.all as sage
                 return sage.MPComplexField(int(self.get_prec()))(str(self.real_part()), str(self.imaginary_part()))
-
-        def __complex__(self):
-            return complex(self.n(real=False))
     ELSE:
         pass
 
@@ -1927,9 +1911,6 @@ cdef class Complex(ComplexBase):
     def _sage_(self):
         import sage.all as sage
         return self.real_part()._sage_() + sage.I * self.imaginary_part()._sage_()
-
-    def __complex__(self):
-        return complex(self.n(real=False))
 
 
 cdef class Infinity(Number):
