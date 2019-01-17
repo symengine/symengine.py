@@ -214,6 +214,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     RCP[const Subs] rcp_static_cast_Subs "SymEngine::rcp_static_cast<const SymEngine::Subs>"(rcp_const_basic &b) nogil
     RCP[const RealDouble] rcp_static_cast_RealDouble "SymEngine::rcp_static_cast<const SymEngine::RealDouble>"(rcp_const_basic &b) nogil
     RCP[const ComplexDouble] rcp_static_cast_ComplexDouble "SymEngine::rcp_static_cast<const SymEngine::ComplexDouble>"(rcp_const_basic &b) nogil
+    RCP[const ComplexBase] rcp_static_cast_ComplexBase "SymEngine::rcp_static_cast<const SymEngine::ComplexBase>"(rcp_const_basic &b) nogil
     RCP[const RealMPFR] rcp_static_cast_RealMPFR "SymEngine::rcp_static_cast<const SymEngine::RealMPFR>"(rcp_const_basic &b) nogil
     RCP[const ComplexMPC] rcp_static_cast_ComplexMPC "SymEngine::rcp_static_cast<const SymEngine::ComplexMPC>"(rcp_const_basic &b) nogil
     RCP[const Log] rcp_static_cast_Log "SymEngine::rcp_static_cast<const SymEngine::Log>"(rcp_const_basic &b) nogil
@@ -363,7 +364,9 @@ cdef extern from "<symengine/integer.h>" namespace "SymEngine":
         Integer(int i) nogil
         Integer(integer_class i) nogil
         int compare(const Basic &o) nogil
-        integer_class as_mpz() nogil
+        integer_class as_integer_class() nogil
+    cdef long mp_get_si(integer_class &i) nogil
+    cdef double mp_get_d(integer_class &i) nogil
     cdef RCP[const Integer] integer(int i) nogil
     cdef RCP[const Integer] integer(integer_class i) nogil
     int i_nth_root(const Ptr[RCP[Integer]] &r, const Integer &a, unsigned long int n) nogil
@@ -372,16 +375,19 @@ cdef extern from "<symengine/integer.h>" namespace "SymEngine":
 
 cdef extern from "<symengine/rational.h>" namespace "SymEngine":
     cdef cppclass Rational(Number):
-        rational_class as_mpq() nogil
+        rational_class as_rational_class() nogil
+    cdef double mp_get_d(rational_class &i) nogil
     cdef RCP[const Number] from_mpq "SymEngine::Rational::from_mpq"(rational_class r) nogil
     cdef void get_num_den(const Rational &rat, const Ptr[RCP[Integer]] &num,
                      const Ptr[RCP[Integer]] &den) nogil
     cdef RCP[const Number] rational(long n, long d) nogil
 
 cdef extern from "<symengine/complex.h>" namespace "SymEngine":
-    cdef cppclass Complex(Number):
+    cdef cppclass ComplexBase(Number):
         RCP[const Number] real_part() nogil
         RCP[const Number] imaginary_part() nogil
+    cdef cppclass Complex(ComplexBase):
+        pass
 
 cdef extern from "<symengine/real_double.h>" namespace "SymEngine":
     cdef cppclass RealDouble(Number):
@@ -390,10 +396,8 @@ cdef extern from "<symengine/real_double.h>" namespace "SymEngine":
     RCP[const RealDouble] real_double(double d) nogil
 
 cdef extern from "<symengine/complex_double.h>" namespace "SymEngine":
-    cdef cppclass ComplexDouble(Number):
+    cdef cppclass ComplexDouble(ComplexBase):
         ComplexDouble(double complex x) nogil
-        RCP[const Number] real_part() nogil
-        RCP[const Number] imaginary_part() nogil
         double complex as_complex_double() nogil
     RCP[const ComplexDouble] complex_double(double complex d) nogil
 
@@ -751,12 +755,10 @@ IF HAVE_SYMENGINE_MPC:
             mpc_ptr get_mpc_t() nogil
             mpc_class(string s, mpfr_prec_t prec, unsigned base) nogil
 
-        cdef cppclass ComplexMPC(Number):
+        cdef cppclass ComplexMPC(ComplexBase):
             ComplexMPC(mpc_class) nogil
             mpc_class as_mpc() nogil
             mpfr_prec_t get_prec() nogil
-            RCP[const Number] real_part() nogil
-            RCP[const Number] imaginary_part() nogil
 
         RCP[const ComplexMPC] complex_mpc(mpc_class t) nogil
 ELSE:
