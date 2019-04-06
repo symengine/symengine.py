@@ -13,12 +13,6 @@ See License section for information about wheels
 
     pip install symengine --user
 
-### Ubuntu package manager
-
-    add-apt-repository ppa:symengine/ppa
-    apt-get update
-    apt-get install python-symengine        # or python3-symengine if using python3
-
 ### Conda package manager
 
     conda install python-symengine -c symengine -c conda-forge
@@ -34,7 +28,7 @@ Install prerequisites.
     CMake       >= 2.8.7
     Python2     >= 2.7      or Python3 >= 3.4
     Cython      >= 0.19.1
-    SymEngine   >= 0.2.0
+    SymEngine   >= 0.4.0
 
 For SymEngine, only a specific commit/tag (see symengine_version.txt) is supported.
 Latest git master branch may not work as there may be breaking changes in SymEngine.
@@ -77,8 +71,8 @@ symengine.py is MIT licensed and uses several LGPL, BSD-3 and MIT licensed libra
 
 Licenses for the dependencies of pip wheels are as follows,
 
-pip wheels on Unix use GMP (LGPL v3), MPFR (LGPL v3), MPC (LGPL v3), LLVM (NCSA) and symengine (MIT + BSD-3).  
-pip wheels on Windows use MPIR (LGPL v3) instead of GMP above.  
-NumPy (BSD-3) and SymPy (BSD-3) are optional dependencies.  
+pip wheels on Unix use GMP (LGPL v3), MPFR (LGPL v3), MPC (LGPL v3), LLVM (NCSA) and symengine (MIT + BSD-3).
+pip wheels on Windows use MPIR (LGPL v3) instead of GMP above.
+NumPy (BSD-3) and SymPy (BSD-3) are optional dependencies.
 Sources for these binary dependencies can be found on https://github.com/symengine/symengine-wheels/releases
 
