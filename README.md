@@ -3,7 +3,7 @@
 Python wrappers to the C++ library [SymEngine](https://github.com/symengine/symengine),
 a fast C++ symbolic manipulation library.
 
-[![Build Status](https://travis-ci.org/symengine/symengine.py.svg)](https://travis-ci.org/symengine/symengine.py) [![Build status](https://ci.appveyor.com/api/projects/status/97hn32jomyyn2aft/branch/master?svg=true)](https://ci.appveyor.com/project/isuruf/symengine-py-l1jmr/branch/master)
+[![Build Status](https://travis-ci.org/symengine/symengine.py.svg)](https://travis-ci.org/symengine/symengine.py) [![Build status](https://ci.appveyor.com/api/projects/status/sl189l9ck3gd8qvk/branch/master?svg=true)](https://ci.appveyor.com/project/symengine/symengine-py/branch/master)
 
 ## Installation
 
