@@ -428,7 +428,7 @@ def sympy2symengine(a, raise_error=False):
     elif isinstance(a, sympy.Interval):
         return interval(*(a.args))
     elif isinstance(a, sympy.EmptySet):
-        return emptyset()
+        return emptyset.__class__()
     elif isinstance(a, sympy.FiniteSet):
         return finiteset(*(a.args))
     elif isinstance(a, sympy.Contains):
