@@ -427,9 +427,9 @@ def sympy2symengine(a, raise_error=False):
         return piecewise(*(a.args))
     elif isinstance(a, sympy.Interval):
         return interval(*(a.args))
-    elif isinstance(a, type(sympy.S.EmptySet)):
+    elif a == sympy.S.EmptySet:
         return emptyset()
-    elif isinstance(a, type(sympy.S.UniversalSet)):
+    elif a == sympy.S.UniversalSet:
         return universalset()
     elif isinstance(a, sympy.FiniteSet):
         return finiteset(*(a.args))
