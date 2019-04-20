@@ -4051,7 +4051,7 @@ IF HAVE_SYMENGINE_MPC:
     have_mpc = True
     def eval_mpc(x, unsigned long prec):
         warnings.warn("eval_mpc is deprecated. Use evalf(..., real=False)", DeprecationWarning)
-        return evalf(x, prec, real=True)
+        return evalf(x, prec, real=False)
 
 IF HAVE_SYMENGINE_PIRANHA:
     have_piranha = True
