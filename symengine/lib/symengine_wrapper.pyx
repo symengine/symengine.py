@@ -3515,6 +3515,7 @@ cdef class DenseMatrixBase(MatrixBase):
         cdef _DictBasic D = get_dict(*args)
         return self.applyfunc(lambda x: x.subs(D))
 
+    replace = xreplace = subs
 
     @property
     def free_symbols(self):
