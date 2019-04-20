@@ -9,7 +9,7 @@ from symengine.lib.symengine_wrapper import (Subs, Derivative, RealMPFR,
         KroneckerDelta, LeviCivita, erf, erfc, lowergamma, uppergamma,
         loggamma, beta, polygamma, sign, floor, ceiling, conjugate, And,
         Or, Not, Xor, Piecewise, Interval, EmptySet, FiniteSet, Contains,
-        Union, Complement)
+        Union, Complement, UniversalSet)
 import unittest
 
 # Note: We test _sympy_() for SymEngine -> SymPy conversion, as those are
@@ -703,8 +703,11 @@ def test_sets():
     assert Interval(x, y)._sympy_() == sympy.Interval(x1, y1)
     assert sympify(sympy.Interval(x1, y1)) == Interval(x, y)
 
-    assert sympify(sympy.EmptySet()) == EmptySet()
-    assert sympy.EmptySet() == EmptySet()._sympy_()
+    assert sympify(sympy.S.EmptySet) == EmptySet()
+    assert sympy.S.EmptySet == EmptySet()._sympy_()
+
+    assert sympify(sympy.S.UniversalSet) == UniversalSet()
+    assert sympy.S.UniversalSet == UniversalSet()._sympy_()
 
     assert FiniteSet(x, y) == FiniteSet(x1, y1)
     assert FiniteSet(x1, y) == FiniteSet(x1, y1)
