@@ -1,6 +1,6 @@
 from symengine.utilities import raises
 
-from symengine import Integer, I, S
+from symengine import Integer, I, S, pi
 from symengine.lib.symengine_wrapper import (perfect_power, is_square, integer_nthroot)
 
 
@@ -93,6 +93,8 @@ def test_is_conditions():
     assert not i.is_nonpositive
     assert not i.is_nonnegative
     assert i.is_complex
+
+    assert pi.is_number
 
 
 def test_perfect_power():

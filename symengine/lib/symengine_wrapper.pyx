@@ -1230,6 +1230,10 @@ cdef class Constant(Expr):
             return
         self.thisptr = symengine.make_rcp_Constant(name.encode("utf-8"))
 
+    @property
+    def is_number(self):
+        return True
+
     def _sympy_(self):
         raise Exception("Unknown Constant")
 
