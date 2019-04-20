@@ -427,8 +427,10 @@ def sympy2symengine(a, raise_error=False):
         return piecewise(*(a.args))
     elif isinstance(a, sympy.Interval):
         return interval(*(a.args))
-    elif isinstance(a, sympy.EmptySet):
+    elif isinstance(a, type(sympy.S.EmptySet)):
         return emptyset()
+    elif isinstance(a, type(sympy.S.UniversalSet)):
+        return universalset()
     elif isinstance(a, sympy.FiniteSet):
         return finiteset(*(a.args))
     elif isinstance(a, sympy.Contains):
@@ -2923,7 +2925,7 @@ class EmptySet(Set):
 
     def _sympy_(self):
         import sympy
-        return sympy.EmptySet()
+        return sympy.S.EmptySet
 
     @property
     def func(self):
