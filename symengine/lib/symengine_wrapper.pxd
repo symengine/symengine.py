@@ -4,6 +4,8 @@ from libcpp.vector cimport vector
 from libcpp.string cimport string
 from libcpp cimport bool as cppbool
 
+include "config.pxi"
+
 cdef class Basic(object):
     cdef rcp_const_basic thisptr
 
@@ -53,9 +55,10 @@ cdef class LambdaDouble(_Lambdify):
     cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out, int inp_offset=*, int out_offset=*)
     cpdef as_scipy_low_level_callable(self)
 
-cdef class LLVMDouble(_Lambdify):
-    cdef vector[symengine.LLVMDoubleVisitor] lambda_double
-    cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse)
-    cdef _load(self, const string &s)
-    cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=*, int out_offset=*)
-    cpdef as_scipy_low_level_callable(self)
+IF HAVE_SYMENGINE_LLVM:
+    cdef class LLVMDouble(_Lambdify):
+        cdef vector[symengine.LLVMDoubleVisitor] lambda_double
+        cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse)
+        cdef _load(self, const string &s)
+        cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=*, int out_offset=*)
+        cpdef as_scipy_low_level_callable(self)
