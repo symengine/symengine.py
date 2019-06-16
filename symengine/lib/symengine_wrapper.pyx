@@ -4452,14 +4452,6 @@ def has_symbol(obj, symbol=None):
 
 
 cdef class _Lambdify(object):
-    cdef size_t args_size, tot_out_size
-    cdef list out_shapes
-    cdef readonly bint real
-    cdef readonly size_t n_exprs
-    cdef public str order
-    cdef vector[int] accum_out_sizes
-    cdef object numpy_dtype
-
     def __init__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False):
         cdef:
             Basic e_
@@ -4690,10 +4682,6 @@ def create_low_level_callable(lambdify, *args):
 
 
 cdef class LambdaDouble(_Lambdify):
-
-    cdef vector[symengine.LambdaRealDoubleVisitor] lambda_double
-    cdef vector[symengine.LambdaComplexDoubleVisitor] lambda_double_complex
-
     cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
         if self.real:
             self.lambda_double.resize(1)
@@ -4722,9 +4710,6 @@ cdef class LambdaDouble(_Lambdify):
 
 IF HAVE_SYMENGINE_LLVM:
     cdef class LLVMDouble(_Lambdify):
-
-        cdef vector[symengine.LLVMDoubleVisitor] lambda_double
-
         cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
             self.lambda_double.resize(1)
             self.lambda_double[0].init(args_, outs_, cse)
