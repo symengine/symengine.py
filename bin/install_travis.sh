@@ -3,7 +3,7 @@
 # symengine's bin/install_travis.sh will install miniconda
 conda update -q -n root conda
 
-export conda_pkgs="python=${PYTHON_VERSION} pip cython nose pytest"
+export conda_pkgs="python=${PYTHON_VERSION} pip cython nose pytest ccache"
 
 if [[ "${WITH_SYMPY}" != "no" ]]; then
     export conda_pkgs="${conda_pkgs} sympy";
@@ -27,3 +27,9 @@ fi
 conda install -q ${conda_pkgs}
 conda clean --all
 source activate $our_install_dir;
+
+# Use ccache
+export CXX="ccache ${CXX}"
+export CC="ccache ${CC}"
+export CCACHE_DIR=$HOME/.ccache
+ccache -M 400M

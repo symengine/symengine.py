@@ -5,6 +5,9 @@ compiler:
 os:
   - linux
   - osx
+cache:
+  directories:
+  - $HOME/.ccache
 sudo: false
 osx_image: xcode6.4
 addons:
