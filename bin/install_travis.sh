@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 # symengine's bin/install_travis.sh will install miniconda
-conda update -q -n root conda
 
 export conda_pkgs="python=${PYTHON_VERSION} pip cython nose pytest"
 
