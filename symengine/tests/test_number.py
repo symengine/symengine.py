@@ -15,8 +15,10 @@ def test_integer():
 
 
 def test_integer_long():
-    i = Integer(123434444444444444444)
-    assert str(i) == "123434444444444444444"
+    py_int = 123434444444444444444
+    i = Integer(py_int)
+    assert str(i) == str(py_int)
+    assert int(i) == py_int
 
 
 def test_integer_string():
