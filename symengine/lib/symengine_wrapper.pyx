@@ -4517,7 +4517,8 @@ cdef class _Lambdify(object):
         raise ValueError("Not supported")
 
     cdef void unsafe_complex_ptr(self, double complex *inp, double complex *out) nogil:
-        raise ValueError("Not supported")
+        with gil:
+            raise ValueError("Not supported")
 
     cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out,
                          int inp_offset=0, int out_offset=0):
