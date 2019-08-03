@@ -4508,7 +4508,8 @@ cdef class _Lambdify(object):
         raise ValueError("Not supported")
 
     cdef void unsafe_real_ptr(self, double *inp, double *out) nogil:
-        raise ValueError("Not supported")
+        with gil:
+            raise ValueError("Not supported")
 
     cpdef unsafe_real(self,
                       double[::1] inp, double[::1] out,
