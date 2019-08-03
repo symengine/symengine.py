@@ -62,12 +62,10 @@ matrix:
           - clang
           - libstdc++-4.8-dev
           - binutils-dev
-          - clang-8
-          - llvm-8-dev
     - env: BUILD_TYPE="Release" PYTHON_VERSION="2.7" WITH_NUMPY="no"
       compiler: clang
       os: linux
-    - env: BUILD_TYPE="Debug" PYTHON_VERSION="3.6" WITH_SYMPY="no" WITH_LLVM="8.0" WITH_SCIPY="yes"
+    - env: BUILD_TYPE="Debug" PYTHON_VERSION="3.6" WITH_SYMPY="no" WITH_LLVM="8.0" WITH_SCIPY="yes" CC="gcc-4.8" CXX="g++-4.8"
       compiler: gcc
       os: linux
       addons:
@@ -76,7 +74,7 @@ matrix:
           - ubuntu-toolchain-r-test
           - llvm-toolchain-trusty-8
           packages:
-          - g++-4.7
+          - g++-4.8
           - libstdc++-4.8-dev
           - binutils-dev
           - llvm-8-dev
