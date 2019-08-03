@@ -4670,6 +4670,9 @@ cdef double _scipy_callback_lambda_real(int n, double *x, void *user_data) nogil
     deref(lamb).call(&result, x)
     return result
 
+cdef void _ctypes_callback_lambda_real(double *output, const double *input, void *user_data) nogil:
+    cdef symengine.LambdaRealDoubleVisitor* lamb = <symengine.LambdaRealDoubleVisitor *>user_data
+    deref(lamb).call(output, input)
 
 IF HAVE_SYMENGINE_LLVM:
     cdef double _scipy_callback_llvm_real(int n, double *x, void *user_data) nogil:
@@ -4677,6 +4680,10 @@ IF HAVE_SYMENGINE_LLVM:
         cdef double result
         deref(lamb).call(&result, x)
         return result
+
+    cdef void _ctypes_callback_llvm_real(double *output, const double *input, void *user_data) nogil:
+        cdef symengine.LLVMDoubleVisitor* lamb = <symengine.LLVMDoubleVisitor *>user_data
+        deref(lamb).call(output, input)
 
 
 def create_low_level_callable(lambdify, *args):
@@ -4721,6 +4728,23 @@ cdef class LambdaDouble(_Lambdify):
         addr2 = cast(<size_t>&self.lambda_double[0], c_void_p)
         return create_low_level_callable(self, addr1, addr2)
 
+    cpdef as_ctypes(self):
+        """
+        Returns a tuple with first element being a ctypes function with signature
+
+            void func(double * output, const double *input, void *user_data)
+
+        and second element being a ctypes void pointer. This void pointer needs to be
+        passed as input to the function as the third argument `user_data`.
+        """
+        from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
+        if not self.real:
+            raise RuntimeError("Lambda function has to be real")
+        addr1 = cast(<size_t>&_ctypes_callback_lambda_real,
+                        CFUNCTYPE(c_void_p, POINTER(c_double), POINTER(c_double), c_void_p))
+        addr2 = cast(<size_t>&self.lambda_double[0], c_void_p)
+        return addr1, addr2
+
 
 IF HAVE_SYMENGINE_LLVM:
     cdef class LLVMDouble(_Lambdify):
@@ -4752,10 +4776,27 @@ IF HAVE_SYMENGINE_LLVM:
                 raise RuntimeError("Lambda function has to be real")
             if self.tot_out_size > 1:
                 raise RuntimeError("SciPy LowLevelCallable supports only functions with 1 output")
-            addr1 = cast(<size_t>&_scipy_callback_lambda_real,
+            addr1 = cast(<size_t>&_scipy_callback_llvm_real,
                             CFUNCTYPE(c_double, c_int, POINTER(c_double), c_void_p))
             addr2 = cast(<size_t>&self.lambda_double[0], c_void_p)
             return create_low_level_callable(self, addr1, addr2)
+
+        cpdef as_ctypes(self):
+            """
+            Returns a tuple with first element being a ctypes function with signature
+
+                void func(double * output, const double *input, void *user_data)
+
+            and second element being a ctypes void pointer. This void pointer needs to be
+            passed as input to the function as the third argument `user_data`.
+            """
+            from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
+            if not self.real:
+                raise RuntimeError("Lambda function has to be real")
+            addr1 = cast(<size_t>&_ctypes_callback_llvm_real,
+                            CFUNCTYPE(c_void_p, POINTER(c_double), POINTER(c_double), c_void_p))
+            addr2 = cast(<size_t>&self.lambda_double[0], c_void_p)
+            return addr1, addr2
 
     def llvm_loading_func(*args):
         return LLVMDouble(args, _load=True)
