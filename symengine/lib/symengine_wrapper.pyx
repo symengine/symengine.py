@@ -1722,7 +1722,7 @@ class Integer(Rational):
             return sage.Integer(str(self))
 
     def __int__(Basic self):
-        return symengine.mp_get_si(deref(symengine.rcp_static_cast_Integer(self.thisptr)).as_integer_class())
+        return int(str(self))
 
     @property
     def p(self):
