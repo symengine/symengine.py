@@ -4507,18 +4507,10 @@ cdef class _Lambdify(object):
     cdef _load(self, const string &s):
         raise ValueError("Not supported")
 
-    cdef void unsafe_real_ptr(self, double *inp, double *out) nogil:
-        with gil:
-            raise ValueError("Not supported")
-
     cpdef unsafe_real(self,
                       double[::1] inp, double[::1] out,
                       int inp_offset=0, int out_offset=0):
         raise ValueError("Not supported")
-
-    cdef void unsafe_complex_ptr(self, double complex *inp, double complex *out) nogil:
-        with gil:
-            raise ValueError("Not supported")
 
     cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out,
                          int inp_offset=0, int out_offset=0):
@@ -4705,17 +4697,11 @@ cdef class LambdaDouble(_Lambdify):
             self.lambda_double_complex.resize(1)
             self.lambda_double_complex[0].init(args_, outs_, cse)
 
-    cdef void unsafe_real_ptr(self, double *inp, double *out) nogil:
-        self.lambda_double[0].call(out, inp)
-
     cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=0, int out_offset=0):
-        self.unsafe_real_ptr(&inp[inp_offset], &out[out_offset])
-
-    cdef void unsafe_complex_ptr(self, double complex *inp, double complex *out) nogil:
-        self.lambda_double_complex[0].call(out, inp)
+        self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
 
     cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out, int inp_offset=0, int out_offset=0):
-        self.unsafe_complex_ptr(&inp[inp_offset], &out[out_offset])
+        self.lambda_double_complex[0].call(&out[out_offset], &inp[inp_offset])
 
     cpdef as_scipy_low_level_callable(self):
         from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
@@ -4764,11 +4750,8 @@ IF HAVE_SYMENGINE_LLVM:
             return llvm_loading_func, (self.args_size, self.tot_out_size, self.out_shapes, self.real, \
                 self.n_exprs, self.order, self.accum_out_sizes, self.numpy_dtype, s)
 
-        cdef void unsafe_real_ptr(self, double *inp, double *out) nogil:
-            self.lambda_double[0].call(out, inp)
-
         cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=0, int out_offset=0):
-            self.unsafe_real_ptr(&inp[inp_offset], &out[out_offset])
+            self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
 
         cpdef as_scipy_low_level_callable(self):
             from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
