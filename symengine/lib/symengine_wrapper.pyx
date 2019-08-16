@@ -19,6 +19,12 @@ import collections
 import warnings
 from symengine.compatibility import is_sequence
 import os
+import sys
+
+if sys.version_info[0] == 2:
+    from collections import MutableMapping
+else:
+    from collections.abc import MutableMapping
 
 try:
     import numpy as np
@@ -720,7 +726,7 @@ cdef class _DictBasic(object):
         return d
 
 
-class DictBasic(_DictBasic, collections.MutableMapping):
+class DictBasic(_DictBasic, MutableMapping):
 
     def __str__(self):
         return "{" + ", ".join(["%s: %s" % (str(key), str(value)) for key, value in self.items()]) + "}"
