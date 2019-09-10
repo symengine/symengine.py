@@ -789,7 +789,9 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
         void LDL(MatrixBase &L, MatrixBase &D) nogil
         void LU_solve(const MatrixBase &b, MatrixBase &x) nogil
         void FFLU(MatrixBase &LU) nogil
-        void FFLDU(MatrixBase&L, MatrixBase &D, MatrixBase &U) nogil
+        void FFLDU(MatrixBase &L, MatrixBase &D, MatrixBase &U) nogil
+        void QR(MatrixBase &Q, MatrixBase &R) nogil
+        void cholesky(MatrixBase &L) nogil
 
     cdef cppclass DenseMatrix(MatrixBase):
         DenseMatrix()

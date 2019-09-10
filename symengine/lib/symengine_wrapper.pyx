@@ -3604,6 +3604,17 @@ cdef class DenseMatrixBase(MatrixBase):
         deref(self.thisptr).FFLDU(deref(L.thisptr), deref(D.thisptr), deref(U.thisptr))
         return L, D, U
 
+    def QR(self):
+        cdef DenseMatrixBase Q = self.__class__(self.nrows(), self.ncols())
+        cdef DenseMatrixBase R = self.__class__(self.nrows(), self.ncols())
+        deref(self.thisptr).QR(deref(Q.thisptr), deref(R.thisptr))
+        return Q, R
+
+    def cholesky(self):
+        cdef DenseMatrixBase L = self.__class__(self.nrows(), self.ncols())
+        deref(self.thisptr).cholesky(deref(L.thisptr))
+        return L
+
     def jacobian(self, x):
         cdef DenseMatrixBase x_ = sympify(x)
         cdef DenseMatrixBase R = self.__class__(self.nrows(), x.nrows())
