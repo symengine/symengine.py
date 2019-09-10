@@ -358,7 +358,7 @@ def test_QR():
     Q, R = A.QR()
 
     assert Q == DenseMatrix(3, 3, [Rational(6, 7), Rational(-69, 175),
-                                   Rational-58, 175), Rational(3, 7),
+                                   Rational(-58, 175), Rational(3, 7),
                                    Rational(158, 175), Rational(6, 175),
                                    Rational(-2, 7), Rational(6, 35),
                                    Rational(-33, 35)])
