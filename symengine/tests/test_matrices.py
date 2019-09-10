@@ -1,7 +1,7 @@
 from symengine import symbols
 from symengine.lib.symengine_wrapper import (DenseMatrix, Symbol, Integer,
-    function_symbol, I, NonSquareMatrixError, ShapeError, zeros, ones, eye,
-    ImmutableMatrix)
+    Rational, function_symbol, I, NonSquareMatrixError, ShapeError, zeros,
+    ones, eye, ImmutableMatrix)
 from symengine.utilities import raises
 
 
@@ -351,6 +351,25 @@ def test_FFLDU():
     assert L == DenseMatrix(3, 3, [1, 0, 0, 5, -13, 0, 6, -10, 1])
     assert D == DenseMatrix(3, 3, [1, 0, 0, 0, -13, 0, 0, 0, -13])
     assert U == DenseMatrix(3, 3, [1, 2, 3, 0, -13, -13, 0, 0, 91])
+
+
+def test_QR():
+    A = DenseMatrix(3, 3, [12, -51, 4, 6, 167, -68, -4, 24, -41])
+    Q, R = A.QR()
+
+    assert Q == DenseMatrix(3, 3, [Rational(6, 7), Rational(-69, 175),
+                                   Rational-58, 175), Rational(3, 7),
+                                   Rational(158, 175), Rational(6, 175),
+                                   Rational(-2, 7), Rational(6, 35),
+                                   Rational(-33, 35)])
+    assert R == DenseMatrix(3, 3, [14, 21, -14, 0, 175, -70, 0, 0, 35])
+
+
+def test_cholesky():
+    A = DenseMatrix(3, 3, [4, 12, -16, 12, 37, -43, -16, -43, 98])
+    L = A.cholesky()
+
+    assert L == DenseMatrix(3, 3, [2, 0, 0, 6, 1, 0, -8, 5, 3])
 
 
 def test_str_repr():
