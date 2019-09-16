@@ -4469,7 +4469,7 @@ def has_symbol(obj, symbol=None):
 
 
 cdef class _Lambdify(object):
-    def __init__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False):
+    def __init__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False, int opt_level):
         cdef:
             Basic e_
             size_t ri, ci, nr, nc
@@ -4516,9 +4516,9 @@ cdef class _Lambdify(object):
                 for e in np.ravel(curr_expr, order=self.order):
                     e_ = _sympify(e)
                     outs_.push_back(e_.thisptr)
-        self._init(args_, outs_, cse)
+        self._init(args_, outs_, cse, opt_level)
 
-    cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
+    cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse, int opt_level):
         raise ValueError("Not supported")
 
     cdef _load(self, const string &s):
@@ -4706,7 +4706,7 @@ def create_low_level_callable(lambdify, *args):
 
 
 cdef class LambdaDouble(_Lambdify):
-    cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
+    cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse, int opt_level):
         if self.real:
             self.lambda_double.resize(1)
             self.lambda_double[0].init(args_, outs_, cse)
@@ -4751,9 +4751,9 @@ cdef class LambdaDouble(_Lambdify):
 
 IF HAVE_SYMENGINE_LLVM:
     cdef class LLVMDouble(_Lambdify):
-        cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
+        cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse, int opt_level):
             self.lambda_double.resize(1)
-            self.lambda_double[0].init(args_, outs_, cse)
+            self.lambda_double[0].init(args_, outs_, cse, opt_level)
 
         cdef _load(self, const string &s):
             self.lambda_double.resize(1)
@@ -4801,7 +4801,7 @@ IF HAVE_SYMENGINE_LLVM:
     def llvm_loading_func(*args):
         return LLVMDouble(args, _load=True)
 
-def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C', as_scipy=False, cse=False):
+def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C', as_scipy=False, cse=False, opt_level=3):
     """
     Lambdify instances are callbacks that numerically evaluate their symbolic
     expressions from user provided input (real or complex) into (possibly user
@@ -4851,7 +4851,7 @@ def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C', as_scipy=
         backend = os.getenv('SYMENGINE_LAMBDIFY_BACKEND', "lambda")
     if backend == "llvm":
         IF HAVE_SYMENGINE_LLVM:
-            ret = LLVMDouble(args, *exprs, real=real, order=order, cse=cse)
+            ret = LLVMDouble(args, *exprs, real=real, order=order, cse=cse, opt_level=opt_level)
             if as_scipy:
                 return ret.as_scipy_low_level_callable()
             return ret
