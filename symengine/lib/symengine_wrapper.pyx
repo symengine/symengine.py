@@ -4469,7 +4469,7 @@ def has_symbol(obj, symbol=None):
 
 
 cdef class _Lambdify(object):
-    def __init__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False, int opt_level):
+    def __init__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False, int opt_level=3):
         cdef:
             Basic e_
             size_t ri, ci, nr, nc
