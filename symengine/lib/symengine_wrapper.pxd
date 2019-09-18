@@ -37,7 +37,7 @@ cdef class _Lambdify(object):
     cdef vector[int] accum_out_sizes
     cdef object numpy_dtype
 
-    cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse, int opt_level)
+    cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse)
     cdef _load(self, const string &s)
     cpdef unsafe_real(self,
                       double[::1] inp, double[::1] out,
@@ -50,7 +50,7 @@ cdef class _Lambdify(object):
 cdef class LambdaDouble(_Lambdify):
     cdef vector[symengine.LambdaRealDoubleVisitor] lambda_double
     cdef vector[symengine.LambdaComplexDoubleVisitor] lambda_double_complex
-    cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse, int opt_level)
+    cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse)
     cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=*, int out_offset=*)
     cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out, int inp_offset=*, int out_offset=*)
     cpdef as_scipy_low_level_callable(self)
@@ -58,8 +58,9 @@ cdef class LambdaDouble(_Lambdify):
 
 IF HAVE_SYMENGINE_LLVM:
     cdef class LLVMDouble(_Lambdify):
+        cdef int opt_level
         cdef vector[symengine.LLVMDoubleVisitor] lambda_double
-        cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse, int opt_level)
+        cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse)
         cdef _load(self, const string &s)
         cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=*, int out_offset=*)
         cpdef as_scipy_low_level_callable(self)
