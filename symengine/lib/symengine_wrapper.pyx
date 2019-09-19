@@ -4755,7 +4755,7 @@ cdef class LambdaDouble(_Lambdify):
 
 IF HAVE_SYMENGINE_LLVM:
     cdef class LLVMDouble(_Lambdify):
-        def __cinit__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False, opt_level=0):
+        def __cinit__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False, opt_level=3):
             self.opt_level = opt_level
 
         cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
