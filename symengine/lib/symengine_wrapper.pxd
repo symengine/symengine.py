@@ -58,6 +58,7 @@ cdef class LambdaDouble(_Lambdify):
 
 IF HAVE_SYMENGINE_LLVM:
     cdef class LLVMDouble(_Lambdify):
+        cdef int opt_level
         cdef vector[symengine.LLVMDoubleVisitor] lambda_double
         cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse)
         cdef _load(self, const string &s)

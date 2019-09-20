@@ -986,7 +986,7 @@ cdef extern from "<symengine/lambda_double.h>" namespace "SymEngine":
 cdef extern from "<symengine/llvm_double.h>" namespace "SymEngine":
     cdef cppclass LLVMDoubleVisitor:
         LLVMDoubleVisitor() nogil
-        void init(const vec_basic &x, const vec_basic &b, bool cse) nogil except +
+        void init(const vec_basic &x, const vec_basic &b, bool cse, int opt_level) nogil except +
         void call(double *r, const double *x) nogil
         const string& dumps() nogil
         void loads(const string&) nogil
