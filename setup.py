@@ -231,6 +231,8 @@ setup(name="symengine",
       author_email="symengine@googlegroups.com",
       license="MIT",
       url="https://github.com/symengine/symengine.py",
+      python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,<4',
+      zip_safe=False,
       cmdclass = cmdclass,
       classifiers=[
         'License :: OSI Approved :: MIT License',
@@ -243,5 +245,6 @@ setup(name="symengine",
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         ]
       )
