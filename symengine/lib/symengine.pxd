@@ -171,6 +171,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
         void insert(iterator, iterator) except +
 
     ctypedef vector[rcp_const_basic] vec_basic "SymEngine::vec_basic"
+    ctypedef vector[RCP[Symbol]] vec_sym "SymEngine::vec_sym"
     ctypedef vector[RCP[Integer]] vec_integer "SymEngine::vec_integer"
     ctypedef map[RCP[Integer], unsigned] map_integer_uint "SymEngine::map_integer_uint"
     cdef struct RCPIntegerKeyLess
@@ -1047,6 +1048,7 @@ cdef extern from "<symengine/sets.h>" namespace "SymEngine":
 cdef extern from "<symengine/solve.h>" namespace "SymEngine":
     cdef RCP[const Set] solve(rcp_const_basic &f, RCP[const Symbol] &sym) nogil except +
     cdef RCP[const Set] solve(rcp_const_basic &f, RCP[const Symbol] &sym, RCP[const Set] &domain) nogil except +
+    cdef vec_basic linsolve(const vec_basic &eqs, const vec_sym &syms) nogil except +
 
 cdef extern from "<symengine/printers.h>" namespace "SymEngine":
     string ccode(const Basic &x) nogil except +

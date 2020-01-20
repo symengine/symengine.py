@@ -2068,11 +2068,7 @@ class Add(AssocOp):
     identity = 0
 
     def __new__(cls, *args, **kwargs):
-        cdef symengine.vec_basic v_
-        cdef Basic e
-        for e_ in args:
-            e = _sympify(e_)
-            v_.push_back(e.thisptr)
+        cdef symengine.vec_basic v_ = iter_to_vec_basic(args)
         return c2py(symengine.add(v_))
 
     @classmethod
@@ -2123,11 +2119,7 @@ class Mul(AssocOp):
     identity = 1
 
     def __new__(cls, *args, **kwargs):
-        cdef symengine.vec_basic v_
-        cdef Basic e
-        for e_ in args:
-            e = _sympify(e_)
-            v_.push_back(e.thisptr)
+        cdef symengine.vec_basic v_ = iter_to_vec_basic(args)
         return c2py(symengine.mul(v_))
 
     @classmethod
@@ -2296,11 +2288,7 @@ class KroneckerDelta(Function):
 
 class LeviCivita(Function):
     def __new__(cls, *args):
-        cdef symengine.vec_basic v
-        cdef Basic e_
-        for e in args:
-            e_ = sympify(e)
-            v.push_back(e_.thisptr)
+        cdef symengine.vec_basic v = iter_to_vec_basic(args)
         return c2py(symengine.levi_civita(v))
 
     def _sympy_(self):
@@ -2710,11 +2698,7 @@ class PyFunction(FunctionSymbol):
     def __init__(Basic self, pyfunction = None, args = None, pyfunction_class=None, module=None):
         if pyfunction is None:
             return
-        cdef symengine.vec_basic v
-        cdef Basic arg_
-        for arg in args:
-            arg_ = sympify(arg)
-            v.push_back(arg_.thisptr)
+        cdef symengine.vec_basic v = iter_to_vec_basic(args)
         cdef PyFunctionClass _pyfunction_class = get_function_class(pyfunction_class, module)
         cdef PyObject* _pyfunction = <PyObject*>pyfunction
         Py_XINCREF(_pyfunction)
@@ -3785,6 +3769,7 @@ cdef class ImmutableDenseMatrix(DenseMatrixBase):
 
 ImmutableMatrix = ImmutableDenseMatrix
 
+
 cdef matrix_to_vec(DenseMatrixBase d, symengine.vec_basic& v):
     cdef Basic e_
     for i in range(d.nrows()):
@@ -3792,20 +3777,28 @@ cdef matrix_to_vec(DenseMatrixBase d, symengine.vec_basic& v):
             e_ = d._get(i, j)
             v.push_back(e_.thisptr)
 
+
 def eye(n):
     cdef DenseMatrixBase d = DenseMatrix(n, n)
     symengine.eye(deref(symengine.static_cast_DenseMatrix(d.thisptr)), 0)
     return d
 
-def diag(*values):
-    cdef DenseMatrixBase d = DenseMatrix(len(values), len(values))
-    cdef symengine.vec_basic V
+
+cdef symengine.vec_basic iter_to_vec_basic(iter):
     cdef Basic B
-    for b in values:
+    cdef symengine.vec_basic V
+    for b in iter:
         B = sympify(b)
         V.push_back(B.thisptr)
+    return V
+
+
+def diag(*values):
+    cdef DenseMatrixBase d = DenseMatrix(len(values), len(values))
+    cdef symengine.vec_basic V = iter_to_vec_basic(values)
     symengine.diag(deref(symengine.static_cast_DenseMatrix(d.thisptr)), V, 0)
     return d
+
 
 def ones(r, c = None):
     if c is None:
@@ -3814,12 +3807,14 @@ def ones(r, c = None):
     symengine.ones(deref(symengine.static_cast_DenseMatrix(d.thisptr)))
     return d
 
+
 def zeros(r, c = None):
     if c is None:
         c = r
     cdef DenseMatrixBase d = DenseMatrix(r, c)
     symengine.zeros(deref(symengine.static_cast_DenseMatrix(d.thisptr)))
     return d
+
 
 cdef class Sieve:
     @staticmethod
@@ -3830,6 +3825,7 @@ cdef class Sieve:
         for i in range(primes.size()):
             s.append(primes[i])
         return s
+
 
 cdef class Sieve_iterator:
     cdef symengine.sieve_iterator *thisptr
@@ -4998,6 +4994,25 @@ def solve(f, sym, domain=None):
     cdef Set domain_ = sympify(domain)
     cdef RCP[const symengine.Set] d = symengine.rcp_static_cast_Set(domain_.thisptr)
     return c2py(<rcp_const_basic>(symengine.solve(f_.thisptr, x, d)))
+
+
+def linsolve(eqs, syms):
+    """
+    Solve a set of linear equations given as an iterable `eqs`
+    which are linear w.r.t the symbols given as an iterable `syms`
+    """
+    cdef symengine.vec_basic eqs_ = iter_to_vec_basic(eqs)
+    cdef symengine.vec_sym syms_
+    cdef RCP[const symengine.Symbol] sym_
+    cdef Symbol B
+    for sym in syms:
+        B = sympify(sym)
+        sym_ = symengine.rcp_static_cast_Symbol(B.thisptr)
+        syms_.push_back(sym_)
+    if syms_.size() != eqs_.size():
+        raise RuntimeError("Number of equations and symbols do not match")
+    cdef symengine.vec_basic ret = symengine.linsolve(eqs_, syms_)
+    return vec_basic_to_tuple(ret)
 
 
 def cse(exprs):
