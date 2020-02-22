@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(python_wrapper)
 
 set(CMAKE_PREFIX_PATH ${SymEngine_DIR} ${CMAKE_PREFIX_PATH})
-find_package(SymEngine 0.5.0 REQUIRED CONFIG
+find_package(SymEngine 0.6.0 REQUIRED CONFIG
              PATH_SUFFIXES lib/cmake/symengine cmake/symengine CMake/)
 message("SymEngine_DIR : " ${SymEngine_DIR})
 message("SymEngine Version : " ${SymEngine_VERSION})
@@ -29,6 +29,15 @@ if (MINGW AND (CMAKE_BUILD_TYPE STREQUAL "Release"))
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -include cmath")
     endif()
 endif()
+
+include(CheckTypeSize)
+check_type_size("long double" SYMENGINE_SIZEOF_LONG_DOUBLE)
+
+if (HAVE_SYMENGINE_LLVM AND  SYMENGINE_SIZEOF_LONG_DOUBLE GREATER "8" AND CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(X86)|(amd64)|(AMD64)")
+    set (HAVE_SYMENGINE_LLVM_LONG_DOUBLE True)
+else ()
+    set (HAVE_SYMENGINE_LLVM_LONG_DOUBLE False)
+endif ()
 
 foreach (PKG MPC MPFR PIRANHA FLINT LLVM)
     if ("${HAVE_SYMENGINE_${PKG}}" STREQUAL "")
