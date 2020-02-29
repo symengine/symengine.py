@@ -4931,8 +4931,11 @@ def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C',
                 ret = LLVMDouble(args, *exprs, real=real, order=order, cse=cse, **kwargs)
             elif dtype == np.float:
                 ret = LLVMFloat(args, *exprs, real=real, order=order, cse=cse, **kwargs)
-            elif dtype == np.longdouble:                
-                ret = LLVMLongDouble(args, *exprs, real=real, order=order, cse=cse, **kwargs)
+            elif dtype == np.longdouble:
+                IF HAVE_SYMENGINE_LLVM_LONG_DOUBLE:
+                    ret = LLVMLongDouble(args, *exprs, real=real, order=order, cse=cse, **kwargs)
+                ELSE:
+                    raise ValueError("Long double not supported on this platform")
             else:
                 raise ValueError("Unknown numpy dtype.")
                 
