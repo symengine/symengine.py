@@ -4058,6 +4058,7 @@ have_mpc = False
 have_piranha = False
 have_flint = False
 have_llvm = False
+have_llvm_long_double = False
 
 IF HAVE_SYMENGINE_MPFR:
     have_mpfr = True
@@ -4079,6 +4080,9 @@ IF HAVE_SYMENGINE_FLINT:
 
 IF HAVE_SYMENGINE_LLVM:
     have_llvm = True
+
+IF HAVE_SYMENGINE_LLVM_LONG_DOUBLE:
+    have_llvm_long_double = True
 
 def require(obj, t):
     if not isinstance(obj, t):
@@ -4675,7 +4679,7 @@ def create_low_level_callable(lambdify, *args):
 
 
 cdef class LambdaDouble(_Lambdify):
-    def __cinit__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False):
+    def __cinit__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False, dtype=None):
         # reject additional arguments
         pass
 
@@ -4689,7 +4693,7 @@ cdef class LambdaDouble(_Lambdify):
     cpdef unsafe_eval(self, inp, out, unsigned nbroadcast=1):
         cdef double[::1] c_inp, c_out
         cdef unsigned idx
-        c_inp = np.ascontiguousarray(inp.ravel(order=self.order))
+        c_inp = np.ascontiguousarray(inp.ravel(order=self.order), dtype=self.numpy_dtype)
         c_out = out
         for idx in range(nbroadcast):
             self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size]) 
@@ -4720,7 +4724,7 @@ cdef class LambdaDouble(_Lambdify):
 
 
 cdef class LambdaComplexDouble(_Lambdify):
-    def __cinit__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False):
+    def __cinit__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False, dtype=None):
         # reject additional arguments
         pass
 
@@ -4734,7 +4738,7 @@ cdef class LambdaComplexDouble(_Lambdify):
     cpdef unsafe_eval(self, inp, out, unsigned nbroadcast=1):
         cdef double complex[::1] c_inp, c_out
         cdef unsigned idx
-        c_inp = np.ascontiguousarray(inp.ravel(order=self.order))
+        c_inp = np.ascontiguousarray(inp.ravel(order=self.order), dtype=self.numpy_dtype)
         c_out = out
         for idx in range(nbroadcast):
             self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
@@ -4742,7 +4746,7 @@ cdef class LambdaComplexDouble(_Lambdify):
 
 IF HAVE_SYMENGINE_LLVM:
     cdef class LLVMDouble(_LLVMLambdify):
-        def __cinit__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False, opt_level=3):
+        def __cinit__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False, opt_level=3, dtype=None):
             self.opt_level = opt_level
 
         cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
@@ -4767,7 +4771,7 @@ IF HAVE_SYMENGINE_LLVM:
         cpdef unsafe_eval(self, inp, out, unsigned nbroadcast=1):
             cdef double[::1] c_inp, c_out
             cdef unsigned idx
-            c_inp = np.ascontiguousarray(inp.ravel(order=self.order))
+            c_inp = np.ascontiguousarray(inp.ravel(order=self.order), dtype=self.numpy_dtype)
             c_out = out
             for idx in range(nbroadcast):
                 self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
@@ -4801,7 +4805,7 @@ IF HAVE_SYMENGINE_LLVM:
             return addr1, addr2
 
     cdef class LLVMFloat(_LLVMLambdify):
-        def __cinit__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False, opt_level=3):
+        def __cinit__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False, opt_level=3, dtype=None):
             self.opt_level = opt_level
 
         cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
@@ -4826,14 +4830,14 @@ IF HAVE_SYMENGINE_LLVM:
         cpdef unsafe_eval(self, inp, out, unsigned nbroadcast=1):
             cdef float[::1] c_inp, c_out
             cdef unsigned idx
-            c_inp = np.ascontiguousarray(inp.ravel(order=self.order))
+            c_inp = np.ascontiguousarray(inp.ravel(order=self.order), dtype=self.numpy_dtype)
             c_out = out
             for idx in range(nbroadcast):
                 self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
 
     IF HAVE_SYMENGINE_LLVM_LONG_DOUBLE:
         cdef class LLVMLongDouble(_LLVMLambdify):
-            def __cinit__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False, opt_level=3):
+            def __cinit__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False, opt_level=3, dtype=None):
                 self.opt_level = opt_level
 
             cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
@@ -4858,7 +4862,7 @@ IF HAVE_SYMENGINE_LLVM:
             cpdef unsafe_eval(self, inp, out, unsigned nbroadcast=1):
                 cdef long double[::1] c_inp, c_out
                 cdef unsigned idx
-                c_inp = np.ascontiguousarray(inp.ravel(order=self.order))
+                c_inp = np.ascontiguousarray(inp.ravel(order=self.order), dtype=self.numpy_dtype)
                 c_out = out
                 for idx in range(nbroadcast):
                     self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
@@ -4926,14 +4930,14 @@ def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C',
     if backend == "llvm":
         IF HAVE_SYMENGINE_LLVM:
             if dtype == None:
-                dtype = np.double
-            if dtype == np.double:
-                ret = LLVMDouble(args, *exprs, real=real, order=order, cse=cse, **kwargs)
-            elif dtype == np.float:
-                ret = LLVMFloat(args, *exprs, real=real, order=order, cse=cse, **kwargs)
+                dtype = np.float64
+            if dtype == np.float64:
+                ret = LLVMDouble(args, *exprs, real=real, order=order, cse=cse, dtype=np.float64, **kwargs)
+            elif dtype == np.float32:
+                ret = LLVMFloat(args, *exprs, real=real, order=order, cse=cse, dtype=np.float32, **kwargs)
             elif dtype == np.longdouble:
                 IF HAVE_SYMENGINE_LLVM_LONG_DOUBLE:
-                    ret = LLVMLongDouble(args, *exprs, real=real, order=order, cse=cse, **kwargs)
+                    ret = LLVMLongDouble(args, *exprs, real=real, order=order, cse=cse, dtype=np.longdouble, **kwargs)
                 ELSE:
                     raise ValueError("Long double not supported on this platform")
             else:
