@@ -4869,8 +4869,9 @@ IF HAVE_SYMENGINE_LLVM:
     def llvm_float_loading_func(*args):
         return LLVMFloat(args, _load=True)
 
-    def llvm_long_double_loading_func(*args):
-        return LLVMLongDouble(args, _load=True)
+    IF HAVE_SYMENGINE_LLVM_LONG_DOUBLE:
+        def llvm_long_double_loading_func(*args):
+            return LLVMLongDouble(args, _load=True)
 
 def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C',
              as_scipy=False, cse=False, dtype=None, **kwargs):
