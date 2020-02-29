@@ -1,5 +1,5 @@
 from .lib.symengine_wrapper import (
-    have_mpfr, have_mpc, have_flint, have_piranha, have_llvm,
+    have_mpfr, have_mpc, have_flint, have_piranha, have_llvm, have_llvm_long_double,
     I, E, pi, oo, zoo, nan, Symbol, Dummy, S, sympify, SympifyError,
     Integer, Rational, Float, Number, RealNumber, RealDouble, ComplexDouble,
     add, Add, Mul, Pow, function_symbol,

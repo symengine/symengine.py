@@ -4058,6 +4058,7 @@ have_mpc = False
 have_piranha = False
 have_flint = False
 have_llvm = False
+have_llvm_long_double = False
 
 IF HAVE_SYMENGINE_MPFR:
     have_mpfr = True
@@ -4079,6 +4080,9 @@ IF HAVE_SYMENGINE_FLINT:
 
 IF HAVE_SYMENGINE_LLVM:
     have_llvm = True
+
+IF HAVE_SYMENGINE_LLVM_LONG_DOUBLE:
+    have_llvm_long_double = True
 
 def require(obj, t):
     if not isinstance(obj, t):
@@ -4465,7 +4469,7 @@ def has_symbol(obj, symbol=None):
 
 
 cdef class _Lambdify(object):
-    def __init__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False, **kwargs):
+    def __init__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False, dtype=None, **kwargs):
         cdef:
             Basic e_
             size_t ri, ci, nr, nc
@@ -4488,7 +4492,7 @@ cdef class _Lambdify(object):
         self.n_exprs = len(exprs)
         self.real = real
         self.order = order
-        self.numpy_dtype = np.float64 if self.real else np.complex128
+        self.numpy_dtype = dtype if dtype else (np.float64 if self.real else np.complex128)
         if self.args_size == 0:
             raise NotImplementedError("Support for zero arguments not yet supported")
         self.tot_out_size = 0
@@ -4520,15 +4524,6 @@ cdef class _Lambdify(object):
     cdef _load(self, const string &s):
         raise ValueError("Not supported")
 
-    cpdef unsafe_real(self,
-                      double[::1] inp, double[::1] out,
-                      int inp_offset=0, int out_offset=0):
-        raise ValueError("Not supported")
-
-    cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out,
-                         int inp_offset=0, int out_offset=0):
-        raise ValueError("Not supported")
-
     cpdef eval_real(self, inp, out):
         if inp.size != self.args_size:
             raise ValueError("Size of inp incompatible with number of args.")
@@ -4542,6 +4537,9 @@ cdef class _Lambdify(object):
         if out.size != self.tot_out_size:
             raise ValueError("Size of out incompatible with number of exprs.")
         self.unsafe_complex(inp, out)
+
+    cpdef unsafe_eval(self, inp, out, unsigned nbroadcast=1):
+        raise ValueError("Not supported")
 
     def __call__(self, *args, out=None):
         """
@@ -4562,10 +4560,6 @@ cdef class _Lambdify(object):
         """
         cdef:
             size_t idx, new_tot_out_size, nbroadcast = 1
-            long inp_size
-            tuple inp_shape
-            double[::1] real_out, real_inp
-            double complex[::1] cmplx_out, cmplx_inp
         if self.order not in ('C', 'F'):
             raise NotImplementedError("Only C & F order supported for now.")
 
@@ -4576,11 +4570,6 @@ cdef class _Lambdify(object):
             inp = np.asanyarray(args, dtype=self.numpy_dtype)
         except TypeError:
             inp = np.fromiter(args, dtype=self.numpy_dtype)
-
-        if self.real:
-            real_inp = np.ascontiguousarray(inp.ravel(order=self.order))
-        else:
-            cmplx_inp = np.ascontiguousarray(inp.ravel(order=self.order))
 
         if inp.size < self.args_size or inp.size % self.args_size != 0:
             raise ValueError("Broadcasting failed (input/arg size mismatch)")
@@ -4637,19 +4626,7 @@ cdef class _Lambdify(object):
                 raise ValueError("Output argument needs to be writeable")
             out = out.ravel(order=self.order)
 
-        if self.real:
-            real_out = out
-        else:
-            cmplx_out = out
-
-        if self.real:
-            for idx in range(nbroadcast):
-                self.unsafe_real(real_inp, real_out,
-                                 idx*self.args_size, idx*self.tot_out_size)
-        else:
-            for idx in range(nbroadcast):
-                self.unsafe_complex(cmplx_inp, cmplx_out,
-                                    idx*self.args_size, idx*self.tot_out_size)
+        self.unsafe_eval(inp, out, nbroadcast)
 
         if self.order == 'C':
             out = out.reshape((nbroadcast, self.tot_out_size), order='C')
@@ -4702,28 +4679,27 @@ def create_low_level_callable(lambdify, *args):
 
 
 cdef class LambdaDouble(_Lambdify):
-    def __cinit__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False):
+    def __cinit__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False, dtype=None):
         # reject additional arguments
         pass
 
     cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
-        if self.real:
-            self.lambda_double.resize(1)
-            self.lambda_double[0].init(args_, outs_, cse)
-        else:
-            self.lambda_double_complex.resize(1)
-            self.lambda_double_complex[0].init(args_, outs_, cse)
+        self.lambda_double.resize(1)
+        self.lambda_double[0].init(args_, outs_, cse)
 
     cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=0, int out_offset=0):
         self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
 
-    cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out, int inp_offset=0, int out_offset=0):
-        self.lambda_double_complex[0].call(&out[out_offset], &inp[inp_offset])
+    cpdef unsafe_eval(self, inp, out, unsigned nbroadcast=1):
+        cdef double[::1] c_inp, c_out
+        cdef unsigned idx
+        c_inp = np.ascontiguousarray(inp.ravel(order=self.order), dtype=self.numpy_dtype)
+        c_out = out
+        for idx in range(nbroadcast):
+            self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size]) 
 
     cpdef as_scipy_low_level_callable(self):
         from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
-        if not self.real:
-            raise RuntimeError("Lambda function has to be real")
         if self.tot_out_size > 1:
             raise RuntimeError("SciPy LowLevelCallable supports only functions with 1 output")
         addr1 = cast(<size_t>&_scipy_callback_lambda_real,
@@ -4741,17 +4717,36 @@ cdef class LambdaDouble(_Lambdify):
         passed as input to the function as the third argument `user_data`.
         """
         from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
-        if not self.real:
-            raise RuntimeError("Lambda function has to be real")
         addr1 = cast(<size_t>&_ctypes_callback_lambda_real,
                         CFUNCTYPE(c_void_p, POINTER(c_double), POINTER(c_double), c_void_p))
         addr2 = cast(<size_t>&self.lambda_double[0], c_void_p)
         return addr1, addr2
 
 
+cdef class LambdaComplexDouble(_Lambdify):
+    def __cinit__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False, dtype=None):
+        # reject additional arguments
+        pass
+
+    cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
+        self.lambda_double.resize(1)
+        self.lambda_double[0].init(args_, outs_, cse)
+
+    cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out, int inp_offset=0, int out_offset=0):
+        self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
+
+    cpdef unsafe_eval(self, inp, out, unsigned nbroadcast=1):
+        cdef double complex[::1] c_inp, c_out
+        cdef unsigned idx
+        c_inp = np.ascontiguousarray(inp.ravel(order=self.order), dtype=self.numpy_dtype)
+        c_out = out
+        for idx in range(nbroadcast):
+            self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
+
+
 IF HAVE_SYMENGINE_LLVM:
-    cdef class LLVMDouble(_Lambdify):
-        def __cinit__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False, opt_level=3):
+    cdef class LLVMDouble(_LLVMLambdify):
+        def __cinit__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False, opt_level=3, dtype=None):
             self.opt_level = opt_level
 
         cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
@@ -4772,6 +4767,14 @@ IF HAVE_SYMENGINE_LLVM:
 
         cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=0, int out_offset=0):
             self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
+
+        cpdef unsafe_eval(self, inp, out, unsigned nbroadcast=1):
+            cdef double[::1] c_inp, c_out
+            cdef unsigned idx
+            c_inp = np.ascontiguousarray(inp.ravel(order=self.order), dtype=self.numpy_dtype)
+            c_out = out
+            for idx in range(nbroadcast):
+                self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
 
         cpdef as_scipy_low_level_callable(self):
             from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
@@ -4801,10 +4804,81 @@ IF HAVE_SYMENGINE_LLVM:
             addr2 = cast(<size_t>&self.lambda_double[0], c_void_p)
             return addr1, addr2
 
+    cdef class LLVMFloat(_LLVMLambdify):
+        def __cinit__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False, opt_level=3, dtype=None):
+            self.opt_level = opt_level
+
+        cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
+            self.lambda_double.resize(1)
+            self.lambda_double[0].init(args_, outs_, cse, self.opt_level)
+
+        cdef _load(self, const string &s):
+            self.lambda_double.resize(1)
+            self.lambda_double[0].loads(s)
+
+        def __reduce__(self):
+            """
+            Interface for pickle. Note that the resulting object is platform dependent.
+            """
+            cdef bytes s = self.lambda_double[0].dumps()
+            return llvm_float_loading_func, (self.args_size, self.tot_out_size, self.out_shapes, self.real, \
+                self.n_exprs, self.order, self.accum_out_sizes, self.numpy_dtype, s)
+
+        cpdef unsafe_real(self, float[::1] inp, float[::1] out, int inp_offset=0, int out_offset=0):
+            self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
+
+        cpdef unsafe_eval(self, inp, out, unsigned nbroadcast=1):
+            cdef float[::1] c_inp, c_out
+            cdef unsigned idx
+            c_inp = np.ascontiguousarray(inp.ravel(order=self.order), dtype=self.numpy_dtype)
+            c_out = out
+            for idx in range(nbroadcast):
+                self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
+
+    IF HAVE_SYMENGINE_LLVM_LONG_DOUBLE:
+        cdef class LLVMLongDouble(_LLVMLambdify):
+            def __cinit__(self, args, *exprs, cppbool real=True, order='C', cppbool cse=False, cppbool _load=False, opt_level=3, dtype=None):
+                self.opt_level = opt_level
+
+            cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
+                self.lambda_double.resize(1)
+                self.lambda_double[0].init(args_, outs_, cse, self.opt_level)
+
+            cdef _load(self, const string &s):
+                self.lambda_double.resize(1)
+                self.lambda_double[0].loads(s)
+
+            def __reduce__(self):
+                """
+                Interface for pickle. Note that the resulting object is platform dependent.
+                """
+                cdef bytes s = self.lambda_double[0].dumps()
+                return llvm_long_double_loading_func, (self.args_size, self.tot_out_size, self.out_shapes, self.real, \
+                    self.n_exprs, self.order, self.accum_out_sizes, self.numpy_dtype, s)
+
+            cpdef unsafe_real(self, long double[::1] inp, long double[::1] out, int inp_offset=0, int out_offset=0):
+                self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
+
+            cpdef unsafe_eval(self, inp, out, unsigned nbroadcast=1):
+                cdef long double[::1] c_inp, c_out
+                cdef unsigned idx
+                c_inp = np.ascontiguousarray(inp.ravel(order=self.order), dtype=self.numpy_dtype)
+                c_out = out
+                for idx in range(nbroadcast):
+                    self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
+
     def llvm_loading_func(*args):
         return LLVMDouble(args, _load=True)
 
-def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C', as_scipy=False, cse=False, **kwargs):
+    def llvm_float_loading_func(*args):
+        return LLVMFloat(args, _load=True)
+
+    IF HAVE_SYMENGINE_LLVM_LONG_DOUBLE:
+        def llvm_long_double_loading_func(*args):
+            return LLVMLongDouble(args, _load=True)
+
+def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C',
+             as_scipy=False, cse=False, dtype=None, **kwargs):
     """
     Lambdify instances are callbacks that numerically evaluate their symbolic
     expressions from user provided input (real or complex) into (possibly user
@@ -4833,6 +4907,7 @@ def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C', as_scipy=
     cse : bool
         Run Common Subexpression Elimination on the output before generating
         the callback.
+    dtype : numpy.dtype type
 
     Returns
     -------
@@ -4854,7 +4929,20 @@ def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C', as_scipy=
         backend = os.getenv('SYMENGINE_LAMBDIFY_BACKEND', "lambda")
     if backend == "llvm":
         IF HAVE_SYMENGINE_LLVM:
-            ret = LLVMDouble(args, *exprs, real=real, order=order, cse=cse, **kwargs)
+            if dtype == None:
+                dtype = np.float64
+            if dtype == np.float64:
+                ret = LLVMDouble(args, *exprs, real=real, order=order, cse=cse, dtype=np.float64, **kwargs)
+            elif dtype == np.float32:
+                ret = LLVMFloat(args, *exprs, real=real, order=order, cse=cse, dtype=np.float32, **kwargs)
+            elif dtype == np.longdouble:
+                IF HAVE_SYMENGINE_LLVM_LONG_DOUBLE:
+                    ret = LLVMLongDouble(args, *exprs, real=real, order=order, cse=cse, dtype=np.longdouble, **kwargs)
+                ELSE:
+                    raise ValueError("Long double not supported on this platform")
+            else:
+                raise ValueError("Unknown numpy dtype.")
+                
             if as_scipy:
                 return ret.as_scipy_low_level_callable()
             return ret
@@ -4865,7 +4953,10 @@ def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C', as_scipy=
         pass
     else:
         warnings.warn("Unknown SymEngine backend: %s\nUsing backend='lambda'" % backend)
-    ret = LambdaDouble(args, *exprs, real=real, order=order, cse=cse, **kwargs)
+    if real:
+        ret = LambdaDouble(args, *exprs, real=real, order=order, cse=cse, **kwargs)
+    else:
+        ret = LambdaComplexDouble(args, *exprs, real=real, order=order, cse=cse, **kwargs)
     if as_scipy:
         return ret.as_scipy_low_level_callable()
     return ret

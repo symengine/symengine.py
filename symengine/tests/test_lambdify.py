@@ -835,3 +835,34 @@ def test_as_ctypes():
     out = np.array([0, 0], dtype=np.double)
     addr1(out.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), inp.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), addr2)
     assert np.all(out == [6, 7])
+
+@unittest.skipUnless(have_numpy, "Numpy not installed")
+@unittest.skipUnless(se.have_llvm, "No LLVM support")
+def test_llvm_float():
+    import numpy as np
+    import ctypes
+    from symengine.lib.symengine_wrapper import LLVMFloat
+    x, y, z = se.symbols('x, y, z')
+    l = se.Lambdify([x, y, z], [se.Min(x, y), se.Max(y, z)], dtype=np.float32, backend='llvm')
+    inp = np.array([1,2,3], dtype=np.float32)
+    exp_out = np.array([1, 3], dtype=np.float32)
+    out = l(inp)
+    assert type(l) == LLVMFloat
+    assert out.dtype == np.float32
+    assert np.allclose(out, exp_out)
+
+@unittest.skipUnless(have_numpy, "Numpy not installed")
+@unittest.skipUnless(se.have_llvm, "No LLVM support")
+@unittest.skipUnless(se.have_llvm_long_double, "No LLVM IEEE-80 bit support")
+def test_llvm_long_double():
+    import numpy as np
+    import ctypes
+    from symengine.lib.symengine_wrapper import LLVMLongDouble
+    x, y, z = se.symbols('x, y, z')
+    l = se.Lambdify([x, y, z], [2*x, y/z], dtype=np.longdouble, backend='llvm')
+    inp = np.array([1,2,3], dtype=np.longdouble)
+    exp_out = np.array([2, 2.0/3.0], dtype=np.longdouble)
+    out = l(inp)
+    assert type(l) == LLVMLongDouble
+    assert out.dtype == np.longdouble
+    assert np.allclose(out, exp_out)

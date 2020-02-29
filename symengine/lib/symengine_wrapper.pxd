@@ -39,29 +39,46 @@ cdef class _Lambdify(object):
 
     cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse)
     cdef _load(self, const string &s)
-    cpdef unsafe_real(self,
-                      double[::1] inp, double[::1] out,
-                      int inp_offset=*, int out_offset=*)
-    cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out,
-                         int inp_offset=*, int out_offset=*)
     cpdef eval_real(self, inp, out)
     cpdef eval_complex(self, inp, out)
+    cpdef unsafe_eval(sef, inp, out, unsigned nbroadcast=*)
 
 cdef class LambdaDouble(_Lambdify):
     cdef vector[symengine.LambdaRealDoubleVisitor] lambda_double
-    cdef vector[symengine.LambdaComplexDoubleVisitor] lambda_double_complex
     cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse)
     cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=*, int out_offset=*)
-    cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out, int inp_offset=*, int out_offset=*)
     cpdef as_scipy_low_level_callable(self)
     cpdef as_ctypes(self)
+    cpdef unsafe_real(self,
+                      double[::1] inp, double[::1] out,
+                      int inp_offset=*, int out_offset=*)
+
+cdef class LambdaComplexDouble(_Lambdify):
+    cdef vector[symengine.LambdaComplexDoubleVisitor] lambda_double
+    cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse)
+    cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out, int inp_offset=*, int out_offset=*)
 
 IF HAVE_SYMENGINE_LLVM:
-    cdef class LLVMDouble(_Lambdify):
+    cdef class _LLVMLambdify(_Lambdify):
         cdef int opt_level
+
+    cdef class LLVMDouble(_LLVMLambdify):
         cdef vector[symengine.LLVMDoubleVisitor] lambda_double
         cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse)
         cdef _load(self, const string &s)
         cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=*, int out_offset=*)
         cpdef as_scipy_low_level_callable(self)
         cpdef as_ctypes(self)
+
+    cdef class LLVMFloat(_LLVMLambdify):
+        cdef vector[symengine.LLVMFloatVisitor] lambda_double
+        cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse)
+        cdef _load(self, const string &s)
+        cpdef unsafe_real(self, float[::1] inp, float[::1] out, int inp_offset=*, int out_offset=*)
+
+    IF HAVE_SYMENGINE_LLVM_LONG_DOUBLE:
+        cdef class LLVMLongDouble(_LLVMLambdify):
+            cdef vector[symengine.LLVMLongDoubleVisitor] lambda_double
+            cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse)
+            cdef _load(self, const string &s)
+            cpdef unsafe_real(self, long double[::1] inp, long double[::1] out, int inp_offset=*, int out_offset=*)
