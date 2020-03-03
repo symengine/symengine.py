@@ -7,7 +7,7 @@ from .lib.symengine_wrapper import (
     ImmutableMatrix, ImmutableDenseMatrix, MutableDenseMatrix,
     MatrixBase, Basic, DictBasic, symarray, series, diff, zeros,
     eye, diag, ones, Derivative, Subs, expand, has_symbol,
-    UndefFunction, Function, latex,
+    UndefFunction, Function, UnevaluatedExpr, latex,
     have_numpy, true, false, Equality, Unequality, GreaterThan,
     LessThan, StrictGreaterThan, StrictLessThan, Eq, Ne, Ge, Le,
     Gt, Lt, And, Or, Not, Nand, Nor, Xor, Xnor, perfect_power, integer_nthroot,

@@ -3,7 +3,7 @@ from symengine import (Symbol, Integer, sympify, SympifyError, log,
         exp, gamma, have_mpfr, have_mpc, DenseMatrix, sin, cos, tan, cot,
         csc, sec, asin, acos, atan, acot, acsc, asec, sinh, cosh, tanh, coth,
         asinh, acosh, atanh, acoth, Add, Mul, Pow, diff, GoldenRatio,
-        Catalan, EulerGamma)
+        Catalan, EulerGamma, UnevaluatedExpr)
 from symengine.lib.symengine_wrapper import (Subs, Derivative, RealMPFR,
         ComplexMPC, PyNumber, Function, LambertW, zeta, dirichlet_eta,
         KroneckerDelta, LeviCivita, erf, erfc, lowergamma, uppergamma,
@@ -647,6 +647,15 @@ def test_conjugate():
     x = Symbol("x")
     e1 = sympy.conjugate(sympy.Symbol("x"))
     e2 = conjugate(x)
+    assert sympify(e1) == e2
+    assert e2._sympy_() == e1
+
+
+@unittest.skipIf(not have_sympy, "SymPy not installed")
+def test_unevaluated_expr():
+    x = Symbol("x")
+    e1 = sympy.UnevaluatedExpr(sympy.Symbol("x"))
+    e2 = UnevaluatedExpr(x)
     assert sympify(e1) == e2
     assert e2._sympy_() == e1
 
