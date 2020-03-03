@@ -2582,11 +2582,11 @@ class UnevaluatedExpr(OneArgFunction):
 
     @property
     def is_integer(self):
-        return self.args[0].is_number
+        return self.args[0].is_integer
 
     @property
     def is_finite(self):
-        return self.args[0].is_number
+        return self.args[0].is_finite
 
 
 class Abs(OneArgFunction):
