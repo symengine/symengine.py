@@ -245,6 +245,8 @@ cdef object c2py(rcp_const_basic o):
         r = Boolean.__new__(Or)
     elif (symengine.is_a_Xor(deref(o))):
         r = Boolean.__new__(Xor)
+    elif (symengine.is_a_UnevaluatedExpr(deref(o))):
+        r = Function.__new__(UnevaluatedExpr)
     else:
         raise Exception("Unsupported SymEngine class.")
     r.thisptr = o
@@ -451,6 +453,8 @@ def sympy2symengine(a, raise_error=False):
         return imageset(*(a.args))
     elif isinstance(a, sympy.Function):
         return PyFunction(a, a.args, a.func, sympy_module)
+    elif isinstance(a, sympy.UnevaluatedExpr):
+        return UnevaluatedExpr(a.args[0])
     elif isinstance(a, sympy.MatrixBase):
         row, col = a.shape
         v = []
@@ -2565,6 +2569,24 @@ Gamma = gamma
 
 add = Add
 mul = Mul
+
+
+class UnevaluatedExpr(OneArgFunction):
+    def __new__(cls, x):
+        cdef Basic X = sympify(x)
+        return c2py(symengine.unevaluated_expr(X.thisptr))
+
+    @property
+    def is_number(self):
+        return self.args[0].is_number
+
+    @property
+    def is_integer(self):
+        return self.args[0].is_integer
+
+    @property
+    def is_finite(self):
+        return self.args[0].is_finite
 
 
 class Abs(OneArgFunction):
