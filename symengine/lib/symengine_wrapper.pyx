@@ -907,7 +907,11 @@ cdef class Basic(object):
         cdef _DictBasic D = get_dict(*args)
         return c2py(symengine.ssubs(self.thisptr, D.c))
 
-    replace = xreplace = subs
+    def xreplace(Basic self not None, *args):
+        cdef _DictBasic D = get_dict(*args)
+        return c2py(symengine.xreplace(self.thisptr, D.c))
+
+    replace = xreplace
 
     def msubs(Basic self not None, *args):
         cdef _DictBasic D = get_dict(*args)
@@ -3509,7 +3513,11 @@ cdef class DenseMatrixBase(MatrixBase):
         cdef _DictBasic D = get_dict(*args)
         return self.applyfunc(lambda x: x.subs(D))
 
-    replace = xreplace = subs
+    def xreplace(self, *args):
+        cdef _DictBasic D = get_dict(*args)
+        return self.applyfunc(lambda x: x.xreplace(D))
+
+    replace = xreplace
 
     @property
     def free_symbols(self):
