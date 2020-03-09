@@ -322,6 +322,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
 cdef extern from "<symengine/subs.h>" namespace "SymEngine":
     rcp_const_basic msubs (rcp_const_basic &x, const map_basic_basic &x) nogil
     rcp_const_basic ssubs (rcp_const_basic &x, const map_basic_basic &x) nogil
+    rcp_const_basic xreplace (rcp_const_basic &x, const map_basic_basic &x) nogil
 
 cdef extern from "<symengine/derivative.h>" namespace "SymEngine":
     rcp_const_basic diff "SymEngine::sdiff"(rcp_const_basic &arg, rcp_const_basic &x) nogil except +
