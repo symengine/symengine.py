@@ -3,7 +3,7 @@ from symengine import (
     Rational, EulerGamma, Function, Subs, Derivative, LambertW, zeta, dirichlet_eta,
     zoo, pi, KroneckerDelta, LeviCivita, erf, erfc, oo, lowergamma, uppergamma, exp,
     loggamma, beta, polygamma, digamma, trigamma, sign, floor, ceiling, conjugate,
-    nan, Float
+    nan, Float, UnevaluatedExpr
 )
 
 import unittest
@@ -386,3 +386,17 @@ def test_ceiling():
 def test_conjugate():
     assert conjugate(pi) == pi
     assert conjugate(I) == -I
+
+
+def test_unevaluated_expr():
+    x = Symbol("x")
+    t = UnevaluatedExpr(x)
+    assert x + t != 2 * x
+    assert not t.is_number
+    assert not t.is_integer
+    assert not t.is_finite
+
+    t = UnevaluatedExpr(1)
+    assert t.is_number
+    assert t.is_integer
+    assert t.is_finite

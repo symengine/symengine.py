@@ -307,7 +307,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_Complement "SymEngine::is_a<SymEngine::Complement>"(const Basic &b) nogil
     bool is_a_ConditionSet "SymEngine::is_a<SymEngine::ConditionSet>"(const Basic &b) nogil
     bool is_a_ImageSet "SymEngine::is_a<SymEngine::ImageSet>"(const Basic &b) nogil
-
+    bool is_a_UnevaluatedExpr "SymEngine::is_a<SymEngine::UnevaluatedExpr>"(const Basic &b) nogil
     bool is_a_Piecewise "SymEngine::is_a<SymEngine::Piecewise>"(const Basic &b) nogil
     bool is_a_Contains "SymEngine::is_a<SymEngine::Contains>"(const Basic &b) nogil
     bool is_a_And "SymEngine::is_a<SymEngine::And>"(const Basic &b) nogil
@@ -535,6 +535,7 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
     cdef rcp_const_basic conjugate(rcp_const_basic &x) nogil except+
     cdef rcp_const_basic log(rcp_const_basic &x) nogil except+
     cdef rcp_const_basic log(rcp_const_basic &x, rcp_const_basic &y) nogil except+
+    cdef rcp_const_basic unevaluated_expr(rcp_const_basic &x) nogil except+
 
     cdef cppclass Function(Basic):
         pass
