@@ -4,7 +4,8 @@
 
 # This finds the "cython" executable in your PATH, and then in some standard
 # paths:
-SET(CYTHON_BIN cython CACHE STRING "Cython executable name")
+
+find_program(CYTHON_BIN NAMES cython cython3 cython2)
 SET(CYTHON_FLAGS --cplus --fast-fail)
 
 SET(Cython_FOUND FALSE)
@@ -27,21 +28,22 @@ ENDIF (CYTHON_BIN)
 
 
 IF (Cython_FOUND)
-	IF (NOT Cython_FIND_QUIETLY)
-		MESSAGE(STATUS "Found CYTHON: ${CYTHON_BIN}")
-	ENDIF (NOT Cython_FIND_QUIETLY)
+    IF (NOT Cython_FIND_QUIETLY)
+        MESSAGE(STATUS "Found CYTHON: ${CYTHON_BIN}")
+    ENDIF (NOT Cython_FIND_QUIETLY)
 ELSE (Cython_FOUND)
-	IF (Cython_FIND_REQUIRED)
+    IF (Cython_FIND_REQUIRED)
         if(Cython_Compilation_Failed)
             MESSAGE(STATUS "Found CYTHON: ${CYTHON_BIN}")
-			# On Win the testing of Cython does not return any accessible value, so the test is not carried out. Fresh Cython install was tested and works.
-			IF(NOT MSVC)
-				MESSAGE(FATAL_ERROR "Your Cython version is too old. Please upgrade Cython.")
-			ENDIF(NOT MSVC)
+            # On Win the testing of Cython does not return any accessible value, so the test is not carried out.
+            # Fresh Cython install was tested and works.
+            IF(NOT MSVC)
+                MESSAGE(FATAL_ERROR "Your Cython version is too old. Please upgrade Cython.")
+            ENDIF(NOT MSVC)
         else(Cython_Compilation_Failed)
             MESSAGE(FATAL_ERROR "Could not find Cython. Please install Cython.")
         endif(Cython_Compilation_Failed)
-	ENDIF (Cython_FIND_REQUIRED)
+    ENDIF (Cython_FIND_REQUIRED)
 ENDIF (Cython_FOUND)
 
 
