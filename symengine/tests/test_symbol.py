@@ -1,5 +1,7 @@
 from symengine import Symbol, symbols, symarray, has_symbol, Dummy
 from symengine.utilities import raises
+import unittest
+import platform
 
 
 def test_symbol():
@@ -8,9 +10,6 @@ def test_symbol():
     assert str(x) == "x"
     assert str(x) != "y"
     assert repr(x) == str(x)
-    # Verify the successful use of slots.
-    assert not hasattr(x, "__dict__")
-    assert not hasattr(x, "__weakref__")
 
 
 def test_symbols():
@@ -163,6 +162,17 @@ def test_dummy():
     assert xdummy1 != xdummy2
     assert Dummy() != Dummy()
     assert Dummy('x') != Dummy('x')
+
+# Cython cdef classes on PyPy has a __dict__ attribute always
+# __slots__ on PyPy are useless anyways. https://stackoverflow.com/a/23077685/4768820
+@unittest.skipUnless(platform.python_implementation()=="CPython", "__slots__ are useless on PyPy")
+def test_slots():
+    x = Dummy('x')
     # Verify the successful use of slots.
-    assert not hasattr(xdummy1, "__dict__")
-    assert not hasattr(xdummy1, "__weakref__")
+    assert not hasattr(x, "__dict__")
+    assert not hasattr(x, "__weakref__")
+
+    x1 = Symbol('x')
+    # Verify the successful use of slots.
+    assert not hasattr(x, "__dict__")
+    assert not hasattr(x, "__weakref__")
