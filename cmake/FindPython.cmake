@@ -56,18 +56,12 @@ set(PYTHON_INSTALL_PATH ${PYTHON_INSTALL_PATH_tmp}
     CACHE BOOL "Python install path")
 message(STATUS "Python install path: ${PYTHON_INSTALL_PATH}")
 
-if (NOT WIN32)
-    execute_process(
-        COMMAND ${PYTHON_BIN} -c "from distutils.sysconfig import get_config_var; print(get_config_var('SOABI'))"
-        OUTPUT_VARIABLE PYTHON_EXTENSION_SOABI_tmp
-        )
-    string(STRIP ${PYTHON_EXTENSION_SOABI_tmp} PYTHON_EXTENSION_SOABI_tmp)
-    if (NOT "${PYTHON_EXTENSION_SOABI_tmp}" STREQUAL "None")
-        set(PYTHON_EXTENSION_SOABI_tmp ".${PYTHON_EXTENSION_SOABI_tmp}")
-    else()
-        set(PYTHON_EXTENSION_SOABI_tmp "")
-    endif()
-endif()
+execute_process(
+    COMMAND ${PYTHON_BIN} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/get_suffix.py
+    OUTPUT_VARIABLE PYTHON_EXTENSION_SOABI_tmp
+)
+string(STRIP ${PYTHON_EXTENSION_SOABI_tmp} PYTHON_EXTENSION_SOABI_tmp)
+
 set(PYTHON_EXTENSION_SOABI ${PYTHON_EXTENSION_SOABI_tmp}
     CACHE STRING "Suffix for python extensions")
 
