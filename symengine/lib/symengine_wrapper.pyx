@@ -41,7 +41,8 @@ class SympifyError(Exception):
 from cpython.pycapsule cimport PyCapsule_GetPointer
 
 cpdef object sympify_pycapsule(object cap):
-    void *p = PyCapsule_GetPointer(cap, NULL)
+    cdef void *p
+    p = PyCapsule_GetPointer(cap, NULL)
     return c2py(<rcp_const_basic>p)
 
 cdef object c2py(rcp_const_basic o):
