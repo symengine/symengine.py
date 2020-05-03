@@ -7,6 +7,10 @@ from libcpp.pair cimport pair
 
 include "config.pxi"
 
+cdef extern from 'symengine/cwrapper.h':
+    ctypedef struct basic_struct:
+        pass
+
 cdef extern from 'symengine/mp_class.h' namespace "SymEngine":
     ctypedef unsigned long mp_limb_t
     ctypedef struct __mpz_struct:

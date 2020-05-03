@@ -3,7 +3,7 @@ cimport symengine
 from symengine cimport (RCP, pair, map_basic_basic, umap_int_basic,
     umap_int_basic_iterator, umap_basic_num, umap_basic_num_iterator,
     rcp_const_basic, std_pair_short_rcp_const_basic,
-    rcp_const_seriescoeffinterface)
+    rcp_const_seriescoeffinterface, basic_struct)
 from libcpp cimport bool as cppbool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -41,8 +41,8 @@ class SympifyError(Exception):
 from cpython.pycapsule cimport PyCapsule_GetPointer
 
 cpdef object sympify_pycapsule(object cap):
-    cdef void *p
-    p = PyCapsule_GetPointer(cap, NULL)
+    cdef basic_struct *p
+    p = <basic_struct*>PyCapsule_GetPointer(cap, NULL)
     return c2py(<rcp_const_basic>p)
 
 cdef object c2py(rcp_const_basic o):
