@@ -38,6 +38,12 @@ include "config.pxi"
 class SympifyError(Exception):
     pass
 
+from cpython.pycapsule cimport PyCapsule_GetPointer
+
+def sympify_pycapsule(cap):
+    void *p = PyCapsule_GetPointer(cap, NULL)
+    return c2py(<rcp_const_basic>p)
+
 cdef object c2py(rcp_const_basic o):
     cdef Basic r
     if (symengine.is_a_Add(deref(o))):
