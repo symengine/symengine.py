@@ -39,14 +39,14 @@ include "config.pxi"
 class SympifyError(Exception):
     pass
 
-cpdef object sympify_pycapsule(object cap):
-    cdef CRCPBasic *p = <CRCPBasic*>PyCapsule_GetPointer(cap, NULL)
+cpdef object capsule_to_basic(object capsule):
+    cdef CRCPBasic *p = <CRCPBasic*>PyCapsule_GetPointer(capsule, NULL)
     return c2py(p.m)
 
-cpdef void assign_to_pycapsule(object x, object value):
-    cdef CRCPBasic *p_x = <CRCPBasic*>PyCapsule_GetPointer(x, NULL)
-    cdef Basic v = sympify(value)
-    p_x.m = v.thisptr
+cpdef void basic_to_capsule(object capsule, object basic):
+    cdef CRCPBasic *p_cap = <CRCPBasic*>PyCapsule_GetPointer(capsule, NULL)
+    cdef Basic v = sympify(basic)
+    p_cap.m = v.thisptr
 
 cdef object c2py(rcp_const_basic o):
     cdef Basic r
