@@ -3,7 +3,7 @@ cimport symengine
 from symengine cimport (RCP, pair, map_basic_basic, umap_int_basic,
     umap_int_basic_iterator, umap_basic_num, umap_basic_num_iterator,
     rcp_const_basic, std_pair_short_rcp_const_basic,
-    rcp_const_seriescoeffinterface, CRCPBasic, basic)
+    rcp_const_seriescoeffinterface, CRCPBasic)
 from libcpp cimport bool as cppbool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -20,6 +20,7 @@ import warnings
 from symengine.compatibility import is_sequence
 import os
 import sys
+from cpython.pycapsule cimport PyCapsule_GetPointer
 
 if sys.version_info[0] == 2:
     from collections import MutableMapping
@@ -38,11 +39,8 @@ include "config.pxi"
 class SympifyError(Exception):
     pass
 
-from cpython.pycapsule cimport PyCapsule_GetPointer
-
 cpdef object sympify_pycapsule(object cap):
-    cdef CRCPBasic *p
-    p = <CRCPBasic*>PyCapsule_GetPointer(cap, NULL)
+    cdef CRCPBasic *p = <CRCPBasic*>PyCapsule_GetPointer(cap, NULL)
     return c2py(p.m)
 
 cpdef void assign_to_pycapsule(object x, object value):
