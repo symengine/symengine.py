@@ -8,9 +8,9 @@ from libcpp.pair cimport pair
 include "config.pxi"
 
 cdef extern from 'symengine/cwrapper.h':
-    ctypedef struct basic_struct:
-        pass
-    ctypedef basic_struct basic[1]
+    ctypedef struct CRCPBasic:
+        rcp_const_basic m
+    ctypedef CRCPBasic basic[1]
 
 cdef extern from 'symengine/mp_class.h' namespace "SymEngine":
     ctypedef unsigned long mp_limb_t
