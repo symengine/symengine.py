@@ -7,11 +7,6 @@ from libcpp.pair cimport pair
 
 include "config.pxi"
 
-cdef extern from 'symengine/cwrapper.h':
-    ctypedef struct CRCPBasic:
-        rcp_const_basic m
-    ctypedef CRCPBasic basic[1]
-
 cdef extern from 'symengine/mp_class.h' namespace "SymEngine":
     ctypedef unsigned long mp_limb_t
     ctypedef struct __mpz_struct:
@@ -1069,3 +1064,8 @@ cdef extern from "<symengine/solve.h>" namespace "SymEngine":
 cdef extern from "<symengine/printers.h>" namespace "SymEngine":
     string ccode(const Basic &x) nogil except +
     string latex(const Basic &x) nogil except +
+
+cdef extern from 'symengine/cwrapper.h':
+    ctypedef struct CRCPBasic:
+        rcp_const_basic m
+    ctypedef CRCPBasic basic[1]
