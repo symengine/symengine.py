@@ -47,7 +47,7 @@ cpdef object sympify_pycapsule(object cap):
 
 cpdef void assign_to_pycapsule(object x, object value):
     cdef CRCPBasic *p_x
-    p_x = <CRCPBasic*>PyCapsule_GetPointer(cap, NULL)
+    p_x = <CRCPBasic*>PyCapsule_GetPointer(x, NULL)
     p_x.m = sympify(value).thisptr
 
 cdef object c2py(rcp_const_basic o):
