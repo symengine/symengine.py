@@ -1066,6 +1066,6 @@ cdef extern from "<symengine/printers.h>" namespace "SymEngine":
     string latex(const Basic &x) nogil except +
 
 cdef extern from 'symengine/cwrapper.h':
-    ctypedef struct CRCPBasic:
+    cdef struct CRCPBasic:
         rcp_const_basic m
     ctypedef CRCPBasic basic[1]
