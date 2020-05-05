@@ -43,9 +43,9 @@ cpdef object capsule_to_basic(object capsule):
     cdef CRCPBasic *p = <CRCPBasic*>PyCapsule_GetPointer(capsule, NULL)
     return c2py(p.m)
 
-cpdef void assign_to_capsule(object capsule, object basic):
+cpdef void assign_to_capsule(object capsule, object value):
     cdef CRCPBasic *p_cap = <CRCPBasic*>PyCapsule_GetPointer(capsule, NULL)
-    cdef Basic v = sympify(basic)
+    cdef Basic v = sympify(value)
     p_cap.m = v.thisptr
 
 cdef object c2py(rcp_const_basic o):
