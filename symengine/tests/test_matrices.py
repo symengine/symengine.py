@@ -238,6 +238,13 @@ def test_mul_matrix():
     raises(ShapeError, lambda: A*D)
 
 
+def test_elementwise_mul_matrix():
+    A = DenseMatrix(2, 2, [1, 2, 3, 4])
+    B = DenseMatrix(2, 2, [1, 0, 0, 1])
+
+    assert A.elementwise_mul_matrix(B) == DenseMatrix(2, 2, [1, 0, 0, 4])
+
+
 def test_add_scalar():
     A = DenseMatrix(2, 2, [1, 2, 3, 4])
 

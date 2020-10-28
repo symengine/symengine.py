@@ -783,6 +783,7 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
         void inv(MatrixBase &)
         void add_matrix(const MatrixBase &other, MatrixBase &result) nogil
         void mul_matrix(const MatrixBase &other, MatrixBase &result) nogil
+        void elementwise_mul_matrix(const MatrixBase &other, MatrixBase &result) nogil
         void add_scalar(rcp_const_basic k, MatrixBase &result) nogil
         void mul_scalar(rcp_const_basic k, MatrixBase &result) nogil
         void transpose(MatrixBase &result) nogil

@@ -3523,6 +3523,12 @@ cdef class DenseMatrixBase(MatrixBase):
         deref(self.thisptr).mul_matrix(deref(A_.thisptr), deref(result.thisptr))
         return result
 
+    def elementwise_mul_matrix(self, A):
+        cdef MatrixBase A_ = sympify(A)
+        cdef DenseMatrixBase result = self.__class__(self.nrows(), self.ncols())
+        deref(self.thisptr).elementwise_mul_matrix(deref(A_.thisptr), deref(result.thisptr))
+        return result
+
     def add_scalar(self, k):
         cdef Basic k_ = sympify(k)
         cdef DenseMatrixBase result = self.__class__(self.nrows(), self.ncols())
