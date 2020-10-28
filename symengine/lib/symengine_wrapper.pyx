@@ -447,14 +447,14 @@ def sympy2symengine(a, raise_error=False):
         return function_symbol(name, *(a.args))
     elif isinstance(a, (sympy.Piecewise)):
         return piecewise(*(a.args))
-    elif isinstance(a, sympy.Interval):
-        return interval(*(a.args))
-    elif a is sympy.S.EmptySet:
-        return emptyset()
     elif a is sympy.S.Reals:
         return reals()
     elif a is sympy.S.Integers:
         return integers()
+    elif isinstance(a, sympy.Interval):
+        return interval(*(a.args))
+    elif a is sympy.S.EmptySet:
+        return emptyset()
     elif a is sympy.S.UniversalSet:
         return universalset()
     elif isinstance(a, sympy.FiniteSet):

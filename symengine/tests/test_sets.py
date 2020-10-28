@@ -40,7 +40,7 @@ def test_Reals():
 
 def test_Reals():
     Z = Integers()
-    assert Z.union(Interval(2, 4)) == Z
+    assert Z.union(FiniteSet(2, 4)) == Z
     assert Z.contains(0) == true
 
 
