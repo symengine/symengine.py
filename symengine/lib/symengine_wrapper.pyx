@@ -3417,7 +3417,7 @@ cdef class DenseMatrixBase(MatrixBase):
 
     @property
     def is_square(self):
-        return self.rows == self.cols
+        return deref(self.thisptr).is_square()
 
     def nrows(self):
         return deref(self.thisptr).nrows()

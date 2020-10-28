@@ -781,6 +781,7 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
         bool eq(const MatrixBase &) nogil
         rcp_const_basic det() nogil
         void inv(MatrixBase &)
+        bool is_square() nogil
         void add_matrix(const MatrixBase &other, MatrixBase &result) nogil
         void mul_matrix(const MatrixBase &other, MatrixBase &result) nogil
         void elementwise_mul_matrix(const MatrixBase &other, MatrixBase &result) nogil
