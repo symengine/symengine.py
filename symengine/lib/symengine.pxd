@@ -301,6 +301,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_Conjugate "SymEngine::is_a<SymEngine::Conjugate>"(const Basic &b) nogil
     bool is_a_Interval "SymEngine::is_a<SymEngine::Interval>"(const Basic &b) nogil
     bool is_a_EmptySet "SymEngine::is_a<SymEngine::EmptySet>"(const Basic &b) nogil
+    bool is_a_Reals "SymEngine::is_a<SymEngine::Reals>"(const Basic &b) nogil
     bool is_a_UniversalSet "SymEngine::is_a<SymEngine::UniversalSet>"(const Basic &b) nogil
     bool is_a_FiniteSet "SymEngine::is_a<SymEngine::FiniteSet>"(const Basic &b) nogil
     bool is_a_Union "SymEngine::is_a<SymEngine::Union>"(const Basic &b) nogil
@@ -1032,6 +1033,8 @@ cdef extern from "<symengine/sets.h>" namespace "SymEngine":
         pass
     cdef cppclass EmptySet(Set):
         pass
+    cdef cppclass Reals(Set):
+        pass
     cdef cppclass UniversalSet(Set):
         pass
     cdef cppclass FiniteSet(Set):
@@ -1047,6 +1050,7 @@ cdef extern from "<symengine/sets.h>" namespace "SymEngine":
     ctypedef set[RCP[Set], RCPBasicKeyLess] set_set "SymEngine::set_set"
     cdef rcp_const_basic interval(RCP[const Number] &start, RCP[const Number] &end, bool l, bool r) nogil except +
     cdef RCP[const EmptySet] emptyset() nogil except +
+    cdef RCP[const Reals] reals() nogil except +
     cdef RCP[const UniversalSet] universalset() nogil except +
     cdef RCP[const Set] finiteset(set_basic &container) nogil except +
     cdef RCP[const Set] set_union(set_set &a) nogil except +

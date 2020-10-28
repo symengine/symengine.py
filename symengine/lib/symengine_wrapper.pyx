@@ -235,6 +235,8 @@ cdef object c2py(rcp_const_basic o):
         r = Set.__new__(Interval)
     elif (symengine.is_a_EmptySet(deref(o))):
         r = Set.__new__(EmptySet)
+    elif (symengine.is_a_Reals(deref(o))):
+        r = Set.__new__(Reals)
     elif (symengine.is_a_UniversalSet(deref(o))):
         r = Set.__new__(UniversalSet)
     elif (symengine.is_a_FiniteSet(deref(o))):
@@ -447,6 +449,8 @@ def sympy2symengine(a, raise_error=False):
         return interval(*(a.args))
     elif a is sympy.S.EmptySet:
         return emptyset()
+    elif a is sympy.S.Reals:
+        return reals()
     elif a is sympy.S.UniversalSet:
         return universalset()
     elif isinstance(a, sympy.FiniteSet):
@@ -2962,6 +2966,20 @@ class EmptySet(Set):
         return self.__class__
 
 
+class Reals(Set):
+
+    def __new__(self):
+        return reals()
+
+    def _sympy_(self):
+        import sympy
+        return sympy.S.Reals
+
+    @property
+    def func(self):
+        return self.__class__
+
+
 class UniversalSet(Set):
 
     def __new__(self):
@@ -5048,6 +5066,10 @@ def emptyset():
 
 def universalset():
     return c2py(<rcp_const_basic>(symengine.universalset()))
+
+
+def reals():
+    return c2py(<rcp_const_basic>(symengine.reals()))
 
 
 def finiteset(*args):

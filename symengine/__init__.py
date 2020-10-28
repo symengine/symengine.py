@@ -12,7 +12,7 @@ from .lib.symengine_wrapper import (
     LessThan, StrictGreaterThan, StrictLessThan, Eq, Ne, Ge, Le,
     Gt, Lt, And, Or, Not, Nand, Nor, Xor, Xnor, perfect_power, integer_nthroot,
     isprime, sqrt_mod, Expr, cse, count_ops, ccode, Piecewise, Contains, Interval, FiniteSet,
-    EmptySet, linsolve,
+    EmptySet, Reals, linsolve,
     FunctionSymbol as AppliedUndef,
     golden_ratio as GoldenRatio,
     catalan as Catalan,
