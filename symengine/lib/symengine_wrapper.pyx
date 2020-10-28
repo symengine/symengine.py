@@ -3551,6 +3551,12 @@ cdef class DenseMatrixBase(MatrixBase):
         deref(self.thisptr).conjugate(deref(result.thisptr))
         return result
 
+    def conjugate_transpose(self):
+        cdef DenseMatrixBase result = self.__class__(self.nrows(), self.ncols())
+        deref(self.thisptr).conjugate_transpose(deref(result.thisptr))
+        return result
+
+
 
     @property
     def T(self):
