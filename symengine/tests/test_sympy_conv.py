@@ -9,7 +9,7 @@ from symengine.lib.symengine_wrapper import (Subs, Derivative, RealMPFR,
         KroneckerDelta, LeviCivita, erf, erfc, lowergamma, uppergamma,
         loggamma, beta, polygamma, sign, floor, ceiling, conjugate, And,
         Or, Not, Xor, Piecewise, Interval, EmptySet, FiniteSet, Contains,
-        Union, Complement, UniversalSet, Reals)
+        Union, Complement, UniversalSet, Reals, Integers)
 import unittest
 
 # Note: We test _sympy_() for SymEngine -> SymPy conversion, as those are
@@ -720,6 +720,9 @@ def test_sets():
 
     assert sympify(sympy.S.Reals) == Reals()
     assert sympy.S.Reals == Reals()._sympy_()
+
+    assert sympify(sympy.S.Integers) == Integers()
+    assert sympy.S.Integers == Integers()._sympy_()
 
     assert FiniteSet(x, y) == FiniteSet(x1, y1)
     assert FiniteSet(x1, y) == FiniteSet(x1, y1)

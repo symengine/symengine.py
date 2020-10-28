@@ -1,6 +1,6 @@
 from symengine.utilities import raises
 from symengine.lib.symengine_wrapper import (Interval, EmptySet, UniversalSet,
-    FiniteSet, Union, Complement, ImageSet, ConditionSet, Reals,
+    FiniteSet, Union, Complement, ImageSet, ConditionSet, Reals, Integers,
     And, Or, oo, Symbol, true, Ge, Eq, Gt)
 
 
@@ -36,6 +36,12 @@ def test_Reals():
     R = Reals()
     assert R.union(Interval(2, 4)) == R
     assert R.contains(0) == true
+
+
+def test_Reals():
+    Z = Integers()
+    assert Z.union(Interval(2, 4)) == Z
+    assert Z.contains(0) == true
 
 
 def test_FiniteSet():
