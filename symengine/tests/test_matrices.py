@@ -311,6 +311,11 @@ def test_transpose():
     assert A.transpose() == A
 
 
+def test_conjugate():
+    A = DenseMatrix(2, 2, [1, 2, 3, I])
+    assert A.conjugate() == DenseMatrix(2, 2, [1, 2, 3, -I])
+
+
 def test_LU():
     A = DenseMatrix(3, 3, [1, 3, 5, 2, 5, 6, 8, 3, 1])
     L, U = A.LU()
