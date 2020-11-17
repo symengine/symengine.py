@@ -1,6 +1,6 @@
 from symengine.utilities import raises
 
-from symengine import Integer, I, S, pi
+from symengine import Integer, I, S, Symbol, pi
 from symengine.lib.symengine_wrapper import (perfect_power, is_square, integer_nthroot)
 
 
@@ -151,3 +151,7 @@ def test_integer_nthroot():
     assert integer_nthroot(c2, 2) == (c, True)
     assert integer_nthroot(c2 + 1, 2) == (c, False)
     assert integer_nthroot(c2 - 1, 2) == (c - 1, False)
+
+
+def test_is_zero():
+    assert Symbol('x').is_zero is None

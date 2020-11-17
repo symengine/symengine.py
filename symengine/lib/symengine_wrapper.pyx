@@ -1052,6 +1052,10 @@ cdef class Basic(object):
     def is_Matrix(self):
         return False
 
+    @property
+    def is_zero(self):
+        return is_zero(self)
+
     def copy(self):
         return self
 
@@ -1582,10 +1586,6 @@ cdef class Number(Expr):
     @property
     def is_negative(Basic self):
         return deref(symengine.rcp_static_cast_Number(self.thisptr)).is_negative()
-
-    @property
-    def is_zero(Basic self):
-        return deref(symengine.rcp_static_cast_Number(self.thisptr)).is_zero()
 
     @property
     def is_nonzero(self):
@@ -5126,6 +5126,19 @@ def contains(expr, sset):
     cdef Set sset_ = sympify(sset)
     cdef RCP[const symengine.Set] s = symengine.rcp_static_cast_Set(sset_.thisptr)
     return c2py(<rcp_const_basic>(symengine.contains(expr_.thisptr, s)))
+
+
+def tribool(value):
+    if value == -1:
+        return None
+    else:
+        return bool(value)
+
+
+def is_zero(expr):
+    cdef Basic expr_ = sympify(expr)
+    cdef int tbool = symengine.is_zero(deref(expr_.thisptr))
+    return tribool(tbool)
 
 
 def set_union(*args):

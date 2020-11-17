@@ -347,6 +347,7 @@ cdef extern from "<symengine/number.h>" namespace "SymEngine":
         pass
     cdef cppclass NumberWrapper(Basic):
         pass
+    cdef int is_zero(const Basic &x) nogil
 
 cdef extern from "pywrapper.h" namespace "SymEngine":
     cdef cppclass PyNumber(NumberWrapper):
