@@ -3523,7 +3523,7 @@ cdef class DenseMatrixBase(MatrixBase):
         deref(self.thisptr).mul_matrix(deref(A_.thisptr), deref(result.thisptr))
         return result
 
-    def elementwise_mul_matrix(self, A):
+    def multiply_elementwise(self, A):
         cdef MatrixBase A_ = sympify(A)
         cdef DenseMatrixBase result = self.__class__(self.nrows(), self.ncols())
         deref(self.thisptr).elementwise_mul_matrix(deref(A_.thisptr), deref(result.thisptr))
