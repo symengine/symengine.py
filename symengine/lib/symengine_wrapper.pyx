@@ -448,15 +448,15 @@ def sympy2symengine(a, raise_error=False):
     elif isinstance(a, (sympy.Piecewise)):
         return piecewise(*(a.args))
     elif a is sympy.S.Reals:
-        return reals()
+        return S.Reals
     elif a is sympy.S.Integers:
-        return integers()
+        return S.Integers
     elif isinstance(a, sympy.Interval):
         return interval(*(a.args))
     elif a is sympy.S.EmptySet:
-        return emptyset()
+        return S.EmptySet
     elif a is sympy.S.UniversalSet:
-        return universalset()
+        return S.UniversalSet
     elif isinstance(a, sympy.FiniteSet):
         return finiteset(*(a.args))
     elif isinstance(a, sympy.Contains):
@@ -656,6 +656,22 @@ class Singleton(object):
     @property
     def false(self):
         return false
+
+    @property
+    def EmptySet(self):
+        return empty_set_singleton
+
+    @property
+    def UniversalSet(self):
+        return universal_set_singleton
+
+    @property
+    def Integers(self):
+        return integers_singleton
+
+    @property
+    def Reals(self):
+        return reals_singleton
 
 S = Singleton()
 
@@ -5190,6 +5206,12 @@ def imageset(sym, expr, base):
     cdef Set base_ = sympify(base)
     cdef RCP[const symengine.Set] b = symengine.rcp_static_cast_Set(base_.thisptr)
     return c2py(<rcp_const_basic>(symengine.imageset(sym_.thisptr, expr_.thisptr, b)))
+
+
+universal_set_singleton = UniversalSet()
+integers_singleton = Integers()
+reals_singleton = Reals()
+empty_set_singleton = EmptySet()
 
 
 def solve(f, sym, domain=None):
