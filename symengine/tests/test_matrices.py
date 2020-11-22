@@ -321,6 +321,70 @@ def test_conjugate_transpose():
     assert A.conjugate_transpose() == DenseMatrix(2, 2, [1, 3, 2, -I])
 
 
+def test_trace():
+    A = DenseMatrix(2, 2, [1, 2, 3, 4])
+    assert A.trace() == 5
+
+
+def test_is_zero_matrix():
+    A = DenseMatrix(2, 2, [1, 2, 3, I])
+    assert not A.is_zero_matrix
+    B = DenseMatrix(1, 1, [Symbol('x')])
+    assert B.is_zero_matrix is None
+    C = DenseMatrix(3, 3, [0, 0, 0, 0, 0, 0, 0, 0, 0])
+    assert C.is_zero_matrix
+
+
+def test_is_real_matrix():
+    A = DenseMatrix(2, 2, [1, 2, 3, I])
+    assert not A.is_real_matrix
+    B = DenseMatrix(1, 1, [Symbol('x')])
+    assert B.is_real_matrix is None
+    C = DenseMatrix(3, 3, [0, 0, 0, 0, 0, 0, 0, 0, 0])
+    assert C.is_real_matrix
+
+
+def test_is_diagonal():
+    A = DenseMatrix(2, 2, [1, 0, 0, I])
+    assert A.is_diagonal
+    B = DenseMatrix(1, 1, [Symbol('x')])
+    assert B.is_diagonal
+    C = DenseMatrix(3, 3, [0, 0, 0, 0, 0, 0, 0, 2, 0])
+    assert not C.is_diagonal
+
+
+def test_is_symmetric():
+    A = DenseMatrix(2, 2, [1, 3, 2, I])
+    assert not A.is_symmetric
+    B = DenseMatrix(1, 1, [Symbol('x')])
+    assert B.is_symmetric
+    C = DenseMatrix(3, 3, [0, 0, 0, 0, 0, 0, 0, 2, 0])
+    assert not C.is_symmetric
+
+
+def test_is_hermitian():
+    A = DenseMatrix(2, 2, [1, 3, 2, I])
+    assert not A.is_hermitian
+    B = DenseMatrix(1, 1, [Symbol('x')])
+    assert B.is_hermitian is None
+    C = DenseMatrix(3, 3, [0, I, 0, 0, 0, 0, 0, 2, 0])
+    assert not C.is_hermitian
+
+
+def test_is_weakly_diagonally_dominant():
+    A = DenseMatrix(2, 2, [2, 1, 1, 2])
+    assert A.is_weakly_diagonally_dominant
+    C = DenseMatrix(3, 3, [Symbol('x'), 0, 0, 0, 3, 0, 0, 0, 4])
+    assert C.is_weakly_diagonally_dominant is None
+
+
+def test_is_strongly_diagonally_dominant():
+    A = DenseMatrix(2, 2, [2, 1, 1, 2])
+    assert A.is_strongly_diagonally_dominant
+    C = DenseMatrix(3, 3, [Symbol('x'), 2, 0, 0, 4, 0, 0, 0, 4])
+    assert C.is_strongly_diagonally_dominant is None
+
+
 def test_LU():
     A = DenseMatrix(3, 3, [1, 3, 5, 2, 5, 6, 8, 3, 1])
     L, U = A.LU()
