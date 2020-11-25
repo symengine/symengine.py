@@ -301,6 +301,8 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_Conjugate "SymEngine::is_a<SymEngine::Conjugate>"(const Basic &b) nogil
     bool is_a_Interval "SymEngine::is_a<SymEngine::Interval>"(const Basic &b) nogil
     bool is_a_EmptySet "SymEngine::is_a<SymEngine::EmptySet>"(const Basic &b) nogil
+    bool is_a_Reals "SymEngine::is_a<SymEngine::Reals>"(const Basic &b) nogil
+    bool is_a_Integers "SymEngine::is_a<SymEngine::Integers>"(const Basic &b) nogil
     bool is_a_UniversalSet "SymEngine::is_a<SymEngine::UniversalSet>"(const Basic &b) nogil
     bool is_a_FiniteSet "SymEngine::is_a<SymEngine::FiniteSet>"(const Basic &b) nogil
     bool is_a_Union "SymEngine::is_a<SymEngine::Union>"(const Basic &b) nogil
@@ -345,6 +347,12 @@ cdef extern from "<symengine/number.h>" namespace "SymEngine":
         pass
     cdef cppclass NumberWrapper(Basic):
         pass
+    cdef int is_zero(const Basic &x) nogil
+    cdef int is_positive(const Basic &x) nogil
+    cdef int is_negative(const Basic &x) nogil
+    cdef int is_nonnegative(const Basic &x) nogil
+    cdef int is_nonpositive(const Basic &x) nogil
+    cdef int is_real(const Basic &x) nogil
 
 cdef extern from "pywrapper.h" namespace "SymEngine":
     cdef cppclass PyNumber(NumberWrapper):
@@ -779,8 +787,12 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
         bool eq(const MatrixBase &) nogil
         rcp_const_basic det() nogil
         void inv(MatrixBase &)
+        bool is_square() nogil
         void add_matrix(const MatrixBase &other, MatrixBase &result) nogil
         void mul_matrix(const MatrixBase &other, MatrixBase &result) nogil
+        void elementwise_mul_matrix(const MatrixBase &other, MatrixBase &result) nogil
+        void conjugate(MatrixBase &result) nogil
+        void conjugate_transpose(MatrixBase &result) nogil
         void add_scalar(rcp_const_basic k, MatrixBase &result) nogil
         void mul_scalar(rcp_const_basic k, MatrixBase &result) nogil
         void transpose(MatrixBase &result) nogil
@@ -807,6 +819,14 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
         void col_insert(const DenseMatrix &B, unsigned pos) nogil
         void row_del(unsigned k) nogil
         void col_del(unsigned k) nogil
+        rcp_const_basic trace() nogil
+        int is_zero() nogil
+        int is_real() nogil
+        int is_diagonal() nogil
+        int is_symmetric() nogil
+        int is_hermitian() nogil
+        int is_weakly_diagonally_dominant() nogil
+        int is_strictly_diagonally_dominant() nogil
 
     bool is_a_DenseMatrix "SymEngine::is_a<SymEngine::DenseMatrix>"(const MatrixBase &b) nogil
     DenseMatrix* static_cast_DenseMatrix "static_cast<SymEngine::DenseMatrix*>"(const MatrixBase *a)
@@ -1032,6 +1052,10 @@ cdef extern from "<symengine/sets.h>" namespace "SymEngine":
         pass
     cdef cppclass EmptySet(Set):
         pass
+    cdef cppclass Reals(Set):
+        pass
+    cdef cppclass Integers(Set):
+        pass
     cdef cppclass UniversalSet(Set):
         pass
     cdef cppclass FiniteSet(Set):
@@ -1047,6 +1071,8 @@ cdef extern from "<symengine/sets.h>" namespace "SymEngine":
     ctypedef set[RCP[Set], RCPBasicKeyLess] set_set "SymEngine::set_set"
     cdef rcp_const_basic interval(RCP[const Number] &start, RCP[const Number] &end, bool l, bool r) nogil except +
     cdef RCP[const EmptySet] emptyset() nogil except +
+    cdef RCP[const Reals] reals() nogil except +
+    cdef RCP[const Integers] integers() nogil except +
     cdef RCP[const UniversalSet] universalset() nogil except +
     cdef RCP[const Set] finiteset(set_basic &container) nogil except +
     cdef RCP[const Set] set_union(set_set &a) nogil except +

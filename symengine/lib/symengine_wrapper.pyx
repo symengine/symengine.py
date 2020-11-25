@@ -235,6 +235,10 @@ cdef object c2py(rcp_const_basic o):
         r = Set.__new__(Interval)
     elif (symengine.is_a_EmptySet(deref(o))):
         r = Set.__new__(EmptySet)
+    elif (symengine.is_a_Reals(deref(o))):
+        r = Set.__new__(Reals)
+    elif (symengine.is_a_Integers(deref(o))):
+        r = Set.__new__(Integers)
     elif (symengine.is_a_UniversalSet(deref(o))):
         r = Set.__new__(UniversalSet)
     elif (symengine.is_a_FiniteSet(deref(o))):
@@ -443,12 +447,16 @@ def sympy2symengine(a, raise_error=False):
         return function_symbol(name, *(a.args))
     elif isinstance(a, (sympy.Piecewise)):
         return piecewise(*(a.args))
+    elif a is sympy.S.Reals:
+        return S.Reals
+    elif a is sympy.S.Integers:
+        return S.Integers
     elif isinstance(a, sympy.Interval):
         return interval(*(a.args))
     elif a is sympy.S.EmptySet:
-        return emptyset()
+        return S.EmptySet
     elif a is sympy.S.UniversalSet:
-        return universalset()
+        return S.UniversalSet
     elif isinstance(a, sympy.FiniteSet):
         return finiteset(*(a.args))
     elif isinstance(a, sympy.Contains):
@@ -648,6 +656,22 @@ class Singleton(object):
     @property
     def false(self):
         return false
+
+    @property
+    def EmptySet(self):
+        return empty_set_singleton
+
+    @property
+    def UniversalSet(self):
+        return universal_set_singleton
+
+    @property
+    def Integers(self):
+        return integers_singleton
+
+    @property
+    def Reals(self):
+        return reals_singleton
 
 S = Singleton()
 
@@ -1043,6 +1067,30 @@ cdef class Basic(object):
     @property
     def is_Matrix(self):
         return False
+
+    @property
+    def is_zero(self):
+        return is_zero(self)
+
+    @property
+    def is_positive(self):
+        return is_positive(self)
+
+    @property
+    def is_negative(self):
+        return is_negative(self)
+
+    @property
+    def is_nonpositive(self):
+        return is_nonpositive(self)
+
+    @property
+    def is_nonnegative(self):
+        return is_nonnegative(self)
+
+    @property
+    def is_real(self):
+        return is_real(self)
 
     def copy(self):
         return self
@@ -1574,10 +1622,6 @@ cdef class Number(Expr):
     @property
     def is_negative(Basic self):
         return deref(symengine.rcp_static_cast_Number(self.thisptr)).is_negative()
-
-    @property
-    def is_zero(Basic self):
-        return deref(symengine.rcp_static_cast_Number(self.thisptr)).is_zero()
 
     @property
     def is_nonzero(self):
@@ -2962,6 +3006,34 @@ class EmptySet(Set):
         return self.__class__
 
 
+class Reals(Set):
+
+    def __new__(self):
+        return reals()
+
+    def _sympy_(self):
+        import sympy
+        return sympy.S.Reals
+
+    @property
+    def func(self):
+        return self.__class__
+
+
+class Integers(Set):
+
+    def __new__(self):
+        return integers()
+
+    def _sympy_(self):
+        import sympy
+        return sympy.S.Integers
+
+    @property
+    def func(self):
+        return self.__class__
+
+
 class UniversalSet(Set):
 
     def __new__(self):
@@ -3381,7 +3453,7 @@ cdef class DenseMatrixBase(MatrixBase):
 
     @property
     def is_square(self):
-        return self.rows == self.cols
+        return deref(self.thisptr).is_square()
 
     def nrows(self):
         return deref(self.thisptr).nrows()
@@ -3487,6 +3559,12 @@ cdef class DenseMatrixBase(MatrixBase):
         deref(self.thisptr).mul_matrix(deref(A_.thisptr), deref(result.thisptr))
         return result
 
+    def multiply_elementwise(self, A):
+        cdef MatrixBase A_ = sympify(A)
+        cdef DenseMatrixBase result = self.__class__(self.nrows(), self.ncols())
+        deref(self.thisptr).elementwise_mul_matrix(deref(A_.thisptr), deref(result.thisptr))
+        return result
+
     def add_scalar(self, k):
         cdef Basic k_ = sympify(k)
         cdef DenseMatrixBase result = self.__class__(self.nrows(), self.ncols())
@@ -3503,6 +3581,51 @@ cdef class DenseMatrixBase(MatrixBase):
         cdef DenseMatrixBase result = self.__class__(self.ncols(), self.nrows())
         deref(self.thisptr).transpose(deref(result.thisptr))
         return result
+
+    def conjugate(self):
+        cdef DenseMatrixBase result = self.__class__(self.nrows(), self.ncols())
+        deref(self.thisptr).conjugate(deref(result.thisptr))
+        return result
+
+    def conjugate_transpose(self):
+        cdef DenseMatrixBase result = self.__class__(self.nrows(), self.ncols())
+        deref(self.thisptr).conjugate_transpose(deref(result.thisptr))
+        return result
+
+    @property
+    def H(self):
+        return self.conjugate_transpose()
+
+    def trace(self):
+        return c2py(deref(symengine.static_cast_DenseMatrix(self.thisptr)).trace())
+
+    @property
+    def is_zero_matrix(self):
+        return tribool(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_zero())
+
+    @property
+    def is_real_matrix(self):
+        return tribool(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_real())
+
+    @property
+    def is_diagonal(self):
+        return tribool(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_diagonal())
+
+    @property
+    def is_symmetric(self):
+        return tribool(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_symmetric())
+
+    @property
+    def is_hermitian(self):
+        return tribool(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_hermitian())
+
+    @property
+    def is_weakly_diagonally_dominant(self):
+        return tribool(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_weakly_diagonally_dominant())
+
+    @property
+    def is_strongly_diagonally_dominant(self):
+        return tribool(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_strictly_diagonally_dominant())
 
     @property
     def T(self):
@@ -5050,6 +5173,14 @@ def universalset():
     return c2py(<rcp_const_basic>(symengine.universalset()))
 
 
+def reals():
+    return c2py(<rcp_const_basic>(symengine.reals()))
+
+
+def integers():
+    return c2py(<rcp_const_basic>(symengine.integers()))
+
+
 def finiteset(*args):
     cdef symengine.set_basic s
     cdef Basic e_
@@ -5064,6 +5195,49 @@ def contains(expr, sset):
     cdef Set sset_ = sympify(sset)
     cdef RCP[const symengine.Set] s = symengine.rcp_static_cast_Set(sset_.thisptr)
     return c2py(<rcp_const_basic>(symengine.contains(expr_.thisptr, s)))
+
+
+def tribool(value):
+    if value == -1:
+        return None
+    else:
+        return bool(value)
+
+
+def is_zero(expr):
+    cdef Basic expr_ = sympify(expr)
+    cdef int tbool = symengine.is_zero(deref(expr_.thisptr))
+    return tribool(tbool)
+
+
+def is_positive(expr):
+    cdef Basic expr_ = sympify(expr)
+    cdef int tbool = symengine.is_positive(deref(expr_.thisptr))
+    return tribool(tbool)
+
+
+def is_negative(expr):
+    cdef Basic expr_ = sympify(expr)
+    cdef int tbool = symengine.is_negative(deref(expr_.thisptr))
+    return tribool(tbool)
+
+
+def is_nonpositive(expr):
+    cdef Basic expr_ = sympify(expr)
+    cdef int tbool = symengine.is_nonpositive(deref(expr_.thisptr))
+    return tribool(tbool)
+
+
+def is_nonnegative(expr):
+    cdef Basic expr_ = sympify(expr)
+    cdef int tbool = symengine.is_nonnegative(deref(expr_.thisptr))
+    return tribool(tbool)
+
+
+def is_real(expr):
+    cdef Basic expr_ = sympify(expr)
+    cdef int tbool = symengine.is_real(deref(expr_.thisptr))
+    return tribool(tbool)
 
 
 def set_union(*args):
@@ -5113,6 +5287,12 @@ def imageset(sym, expr, base):
     cdef Set base_ = sympify(base)
     cdef RCP[const symengine.Set] b = symengine.rcp_static_cast_Set(base_.thisptr)
     return c2py(<rcp_const_basic>(symengine.imageset(sym_.thisptr, expr_.thisptr, b)))
+
+
+universal_set_singleton = UniversalSet()
+integers_singleton = Integers()
+reals_singleton = Reals()
+empty_set_singleton = EmptySet()
 
 
 def solve(f, sym, domain=None):

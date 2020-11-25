@@ -1,3 +1,5 @@
+import symengine.lib.symengine_wrapper as wrapper
+
 from .lib.symengine_wrapper import (
     have_mpfr, have_mpc, have_flint, have_piranha, have_llvm, have_llvm_long_double,
     I, E, pi, oo, zoo, nan, Symbol, Dummy, S, sympify, SympifyError,
@@ -12,7 +14,7 @@ from .lib.symengine_wrapper import (
     LessThan, StrictGreaterThan, StrictLessThan, Eq, Ne, Ge, Le,
     Gt, Lt, And, Or, Not, Nand, Nor, Xor, Xnor, perfect_power, integer_nthroot,
     isprime, sqrt_mod, Expr, cse, count_ops, ccode, Piecewise, Contains, Interval, FiniteSet,
-    EmptySet, linsolve,
+    linsolve,
     FunctionSymbol as AppliedUndef,
     golden_ratio as GoldenRatio,
     catalan as Catalan,
@@ -21,6 +23,13 @@ from .lib.symengine_wrapper import (
 from .utilities import var, symbols
 from .functions import *
 from .printing import init_printing
+
+
+EmptySet = wrapper.S.EmptySet
+UniversalSet = wrapper.S.UniversalSet
+Reals = wrapper.S.Reals
+Integers = wrapper.S.Integers
+
 
 if have_mpfr:
     from .lib.symengine_wrapper import RealMPFR
@@ -36,6 +45,12 @@ if have_numpy:
 
 
 __version__ = "0.6.1"
+
+
+# To not expose internals
+del lib.symengine_wrapper
+del lib
+del wrapper
 
 
 def test():

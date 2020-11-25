@@ -1,6 +1,6 @@
 from symengine.utilities import raises
 
-from symengine import Integer, I, S, pi
+from symengine import Integer, I, S, Symbol, pi, Rational
 from symengine.lib.symengine_wrapper import (perfect_power, is_square, integer_nthroot)
 
 
@@ -151,3 +151,36 @@ def test_integer_nthroot():
     assert integer_nthroot(c2, 2) == (c, True)
     assert integer_nthroot(c2 + 1, 2) == (c, False)
     assert integer_nthroot(c2 - 1, 2) == (c - 1, False)
+
+
+def test_is_zero():
+    assert Symbol('x').is_zero is None
+
+
+def test_is_positive():
+    assert Rational(1, 2).is_positive
+    assert not Rational(-2, 3).is_positive
+    assert Symbol('x').is_positive is None
+
+
+def test_is_negative():
+    assert not Rational(1, 2).is_negative
+    assert Rational(-2, 3).is_negative
+    assert Symbol('x').is_negative is None
+
+
+def test_is_nonpositive():
+    assert not Rational(1, 2).is_nonpositive
+    assert Rational(-2, 3).is_nonpositive
+    assert Symbol('x').is_nonpositive is None
+
+
+def test_is_nonnegative():
+    assert Rational(1, 2).is_nonnegative
+    assert not Rational(-2, 3).is_nonnegative
+    assert Symbol('x').is_nonnegative is None
+
+
+def test_is_real():
+    assert Rational(1, 2).is_real
+    assert Symbol('x').is_real is None
