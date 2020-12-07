@@ -3628,6 +3628,14 @@ cdef class DenseMatrixBase(MatrixBase):
         return tribool(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_strictly_diagonally_dominant())
 
     @property
+    def is_positive_definite(self):
+        return tribool(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_positive_definite())
+
+    @property
+    def is_negative_definite(self):
+        return tribool(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_negative_definite())
+
+    @property
     def T(self):
         return self.transpose()
 

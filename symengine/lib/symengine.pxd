@@ -827,6 +827,8 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
         int is_hermitian() nogil
         int is_weakly_diagonally_dominant() nogil
         int is_strictly_diagonally_dominant() nogil
+        int is_positive_definite() nogil
+        int is_negative_definite() nogil
 
     bool is_a_DenseMatrix "SymEngine::is_a<SymEngine::DenseMatrix>"(const MatrixBase &b) nogil
     DenseMatrix* static_cast_DenseMatrix "static_cast<SymEngine::DenseMatrix*>"(const MatrixBase *a)

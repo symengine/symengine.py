@@ -385,6 +385,20 @@ def test_is_strongly_diagonally_dominant():
     assert C.is_strongly_diagonally_dominant is None
 
 
+def test_is_positive_definite():
+    A = DenseMatrix(2, 2, [2, 1, 1, 2])
+    assert A.is_positive_definite
+    C = DenseMatrix(3, 3, [Symbol('x'), 2, 0, 0, 4, 0, 0, 0, 4])
+    assert C.is_positive_definite is None
+
+
+def test_is_negative_definite():
+    A = DenseMatrix(2, 2, [-2, -1, -1, -2])
+    assert A.is_negative_definite
+    C = DenseMatrix(3, 3, [Symbol('x'), -2, 0, 0, -4, 0, 0, 0, -4])
+    assert C.is_negative_definite is None
+
+
 def test_LU():
     A = DenseMatrix(3, 3, [1, 3, 5, 2, 5, 6, 8, 3, 1])
     L, U = A.LU()
