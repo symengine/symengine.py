@@ -239,6 +239,8 @@ cdef object c2py(rcp_const_basic o):
         r = Set.__new__(Reals)
     elif (symengine.is_a_Integers(deref(o))):
         r = Set.__new__(Integers)
+    elif (symengine.is_a_Rationals(deref(o))):
+        r = Set.__new__(Rationals)
     elif (symengine.is_a_UniversalSet(deref(o))):
         r = Set.__new__(UniversalSet)
     elif (symengine.is_a_FiniteSet(deref(o))):
@@ -451,6 +453,8 @@ def sympy2symengine(a, raise_error=False):
         return S.Reals
     elif a is sympy.S.Integers:
         return S.Integers
+    elif a is sympy.S.Rationals:
+        return S.Rationals
     elif isinstance(a, sympy.Interval):
         return interval(*(a.args))
     elif a is sympy.S.EmptySet:
@@ -668,6 +672,10 @@ class Singleton(object):
     @property
     def Integers(self):
         return integers_singleton
+
+    @property
+    def Rationals(self):
+        return rationals_singleton
 
     @property
     def Reals(self):
@@ -3020,6 +3028,20 @@ class Reals(Set):
         return self.__class__
 
 
+class Rationals(Set):
+
+    def __new__(self):
+        return rationals()
+
+    def _sympy_(self):
+        import sympy
+        return sympy.S.Rationals
+
+    @property
+    def func(self):
+        return self.__class__
+
+
 class Integers(Set):
 
     def __new__(self):
@@ -5185,6 +5207,10 @@ def reals():
     return c2py(<rcp_const_basic>(symengine.reals()))
 
 
+def rationals():
+    return c2py(<rcp_const_basic>(symengine.rationals()))
+
+
 def integers():
     return c2py(<rcp_const_basic>(symengine.integers()))
 
@@ -5299,6 +5325,7 @@ def imageset(sym, expr, base):
 
 universal_set_singleton = UniversalSet()
 integers_singleton = Integers()
+rationals_singleton = Rationals()
 reals_singleton = Reals()
 empty_set_singleton = EmptySet()
 

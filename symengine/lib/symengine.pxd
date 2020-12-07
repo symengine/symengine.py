@@ -302,6 +302,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool is_a_Interval "SymEngine::is_a<SymEngine::Interval>"(const Basic &b) nogil
     bool is_a_EmptySet "SymEngine::is_a<SymEngine::EmptySet>"(const Basic &b) nogil
     bool is_a_Reals "SymEngine::is_a<SymEngine::Reals>"(const Basic &b) nogil
+    bool is_a_Rationals "SymEngine::is_a<SymEngine::Rationals>"(const Basic &b) nogil
     bool is_a_Integers "SymEngine::is_a<SymEngine::Integers>"(const Basic &b) nogil
     bool is_a_UniversalSet "SymEngine::is_a<SymEngine::UniversalSet>"(const Basic &b) nogil
     bool is_a_FiniteSet "SymEngine::is_a<SymEngine::FiniteSet>"(const Basic &b) nogil
@@ -1056,6 +1057,8 @@ cdef extern from "<symengine/sets.h>" namespace "SymEngine":
         pass
     cdef cppclass Reals(Set):
         pass
+    cdef cppclass Rationals(Set):
+        pass
     cdef cppclass Integers(Set):
         pass
     cdef cppclass UniversalSet(Set):
@@ -1074,6 +1077,7 @@ cdef extern from "<symengine/sets.h>" namespace "SymEngine":
     cdef rcp_const_basic interval(RCP[const Number] &start, RCP[const Number] &end, bool l, bool r) nogil except +
     cdef RCP[const EmptySet] emptyset() nogil except +
     cdef RCP[const Reals] reals() nogil except +
+    cdef RCP[const Rationals] rationals() nogil except +
     cdef RCP[const Integers] integers() nogil except +
     cdef RCP[const UniversalSet] universalset() nogil except +
     cdef RCP[const Set] finiteset(set_basic &container) nogil except +
