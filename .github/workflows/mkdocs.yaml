@@ -1,0 +1,59 @@
+on:
+  push:
+    branches:
+      - main
+      - master
+
+name: Make Sphinx API Docs
+
+jobs:
+  mkdocs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build CPP Core
+        run: |
+          git clone https://github.com/symengine/symengine symengine-cpp
+          cd symengine-cpp
+          export SOURCE_DIR=`pwd`
+          git checkout `cat ../symengine_version.txt`
+          cd $SOURCE_DIR
+          source bin/install_travis.sh
+          cd $SOURCE_DIR
+          bin/test_travis.sh
+        env:
+          WITH_MPC: yes
+          WITH_MPFR: yes
+          WITH_FLINT: yes
+          WITH_SCIPY: yes
+          WITH_DOCS: yes
+          INTEGER_CLASS: flint
+          TEST_CPP: no
+          TEST_SYMPY: yes
+          MAKEFLAGS: -j2
+          our_install_dir: $HOME/our_usr/
+      - uses: s-weigand/setup-conda@v1
+      - name: Build Bindings and Docs
+        run: |
+          export PYTHON_SOURCE_DIR=$GITHUB_WORKSPACE
+          cd $PYTHON_SOURCE_DIR
+          source bin/install_travis.sh
+          bin/test_travis.sh
+          pip install sphinx-autobuild m2r2 sphinxcontrib-apidoc sphinx-book-theme
+          sphinx-build docs/ genDocs/
+        env:
+          WITH_MPC: yes
+          WITH_MPFR: yes
+          WITH_FLINT: yes
+          WITH_SCIPY: yes
+          WITH_DOCS: yes
+          INTEGER_CLASS: flint
+          TEST_CPP: no
+          TEST_SYMPY: yes
+          MAKEFLAGS: -j2
+          our_install_dir: $HOME/our_usr/
+      - name: Deploy Documentation
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./genDocs
