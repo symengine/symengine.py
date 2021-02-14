@@ -49,7 +49,7 @@ jobs:
           MAKEFLAGS: -j2
           our_install_dir: $HOME/our_usr/
       - name: Deploy Documentation
-        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
+        if: ${{ (github.ref == 'refs/heads/main' && github.repository == 'Symengine/symengine.py') || (github.ref == 'refs/heads/master' && github.repository == 'Symengine/symengine.py')}}
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
