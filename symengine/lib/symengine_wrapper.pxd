@@ -1,3 +1,5 @@
+#cython: language_level=3
+
 cimport symengine
 from symengine cimport RCP, map_basic_basic, rcp_const_basic
 from libcpp.vector cimport vector

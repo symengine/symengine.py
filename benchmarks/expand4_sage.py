@@ -10,4 +10,4 @@ print "running benchmark..."
 t1 = clock()
 f = e.expand()
 t2 = clock()
-print "Total time:", t2-t1, "s"
+print("Total time:", t2-t1, "s")

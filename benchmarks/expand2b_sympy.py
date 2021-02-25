@@ -6,5 +6,5 @@ t1 = clock()
 f = e*(e+w)
 t2 = clock()
 #print f
-print "Total time:", t2-t1, "s"
-print "number of terms:", len(f)
+print("Total time:", t2-t1, "s")
+print("number of terms:", len(f))
