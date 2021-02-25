@@ -8,4 +8,4 @@ print f
 t1 = clock()
 g = f.expand()
 t2 = clock()
-print "Total time:", t2-t1, "s"
+print("Total time:", t2-t1, "s")

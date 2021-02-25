@@ -17,15 +17,11 @@ from operator import mul
 from functools import reduce
 import collections
 import warnings
-from symengine.compatibility import is_sequence
+from symengine.utilities import is_sequence
 import os
 import sys
 from cpython.pycapsule cimport PyCapsule_GetPointer
-
-if sys.version_info[0] == 2:
-    from collections import MutableMapping
-else:
-    from collections.abc import MutableMapping
+from collections.abc import MutableMapping
 
 try:
     import numpy as np
@@ -867,13 +863,6 @@ cdef class Basic(object):
         return c2py(symengine.mul(A.thisptr, B.thisptr))
 
     def __truediv__(a, b):
-        cdef Basic A = _sympify(a, False)
-        cdef Basic B = _sympify(b, False)
-        if A is None or B is None: return NotImplemented
-        return c2py(symengine.div(A.thisptr, B.thisptr))
-
-    # This is for Python 2.7 compatibility only:
-    def __div__(a, b):
         cdef Basic A = _sympify(a, False)
         cdef Basic B = _sympify(b, False)
         if A is None or B is None: return NotImplemented
@@ -2681,7 +2670,6 @@ class FunctionSymbol(Function):
         cdef RCP[const symengine.FunctionSymbol] X = \
             symengine.rcp_static_cast_FunctionSymbol(self.thisptr)
         name = deref(X).get_name().decode("utf-8")
-        # In Python 2.7, function names cannot be unicode:
         return str(name)
 
     def _sympy_(self):
@@ -3258,9 +3246,6 @@ cdef class DenseMatrixBase(MatrixBase):
             return b.mul_scalar(a)
         else:
             return NotImplemented
-
-    def __div__(a, b):
-        return div_matrices(a, b)
 
     def __truediv__(a, b):
         return div_matrices(a, b)

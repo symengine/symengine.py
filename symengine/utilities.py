@@ -1,5 +1,4 @@
 from .lib.symengine_wrapper import Symbol, Basic
-from .compatibility import string_types
 from itertools import combinations, permutations, product, product as cartes
 import re as _re
 import string
@@ -85,7 +84,7 @@ def symbols(names, **args):
     """
     result = []
 
-    if isinstance(names, string_types):
+    if isinstance(names, str):
         marker = 0
         literals = ['\,', '\:', '\ ']
         for i in range(len(literals)):
@@ -333,3 +332,42 @@ if not USE_PYTEST:
             if exc_type is None:
                 raise AssertionError("DID NOT RAISE")
             return issubclass(exc_type, self.expectedException)
+
+
+class NotIterable:
+    """
+    Use this as mixin when creating a class which is not supposed to return
+    true when iterable() is called on its instances. I.e. avoid infinite loop
+    when calling e.g. list() on the instance
+    """
+    pass
+
+
+def iterable(i, exclude=(str, dict, NotIterable)):
+    """
+    Return a boolean indicating whether ``i`` is SymPy iterable.
+    True also indicates that the iterator is finite, i.e. you e.g.
+    call list(...) on the instance.
+
+    When SymPy is working with iterables, it is almost always assuming
+    that the iterable is not a string or a mapping, so those are excluded
+    by default. If you want a pure Python definition, make exclude=None. To
+    exclude multiple items, pass them as a tuple.
+    """
+    try:
+        iter(i)
+    except TypeError:
+        return False
+    if exclude:
+        return not isinstance(i, exclude)
+    return True
+
+
+def is_sequence(i):
+    """
+    Return a boolean indicating whether ``i`` is a sequence in the SymPy
+    sense. If anything that fails the test below should be included as
+    being a sequence for your application, set 'include' to that object's
+    type; multiple types should be passed as a tuple of types.
+    """
+    return hasattr(i, '__getitem__') and iterable(i)

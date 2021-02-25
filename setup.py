@@ -1,4 +1,3 @@
-from __future__ import print_function
 from os import getenv, path, makedirs
 import os
 import subprocess
@@ -7,8 +6,8 @@ from distutils.command.build_ext import build_ext as _build_ext
 from distutils.command.build import build as _build
 
 # Make sure the system has the right Python version.
-if sys.version_info[:2] < (2, 7):
-    print("SymEngine requires Python 2.7 or newer. "
+if sys.version_info[:2] < (3, 6):
+    print("SymEngine requires Python 3.6 or newer. "
           "Python %d.%d detected" % sys.version_info[:2])
     sys.exit(-1)
 
@@ -142,8 +141,6 @@ class BuildExtWithCmake(_build_ext):
 
     def run(self):
         self.cmake_build()
-        # can't use super() here because
-        #  _build_ext is an old style class in 2.7
         _build_ext.run(self)
 
 
@@ -168,8 +165,6 @@ class InstallWithCmake(_install):
         cmake_opts.extend(self.define)
         cmake_build_type[0] = self.build_type
         cmake_opts.extend([('PYTHON_INSTALL_PATH', path.join(os.getcwd(), self.install_platlib))])
-        #cmake_opts.extend([('PYTHON_INSTALL_HEADER_PATH',
-        #                    path.join(os.getcwd(), self.install_headers))])
 
     def cmake_install(self):
         source_dir = path.dirname(path.realpath(__file__))
@@ -192,7 +187,6 @@ class InstallWithCmake(_install):
         compileall.compile_dir(path.join(self.install_platlib, "symengine"))
 
     def run(self):
-        # can't use super() here because _install is an old style class in 2.7
         _install.run(self)
         self.cmake_install()
 
@@ -231,7 +225,7 @@ setup(name="symengine",
       author_email="symengine@googlegroups.com",
       license="MIT",
       url="https://github.com/symengine/symengine.py",
-      python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,<4',
+      python_requires='!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,<4',
       zip_safe=False,
       cmdclass = cmdclass,
       classifiers=[
@@ -241,10 +235,9 @@ setup(name="symengine",
         'Topic :: Scientific/Engineering',
         'Topic :: Scientific/Engineering :: Mathematics',
         'Topic :: Scientific/Engineering :: Physics',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         ]
       )

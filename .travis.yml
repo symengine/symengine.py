@@ -24,15 +24,11 @@ env:
   ## executed.
   matrix:
   # Debug builds:
-  - BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="2.7" TEST_SYMPY="yes"
   - BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="3.6" TEST_SYMPY="yes"
 
   # Release builds:
-  - PYTHON_VERSION="2.7" BUILD_SHARED_LIBS="yes"
-  - PYTHON_VERSION="2.7" WITH_MPFR="yes" INTEGER_CLASS="gmpxx" WITH_NUMPY="no"
   - PYTHON_VERSION="3.7" WITH_MPC="yes"
   - PYTHON_VERSION="3.7" WITH_MPFR="yes"
-  - PYTHON_VERSION="3.5" WITH_MPC="yes"
   - PYTHON_VERSION="3.6" WITH_MPC="yes" INTEGER_CLASS="flint" WITH_FLINT="yes"
 
 matrix:
@@ -40,7 +36,7 @@ matrix:
     - compiler: clang
     - os: osx
   include:
-    - env: BUILD_TYPE="Debug" WITH_BFD="yes" WITH_PIRANHA="yes" PYTHON_VERSION="2.7"
+    - env: BUILD_TYPE="Debug" WITH_BFD="yes" WITH_PIRANHA="yes" PYTHON_VERSION="3.7"
       compiler: gcc
       os: linux
       addons:
@@ -50,10 +46,7 @@ matrix:
           packages:
           - binutils-dev
           - g++-4.8
-    - env: BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="3.5" BUILD_SHARED_LIBS="yes"
-      compiler: clang
-      os: linux
-    - env: BUILD_TYPE="Release" PYTHON_VERSION="2.7" WITH_NUMPY="no"
+    - env: BUILD_TYPE="Debug" WITH_BFD="yes" PYTHON_VERSION="3.8" BUILD_SHARED_LIBS="yes"
       compiler: clang
       os: linux
     - env: BUILD_TYPE="Debug" PYTHON_VERSION="3.6" WITH_SYMPY="no" WITH_LLVM="8.0" WITH_SCIPY="yes" CC="gcc-4.8" CXX="g++-4.8"
@@ -69,23 +62,21 @@ matrix:
           - libstdc++-4.8-dev
           - binutils-dev
           - llvm-8-dev
-    - env: BUILD_TYPE="Debug" PYTHON_VERSION="2.7" WITH_LLVM="5.0" WITH_SCIPY="yes"
+    - env: BUILD_TYPE="Debug" PYTHON_VERSION="3.7" WITH_LLVM="5.0" WITH_SCIPY="yes"
       compiler: clang
       os: osx
     - env: BUILD_TYPE="Release" PYTHON_VERSION="3.5" WITH_NUMPY="no"
       compiler: clang
       os: osx
-    - env: BUILD_TYPE="Debug" PYTHON_VERSION="2.7" WITH_NUMPY="no"
+    - env: BUILD_TYPE="Debug" PYTHON_VERSION="3.6" WITH_NUMPY="no"
       compiler: gcc
       os: osx
-    - env: BUILD_TYPE="Release" PYTHON_VERSION="3.5"
+    - env: BUILD_TYPE="Release" PYTHON_VERSION="3.6"
       compiler: gcc
       os: osx
-    - env: BUILD_TYPE="Release" WITH_SAGE="yes" WITH_MPC="yes" PYTHON_VERSION="2.7"
+    - env: BUILD_TYPE="Release" WITH_SAGE="yes" WITH_MPC="yes" PYTHON_VERSION="3.8"
       compiler: gcc
       os: linux
-  allow_failures:
-    - env: BUILD_TYPE="Release" WITH_SAGE="yes" WITH_MPC="yes" PYTHON_VERSION="2.7"
 
 before_install:
 - |
