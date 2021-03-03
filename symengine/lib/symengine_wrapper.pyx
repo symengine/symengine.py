@@ -4874,7 +4874,7 @@ cdef class LambdaDouble(_Lambdify):
         """
         Returns a tuple with first element being a ctypes function with signature
 
-            void func(double * output, const double *input, void *user_data)
+            void func(double \*output, const double \*input, void \*user_data)
 
         and second element being a ctypes void pointer. This void pointer needs to be
         passed as input to the function as the third argument `user_data`.
