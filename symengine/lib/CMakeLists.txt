@@ -35,3 +35,16 @@ install(FILES __init__.py
     pywrapper.h
     DESTINATION ${PY_PATH}
     )
+
+if (${SYMENGINE_COPY_EXTENSION})
+  if ("${PYTHON_EXTENSION_SOABI}" MATCHES "ppc64le")
+    string(REPLACE "ppc64le" "powerpc64le" COPY_PYTHON_EXTENSION_SOABI "${PYTHON_EXTENSION_SOABI}")
+  endif ()
+  if ("${PYTHON_EXTENSION_SOABI}" MATCHES "powerpc64le")
+    string(REPLACE "powerpc64le" "ppc64le" COPY_PYTHON_EXTENSION_SOABI "${PYTHON_EXTENSION_SOABI}")
+  endif ()
+  message("${PYTHON_EXTENSION_SOABI} ${COPY_PYTHON_EXTENSION_SOABI}")
+  set(SOURCE_NAME "${PY_PATH}/symengine_wrapper${PYTHON_EXTENSION_SOABI}.so")
+  set(DEST_NAME "${PY_PATH}/symengine_wrapper${COPY_PYTHON_EXTENSION_SOABI}.so")
+  install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${SOURCE_NAME} ${DEST_NAME})")
+endif ()

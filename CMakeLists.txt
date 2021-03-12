@@ -56,6 +56,7 @@ message("HAVE_SYMENGINE_PIRANHA              : ${HAVE_SYMENGINE_PIRANHA}")
 message("HAVE_SYMENGINE_FLINT                : ${HAVE_SYMENGINE_FLINT}")
 message("HAVE_SYMENGINE_LLVM                 : ${HAVE_SYMENGINE_LLVM}")
 message("HAVE_SYMENGINE_LLVM_LONG_DOUBLE     : ${HAVE_SYMENGINE_LLVM_LONG_DOUBLE}")
+message("SYMENGINE_COPY_EXTENSION            : ${SYMENGINE_COPY_EXTENSION}")
 
 message("Copying source of python wrappers into: ${CMAKE_CURRENT_BINARY_DIR}")
 file(COPY symengine/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/symengine)
