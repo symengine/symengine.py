@@ -1,0 +1,7 @@
+symengine.tests.test\_sympy\_conv module
+========================================
+
+.. automodule:: symengine.tests.test_sympy_conv
+   :members:
+   :undoc-members:
+   :show-inheritance:

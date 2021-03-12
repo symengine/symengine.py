@@ -1,0 +1,557 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>symengine.tests.test_sage &#8212; Symengine Python Bindings</title>
+    
+  <link rel="stylesheet" href="../../../_static/css/index.f658d18f9b420779cfdf24aa0a7e2d77.css">
+
+    
+  <link rel="stylesheet"
+    href="../../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+  <link rel="stylesheet"
+    href="../../../_static/vendor/open-sans_all/1.44.1/index.css">
+  <link rel="stylesheet"
+    href="../../../_static/vendor/lato_latin-ext/1.44.1/index.css">
+
+    
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/sphinx-book-theme.c441f2ba0852f4cabcb80105e3a46ae6.css" type="text/css" />
+    
+  <link rel="preload" as="script" href="../../../_static/js/index.d3f166471bb80abb5163.js">
+
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx-book-theme.7d483ff0a819d6edff12ce0b1ead3928.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+
+
+
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+<a class="navbar-brand text-wrap" href="../../../index.html">
+  
+  
+  <h1 class="site-logo" id="site-title">Symengine Python Bindings</h1>
+  
+</a>
+</div><form class="bd-search d-flex align-items-center" action="../../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form>
+<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+    <ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../index.html">
+   Symengine Python API Documentation
+  </a>
+ </li>
+</ul>
+<p class="caption collapsible-parent">
+ <span class="caption-text">
+  Contents:
+ </span>
+</p>
+<ul class="nav sidenav_l1">
+ <li class="toctree-l1 collapsible-parent">
+  <a class="reference internal" href="../../../source/modules.html">
+   symengine.py
+  </a>
+  <ul class="collapse-ul">
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../source/setup.html">
+     setup module
+    </a>
+   </li>
+   <li class="toctree-l2 collapsible-parent">
+    <a class="reference internal" href="../../../source/symengine.html">
+     symengine package
+    </a>
+    <ul class="collapse-ul">
+     <li class="toctree-l3 collapsible-parent">
+      <a class="reference internal" href="../../../source/symengine.lib.html">
+       symengine.lib package
+      </a>
+      <ul class="collapse-ul">
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.lib.symengine_wrapper.html">
+         symengine.lib.symengine_wrapper module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.lib.symengine_wrapper.html">
+         symengine.lib.symengine_wrapper module
+        </a>
+       </li>
+      </ul>
+      <i class="fas fa-chevron-down">
+      </i>
+     </li>
+     <li class="toctree-l3 collapsible-parent">
+      <a class="reference internal" href="../../../source/symengine.tests.html">
+       symengine.tests package
+      </a>
+      <ul class="collapse-ul">
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_arit.html">
+         symengine.tests.test_arit module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_cse.html">
+         symengine.tests.test_cse module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_dict_basic.html">
+         symengine.tests.test_dict_basic module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_eval.html">
+         symengine.tests.test_eval module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_expr.html">
+         symengine.tests.test_expr module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_functions.html">
+         symengine.tests.test_functions module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_lambdify.html">
+         symengine.tests.test_lambdify module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_logic.html">
+         symengine.tests.test_logic module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_matrices.html">
+         symengine.tests.test_matrices module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_ntheory.html">
+         symengine.tests.test_ntheory module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_number.html">
+         symengine.tests.test_number module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_pickling.html">
+         symengine.tests.test_pickling module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_printing.html">
+         symengine.tests.test_printing module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_sage.html">
+         symengine.tests.test_sage module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_series_expansion.html">
+         symengine.tests.test_series_expansion module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_sets.html">
+         symengine.tests.test_sets module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_solve.html">
+         symengine.tests.test_solve module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_subs.html">
+         symengine.tests.test_subs module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_symbol.html">
+         symengine.tests.test_symbol module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_sympify.html">
+         symengine.tests.test_sympify module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_sympy_compat.html">
+         symengine.tests.test_sympy_compat module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_sympy_conv.html">
+         symengine.tests.test_sympy_conv module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../../source/symengine.tests.test_var.html">
+         symengine.tests.test_var module
+        </a>
+       </li>
+      </ul>
+      <i class="fas fa-chevron-down">
+      </i>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../../source/symengine.compatibility.html">
+       symengine.compatibility module
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../../source/symengine.functions.html">
+       symengine.functions module
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../../source/symengine.printing.html">
+       symengine.printing module
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../../source/symengine.sympy_compat.html">
+       symengine.sympy_compat module
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../../source/symengine.utilities.html">
+       symengine.utilities module
+      </a>
+     </li>
+    </ul>
+    <i class="fas fa-chevron-down">
+    </i>
+   </li>
+  </ul>
+  <i class="fas fa-chevron-down">
+  </i>
+ </li>
+</ul>
+
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+            <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/symengine/symengine.py"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        <a class="issues-button"
+            href="https://github.com/symengine/symengine.py/issues/new?title=Issue%20on%20page%20%2F_modules/symengine/tests/test_sage.html&body=Your%20issue%20content%20here."><button
+                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
+                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
+        
+    </div>
+</div>
+
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+            <a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+                    data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+                    title="Fullscreen mode"><i
+                        class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <h1>Source code for symengine.tests.test_sage</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">symengine</span> <span class="kn">import</span> <span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">symbols</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">E</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">oo</span><span class="p">,</span> <span class="n">zoo</span><span class="p">,</span>
+    <span class="n">nan</span><span class="p">,</span> <span class="n">true</span><span class="p">,</span> <span class="n">false</span><span class="p">,</span> <span class="n">Add</span><span class="p">,</span> <span class="n">function_symbol</span><span class="p">,</span> <span class="n">DenseMatrix</span><span class="p">,</span>
+    <span class="n">sympify</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">EulerGamma</span><span class="p">,</span> <span class="n">Catalan</span><span class="p">,</span> <span class="n">GoldenRatio</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">symengine.lib.symengine_wrapper</span> <span class="kn">import</span> <span class="p">(</span><span class="n">PyNumber</span><span class="p">,</span> <span class="n">PyFunction</span><span class="p">,</span>
+    <span class="n">sage_module</span><span class="p">,</span> <span class="n">wrap_sage_function</span><span class="p">,</span> <span class="n">LambertW</span><span class="p">,</span> <span class="n">KroneckerDelta</span><span class="p">,</span> <span class="n">erf</span><span class="p">,</span>
+    <span class="n">lowergamma</span><span class="p">,</span> <span class="n">uppergamma</span><span class="p">,</span> <span class="n">loggamma</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">floor</span><span class="p">,</span> <span class="n">ceiling</span><span class="p">,</span> <span class="n">conjugate</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">unittest</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">sage.all</span> <span class="k">as</span> <span class="nn">sage</span>
+    <span class="n">have_sage</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">have_sage</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="test_sage_conversions"><a class="viewcode-back" href="../../../source/symengine.tests.test_sage.html#symengine.tests.test_sage.test_sage_conversions">[docs]</a><span class="nd">@unittest</span><span class="o">.</span><span class="n">skipUnless</span><span class="p">(</span><span class="n">have_sage</span><span class="p">,</span> <span class="s2">&quot;Sage not installed&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">test_sage_conversions</span><span class="p">():</span>
+
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">sage</span><span class="o">.</span><span class="n">SR</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;x y&#39;</span><span class="p">)</span>
+    <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;x, y&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Symbol</span>
+    <span class="k">assert</span> <span class="n">x1</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">x</span>
+    <span class="k">assert</span> <span class="n">x1</span> <span class="o">==</span> <span class="n">sympify</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="c1"># Integer</span>
+    <span class="k">assert</span> <span class="n">Integer</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">Integer</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">Integer</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span> <span class="o">==</span> <span class="n">sympify</span><span class="p">(</span><span class="n">sage</span><span class="o">.</span><span class="n">Integer</span><span class="p">(</span><span class="mi">12</span><span class="p">))</span>
+
+    <span class="c1"># Rational</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">Integer</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">Integer</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="k">assert</span> <span class="n">Integer</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">==</span> <span class="n">sympify</span><span class="p">(</span><span class="n">sage</span><span class="o">.</span><span class="n">Integer</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Operators</span>
+    <span class="k">assert</span> <span class="n">x1</span> <span class="o">+</span> <span class="n">y</span> <span class="o">==</span> <span class="n">x1</span> <span class="o">+</span> <span class="n">y1</span>
+    <span class="k">assert</span> <span class="n">x1</span> <span class="o">*</span> <span class="n">y</span> <span class="o">==</span> <span class="n">x1</span> <span class="o">*</span> <span class="n">y1</span>
+    <span class="k">assert</span> <span class="n">x1</span> <span class="o">**</span> <span class="n">y</span> <span class="o">==</span> <span class="n">x1</span> <span class="o">**</span> <span class="n">y1</span>
+    <span class="k">assert</span> <span class="n">x1</span> <span class="o">-</span> <span class="n">y</span> <span class="o">==</span> <span class="n">x1</span> <span class="o">-</span> <span class="n">y1</span>
+    <span class="k">assert</span> <span class="n">x1</span> <span class="o">/</span> <span class="n">y</span> <span class="o">==</span> <span class="n">x1</span> <span class="o">/</span> <span class="n">y1</span>
+
+    <span class="k">assert</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y1</span> <span class="o">==</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+    <span class="k">assert</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y1</span> <span class="o">==</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span>
+    <span class="c1"># Doesn&#39;t work in Sage 6.1.1ubuntu2</span>
+    <span class="c1"># assert x ** y1 == x ** y</span>
+    <span class="k">assert</span> <span class="n">x</span> <span class="o">-</span> <span class="n">y1</span> <span class="o">==</span> <span class="n">x</span> <span class="o">-</span> <span class="n">y</span>
+    <span class="k">assert</span> <span class="n">x</span> <span class="o">/</span> <span class="n">y1</span> <span class="o">==</span> <span class="n">x</span> <span class="o">/</span> <span class="n">y</span>
+
+    <span class="c1"># Conversions</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">x1</span> <span class="o">+</span> <span class="n">y1</span><span class="p">)</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">x1</span> <span class="o">*</span> <span class="n">y1</span><span class="p">)</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">x1</span> <span class="o">**</span> <span class="n">y1</span><span class="p">)</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">x</span> <span class="o">**</span> <span class="n">y</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">x1</span> <span class="o">-</span> <span class="n">y1</span><span class="p">)</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">x</span> <span class="o">-</span> <span class="n">y</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">x1</span> <span class="o">/</span> <span class="n">y1</span><span class="p">)</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">x</span> <span class="o">/</span> <span class="n">y</span>
+
+    <span class="k">assert</span> <span class="n">x1</span> <span class="o">+</span> <span class="n">y1</span> <span class="o">==</span> <span class="n">sympify</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">x1</span> <span class="o">*</span> <span class="n">y1</span> <span class="o">==</span> <span class="n">sympify</span><span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">y</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">x1</span> <span class="o">**</span> <span class="n">y1</span> <span class="o">==</span> <span class="n">sympify</span><span class="p">(</span><span class="n">x</span> <span class="o">**</span> <span class="n">y</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">x1</span> <span class="o">-</span> <span class="n">y1</span> <span class="o">==</span> <span class="n">sympify</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">x1</span> <span class="o">/</span> <span class="n">y1</span> <span class="o">==</span> <span class="n">sympify</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="c1"># Functions</span>
+    <span class="k">assert</span> <span class="n">sin</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span> <span class="o">==</span> <span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">sin</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">sin</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span> <span class="o">==</span> <span class="n">sympify</span><span class="p">(</span><span class="n">sage</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+    <span class="k">assert</span> <span class="n">cos</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span> <span class="o">==</span> <span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">cos</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">cos</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span> <span class="o">==</span> <span class="n">sympify</span><span class="p">(</span><span class="n">sage</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+    <span class="k">assert</span> <span class="n">function_symbol</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">function_symbol</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x1</span> <span class="o">+</span> <span class="n">y1</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span>
+            <span class="n">sage</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+    <span class="k">assert</span> <span class="n">LambertW</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span> <span class="o">==</span> <span class="n">LambertW</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">LambertW</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">lambert_w</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">KroneckerDelta</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span> <span class="o">==</span> <span class="n">KroneckerDelta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">KroneckerDelta</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">kronecker_delta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">erf</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span> <span class="o">==</span> <span class="n">erf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">erf</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">erf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">lowergamma</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span> <span class="o">==</span> <span class="n">lowergamma</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">lowergamma</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">gamma_inc_lower</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">uppergamma</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span> <span class="o">==</span> <span class="n">uppergamma</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">uppergamma</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">gamma_inc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">loggamma</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span> <span class="o">==</span> <span class="n">loggamma</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">loggamma</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">log_gamma</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">beta</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span> <span class="o">==</span> <span class="n">beta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">beta</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">beta</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">floor</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span> <span class="o">==</span> <span class="n">floor</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">floor</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">ceiling</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span> <span class="o">==</span> <span class="n">ceiling</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">ceiling</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">conjugate</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span> <span class="o">==</span> <span class="n">conjugate</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">conjugate</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">conjugate</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="c1"># For the following test, sage needs to be modified</span>
+    <span class="c1"># assert sage.sin(x) == sage.sin(x1)</span>
+
+    <span class="c1"># Constants and Booleans</span>
+    <span class="k">assert</span> <span class="n">pi</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">pi</span>
+    <span class="k">assert</span> <span class="n">E</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">e</span>
+    <span class="k">assert</span> <span class="n">I</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">I</span>
+    <span class="k">assert</span> <span class="n">GoldenRatio</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">golden_ratio</span>
+    <span class="k">assert</span> <span class="n">Catalan</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">catalan</span>
+    <span class="k">assert</span> <span class="n">EulerGamma</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">euler_gamma</span>
+    <span class="k">assert</span> <span class="n">oo</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">oo</span>
+    <span class="k">assert</span> <span class="n">zoo</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">unsigned_infinity</span>
+    <span class="k">assert</span> <span class="n">nan</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">NaN</span>
+    <span class="k">assert</span> <span class="n">true</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="kc">True</span>
+    <span class="k">assert</span> <span class="n">false</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="kc">False</span>
+
+    <span class="k">assert</span> <span class="n">pi</span> <span class="o">==</span> <span class="n">sympify</span><span class="p">(</span><span class="n">sage</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">E</span> <span class="o">==</span> <span class="n">sympify</span><span class="p">(</span><span class="n">sage</span><span class="o">.</span><span class="n">e</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">GoldenRatio</span> <span class="o">==</span> <span class="n">sympify</span><span class="p">(</span><span class="n">sage</span><span class="o">.</span><span class="n">golden_ratio</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">Catalan</span> <span class="o">==</span> <span class="n">sympify</span><span class="p">(</span><span class="n">sage</span><span class="o">.</span><span class="n">catalan</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">EulerGamma</span> <span class="o">==</span> <span class="n">sympify</span><span class="p">(</span><span class="n">sage</span><span class="o">.</span><span class="n">euler_gamma</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">oo</span> <span class="o">==</span> <span class="n">sympify</span><span class="p">(</span><span class="n">sage</span><span class="o">.</span><span class="n">oo</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">zoo</span> <span class="o">==</span> <span class="n">sympify</span><span class="p">(</span><span class="n">sage</span><span class="o">.</span><span class="n">unsigned_infinity</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">nan</span> <span class="o">==</span> <span class="n">sympify</span><span class="p">(</span><span class="n">sage</span><span class="o">.</span><span class="n">NaN</span><span class="p">)</span>
+
+    <span class="c1"># SympyConverter does not support converting the following</span>
+    <span class="c1"># assert I == sympify(sage.I)</span>
+
+    <span class="c1"># Matrix</span>
+    <span class="k">assert</span> <span class="n">DenseMatrix</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">])</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">sage</span><span class="o">.</span><span class="n">matrix</span><span class="p">([[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]])</span>
+
+    <span class="c1"># SympyConverter does not support converting the following</span>
+    <span class="c1"># assert DenseMatrix(1, 2, [x1, y1]) == sympify(sage.matrix([[x, y]]))</span>
+
+    <span class="c1"># Sage Number</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">sage</span><span class="o">.</span><span class="n">Mod</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">PyNumber</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">sage_module</span><span class="p">)</span>
+
+    <span class="n">a</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="mi">8</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">b</span> <span class="o">+</span> <span class="mi">8</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">PyNumber</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">a</span>
+
+    <span class="n">a</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">x</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">b</span> <span class="o">+</span> <span class="n">x</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">Add</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">b</span><span class="o">.</span><span class="n">_sage_</span><span class="p">()</span> <span class="o">==</span> <span class="n">a</span>
+
+    <span class="c1"># Sage Function</span>
+    <span class="n">e</span> <span class="o">=</span> <span class="n">x1</span> <span class="o">+</span> <span class="n">wrap_sage_function</span><span class="p">(</span><span class="n">sage</span><span class="o">.</span><span class="n">log_gamma</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;x + log_gamma(x)&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">Add</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">e</span> <span class="o">+</span> <span class="n">wrap_sage_function</span><span class="p">(</span><span class="n">sage</span><span class="o">.</span><span class="n">log_gamma</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">==</span>
+            <span class="n">x1</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">wrap_sage_function</span><span class="p">(</span><span class="n">sage</span><span class="o">.</span><span class="n">log_gamma</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">x1</span><span class="p">:</span> <span class="mi">10</span><span class="p">})</span>
+    <span class="k">assert</span> <span class="n">f</span> <span class="o">==</span> <span class="mi">10</span> <span class="o">+</span> <span class="n">log</span><span class="p">(</span><span class="mi">362880</span><span class="p">)</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">x1</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
+    <span class="k">assert</span> <span class="n">f</span> <span class="o">==</span> <span class="mi">2</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">subs</span><span class="p">({</span><span class="n">x1</span><span class="p">:</span> <span class="mi">100</span><span class="p">})</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">n</span><span class="p">(</span><span class="mi">53</span><span class="p">,</span> <span class="n">real</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">-</span> <span class="mf">459.13420537</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-7</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span></div>
+    <span class="c1"># Enable this once symengine conversions are in</span>
+    <span class="c1">#  sage as sage.psi is converted to a sympy function in `e.diff(x1)`</span>
+    <span class="c1"># assert f == 1 + wrap_sage_function(sage.psi(x))</span>
+
+
+<span class="c1"># This string contains Sage doctests, that execute all the functions above.</span>
+<span class="c1"># When you add a new function, add it here as well.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">TESTS::</span>
+<span class="sd">    sage: test_sage_conversions()</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+
+              </div>
+              
+        
+        <div class='prev-next-bottom'>
+            
+
+        </div>
+        
+        </div>
+    </div>
+    <footer class="footer mt-5 mt-md-0">
+    <div class="container">
+      <p>
+        
+          By SymEngine development team <symengine@googlegroups.com><br/>
+        
+            &copy; Copyright 2021, SymEngine development team &lt;symengine@googlegroups.com&gt;.<br/>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+
+    
+  <script src="../../../_static/js/index.d3f166471bb80abb5163.js"></script>
+
+
+    
+  </body>
+</html>

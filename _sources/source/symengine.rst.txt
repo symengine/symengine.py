@@ -1,0 +1,31 @@
+symengine package
+=================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   symengine.lib
+   symengine.tests
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   symengine.compatibility
+   symengine.functions
+   symengine.printing
+   symengine.sympy_compat
+   symengine.utilities
+
+Module contents
+---------------
+
+.. automodule:: symengine
+   :members:
+   :undoc-members:
+   :show-inheritance:

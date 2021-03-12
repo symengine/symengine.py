@@ -1,0 +1,19 @@
+symengine.lib package
+=====================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   symengine.lib.symengine_wrapper
+   symengine.lib.symengine_wrapper
+
+Module contents
+---------------
+
+.. automodule:: symengine.lib
+   :members:
+   :undoc-members:
+   :show-inheritance:

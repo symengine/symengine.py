@@ -1,0 +1,7 @@
+symengine.compatibility module
+==============================
+
+.. automodule:: symengine.compatibility
+   :members:
+   :undoc-members:
+   :show-inheritance:

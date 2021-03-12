@@ -1,0 +1,7 @@
+symengine.tests.test\_arit module
+=================================
+
+.. automodule:: symengine.tests.test_arit
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,7 @@
+symengine.sympy\_compat module
+==============================
+
+.. automodule:: symengine.sympy_compat
+   :members:
+   :undoc-members:
+   :show-inheritance:

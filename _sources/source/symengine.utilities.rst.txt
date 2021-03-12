@@ -1,0 +1,7 @@
+symengine.utilities module
+==========================
+
+.. automodule:: symengine.utilities
+   :members:
+   :undoc-members:
+   :show-inheritance:

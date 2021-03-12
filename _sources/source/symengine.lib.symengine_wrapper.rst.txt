@@ -1,0 +1,7 @@
+symengine.lib.symengine\_wrapper module
+=======================================
+
+.. automodule:: symengine.lib.symengine_wrapper
+   :members:
+   :undoc-members:
+   :show-inheritance:

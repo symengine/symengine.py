@@ -1,0 +1,7 @@
+symengine.tests.test\_pickling module
+=====================================
+
+.. automodule:: symengine.tests.test_pickling
+   :members:
+   :undoc-members:
+   :show-inheritance:

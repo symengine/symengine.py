@@ -1,0 +1,7 @@
+symengine.tests.test\_functions module
+======================================
+
+.. automodule:: symengine.tests.test_functions
+   :members:
+   :undoc-members:
+   :show-inheritance:

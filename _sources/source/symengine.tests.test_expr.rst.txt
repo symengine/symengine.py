@@ -1,0 +1,7 @@
+symengine.tests.test\_expr module
+=================================
+
+.. automodule:: symengine.tests.test_expr
+   :members:
+   :undoc-members:
+   :show-inheritance:

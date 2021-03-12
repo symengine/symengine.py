@@ -1,0 +1,7 @@
+symengine.tests.test\_sage module
+=================================
+
+.. automodule:: symengine.tests.test_sage
+   :members:
+   :undoc-members:
+   :show-inheritance:

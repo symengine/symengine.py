@@ -1,0 +1,523 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>symengine.tests.test_arit module &#8212; Symengine Python Bindings</title>
+    
+  <link rel="stylesheet" href="../_static/css/index.f658d18f9b420779cfdf24aa0a7e2d77.css">
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+  <link rel="stylesheet"
+    href="../_static/vendor/open-sans_all/1.44.1/index.css">
+  <link rel="stylesheet"
+    href="../_static/vendor/lato_latin-ext/1.44.1/index.css">
+
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/sphinx-book-theme.c441f2ba0852f4cabcb80105e3a46ae6.css" type="text/css" />
+    
+  <link rel="preload" as="script" href="../_static/js/index.d3f166471bb80abb5163.js">
+
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx-book-theme.7d483ff0a819d6edff12ce0b1ead3928.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="symengine.tests.test_cse module" href="symengine.tests.test_cse.html" />
+    <link rel="prev" title="symengine.tests package" href="symengine.tests.html" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+
+
+
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+<a class="navbar-brand text-wrap" href="../index.html">
+  
+  
+  <h1 class="site-logo" id="site-title">Symengine Python Bindings</h1>
+  
+</a>
+</div><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form>
+<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+    <ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../index.html">
+   Symengine Python API Documentation
+  </a>
+ </li>
+</ul>
+<p class="caption collapsible-parent">
+ <span class="caption-text">
+  Contents:
+ </span>
+</p>
+<ul class="current nav sidenav_l1">
+ <li class="toctree-l1 current active collapsible-parent">
+  <a class="reference internal" href="modules.html">
+   symengine.py
+  </a>
+  <ul class="current collapse-ul">
+   <li class="toctree-l2">
+    <a class="reference internal" href="setup.html">
+     setup module
+    </a>
+   </li>
+   <li class="toctree-l2 current active collapsible-parent">
+    <a class="reference internal" href="symengine.html">
+     symengine package
+    </a>
+    <ul class="current collapse-ul">
+     <li class="toctree-l3 collapsible-parent">
+      <a class="reference internal" href="symengine.lib.html">
+       symengine.lib package
+      </a>
+      <ul class="collapse-ul">
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.lib.symengine_wrapper.html">
+         symengine.lib.symengine_wrapper module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.lib.symengine_wrapper.html">
+         symengine.lib.symengine_wrapper module
+        </a>
+       </li>
+      </ul>
+      <i class="fas fa-chevron-down">
+      </i>
+     </li>
+     <li class="toctree-l3 current active collapsible-parent">
+      <a class="reference internal" href="symengine.tests.html">
+       symengine.tests package
+      </a>
+      <ul class="current collapse-ul">
+       <li class="toctree-l4 current active">
+        <a class="current reference internal" href="#">
+         symengine.tests.test_arit module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_cse.html">
+         symengine.tests.test_cse module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_dict_basic.html">
+         symengine.tests.test_dict_basic module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_eval.html">
+         symengine.tests.test_eval module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_expr.html">
+         symengine.tests.test_expr module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_functions.html">
+         symengine.tests.test_functions module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_lambdify.html">
+         symengine.tests.test_lambdify module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_logic.html">
+         symengine.tests.test_logic module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_matrices.html">
+         symengine.tests.test_matrices module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_ntheory.html">
+         symengine.tests.test_ntheory module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_number.html">
+         symengine.tests.test_number module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_pickling.html">
+         symengine.tests.test_pickling module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_printing.html">
+         symengine.tests.test_printing module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_sage.html">
+         symengine.tests.test_sage module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_series_expansion.html">
+         symengine.tests.test_series_expansion module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_sets.html">
+         symengine.tests.test_sets module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_solve.html">
+         symengine.tests.test_solve module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_subs.html">
+         symengine.tests.test_subs module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_symbol.html">
+         symengine.tests.test_symbol module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_sympify.html">
+         symengine.tests.test_sympify module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_sympy_compat.html">
+         symengine.tests.test_sympy_compat module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_sympy_conv.html">
+         symengine.tests.test_sympy_conv module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_var.html">
+         symengine.tests.test_var module
+        </a>
+       </li>
+      </ul>
+      <i class="fas fa-chevron-down">
+      </i>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="symengine.compatibility.html">
+       symengine.compatibility module
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="symengine.functions.html">
+       symengine.functions module
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="symengine.printing.html">
+       symengine.printing module
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="symengine.sympy_compat.html">
+       symengine.sympy_compat module
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="symengine.utilities.html">
+       symengine.utilities module
+      </a>
+     </li>
+    </ul>
+    <i class="fas fa-chevron-down">
+    </i>
+   </li>
+  </ul>
+  <i class="fas fa-chevron-down">
+  </i>
+ </li>
+</ul>
+
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../_sources/source/symengine.tests.test_arit.rst.txt"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.rst</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/symengine/symengine.py"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        <a class="issues-button"
+            href="https://github.com/symengine/symengine.py/issues/new?title=Issue%20on%20page%20%2Fsource/symengine.tests.test_arit.html&body=Your%20issue%20content%20here."><button
+                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
+                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
+        <a class="edit-button" href="https://github.com/symengine/symengine.py/edit/master/docs/source/symengine.tests.test_arit.rst"><button
+                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
+                title="Edit this page"><i class="fas fa-pencil-alt"></i>suggest edit</button></a>
+    </div>
+</div>
+
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+            <a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+                    data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+                    title="Fullscreen mode"><i
+                        class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <div class="section" id="module-symengine.tests.test_arit">
+<span id="symengine-tests-test-arit-module"></span><h1>symengine.tests.test_arit module<a class="headerlink" href="#module-symengine.tests.test_arit" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_Pow_base_exp">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_Pow_base_exp</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_Pow_base_exp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_Pow_base_exp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_args">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_args</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_args"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_arit1">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_arit1</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_arit1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_arit1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_arit2">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_arit2</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_arit2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_arit2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_arit3">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_arit3</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_arit3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_arit3" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_arit4">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_arit4</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_arit4"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_arit4" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_arit5">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_arit5</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_arit5"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_arit5" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_arit6">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_arit6</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_arit6"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_arit6" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_arit7">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_arit7</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_arit7"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_arit7" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_arit8">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_arit8</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_arit8"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_arit8" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_arit9">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_arit9</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_arit9"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_arit9" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_as_numer_denom">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_as_numer_denom</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_as_numer_denom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_as_numer_denom" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_as_real_imag">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_as_real_imag</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_as_real_imag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_as_real_imag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_atoms">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_atoms</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_atoms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_atoms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_bool">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_bool</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_bool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_bool" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_copy">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_copy</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_copy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_count_ops">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_count_ops</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_count_ops"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_count_ops" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_expand1">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_expand1</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_expand1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_expand1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_expand2">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_expand2</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_expand2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_expand2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_expand3">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_expand3</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_expand3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_expand3" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_free_symbols">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_free_symbols</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_free_symbols"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_free_symbols" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_from_args">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_from_args</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_from_args"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_from_args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_make_args">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_make_args</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_make_args"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_make_args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.tests.test_arit.test_special_constants">
+<code class="sig-prename descclassname"><span class="pre">symengine.tests.test_arit.</span></code><code class="sig-name descname"><span class="pre">test_special_constants</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/tests/test_arit.html#test_special_constants"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.tests.test_arit.test_special_constants" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+              </div>
+              
+        
+        <div class='prev-next-bottom'>
+            
+    <a class='left-prev' id="prev-link" href="symengine.tests.html" title="previous page">symengine.tests package</a>
+    <a class='right-next' id="next-link" href="symengine.tests.test_cse.html" title="next page">symengine.tests.test_cse module</a>
+
+        </div>
+        
+        </div>
+    </div>
+    <footer class="footer mt-5 mt-md-0">
+    <div class="container">
+      <p>
+        
+          By SymEngine development team <symengine@googlegroups.com><br/>
+        
+            &copy; Copyright 2021, SymEngine development team &lt;symengine@googlegroups.com&gt;.<br/>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+
+    
+  <script src="../_static/js/index.d3f166471bb80abb5163.js"></script>
+
+
+    
+  </body>
+</html>

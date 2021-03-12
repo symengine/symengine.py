@@ -1,0 +1,7 @@
+symengine.tests.test\_ntheory module
+====================================
+
+.. automodule:: symengine.tests.test_ntheory
+   :members:
+   :undoc-members:
+   :show-inheritance:

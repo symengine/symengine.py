@@ -1,0 +1,726 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>symengine.compatibility module &#8212; Symengine Python Bindings</title>
+    
+  <link rel="stylesheet" href="../_static/css/index.f658d18f9b420779cfdf24aa0a7e2d77.css">
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+  <link rel="stylesheet"
+    href="../_static/vendor/open-sans_all/1.44.1/index.css">
+  <link rel="stylesheet"
+    href="../_static/vendor/lato_latin-ext/1.44.1/index.css">
+
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/sphinx-book-theme.c441f2ba0852f4cabcb80105e3a46ae6.css" type="text/css" />
+    
+  <link rel="preload" as="script" href="../_static/js/index.d3f166471bb80abb5163.js">
+
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx-book-theme.7d483ff0a819d6edff12ce0b1ead3928.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="symengine.functions module" href="symengine.functions.html" />
+    <link rel="prev" title="symengine.tests.test_var module" href="symengine.tests.test_var.html" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+
+
+
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+<a class="navbar-brand text-wrap" href="../index.html">
+  
+  
+  <h1 class="site-logo" id="site-title">Symengine Python Bindings</h1>
+  
+</a>
+</div><form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form>
+<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+    <ul class="nav sidenav_l1">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../index.html">
+   Symengine Python API Documentation
+  </a>
+ </li>
+</ul>
+<p class="caption collapsible-parent">
+ <span class="caption-text">
+  Contents:
+ </span>
+</p>
+<ul class="current nav sidenav_l1">
+ <li class="toctree-l1 current active collapsible-parent">
+  <a class="reference internal" href="modules.html">
+   symengine.py
+  </a>
+  <ul class="current collapse-ul">
+   <li class="toctree-l2">
+    <a class="reference internal" href="setup.html">
+     setup module
+    </a>
+   </li>
+   <li class="toctree-l2 current active collapsible-parent">
+    <a class="reference internal" href="symengine.html">
+     symengine package
+    </a>
+    <ul class="current collapse-ul">
+     <li class="toctree-l3 collapsible-parent">
+      <a class="reference internal" href="symengine.lib.html">
+       symengine.lib package
+      </a>
+      <ul class="collapse-ul">
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.lib.symengine_wrapper.html">
+         symengine.lib.symengine_wrapper module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.lib.symengine_wrapper.html">
+         symengine.lib.symengine_wrapper module
+        </a>
+       </li>
+      </ul>
+      <i class="fas fa-chevron-down">
+      </i>
+     </li>
+     <li class="toctree-l3 collapsible-parent">
+      <a class="reference internal" href="symengine.tests.html">
+       symengine.tests package
+      </a>
+      <ul class="collapse-ul">
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_arit.html">
+         symengine.tests.test_arit module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_cse.html">
+         symengine.tests.test_cse module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_dict_basic.html">
+         symengine.tests.test_dict_basic module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_eval.html">
+         symengine.tests.test_eval module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_expr.html">
+         symengine.tests.test_expr module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_functions.html">
+         symengine.tests.test_functions module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_lambdify.html">
+         symengine.tests.test_lambdify module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_logic.html">
+         symengine.tests.test_logic module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_matrices.html">
+         symengine.tests.test_matrices module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_ntheory.html">
+         symengine.tests.test_ntheory module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_number.html">
+         symengine.tests.test_number module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_pickling.html">
+         symengine.tests.test_pickling module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_printing.html">
+         symengine.tests.test_printing module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_sage.html">
+         symengine.tests.test_sage module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_series_expansion.html">
+         symengine.tests.test_series_expansion module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_sets.html">
+         symengine.tests.test_sets module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_solve.html">
+         symengine.tests.test_solve module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_subs.html">
+         symengine.tests.test_subs module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_symbol.html">
+         symengine.tests.test_symbol module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_sympify.html">
+         symengine.tests.test_sympify module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_sympy_compat.html">
+         symengine.tests.test_sympy_compat module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_sympy_conv.html">
+         symengine.tests.test_sympy_conv module
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="symengine.tests.test_var.html">
+         symengine.tests.test_var module
+        </a>
+       </li>
+      </ul>
+      <i class="fas fa-chevron-down">
+      </i>
+     </li>
+     <li class="toctree-l3 current active">
+      <a class="current reference internal" href="#">
+       symengine.compatibility module
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="symengine.functions.html">
+       symengine.functions module
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="symengine.printing.html">
+       symengine.printing module
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="symengine.sympy_compat.html">
+       symengine.sympy_compat module
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="symengine.utilities.html">
+       symengine.utilities module
+      </a>
+     </li>
+    </ul>
+    <i class="fas fa-chevron-down">
+    </i>
+   </li>
+  </ul>
+  <i class="fas fa-chevron-down">
+  </i>
+ </li>
+</ul>
+
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Theme by the <a href="https://ebp.jupyterbook.org">Executable Book Project</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../_sources/source/symengine.compatibility.rst.txt"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.rst</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/symengine/symengine.py"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        <a class="issues-button"
+            href="https://github.com/symengine/symengine.py/issues/new?title=Issue%20on%20page%20%2Fsource/symengine.compatibility.html&body=Your%20issue%20content%20here."><button
+                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
+                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
+        <a class="edit-button" href="https://github.com/symengine/symengine.py/edit/master/docs/source/symengine.compatibility.rst"><button
+                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
+                title="Edit this page"><i class="fas fa-pencil-alt"></i>suggest edit</button></a>
+    </div>
+</div>
+
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+            <a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+                    data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+                    title="Fullscreen mode"><i
+                        class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <div class="section" id="module-symengine.compatibility">
+<span id="symengine-compatibility-module"></span><h1>symengine.compatibility module<a class="headerlink" href="#module-symengine.compatibility" title="Permalink to this headline">¶</a></h1>
+<p>Reimplementations of constructs introduced in later versions of Python than
+we support. Also some functions that are needed SymPy-wide and are located
+here for easy import.</p>
+<dl class="py class">
+<dt id="symengine.compatibility.NotIterable">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">symengine.compatibility.</span></code><code class="sig-name descname"><span class="pre">NotIterable</span></code><a class="reference internal" href="../_modules/symengine/compatibility.html#NotIterable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.compatibility.NotIterable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Use this as mixin when creating a class which is not supposed to return
+true when iterable() is called on its instances. I.e. avoid infinite loop
+when calling e.g. list() on the instance</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="symengine.compatibility.as_int">
+<code class="sig-prename descclassname"><span class="pre">symengine.compatibility.</span></code><code class="sig-name descname"><span class="pre">as_int</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/compatibility.html#as_int"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.compatibility.as_int" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the argument to a builtin integer.</p>
+<p>The return value is guaranteed to be equal to the input. ValueError is
+raised if the input has a non-integral value.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sympy.core.compatibility</span> <span class="kn">import</span> <span class="n">as_int</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">sqrt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mf">3.0</span>
+<span class="go">3.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">as_int</span><span class="p">(</span><span class="mf">3.0</span><span class="p">)</span> <span class="c1"># convert to int and test for equality</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">int</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">as_int</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">ValueError</span>: <span class="n">... is not an integer</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="symengine.compatibility.default_sort_key">
+<code class="sig-prename descclassname"><span class="pre">symengine.compatibility.</span></code><code class="sig-name descname"><span class="pre">default_sort_key</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/compatibility.html#default_sort_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.compatibility.default_sort_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a key that can be used for sorting.</p>
+<p>The key has the structure:</p>
+<p>(class_key, (len(args), args), exponent.sort_key(), coefficient)</p>
+<p>This key is supplied by the sort_key routine of Basic objects when
+<code class="docutils literal notranslate"><span class="pre">item</span></code> is a Basic object or an object (other than a string) that
+sympifies to a Basic object. Otherwise, this function produces the
+key.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">order</span></code> argument is passed along to the sort_key routine and is
+used to determine how the terms <em>within</em> an expression are ordered.
+(See examples below) <code class="docutils literal notranslate"><span class="pre">order</span></code> options are: ‘lex’, ‘grlex’, ‘grevlex’,
+and reversed values of the same (e.g. ‘rev-lex’). The default order
+value is None (which translates to ‘lex’).</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">S</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="n">default_sort_key</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sympy.core.function</span> <span class="kn">import</span> <span class="n">UndefinedFunction</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sympy.abc</span> <span class="kn">import</span> <span class="n">x</span>
+</pre></div>
+</div>
+<p>The following are equivalent ways of getting the key for an object:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">sort_key</span><span class="p">()</span> <span class="o">==</span> <span class="n">default_sort_key</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>Here are some examples of the key that is produced:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">default_sort_key</span><span class="p">(</span><span class="n">UndefinedFunction</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">))</span>
+<span class="go">((0, 0, &#39;UndefinedFunction&#39;), (1, (&#39;f&#39;,)), ((1, 0, &#39;Number&#39;),</span>
+<span class="go">    (0, ()), (), 1), 1)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">default_sort_key</span><span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">)</span>
+<span class="go">((0, 0, &#39;str&#39;), (1, (&#39;1&#39;,)), ((1, 0, &#39;Number&#39;), (0, ()), (), 1), 1)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">default_sort_key</span><span class="p">(</span><span class="n">S</span><span class="o">.</span><span class="n">One</span><span class="p">)</span>
+<span class="go">((1, 0, &#39;Number&#39;), (0, ()), (), 1)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">default_sort_key</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">((1, 0, &#39;Number&#39;), (0, ()), (), 2)</span>
+</pre></div>
+</div>
+<p>While sort_key is a method only defined for SymPy objects,
+default_sort_key will accept anything as an argument so it is
+more robust as a sorting key. For the following, using key=
+lambda i: i.sort_key() would fail because 2 doesn’t have a sort_key
+method; that’s why default_sort_key is used. Note, that it also
+handles sympification of non-string items likes ints:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="n">I</span><span class="p">,</span> <span class="o">-</span><span class="n">I</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">sorted</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">default_sort_key</span><span class="p">)</span>
+<span class="go">[2, -I, I]</span>
+</pre></div>
+</div>
+<p>The returned key can be used anywhere that a key can be specified for
+a function, e.g. sort, min, max, etc…:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">default_sort_key</span><span class="p">);</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">min</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">default_sort_key</span><span class="p">)</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The key returned is useful for getting items into a canonical order
+that will be the same across platforms. It is not directly useful for
+sorting lists of expressions:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="n">x</span>
+</pre></div>
+</div>
+<p>Since <code class="docutils literal notranslate"><span class="pre">a</span></code> has only 1 term, its value of sort_key is unaffected by
+<code class="docutils literal notranslate"><span class="pre">order</span></code>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">sort_key</span><span class="p">()</span> <span class="o">==</span> <span class="n">a</span><span class="o">.</span><span class="n">sort_key</span><span class="p">(</span><span class="s1">&#39;rev-lex&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>If <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code> are combined then the key will differ because there
+are terms that can be ordered:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">eq</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">eq</span><span class="o">.</span><span class="n">sort_key</span><span class="p">()</span> <span class="o">==</span> <span class="n">eq</span><span class="o">.</span><span class="n">sort_key</span><span class="p">(</span><span class="s1">&#39;rev-lex&#39;</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">eq</span><span class="o">.</span><span class="n">as_ordered_terms</span><span class="p">()</span>
+<span class="go">[x, 1/x]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">eq</span><span class="o">.</span><span class="n">as_ordered_terms</span><span class="p">(</span><span class="s1">&#39;rev-lex&#39;</span><span class="p">)</span>
+<span class="go">[1/x, x]</span>
+</pre></div>
+</div>
+<p>But since the keys for each of these terms are independent of <code class="docutils literal notranslate"><span class="pre">order</span></code>’s
+value, they don’t sort differently when they appear separately in a list:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">sorted</span><span class="p">(</span><span class="n">eq</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">default_sort_key</span><span class="p">)</span>
+<span class="go">[1/x, x]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">sorted</span><span class="p">(</span><span class="n">eq</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="n">default_sort_key</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s1">&#39;rev-lex&#39;</span><span class="p">))</span>
+<span class="go">[1/x, x]</span>
+</pre></div>
+</div>
+<p>The order of terms obtained when using these keys is the order that would
+be obtained if those terms were <em>factors</em> in a product.</p>
+</div>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sympy.core.expr.as_ordered_factors</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">sympy.core.expr.as_ordered_terms</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="symengine.compatibility.is_sequence">
+<code class="sig-prename descclassname"><span class="pre">symengine.compatibility.</span></code><code class="sig-name descname"><span class="pre">is_sequence</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/compatibility.html#is_sequence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.compatibility.is_sequence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a boolean indicating whether <code class="docutils literal notranslate"><span class="pre">i</span></code> is a sequence in the SymPy
+sense. If anything that fails the test below should be included as
+being a sequence for your application, set ‘include’ to that object’s
+type; multiple types should be passed as a tuple of types.</p>
+<p>Note: although generators can generate a sequence, they often need special
+handling to make sure their elements are captured before the generator is
+exhausted, so these are not included by default in the definition of a
+sequence.</p>
+<p>See also: iterable</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sympy.utilities.iterables</span> <span class="kn">import</span> <span class="n">is_sequence</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">GeneratorType</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_sequence</span><span class="p">([])</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_sequence</span><span class="p">(</span><span class="nb">set</span><span class="p">())</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_sequence</span><span class="p">(</span><span class="s1">&#39;abc&#39;</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_sequence</span><span class="p">(</span><span class="s1">&#39;abc&#39;</span><span class="p">,</span> <span class="n">include</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">generator</span> <span class="o">=</span> <span class="p">(</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="s1">&#39;abc&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_sequence</span><span class="p">(</span><span class="n">generator</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_sequence</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">include</span><span class="o">=</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">GeneratorType</span><span class="p">))</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="symengine.compatibility.iterable">
+<code class="sig-prename descclassname"><span class="pre">symengine.compatibility.</span></code><code class="sig-name descname"><span class="pre">iterable</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">i</span></em>, <em class="sig-param"><span class="pre">exclude=((&lt;class</span> <span class="pre">'str'&gt;</span></em>, <em class="sig-param"><span class="pre">)</span></em>, <em class="sig-param"><span class="pre">&lt;class</span> <span class="pre">'dict'&gt;</span></em>, <em class="sig-param"><span class="pre">&lt;class</span> <span class="pre">'symengine.compatibility.NotIterable'&gt;)</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/compatibility.html#iterable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.compatibility.iterable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a boolean indicating whether <code class="docutils literal notranslate"><span class="pre">i</span></code> is SymPy iterable.
+True also indicates that the iterator is finite, i.e. you e.g.
+call list(…) on the instance.</p>
+<p>When SymPy is working with iterables, it is almost always assuming
+that the iterable is not a string or a mapping, so those are excluded
+by default. If you want a pure Python definition, make exclude=None. To
+exclude multiple items, pass them as a tuple.</p>
+<p>See also: is_sequence</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sympy.utilities.iterables</span> <span class="kn">import</span> <span class="n">iterable</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">things</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="nb">set</span><span class="p">([</span><span class="mi">1</span><span class="p">]),</span> <span class="n">Tuple</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">j</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]),</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">},</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">things</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">iterable</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="nb">type</span><span class="p">(</span><span class="n">i</span><span class="p">)))</span>
+<span class="go">True &lt;... &#39;list&#39;&gt;</span>
+<span class="go">True &lt;... &#39;tuple&#39;&gt;</span>
+<span class="go">True &lt;... &#39;set&#39;&gt;</span>
+<span class="go">True &lt;class &#39;sympy.core.containers.Tuple&#39;&gt;</span>
+<span class="go">True &lt;... &#39;generator&#39;&gt;</span>
+<span class="go">False &lt;... &#39;dict&#39;&gt;</span>
+<span class="go">False &lt;... &#39;str&#39;&gt;</span>
+<span class="go">False &lt;... &#39;int&#39;&gt;</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">iterable</span><span class="p">({},</span> <span class="n">exclude</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iterable</span><span class="p">({},</span> <span class="n">exclude</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">iterable</span><span class="p">(</span><span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="symengine.compatibility.ordered">
+<code class="sig-prename descclassname"><span class="pre">symengine.compatibility.</span></code><code class="sig-name descname"><span class="pre">ordered</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/compatibility.html#ordered"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.compatibility.ordered" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an iterator of the seq where keys are used to break ties in
+a conservative fashion: if, after applying a key, there are no ties
+then no other keys will be computed.</p>
+<p>Two default keys will be applied if 1) keys are not provided or 2) the
+given keys don’t resolve all ties (but only if <cite>default</cite> is True). The
+two keys are <cite>_nodes</cite> (which places smaller expressions before large) and
+<cite>default_sort_key</cite> which (if the <cite>sort_key</cite> for an object is defined
+properly) should resolve any ties.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">warn</span></code> is True then an error will be raised if there were no
+keys remaining to break ties. This can be used if it was expected that
+there should be no ties between items that are not identical.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sympy.utilities.iterables</span> <span class="kn">import</span> <span class="n">ordered</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sympy</span> <span class="kn">import</span> <span class="n">count_ops</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sympy.abc</span> <span class="kn">import</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
+</pre></div>
+</div>
+<p>The count_ops is not sufficient to break ties in this list and the first
+two items appear in their original order (i.e. the sorting is stable):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">ordered</span><span class="p">([</span><span class="n">y</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">3</span><span class="p">],</span>
+<span class="gp">... </span>   <span class="n">count_ops</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+<span class="gp">...</span>
+<span class="go">[y + 2, x + 2, x**2 + y + 3]</span>
+</pre></div>
+</div>
+<p>The default_sort_key allows the tie to be broken:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">ordered</span><span class="p">([</span><span class="n">y</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]))</span>
+<span class="gp">...</span>
+<span class="go">[x + 2, y + 2, x**2 + y + 3]</span>
+</pre></div>
+</div>
+<p>Here, sequences are sorted by length, then sum:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">seq</span><span class="p">,</span> <span class="n">keys</span> <span class="o">=</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="p">[</span>
+<span class="gp">... </span>   <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span>
+<span class="gp">... </span>   <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="p">)]]</span>
+<span class="gp">...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">ordered</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+<span class="go">[[1], [2], [1, 2, 1], [0, 3, 1], [1, 1, 3]]</span>
+</pre></div>
+</div>
+<p>If <code class="docutils literal notranslate"><span class="pre">warn</span></code> is True, an error will be raised if there were not
+enough keys to break ties:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span><span class="p">(</span><span class="n">ordered</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">ValueError</span>: <span class="n">not enough keys to break ties</span>
+</pre></div>
+</div>
+<p class="rubric">Notes</p>
+<p>The decorated sort is one of the fastest ways to sort a sequence for
+which special item comparison is desired: the sequence is decorated,
+sorted on the basis of the decoration (e.g. making all letters lower
+case) and then undecorated. If one wants to break ties for items that
+have the same decorated value, a second key can be used. But if the
+second key is expensive to compute then it is inefficient to decorate
+all items with both keys: only those items having identical first key
+values need to be decorated. This function applies keys successively
+only when needed to break ties. By yielding an iterator, use of the
+tie-breaker is delayed as long as possible.</p>
+<p>This function is best used in cases when use of the first key is
+expected to be a good hashing function; if there are no unique hashes
+from application of a key then that key should not have been used. The
+exception, however, is that even if there are many collisions, if the
+first group is small and one does not need to process all items in the
+list then time will not be wasted sorting what one was not interested
+in. For example, if one were looking for the minimum in a list and
+there were several criteria used to define the sort order, then this
+function would be good at returning that quickly if the first group
+of candidates is small relative to the number of items being processed.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="symengine.compatibility.u">
+<code class="sig-prename descclassname"><span class="pre">symengine.compatibility.</span></code><code class="sig-name descname"><span class="pre">u</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/compatibility.html#u"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.compatibility.u" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.compatibility.u_decode">
+<code class="sig-prename descclassname"><span class="pre">symengine.compatibility.</span></code><code class="sig-name descname"><span class="pre">u_decode</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/compatibility.html#u_decode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.compatibility.u_decode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="symengine.compatibility.with_metaclass">
+<code class="sig-prename descclassname"><span class="pre">symengine.compatibility.</span></code><code class="sig-name descname"><span class="pre">with_metaclass</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">meta</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">bases</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/symengine/compatibility.html#with_metaclass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#symengine.compatibility.with_metaclass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a base class with a metaclass.</p>
+<p>For example, if you have the metaclass</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">Meta</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>Use this as the metaclass by doing</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">symengine.compatibility</span> <span class="kn">import</span> <span class="n">with_metaclass</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">MyClass</span><span class="p">(</span><span class="n">with_metaclass</span><span class="p">(</span><span class="n">Meta</span><span class="p">,</span> <span class="nb">object</span><span class="p">)):</span>
+<span class="gp">... </span>    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>This is equivalent to the Python 2:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">__metaclass__</span> <span class="o">=</span> <span class="n">Meta</span>
+</pre></div>
+</div>
+<p>or Python 3:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyClass</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">Meta</span><span class="p">):</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>That is, the first argument is the metaclass, and the remaining arguments
+are the base classes. Note that if the base class is just <code class="docutils literal notranslate"><span class="pre">object</span></code>, you
+may omit it.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">MyClass</span><span class="o">.</span><span class="vm">__mro__</span>
+<span class="go">(&lt;class &#39;MyClass&#39;&gt;, &lt;... &#39;object&#39;&gt;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">MyClass</span><span class="p">)</span>
+<span class="go">&lt;class &#39;Meta&#39;&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+              </div>
+              
+        
+        <div class='prev-next-bottom'>
+            
+    <a class='left-prev' id="prev-link" href="symengine.tests.test_var.html" title="previous page">symengine.tests.test_var module</a>
+    <a class='right-next' id="next-link" href="symengine.functions.html" title="next page">symengine.functions module</a>
+
+        </div>
+        
+        </div>
+    </div>
+    <footer class="footer mt-5 mt-md-0">
+    <div class="container">
+      <p>
+        
+          By SymEngine development team <symengine@googlegroups.com><br/>
+        
+            &copy; Copyright 2021, SymEngine development team &lt;symengine@googlegroups.com&gt;.<br/>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+
+    
+  <script src="../_static/js/index.d3f166471bb80abb5163.js"></script>
+
+
+    
+  </body>
+</html>

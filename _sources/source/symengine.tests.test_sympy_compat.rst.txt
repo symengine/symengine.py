@@ -1,0 +1,7 @@
+symengine.tests.test\_sympy\_compat module
+==========================================
+
+.. automodule:: symengine.tests.test_sympy_compat
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,7 @@
+symengine.tests.test\_series\_expansion module
+==============================================
+
+.. automodule:: symengine.tests.test_series_expansion
+   :members:
+   :undoc-members:
+   :show-inheritance:

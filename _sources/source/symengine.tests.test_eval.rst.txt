@@ -1,0 +1,7 @@
+symengine.tests.test\_eval module
+=================================
+
+.. automodule:: symengine.tests.test_eval
+   :members:
+   :undoc-members:
+   :show-inheritance:

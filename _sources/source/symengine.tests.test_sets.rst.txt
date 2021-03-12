@@ -1,0 +1,7 @@
+symengine.tests.test\_sets module
+=================================
+
+.. automodule:: symengine.tests.test_sets
+   :members:
+   :undoc-members:
+   :show-inheritance:

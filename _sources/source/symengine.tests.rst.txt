@@ -1,0 +1,40 @@
+symengine.tests package
+=======================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   symengine.tests.test_arit
+   symengine.tests.test_cse
+   symengine.tests.test_dict_basic
+   symengine.tests.test_eval
+   symengine.tests.test_expr
+   symengine.tests.test_functions
+   symengine.tests.test_lambdify
+   symengine.tests.test_logic
+   symengine.tests.test_matrices
+   symengine.tests.test_ntheory
+   symengine.tests.test_number
+   symengine.tests.test_pickling
+   symengine.tests.test_printing
+   symengine.tests.test_sage
+   symengine.tests.test_series_expansion
+   symengine.tests.test_sets
+   symengine.tests.test_solve
+   symengine.tests.test_subs
+   symengine.tests.test_symbol
+   symengine.tests.test_sympify
+   symengine.tests.test_sympy_compat
+   symengine.tests.test_sympy_conv
+   symengine.tests.test_var
+
+Module contents
+---------------
+
+.. automodule:: symengine.tests
+   :members:
+   :undoc-members:
+   :show-inheritance:

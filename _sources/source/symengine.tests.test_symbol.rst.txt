@@ -1,0 +1,7 @@
+symengine.tests.test\_symbol module
+===================================
+
+.. automodule:: symengine.tests.test_symbol
+   :members:
+   :undoc-members:
+   :show-inheritance:

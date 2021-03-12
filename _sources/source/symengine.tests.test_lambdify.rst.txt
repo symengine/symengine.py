@@ -1,0 +1,7 @@
+symengine.tests.test\_lambdify module
+=====================================
+
+.. automodule:: symengine.tests.test_lambdify
+   :members:
+   :undoc-members:
+   :show-inheritance:
