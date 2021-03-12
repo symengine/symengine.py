@@ -12,22 +12,22 @@ environment:
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
       PLATFORM: "Win32"
-      PYTHON_VERSION: 27
-      CONDA_INSTALL_LOCN: C:\\Miniconda35
+      PYTHON_VERSION: 37
+      CONDA_INSTALL_LOCN: C:\\Miniconda36
       WITH_MPFR: yes
       WITH_MPC: yes
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
       PLATFORM: "x64"
-      PYTHON_VERSION: 35-x64
-      CONDA_INSTALL_LOCN: C:\\Miniconda35-x64
+      PYTHON_VERSION: 36-x64
+      CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
       WITH_MPFR: yes
       WITH_MPC: yes
       WITH_LLVM: yes
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
       PLATFORM: "x64"
-      PYTHON_VERSION: 36-x64
+      PYTHON_VERSION: 38-x64
       CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
 #    - BUILD_TYPE: "Debug"
 #      COMPILER: MinGW
@@ -37,10 +37,10 @@ environment:
 #      PYTHON_VERSION: 35
     - BUILD_TYPE: "Release"
       COMPILER: MinGW-w64
-      PYTHON_VERSION: 27-x64
+      PYTHON_VERSION: 37-x64
     - BUILD_TYPE: "Debug"
       COMPILER: MinGW-w64
-      PYTHON_VERSION: 35-x64
+      PYTHON_VERSION: 39-x64
       WITH_NUMPY: no
     - BUILD_TYPE: "Debug"
       COMPILER: MinGW-w64
