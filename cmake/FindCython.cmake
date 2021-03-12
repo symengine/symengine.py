@@ -6,7 +6,7 @@
 # paths:
 
 find_program(CYTHON_BIN NAMES cython cython3 cython2)
-SET(CYTHON_FLAGS --cplus --fast-fail)
+SET(CYTHON_FLAGS --cplus --fast-fail -3)
 
 SET(Cython_FOUND FALSE)
 IF (CYTHON_BIN)
