@@ -34,8 +34,8 @@ jobs:
           export PYTHON_SOURCE_DIR=$GITHUB_WORKSPACE
           cd $PYTHON_SOURCE_DIR
           source bin/install_travis.sh
-          bin/test_travis.sh
           pip install sphinx-autobuild m2r2 sphinxcontrib-apidoc sphinx-book-theme
+          python setup.py install build_ext --inplace --symengine-dir=$our_install_dir
           sphinx-build docs/ genDocs/
         env:
           WITH_MPC: yes
