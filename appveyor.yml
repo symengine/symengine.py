@@ -12,13 +12,20 @@ environment:
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
       PLATFORM: "x64"
+      PYTHON_VERSION: 39
+      CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
+      WITH_MPFR: yes
+      WITH_MPC: yes
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    - BUILD_TYPE: "Release"
+      COMPILER: MSVC15
+      PLATFORM: "x64"
       PYTHON_VERSION: 38-x64
       CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
     - BUILD_TYPE: "Debug"
       COMPILER: MinGW-w64
-      PYTHON_VERSION: 39-x64
+      PYTHON_VERSION: 37-x64
       WITH_NUMPY: no
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
     - BUILD_TYPE: "Release"
       COMPILER: MinGW-w64
       PYTHON_VERSION: 37-x64
