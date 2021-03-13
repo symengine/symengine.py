@@ -14,8 +14,8 @@ IF (CYTHON_BIN)
     execute_process(
         COMMAND ${CYTHON_BIN} ${CYTHON_FLAGS} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cython_test.pyx
         RESULT_VARIABLE CYTHON_RESULT
-        OUTPUT_QUIET
-        ERROR_QUIET
+        OUTPUT_VARIABLE CYTHON_OUTPUT
+        ERROR_VARIABLE CYTHON_ERROR
         )
     if (CYTHON_RESULT EQUAL 0)
         # Only if cython exits with the return code 0, we know that all is ok:
@@ -38,7 +38,11 @@ ELSE (Cython_FOUND)
             # On Win the testing of Cython does not return any accessible value, so the test is not carried out.
             # Fresh Cython install was tested and works.
             IF(NOT MSVC)
-                MESSAGE(FATAL_ERROR "Your Cython version is too old. Please upgrade Cython.")
+                MESSAGE(FATAL_ERROR
+                    "Your Cython version is too old. Please upgrade Cython."
+                    "STDOUT: ${CYTHON_OUTPUT}"
+                    "STDERROR: ${CYTHON_ERROR}"
+                )
             ENDIF(NOT MSVC)
         else(Cython_Compilation_Failed)
             MESSAGE(FATAL_ERROR "Could not find Cython. Please install Cython.")
