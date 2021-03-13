@@ -12,7 +12,7 @@ environment:
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
       PLATFORM: "x64"
-      PYTHON_VERSION: 39
+      PYTHON_VERSION: 39-x64
       CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
       WITH_MPFR: yes
       WITH_MPC: yes
