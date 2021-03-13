@@ -4,10 +4,6 @@
 
 export conda_pkgs="python=${PYTHON_VERSION} pip cython pytest gmp mpfr"
 
-if [[ "${WITH_SYMPY}" != "no" ]]; then
-    export conda_pkgs="${conda_pkgs} sympy";
-fi
-
 if [[ "${WITH_NUMPY}" != "no" ]]; then
     export conda_pkgs="${conda_pkgs} numpy";
 fi
@@ -28,5 +24,10 @@ if [[ "${WITH_SAGE}" == "yes" ]]; then
 fi
 
 conda install -q ${conda_pkgs}
+
+if [[ "${WITH_SYMPY}" != "no" ]]; then
+    pip install sympy;
+fi
+
 conda clean --all
 source activate $our_install_dir;
