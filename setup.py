@@ -3,6 +3,7 @@ from os import getenv, path, makedirs
 import os
 import subprocess
 import sys
+import platform
 from distutils.command.build_ext import build_ext as _build_ext
 from distutils.command.build import build as _build
 
@@ -125,17 +126,15 @@ class BuildExtWithCmake(_build_ext):
     def get_generator(self):
         if cmake_generator[0]:
             return ["-G", cmake_generator[0]]
-        elif "CMAKE_GENERATOR" not in os.environ:
-            import platform
-            import sys
-            if (platform.system() == "Windows"):
-                compiler = str(self.compiler).lower()
-                if ("msys" in compiler):
-                    return ["-G", "MSYS Makefiles"]
-                elif ("mingw" in compiler):
-                    return ["-G", "MinGW Makefiles"]
-                else:
-                    return ["-G", "NMake Makefiles"]
+        elif "CMAKE_GENERATOR" not in os.environ and platform.system() == "Windows":
+            compiler = str(self.compiler).lower()
+            if ("msys" in compiler):
+                return ["-G", "MSYS Makefiles"]
+            elif ("mingw" in compiler):
+                return ["-G", "MinGW Makefiles"]
+            else:
+                return ["-G", "NMake Makefiles"]
+        else:
             return []
 
     def run(self):
