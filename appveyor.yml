@@ -116,7 +116,8 @@ install:
 - cd ../../
 
 build_script:
-- set PATH=C:\symengine\bin\;%PATH%
+- set "PATH=C:\symengine\bin\;%PATH%"
+- echo %PATH%
 - if [%COMPILER%]==[MSVC15] python setup.py install build_ext --compiler=msvc --build-type=%BUILD_TYPE%
 - if [%COMPILER%]==[MinGW] python setup.py install build_ext --compiler=mingw --inplace
 - if [%COMPILER%]==[MinGW-w64] python setup.py install build_ext --compiler=mingw --inplace
