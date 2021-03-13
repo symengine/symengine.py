@@ -125,7 +125,7 @@ class BuildExtWithCmake(_build_ext):
     def get_generator(self):
         if cmake_generator[0]:
             return ["-G", cmake_generator[0]]
-        else:
+        elif "CMAKE_GENERATOR" not in os.environ:
             import platform
             import sys
             if (platform.system() == "Windows"):
@@ -134,10 +134,8 @@ class BuildExtWithCmake(_build_ext):
                     return ["-G", "MSYS Makefiles"]
                 elif ("mingw" in compiler):
                     return ["-G", "MinGW Makefiles"]
-                elif sys.maxsize > 2**32:
-                    return ["-G", "Visual Studio 14 2015 Win64"]
                 else:
-                    return ["-G", "Visual Studio 14 2015"]
+                    return ["-G", "NMake Makefiles"]
             return []
 
     def run(self):
