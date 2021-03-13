@@ -37,6 +37,7 @@ if not use_setuptools:
 
 cmake_opts = [("PYTHON_BIN", sys.executable),
               ("CMAKE_INSTALL_RPATH_USE_LINK_PATH", "yes")]
+cmake_generator = [None]
 cmake_build_type = ["Release"]
 
 
@@ -54,6 +55,7 @@ def get_build_dir(dist):
 global_user_options = [
     ('symengine-dir=', None,
      'path to symengine installation or build directory'),
+    ('generator=', None, 'cmake build generator'),
     ('build-type=', None, 'build type: Release or Debug'),
     ('define=', 'D',
      'options to cmake <var>:<type>=<value>'),
@@ -81,6 +83,7 @@ class BuildExtWithCmake(_build_ext):
         _build_ext.initialize_options(self)
         self.define = None
         self.symengine_dir = None
+        self.generator = None
         self.build_type = "Release"
 
     def finalize_options(self):
@@ -92,6 +95,9 @@ class BuildExtWithCmake(_build_ext):
         cmake_opts.extend(self.define)
         if self.symengine_dir:
             cmake_opts.extend([('SymEngine_DIR', self.symengine_dir)])
+
+        if self.generator:
+            cmake_generator[0] = self.generator
 
         cmake_build_type[0] = self.build_type
 
@@ -106,6 +112,8 @@ class BuildExtWithCmake(_build_ext):
         cmake_cmd = ["cmake", source_dir,
                      "-DCMAKE_BUILD_TYPE=" + cmake_build_type[0]]
         cmake_cmd.extend(process_opts(cmake_opts))
+        if not path.exists(path.join(build_dir, "CMakeCache.txt")):
+            cmake_cmd.extend(self.get_generator())
         if subprocess.call(cmake_cmd, cwd=build_dir) != 0:
             raise EnvironmentError("error calling cmake")
 
@@ -113,6 +121,24 @@ class BuildExtWithCmake(_build_ext):
                             "--config", cmake_build_type[0]],
                            cwd=build_dir) != 0:
             raise EnvironmentError("error building project")
+
+    def get_generator(self):
+        if cmake_generator[0]:
+            return ["-G", cmake_generator[0]]
+        else:
+            import platform
+            import sys
+            if (platform.system() == "Windows"):
+                compiler = str(self.compiler).lower()
+                if ("msys" in compiler):
+                    return ["-G", "MSYS Makefiles"]
+                elif ("mingw" in compiler):
+                    return ["-G", "MinGW Makefiles"]
+                elif sys.maxsize > 2**32:
+                    return ["-G", "Visual Studio 14 2015 Win64"]
+                else:
+                    return ["-G", "Visual Studio 14 2015"]
+            return []
 
     def run(self):
         self.cmake_build()
@@ -130,6 +156,7 @@ class InstallWithCmake(_install):
         _install.initialize_options(self)
         self.define = None
         self.symengine_dir = None
+        self.generator = None
         self.build_type = "Release"
 
     def finalize_options(self):
