@@ -222,11 +222,7 @@ setup(name="symengine",
       author_email="symengine@googlegroups.com",
       license="MIT",
       url="https://github.com/symengine/symengine.py",
-<<<<<<< HEAD
       python_requires='>=3.6.*,<4',
-=======
-      python_requires='!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,<4',
->>>>>>> 916b786... Remove support for python 2 and 3.5
       zip_safe=False,
       cmdclass = cmdclass,
       classifiers=[
