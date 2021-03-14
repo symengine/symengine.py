@@ -1,7 +1,0 @@
-symengine.tests.test\_cse module
-================================
-
-.. automodule:: symengine.tests.test_cse
-   :members:
-   :undoc-members:
-   :show-inheritance:

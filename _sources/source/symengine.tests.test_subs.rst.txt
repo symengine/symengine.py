@@ -1,7 +1,0 @@
-symengine.tests.test\_subs module
-=================================
-
-.. automodule:: symengine.tests.test_subs
-   :members:
-   :undoc-members:
-   :show-inheritance:

@@ -1,7 +1,0 @@
-symengine.tests.test\_sympify module
-====================================
-
-.. automodule:: symengine.tests.test_sympify
-   :members:
-   :undoc-members:
-   :show-inheritance:

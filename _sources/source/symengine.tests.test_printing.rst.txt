@@ -1,7 +1,0 @@
-symengine.tests.test\_printing module
-=====================================
-
-.. automodule:: symengine.tests.test_printing
-   :members:
-   :undoc-members:
-   :show-inheritance:

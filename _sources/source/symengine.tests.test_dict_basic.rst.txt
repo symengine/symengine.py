@@ -1,7 +1,0 @@
-symengine.tests.test\_dict\_basic module
-========================================
-
-.. automodule:: symengine.tests.test_dict_basic
-   :members:
-   :undoc-members:
-   :show-inheritance:

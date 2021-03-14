@@ -1,7 +1,0 @@
-symengine.tests.test\_logic module
-==================================
-
-.. automodule:: symengine.tests.test_logic
-   :members:
-   :undoc-members:
-   :show-inheritance:
