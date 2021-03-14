@@ -28,7 +28,7 @@ copyright = '2021, SymEngine development team <symengine@googlegroups.com>'
 author = 'SymEngine development team <symengine@googlegroups.com>'
 
 # The full version, including alpha/beta/rc tags
-release = '0.6.1'
+release = symengine.__version__
 
 
 # -- General configuration ---------------------------------------------------

@@ -253,7 +253,7 @@ def test_bicycle():
     #import symengine
     #print "Converting to symengine..."
     #f = symengine.sympify(e)
-    print "Saving to expr.txt"
+    print("Saving to expr.txt")
     s = str(e)
     open("expr.txt", "w").write(s)
     return

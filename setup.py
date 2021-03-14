@@ -1,14 +1,14 @@
-from __future__ import print_function
 from os import getenv, path, makedirs
 import os
 import subprocess
 import sys
+import platform
 from distutils.command.build_ext import build_ext as _build_ext
 from distutils.command.build import build as _build
 
 # Make sure the system has the right Python version.
-if sys.version_info[:2] < (2, 7):
-    print("SymEngine requires Python 2.7 or newer. "
+if sys.version_info[:2] < (3, 6):
+    print("SymEngine requires Python 3.6 or newer. "
           "Python %d.%d detected" % sys.version_info[:2])
     sys.exit(-1)
 
@@ -125,25 +125,19 @@ class BuildExtWithCmake(_build_ext):
     def get_generator(self):
         if cmake_generator[0]:
             return ["-G", cmake_generator[0]]
+        elif "CMAKE_GENERATOR" not in os.environ and platform.system() == "Windows":
+            compiler = str(self.compiler).lower()
+            if ("msys" in compiler):
+                return ["-G", "MSYS Makefiles"]
+            elif ("mingw" in compiler):
+                return ["-G", "MinGW Makefiles"]
+            else:
+                return ["-G", "NMake Makefiles"]
         else:
-            import platform
-            import sys
-            if (platform.system() == "Windows"):
-                compiler = str(self.compiler).lower()
-                if ("msys" in compiler):
-                    return ["-G", "MSYS Makefiles"]
-                elif ("mingw" in compiler):
-                    return ["-G", "MinGW Makefiles"]
-                elif sys.maxsize > 2**32:
-                    return ["-G", "Visual Studio 14 2015 Win64"]
-                else:
-                    return ["-G", "Visual Studio 14 2015"]
             return []
 
     def run(self):
         self.cmake_build()
-        # can't use super() here because
-        #  _build_ext is an old style class in 2.7
         _build_ext.run(self)
 
 
@@ -168,8 +162,6 @@ class InstallWithCmake(_install):
         cmake_opts.extend(self.define)
         cmake_build_type[0] = self.build_type
         cmake_opts.extend([('PYTHON_INSTALL_PATH', path.join(os.getcwd(), self.install_platlib))])
-        #cmake_opts.extend([('PYTHON_INSTALL_HEADER_PATH',
-        #                    path.join(os.getcwd(), self.install_headers))])
 
     def cmake_install(self):
         source_dir = path.dirname(path.realpath(__file__))
@@ -192,7 +184,6 @@ class InstallWithCmake(_install):
         compileall.compile_dir(path.join(self.install_platlib, "symengine"))
 
     def run(self):
-        # can't use super() here because _install is an old style class in 2.7
         _install.run(self)
         self.cmake_install()
 
@@ -223,7 +214,7 @@ and dependencies of wheels
 '''
 
 setup(name="symengine",
-      version="0.6.1",
+      version="0.7.0",
       description="Python library providing wrappers to SymEngine",
       setup_requires=['cython>=0.19.1'],
       long_description=long_description,
@@ -231,7 +222,7 @@ setup(name="symengine",
       author_email="symengine@googlegroups.com",
       license="MIT",
       url="https://github.com/symengine/symengine.py",
-      python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,<4',
+      python_requires='>=3.6.*,<4',
       zip_safe=False,
       cmdclass = cmdclass,
       classifiers=[
@@ -241,10 +232,9 @@ setup(name="symengine",
         'Topic :: Scientific/Engineering',
         'Topic :: Scientific/Engineering :: Mathematics',
         'Topic :: Scientific/Engineering :: Physics',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         ]
       )
