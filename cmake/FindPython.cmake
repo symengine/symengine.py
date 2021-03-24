@@ -121,8 +121,7 @@ macro(ADD_PYTHON_LIBRARY name)
         configure_file(${CMAKE_SOURCE_DIR}/cmake/version_script.txt
             ${CMAKE_CURRENT_BINARY_DIR}/version_script_${name}.txt @ONLY)
         set_target_properties(${name} PROPERTIES
-            LINK_FLAGS "-flat_namespace -undefined suppress "
-                "-Wl,--version-script=${CMAKE_CURRENT_BINARY_DIR}/version_script_${name}.txt")
+            LINK_FLAGS "-Wl,--version-script=${CMAKE_CURRENT_BINARY_DIR}/version_script_${name}.txt")
     ELSE
         add_library(${name} SHARED ${ARGN})
     ENDIF()
