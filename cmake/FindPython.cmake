@@ -122,7 +122,7 @@ macro(ADD_PYTHON_LIBRARY name)
             ${CMAKE_CURRENT_BINARY_DIR}/version_script_${name}.txt @ONLY)
         set_target_properties(${name} PROPERTIES
             LINK_FLAGS "-Wl,--version-script=${CMAKE_CURRENT_BINARY_DIR}/version_script_${name}.txt")
-    ELSE
+    ELSE()
         add_library(${name} SHARED ${ARGN})
     ENDIF()
     set_target_properties(${name} PROPERTIES PREFIX "")
