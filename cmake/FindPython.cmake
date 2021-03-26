@@ -111,8 +111,8 @@ macro(ADD_PYTHON_LIBRARY name)
         add_library(${name} MODULE ${ARGN})
         # and "-flat_namespace -undefined suppress" link flags, that we need
         # to add by hand:
-        set_target_properties(${name} PROPERTIES
-            LINK_FLAGS "-flat_namespace -undefined suppress -Wl,--exported_symbol,_PyInit_${name}")
+        set_property(TARGET ${name} APPEND_STRING PROPERTY
+            LINK_FLAGS " -flat_namespace -undefined suppress -Wl,-exported_symbol,_PyInit_${name}")
     ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         # on Linux, we need to use the "-shared" gcc flag, which is what SHARED
         # does:
@@ -120,8 +120,8 @@ macro(ADD_PYTHON_LIBRARY name)
         add_library(${name} SHARED ${ARGN})
         configure_file(${CMAKE_SOURCE_DIR}/cmake/version_script.txt
             ${CMAKE_CURRENT_BINARY_DIR}/version_script_${name}.txt @ONLY)
-        set_target_properties(${name} PROPERTIES
-            LINK_FLAGS "-Wl,--version-script=${CMAKE_CURRENT_BINARY_DIR}/version_script_${name}.txt")
+        set_property(TARGET ${name} APPEND_STRING PROPERTY
+            LINK_FLAGS " -Wl,--version-script=${CMAKE_CURRENT_BINARY_DIR}/version_script_${name}.txt")
     ELSE()
         add_library(${name} SHARED ${ARGN})
     ENDIF()
