@@ -1,7 +1,7 @@
-print "import..."
+print("import...")
 from timeit import default_timer as clock
 from sage.all import var, Integer
-print "    done."
+print("    done.")
 
 def fact(n):
     if n in [0, 1]:
@@ -20,9 +20,9 @@ def legendre(n, x):
 
 var("x")
 for n in range(10):
-    print n, legendre(n, x)
+    print(n, legendre(n, x))
 
 t1 = clock()
 e = legendre(500, x)
 t2 = clock()
-print "Total time for legendre(500, x):", t2-t1, "s"
+print("Total time for legendre(500, x):", t2-t1, "s")

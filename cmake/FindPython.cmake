@@ -37,15 +37,17 @@ message(STATUS "Python version: ${PYTHON_VERSION}")
 
 string(REPLACE "." "" PYTHON_VERSION_WITHOUT_DOTS ${PYTHON_VERSION})
 
-FIND_LIBRARY(PYTHON_LIBRARY NAMES
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+  FIND_LIBRARY(PYTHON_LIBRARY NAMES
         python${PYTHON_VERSION}
         python${PYTHON_VERSION}m
         python${PYTHON_VERSION_WITHOUT_DOTS}
-    PATHS ${PYTHON_LIB_PATH} ${PYTHON_PREFIX_PATH}/lib ${PYTHON_PREFIX_PATH}/libs
-    PATH_SUFFIXES ${CMAKE_LIBRARY_ARCHITECTURE}
-    NO_DEFAULT_PATH
-    NO_SYSTEM_ENVIRONMENT_PATH
-    )
+      PATHS ${PYTHON_LIB_PATH} ${PYTHON_PREFIX_PATH}/lib ${PYTHON_PREFIX_PATH}/libs
+      PATH_SUFFIXES ${CMAKE_LIBRARY_ARCHITECTURE}
+      NO_DEFAULT_PATH
+      NO_SYSTEM_ENVIRONMENT_PATH
+  )
+endif()
 
 execute_process(
 	COMMAND ${PYTHON_BIN} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())"
@@ -66,7 +68,12 @@ set(PYTHON_EXTENSION_SOABI ${PYTHON_EXTENSION_SOABI_tmp}
     CACHE STRING "Suffix for python extensions")
 
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(PYTHON DEFAULT_MSG PYTHON_LIBRARY PYTHON_INCLUDE_PATH PYTHON_INSTALL_PATH)
+
+if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    FIND_PACKAGE_HANDLE_STANDARD_ARGS(Python DEFAULT_MSG PYTHON_LIBRARY PYTHON_INCLUDE_PATH PYTHON_INSTALL_PATH)
+else ()
+    FIND_PACKAGE_HANDLE_STANDARD_ARGS(Python DEFAULT_MSG PYTHON_INCLUDE_PATH PYTHON_INSTALL_PATH)
+endif ()
 
 
 # Links a Python extension module.
@@ -104,13 +111,20 @@ macro(ADD_PYTHON_LIBRARY name)
         add_library(${name} MODULE ${ARGN})
         # and "-flat_namespace -undefined suppress" link flags, that we need
         # to add by hand:
-        set_target_properties(${name} PROPERTIES
-            LINK_FLAGS "-flat_namespace -undefined suppress")
-    ELSE(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        set_property(TARGET ${name} APPEND_STRING PROPERTY
+            LINK_FLAGS " -flat_namespace -undefined suppress -Wl,-exported_symbol,_PyInit_${name}")
+    ELSEIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         # on Linux, we need to use the "-shared" gcc flag, which is what SHARED
         # does:
+        set(PYTHON_EXTENSION_NAME ${name})
         add_library(${name} SHARED ${ARGN})
-    ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        configure_file(${CMAKE_SOURCE_DIR}/cmake/version_script.txt
+            ${CMAKE_CURRENT_BINARY_DIR}/version_script_${name}.txt @ONLY)
+        set_property(TARGET ${name} APPEND_STRING PROPERTY
+            LINK_FLAGS " -Wl,--version-script=${CMAKE_CURRENT_BINARY_DIR}/version_script_${name}.txt")
+    ELSE()
+        add_library(${name} SHARED ${ARGN})
+    ENDIF()
     set_target_properties(${name} PROPERTIES PREFIX "")
     set_target_properties(${name} PROPERTIES OUTPUT_NAME "${name}${PYTHON_EXTENSION_SOABI}")
     IF(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")

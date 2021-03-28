@@ -35,3 +35,8 @@ symengine.egg-info/
 # Temp files
 *~
 .eggs/
+
+# Docs
+genDocs/
+docs/_build/
+docs/source/

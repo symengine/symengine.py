@@ -1,3 +1,14 @@
+import os
+import sys
+
+if sys.version_info >= (3, 8, 0) and sys.platform == 'win32' \
+       and 'SYMENGINE_PY_ADD_PATH_TO_SEARCH_DIRS' in os.environ:
+    for directory in os.environ['PATH'].split(';'):
+        if os.path.isdir(directory):
+            os.add_dll_directory(directory)
+
+del os, sys
+
 import symengine.lib.symengine_wrapper as wrapper
 
 from .lib.symengine_wrapper import (
@@ -45,7 +56,7 @@ if have_numpy:
         return Lambdify(args, *exprs, **kwargs)
 
 
-__version__ = "0.6.1"
+__version__ = "0.7.2"
 
 
 # To not expose internals
