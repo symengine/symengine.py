@@ -3170,7 +3170,7 @@ cdef class DenseMatrixBase(MatrixBase):
             self.thisptr = new symengine.DenseMatrix(row, col)
             return
         if col is None:
-            v = row
+            v = sympify(row)
             row = 0
         cdef symengine.vec_basic v_
         cdef DenseMatrixBase A

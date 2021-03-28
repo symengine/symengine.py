@@ -783,3 +783,16 @@ def test_pynumber():
 
     b = b / x
     assert isinstance(b, PyNumber)
+
+
+@unittest.skipIf(not have_sympy, "SymPy not installed")
+def test_construct_dense_matrix():
+    # Test for issue #347
+    A = sympy.Matrix([[1, 2], [3, 5]])
+    B = DenseMatrix(A)
+    assert B.rows == 2
+    assert B.cols == 2
+    assert B[0, 0] == 1
+    assert B[0, 1] == 2
+    assert B[1, 0] == 3
+    assert B[1, 1] == 5
