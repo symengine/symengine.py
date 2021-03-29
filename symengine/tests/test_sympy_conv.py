@@ -790,9 +790,5 @@ def test_construct_dense_matrix():
     # Test for issue #347
     A = sympy.Matrix([[1, 2], [3, 5]])
     B = DenseMatrix(A)
-    assert B.rows == 2
-    assert B.cols == 2
-    assert B[0, 0] == 1
-    assert B[0, 1] == 2
-    assert B[1, 0] == 3
-    assert B[1, 1] == 5
+    assert B.shape == (2, 2)
+    assert list(B) == [1, 2, 3, 5]
