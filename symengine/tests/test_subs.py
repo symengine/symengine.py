@@ -1,3 +1,5 @@
+import numpy as np
+
 from symengine.utilities import raises
 from symengine import Symbol, sin, cos, sqrt, Add, function_symbol
 
@@ -56,3 +58,15 @@ def test_xreplace():
     y = Symbol("y")
     f = sin(cos(x))
     assert f.xreplace({x: y}) == sin(cos(y))
+
+
+def test_float32():
+    x = Symbol("x")
+    expr = x * 2
+    assert expr.subs({x: np.float32(2)}) == 4.0
+
+
+def test_float16():
+    x = Symbol("x")
+    expr = x * 2
+    assert expr.subs({x: np.float16(2)}) == 4.0
