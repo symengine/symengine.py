@@ -1,7 +1,7 @@
-import numpy as np
+import unittest
 
 from symengine.utilities import raises
-from symengine import Symbol, sin, cos, sqrt, Add, function_symbol
+from symengine import Symbol, sin, cos, sqrt, Add, function_symbol, have_numpy
 
 
 def test_basic():
@@ -60,13 +60,17 @@ def test_xreplace():
     assert f.xreplace({x: y}) == sin(cos(y))
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_float32():
+    import numpy as np
     x = Symbol("x")
     expr = x * 2
     assert expr.subs({x: np.float32(2)}) == 4.0
 
 
+@unittest.skipUnless(have_numpy, "Numpy not installed")
 def test_float16():
+    import numpy as np
     x = Symbol("x")
     expr = x * 2
     assert expr.subs({x: np.float16(2)}) == 4.0
