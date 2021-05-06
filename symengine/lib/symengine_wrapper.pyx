@@ -295,8 +295,6 @@ def sympy2symengine(a, raise_error=False):
                 return RealDouble(float(str(a)))
         ELSE:
             return RealDouble(float(str(a)))
-    elif have_numpy and isinstance(a, (np.float16, np.float32)):
-        return RealDouble(a)
     elif a is sympy.I:
         return I
     elif a is sympy.E:
