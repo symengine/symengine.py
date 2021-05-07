@@ -558,6 +558,8 @@ def _sympify(a, raise_error=True):
         return Integer(a)
     elif isinstance(a, float):
         return RealDouble(a)
+    elif have_numpy and isinstance(a, (np.float16, np.float32)):
+        return RealDouble(a)
     elif isinstance(a, complex):
         return ComplexDouble(a)
     elif hasattr(a, '_symengine_'):
