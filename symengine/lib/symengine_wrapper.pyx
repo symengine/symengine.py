@@ -1502,6 +1502,14 @@ class Relational(Boolean):
     def is_Relational(self):
         return True
 
+    def __bool__(self):
+        if len(self.free_symbols):
+            # If there are any free symbols, then boolean evaluation is ambiguous in most cases. Throw a Type Error
+            raise TypeError(f'Relational with free symbols cannot be cast as bool: {self}')
+        else:
+            simplification = self.simplify()
+            return bool(simplification)
+
 Rel = Relational
 
 
