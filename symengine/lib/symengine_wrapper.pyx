@@ -1503,12 +1503,24 @@ class Relational(Boolean):
         return True
 
     def __bool__(self):
-        if len(self.free_symbols):
+        # We will narrow down the boolean value of our relational with some simple checks
+        lhs, rhs = self.args
+
+        # Two expressions are equal if their difference is equal to 0.
+        # If the expand method will not cancel out free symbols in the given expression, then this
+        # will throw a TypeError.
+        difference = (lhs - rhs).expand().evalf()
+        float_threshold = 1e-9  # Maximum difference we will allow before doing the full simplification
+
+        if len(difference.free_symbols):
             # If there are any free symbols, then boolean evaluation is ambiguous in most cases. Throw a Type Error
             raise TypeError(f'Relational with free symbols cannot be cast as bool: {self}')
+        elif difference > float_threshold:
+            # If the float evaluation is larger than the threshold, we can skip the full simplification.
+            return False
         else:
-            simplification = self.simplify()
-            return bool(simplification)
+            # If the float evaluation is smaller than the threshold, then we will need a full simplification.
+            return bool(self.simplify())
 
 Rel = Relational
 
