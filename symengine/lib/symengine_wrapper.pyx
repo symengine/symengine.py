@@ -1504,20 +1504,16 @@ class Relational(Boolean):
 
     def __bool__(self):
         # We will narrow down the boolean value of our relational with some simple checks
-        lhs, rhs = self.args
-
-        # Two expressions are equal if their difference is equal to 0.
+        # Get the Left- and Right-hand-sides of the relation, since two expressions are equal if their difference
+        # is equal to 0.
         # If the expand method will not cancel out free symbols in the given expression, then this
         # will throw a TypeError.
+        lhs, rhs = self.args
         difference = (lhs - rhs).expand().evalf()
-        float_threshold = 1e-9  # Maximum difference we will allow before doing the full simplification
 
         if len(difference.free_symbols):
             # If there are any free symbols, then boolean evaluation is ambiguous in most cases. Throw a Type Error
             raise TypeError(f'Relational with free symbols cannot be cast as bool: {self}')
-        elif difference > float_threshold:
-            # If the float evaluation is larger than the threshold, we can skip the full simplification.
-            return False
         else:
             # If the float evaluation is smaller than the threshold, then we will need a full simplification.
             return bool(self.simplify())
@@ -1543,6 +1539,29 @@ class Equality(Relational):
     @property
     def is_Equality(self):
         return True
+
+    def __bool__(self):
+        # We override __bool__ in Equality just for some an additional check (for speed)
+        # that does not easily generalize to other relationals.
+        #
+        # We will narrow down the boolean value of our relational with some simple checks
+        # Get the Left- and Right-hand-sides of the relation, since two expressions are equal if their difference
+        # is equal to 0.
+        # If the expand method will not cancel out free symbols in the given expression, then this
+        # will throw a TypeError.
+        lhs, rhs = self.args
+        difference = (lhs - rhs).expand().evalf()
+        float_threshold = 1e-9  # Maximum difference we will allow before doing the full simplification
+
+        if len(difference.free_symbols):
+            # If there are any free symbols, then boolean evaluation is ambiguous in most cases. Throw a Type Error
+            raise TypeError(f'Relational with free symbols cannot be cast as bool: {self}')
+        elif difference > float_threshold:
+            # If the float evaluation is larger than the threshold, we can skip the full simplification.
+            return False
+        else:
+            # If the float evaluation is smaller than the threshold, then we will need a full simplification.
+            return bool(self.simplify())
 
     func = __class__
 
