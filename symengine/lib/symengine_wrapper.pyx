@@ -1509,20 +1509,24 @@ class Relational(Boolean):
         # If the expand method will not cancel out free symbols in the given expression, then this
         # will throw a TypeError.
         lhs, rhs = self.args
-        difference = (lhs - rhs).expand().evalf()
+        difference = (lhs - rhs).expand()
 
         if len(difference.free_symbols):
             # If there are any free symbols, then boolean evaluation is ambiguous in most cases. Throw a Type Error
             raise TypeError(f'Relational with free symbols cannot be cast as bool: {self}')
         else:
-            # If the float evaluation is smaller than the threshold, then we will need a full simplification.
-            # If sympy is not present, then we can do a workaround with evalf. This work around is not as precise as
-            # using sympy's simplification.
+            # Instantiating relationals that are obviously True or False (according to symengine) will automatically
+            # simplify to BooleanTrue or BooleanFalse
+            relational_type = type(self)
+            simplified = relational_type(difference, S.Zero)
+            if isinstance(simplified, BooleanAtom):
+                return bool(simplified)
+            # If we still cannot determine whether or not the relational is true, then we can either outsource the
+            # evaluation to sympy (if available) or raise a ValueError expressing that the evaluation is unclear.
             try:
                 return bool(self.simplify())
             except ImportError:
-                relational_type = type(self)
-                return bool(relational_type(difference, 0).evalf())
+                raise ValueError(f'Boolean evaluation is unclear for relational: {self}')
 
 Rel = Relational
 
@@ -1545,34 +1549,6 @@ class Equality(Relational):
     @property
     def is_Equality(self):
         return True
-
-    def __bool__(self):
-        # We override __bool__ in Equality just for some an additional check (for speed)
-        # that does not easily generalize to other relationals.
-        #
-        # We will narrow down the boolean value of our relational with some simple checks
-        # Get the Left- and Right-hand-sides of the relation, since two expressions are equal if their difference
-        # is equal to 0.
-        # If the expand method will not cancel out free symbols in the given expression, then this
-        # will throw a TypeError.
-        lhs, rhs = self.args
-        difference = (lhs - rhs).expand().evalf()
-        float_threshold = 1e-9  # Maximum difference we will allow before doing the full simplification
-
-        if len(difference.free_symbols):
-            # If there are any free symbols, then boolean evaluation is ambiguous in most cases. Throw a Type Error
-            raise TypeError(f'Relational with free symbols cannot be cast as bool: {self}')
-        elif abs(difference) > float_threshold:
-            # If the float evaluation is larger than the threshold, we can skip the full simplification.
-            return False
-        else:
-            # If the float evaluation is smaller than the threshold, then we will need a full simplification.
-            # If sympy is not present, then we can do a workaround with evalf. This work around is not as precise as
-            # using sympy's simplification.
-            try:
-                return bool(self.simplify())
-            except ImportError:
-                return bool(Eq(difference, 0).evalf())
 
     func = __class__
 
