@@ -1516,7 +1516,13 @@ class Relational(Boolean):
             raise TypeError(f'Relational with free symbols cannot be cast as bool: {self}')
         else:
             # If the float evaluation is smaller than the threshold, then we will need a full simplification.
-            return bool(self.simplify())
+            # If sympy is not present, then we can do a workaround with evalf. This work around is not as precise as
+            # using sympy's simplification.
+            try:
+                return bool(self.simplify())
+            except ImportError:
+                relational_type = type(self)
+                return bool(relational_type(difference, 0).evalf())
 
 Rel = Relational
 
@@ -1556,12 +1562,17 @@ class Equality(Relational):
         if len(difference.free_symbols):
             # If there are any free symbols, then boolean evaluation is ambiguous in most cases. Throw a Type Error
             raise TypeError(f'Relational with free symbols cannot be cast as bool: {self}')
-        elif difference > float_threshold:
+        elif abs(difference) > float_threshold:
             # If the float evaluation is larger than the threshold, we can skip the full simplification.
             return False
         else:
             # If the float evaluation is smaller than the threshold, then we will need a full simplification.
-            return bool(self.simplify())
+            # If sympy is not present, then we can do a workaround with evalf. This work around is not as precise as
+            # using sympy's simplification.
+            try:
+                return bool(self.simplify())
+            except ImportError:
+                return bool(Eq(difference, 0).evalf())
 
     func = __class__
 
