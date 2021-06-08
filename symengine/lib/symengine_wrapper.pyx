@@ -3678,6 +3678,17 @@ cdef class DenseMatrixBase(MatrixBase):
         deref(self.thisptr).LU(deref(L.thisptr), deref(U.thisptr))
         return L, U
 
+    def LUdecomposition(self):
+        cdef DenseMatrixBase L = self.__class__(self.nrows(), self.ncols())
+        cdef DenseMatrixBase U = self.__class__(self.nrows(), self.ncols())
+        cdef vector[pair[int, int]] perm
+        symengine.pivoted_LU(
+            deref(symengine.static_cast_DenseMatrix(self.thisptr)),
+            deref(symengine.static_cast_DenseMatrix(L.thisptr)),
+            deref(symengine.static_cast_DenseMatrix(U.thisptr)),
+            perm)
+        return L, U, perm
+
     def LDL(self):
         cdef DenseMatrixBase L = self.__class__(self.nrows(), self.ncols())
         cdef DenseMatrixBase D = self.__class__(self.nrows(), self.ncols())
