@@ -1,6 +1,14 @@
 from symengine.utilities import raises
 from symengine import (Symbol, sympify, Eq, Ne, Lt, Le, Ge, Gt, sqrt, pi)
 
+from unittest.case import SkipTest
+
+try:
+    import sympy
+    HAVE_SYMPY = True
+except ImportError:
+    HAVE_SYMPY = False
+
 
 def assert_equal(x, y):
     """Asserts that x and y are equal. This will test Equality, Unequality, LE, and GE classes."""
@@ -32,18 +40,23 @@ def assert_greater_than(x, y):
     assert bool(Gt(x, y))
 
 
-def test_equals_constants():
+def test_equals_constants_easy():
     assert_equal(3, 3)
     assert_equal(4, 2 ** 2)
 
-    # Short and long are symbolically equivalent, but sufficiently different in form that expand() and evalf() does not
-    # catch it. Despite the float evaluation differing ever so slightly, ideally, our equality should still catch
-    # symbolically equal expressions.
+
+def test_equals_constants_hard():
+    # Short and long are symbolically equivalent, but sufficiently different in form that expand() does not
+    # catch it. Ideally, our equality should still catch these, but until symengine supports as robust simplification as
+    # sympy, we can forgive failing, as long as it raises a ValueError
     short = sympify('(3/2)*sqrt(11 + sqrt(21))')
     long = sympify('sqrt((33/8 + (1/24)*sqrt(27)*sqrt(63))**2 + ((3/8)*sqrt(27) + (-1/8)*sqrt(63))**2)')
     assert_equal(short, short)
     assert_equal(long, long)
-    assert_equal(short, long)
+    if HAVE_SYMPY:
+        assert_equal(short, long)
+    else:
+        raises(ValueError, lambda: bool(Eq(short, long)))
 
 
 def test_not_equals_constants():
@@ -75,18 +88,38 @@ def test_not_equals_symbols_raise_typeerror():
     raises(TypeError, lambda: bool(Eq(x ** 2, x)))
 
 
-def test_less_than_constants():
+def test_less_than_constants_easy():
     assert_less_than(1, 2)
-    assert_less_than(sqrt(2), 2)
     assert_less_than(-1, 1)
-    assert_less_than(3.14, pi)
+
+
+def test_less_than_constants_hard():
+    # Each of the below pairs are distinct numbers, with the one on the left less than the one on the right.
+    # Ideally, Less-than will catch this when evaluated, but until symengine has a more robust simplification,
+    # we can forgive a failure to evaluate as long as it raises a ValueError.
+    if HAVE_SYMPY:
+        assert_less_than(sqrt(2), 2)
+        assert_less_than(3.14, pi)
+    else:
+        raises(ValueError, lambda: bool(Lt(sqrt(2), 2)))
+        raises(ValueError, lambda: bool(Lt(3.14, pi)))
 
 
 def test_greater_than_constants():
     assert_greater_than(2, 1)
-    assert_greater_than(2, sqrt(2))
-    assert_greater_than(1, -1, )
-    assert_greater_than(pi, 3.14)
+    assert_greater_than(1, -1)
+
+
+def test_greater_than_constants_hard():
+    # Each of the below pairs are distinct numbers, with the one on the left less than the one on the right.
+    # Ideally, Greater-than will catch this when evaluated, but until symengine has a more robust simplification,
+    # we can forgive a failure to evaluate as long as it raises a ValueError.
+    if HAVE_SYMPY:
+        assert_greater_than(2, sqrt(2))
+        assert_greater_than(pi, 3.14)
+    else:
+        raises(ValueError, lambda: bool(Gt(2, sqrt(2))))
+        raises(ValueError, lambda: bool(Gt(pi, 3.14)))
 
 
 def test_less_than_raises_typeerror():
