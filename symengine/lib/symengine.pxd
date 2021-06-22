@@ -910,6 +910,7 @@ cdef extern from "<symengine/ntheory.h>" namespace "SymEngine":
     void powermod_list(vec_integer &powm, RCP[const Integer] a,
             RCP[const Number] b, RCP[const Integer] m) nogil
 
+cdef extern from "<symengine/prime_sieve.h>" namespace "SymEngine":
     void sieve_generate_primes "SymEngine::Sieve::generate_primes"(vector[unsigned] &primes, unsigned limit) nogil
 
     cdef cppclass sieve_iterator "SymEngine::Sieve::iterator":
