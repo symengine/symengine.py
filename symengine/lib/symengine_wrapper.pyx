@@ -3679,6 +3679,8 @@ cdef class DenseMatrixBase(MatrixBase):
         return L, U
 
     def LUdecomposition(self):
+        if self.rows != self.cols:
+            raise NotImplementedError("LU decomposition not implemented for non-square matrices yet.")
         cdef DenseMatrixBase L = self.__class__(self.nrows(), self.ncols())
         cdef DenseMatrixBase U = self.__class__(self.nrows(), self.ncols())
         cdef vector[pair[int, int]] perm
