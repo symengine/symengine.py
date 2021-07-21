@@ -699,3 +699,15 @@ def test_atoms():
     b = Symbol("b")
     X = DenseMatrix([[a, 2], [b, 4]])
     assert X.atoms(Symbol) == set([a, b])
+
+
+def test_LUdecomp():
+    testmat = DenseMatrix([[0, 2, 5, 3],
+                      [3, 3, 7, 4],
+                      [8, 4, 0, 2],
+                      [-2, 6, 3, 4]])
+    L, U, p = testmat.LUdecomposition()
+    res = L*U
+    for orig, new in p:
+        res.row_swap(orig, new)
+    assert res - testmat == zeros(4)

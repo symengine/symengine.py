@@ -40,3 +40,4 @@ symengine.egg-info/
 genDocs/
 docs/_build/
 docs/source/
+symengine/lib/version_script_symengine_wrapper.txt

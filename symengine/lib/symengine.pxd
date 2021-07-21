@@ -835,7 +835,6 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
     DenseMatrix* static_cast_DenseMatrix "static_cast<SymEngine::DenseMatrix*>"(const MatrixBase *a)
     void inverse_FFLU "SymEngine::inverse_fraction_free_LU"(const DenseMatrix &A,
         DenseMatrix &B) nogil except +
-    void pivoted_LU (const DenseMatrix &A, DenseMatrix &L, DenseMatrix &U, vector[int] &P) nogil except +
     void pivoted_LU_solve (const DenseMatrix &A, const DenseMatrix &b, DenseMatrix &x) nogil except +
     void inverse_GJ "SymEngine::inverse_gauss_jordan"(const DenseMatrix &A,
         DenseMatrix &B) nogil except +
@@ -859,6 +858,9 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
     void column_exchange_dense(DenseMatrix &A, unsigned i, unsigned j) nogil
     void dot(const DenseMatrix &A, const DenseMatrix &B, DenseMatrix &C) nogil
     void cross(const DenseMatrix &A, const DenseMatrix &B, DenseMatrix &C) nogil
+
+cdef extern from "<symengine/matrix.h>":
+    void pivoted_LU (const DenseMatrix &A, DenseMatrix &L, DenseMatrix &U, vector[pair[int, int]] &P) nogil except +
 
 cdef extern from "<symengine/ntheory.h>" namespace "SymEngine":
     int probab_prime_p(const Integer &a, int reps)
@@ -911,6 +913,7 @@ cdef extern from "<symengine/ntheory.h>" namespace "SymEngine":
     void powermod_list(vec_integer &powm, RCP[const Integer] a,
             RCP[const Number] b, RCP[const Integer] m) nogil
 
+cdef extern from "<symengine/prime_sieve.h>" namespace "SymEngine":
     void sieve_generate_primes "SymEngine::Sieve::generate_primes"(vector[unsigned] &primes, unsigned limit) nogil
 
     cdef cppclass sieve_iterator "SymEngine::Sieve::iterator":

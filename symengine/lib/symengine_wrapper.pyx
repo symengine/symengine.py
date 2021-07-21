@@ -562,6 +562,8 @@ def _sympify(a, raise_error=True):
         return Integer(a)
     elif isinstance(a, float):
         return RealDouble(a)
+    elif have_numpy and isinstance(a, (np.float16, np.float32)):
+        return RealDouble(a)
     elif isinstance(a, complex):
         return ComplexDouble(a)
     elif hasattr(a, '_symengine_'):
@@ -3192,7 +3194,7 @@ cdef class DenseMatrixBase(MatrixBase):
             self.thisptr = new symengine.DenseMatrix(row, col)
             return
         if col is None:
-            v = row
+            v = sympify(row)
             row = 0
         cdef symengine.vec_basic v_
         cdef DenseMatrixBase A
@@ -3705,6 +3707,17 @@ cdef class DenseMatrixBase(MatrixBase):
         cdef DenseMatrixBase U = self.__class__(self.nrows(), self.ncols())
         deref(self.thisptr).LU(deref(L.thisptr), deref(U.thisptr))
         return L, U
+
+    def LUdecomposition(self):
+        cdef DenseMatrixBase L = self.__class__(self.nrows(), self.ncols())
+        cdef DenseMatrixBase U = self.__class__(self.nrows(), self.ncols())
+        cdef vector[pair[int, int]] perm
+        symengine.pivoted_LU(
+            deref(symengine.static_cast_DenseMatrix(self.thisptr)),
+            deref(symengine.static_cast_DenseMatrix(L.thisptr)),
+            deref(symengine.static_cast_DenseMatrix(U.thisptr)),
+            perm)
+        return L, U, perm
 
     def LDL(self):
         cdef DenseMatrixBase L = self.__class__(self.nrows(), self.ncols())
