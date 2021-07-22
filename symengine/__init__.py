@@ -40,6 +40,7 @@ EmptySet = wrapper.S.EmptySet
 UniversalSet = wrapper.S.UniversalSet
 Reals = wrapper.S.Reals
 Integers = wrapper.S.Integers
+Rationals = wrapper.S.Rationals
 
 
 if have_mpfr:

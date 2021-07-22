@@ -1,7 +1,7 @@
 from symengine.utilities import raises
 from symengine.lib.symengine_wrapper import (Interval, EmptySet, UniversalSet,
-    FiniteSet, Union, Complement, ImageSet, ConditionSet, Reals, Integers,
-    And, Or, oo, Symbol, true, Ge, Eq, Gt)
+    FiniteSet, Union, Complement, ImageSet, ConditionSet, Reals, Rationals,
+    Integers, And, Or, oo, Symbol, true, Ge, Eq, Gt)
 
 
 def test_Interval():
@@ -38,7 +38,13 @@ def test_Reals():
     assert R.contains(0) == true
 
 
-def test_Reals():
+def test_Rationals():
+    Q = Rationals()
+    assert Q.union(FiniteSet(2, 3)) == Q
+    assert Q.contains(0) == true
+
+
+def test_Integers():
     Z = Integers()
     assert Z.union(FiniteSet(2, 4)) == Z
     assert Z.contains(0) == true
