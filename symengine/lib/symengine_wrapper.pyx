@@ -4056,18 +4056,55 @@ atexit.register(module_cleanup)
 
 def diff(ex, *args):
     ex = sympify(ex)
-    prev = 0
+    prev = None
     cdef Basic b
     cdef size_t i
-    for x in args:
+    length = len(args)
+
+    if not length:
+        return ex
+
+    l = 0
+    x = args[l]
+    b = sympify(x)
+    l += 1
+
+    while l <= length:
+        # Assume symbol 'x' or 'y' currently in b
+        # Pointer to next arg l is either derivative order or a separate symbol
+
+        prev = b
+
+        if l == length:
+            # No next argument, differentiate with no integer argument
+            if isinstance(b, Integer):
+                raise ValueError("Unexpected integer argument")
+            ex = ex._diff(b)
+            break
+
+        x = args[l]
         b = sympify(x)
+        # Check if the next arg was derivative order
         if isinstance(b, Integer):
-            i = int(b) - 1
+            i = int(b)
             for j in range(i):
                 ex = ex._diff(prev)
+
+            # Move forward to point at next symbol
+            l += 1
+            if l == length:
+                break
+
+            x = args[l]
+            b = sympify(x)
+            if isinstance(b, Integer):
+                raise ValueError("Unexpected double integer argument")
         else:
-            ex = ex._diff(b)
-        prev = b
+            # Separate symbol and no derivative order, differentiate now
+            ex = ex._diff(prev)
+
+        l += 1
+
     return ex
 
 def expand(x, deep=True):
