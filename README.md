@@ -26,7 +26,7 @@ optionally, you may choose to install an early [developer preview](https://githu
 Install prerequisites.
 
     CMake       >= 2.8.7
-    Python2     >= 2.7      or Python3 >= 3.4
+    Python3     >= 3.6
     Cython      >= 0.19.1
     SymEngine   >= 0.4.0
 
