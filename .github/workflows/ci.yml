@@ -138,7 +138,7 @@ jobs:
         TEST_IN_TREE: ${{ matrix.TEST_IN_TREE }}
         WITH_SYMENGINE_THREAD_SAFE: ${{ matrix.WITH_SYMENGINE_THREAD_SAFE }}
         WITH_PRIMESIEVE: ${{ matrix.WITH_PRIMESIEVE }}
-        INTEGER_CLASS: ${{ matrix.gNTEGER_CLASS }}
+        INTEGER_CLASS: ${{ matrix.INTEGER_CLASS }}
         WITH_ARB: ${{ matrix.WITH_ARB }}
         WITH_PIRANHA: ${{ matrix.WITH_PIRANHA }}
         WITH_GCC_6: ${{ matrix.WITH_GCC_6 }}
