@@ -13,7 +13,7 @@ except ImportError:
 
 
 def test_init():
-    raises(ValueError, DenseMatrix(2, 1, [0]*4))
+    raises(ValueError, lambda: DenseMatrix(2, 1, [0]*4))
 
 
 def test_get():
