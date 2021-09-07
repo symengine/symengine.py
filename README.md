@@ -25,10 +25,10 @@ optionally, you may choose to install an early [developer preview](https://githu
 
 Install prerequisites.
 
-    CMake       >= 2.8.7
-    Python3     >= 3.6
-    Cython      >= 0.19.1
-    SymEngine   >= 0.4.0
+    CMake       >= 2.8.12
+    Python3     >= 3.7
+    Cython      >= 0.29.24
+    SymEngine   >= 0.7.0
 
 For SymEngine, only a specific commit/tag (see symengine_version.txt) is supported.
 Latest git master branch may not work as there may be breaking changes in SymEngine.
