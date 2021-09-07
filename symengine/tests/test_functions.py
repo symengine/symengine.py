@@ -5,6 +5,7 @@ from symengine import (
     loggamma, beta, polygamma, digamma, trigamma, sign, floor, ceiling, conjugate,
     nan, Float, UnevaluatedExpr
 )
+from symengine.utilities import raises
 
 import unittest
 
@@ -64,6 +65,9 @@ def test_derivative():
     assert f.diff(x).diff(x).args == (f, x, x)
     assert f.diff(x, 0) == f
     assert f.diff(x, 0) == Derivative(function_symbol("f", x), x, 0)
+    raises(ValueError, lambda: f.diff(0))
+    raises(ValueError, lambda: f.diff(x, 0, 0))
+    raises(ValueError, lambda: f.diff(x, y, 0, 0, x))
 
     g = function_symbol("f", y)
     assert g.diff(x) == 0

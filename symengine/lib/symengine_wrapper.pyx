@@ -4054,58 +4054,43 @@ def module_cleanup():
 import atexit
 atexit.register(module_cleanup)
 
-def diff(ex, *args):
-    ex = sympify(ex)
-    prev = None
+def diff(expr, *args):
+    cdef Basic ex = sympify(expr)
+    cdef Basic prev
     cdef Basic b
     cdef size_t i
-    length = len(args)
+    cdef size_t length = len(args)
 
     if not length:
         return ex
 
-    l = 0
-    x = args[l]
-    b = sympify(x)
-    l += 1
+    cdef size_t l = 0
+    cdef Basic cur_arg, next_arg
+    cur_arg = sympify(args[l])
 
-    while l <= length:
-        # Assume symbol 'x' or 'y' currently in b
-        # Pointer to next arg l is either derivative order or a separate symbol
+    while l < length:
+        if isinstance(cur_arg, Integer):
+            raise ValueError("Unexpected integer argument")
 
-        prev = b
-
-        if l == length:
+        if l + 1 == length:
             # No next argument, differentiate with no integer argument
-            if isinstance(b, Integer):
-                raise ValueError("Unexpected integer argument")
-            ex = ex._diff(b)
-            break
+            return ex._diff(cur_arg)
 
-        x = args[l]
-        b = sympify(x)
+        next_arg = sympify(args[l + 1])
         # Check if the next arg was derivative order
-        if isinstance(b, Integer):
-            i = int(b)
-            for j in range(i):
-                ex = ex._diff(prev)
-
-            # Move forward to point at next symbol
-            l += 1
+        if isinstance(next_arg, Integer):
+            i = int(next_arg)
+            for _ in range(i):
+                ex = ex._diff(cur_arg)
+            l += 2
             if l == length:
-                break
-
-            x = args[l]
-            b = sympify(x)
-            if isinstance(b, Integer):
-                raise ValueError("Unexpected double integer argument")
+                return ex
+            cur_arg = sympify(args[l])
         else:
-            # Separate symbol and no derivative order, differentiate now
-            ex = ex._diff(prev)
+            ex = ex._diff(cur_arg)
+            l += 1
+            cur_arg = next_arg
 
-        l += 1
-
-    return ex
 
 def expand(x, deep=True):
     return sympify(x).expand(deep)
