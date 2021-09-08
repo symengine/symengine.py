@@ -4063,21 +4063,43 @@ def module_cleanup():
 import atexit
 atexit.register(module_cleanup)
 
-def diff(ex, *args):
-    ex = sympify(ex)
-    prev = 0
+def diff(expr, *args):
+    cdef Basic ex = sympify(expr)
+    cdef Basic prev
     cdef Basic b
     cdef size_t i
-    for x in args:
-        b = sympify(x)
-        if isinstance(b, Integer):
-            i = int(b) - 1
-            for j in range(i):
-                ex = ex._diff(prev)
+    cdef size_t length = len(args)
+
+    if not length:
+        return ex
+
+    cdef size_t l = 0
+    cdef Basic cur_arg, next_arg
+    cur_arg = sympify(args[l])
+
+    while l < length:
+        if isinstance(cur_arg, Integer):
+            raise ValueError("Unexpected integer argument")
+
+        if l + 1 == length:
+            # No next argument, differentiate with no integer argument
+            return ex._diff(cur_arg)
+
+        next_arg = sympify(args[l + 1])
+        # Check if the next arg was derivative order
+        if isinstance(next_arg, Integer):
+            i = int(next_arg)
+            for _ in range(i):
+                ex = ex._diff(cur_arg)
+            l += 2
+            if l == length:
+                return ex
+            cur_arg = sympify(args[l])
         else:
-            ex = ex._diff(b)
-        prev = b
-    return ex
+            ex = ex._diff(cur_arg)
+            l += 1
+            cur_arg = next_arg
+
 
 def expand(x, deep=True):
     return sympify(x).expand(deep)
