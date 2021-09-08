@@ -3230,6 +3230,8 @@ cdef class DenseMatrixBase(MatrixBase):
                 raise ValueError("sizes don't match.")
             else:
                 self.thisptr = new symengine.DenseMatrix(0, 0, v_)
+        elif col is not None and (row*col != v_.size()):
+            raise ValueError("Number of elements should equal rows*columns.")
         else:
             self.thisptr = new symengine.DenseMatrix(row, v_.size() / row, v_)
 
@@ -3270,6 +3272,13 @@ cdef class DenseMatrixBase(MatrixBase):
             return b.mul_scalar(a)
         else:
             return NotImplemented
+
+    def __matmul__(a, b):
+        a = _sympify(a, False)
+        b = _sympify(b, False)
+        if (a.ncols() != b.nrows()):
+            raise ShapeError("Invalid shapes for matrix multiplication. Got %s %s" % (a.shape, b.shape))
+        return a.mul_matrix(b)
 
     def __truediv__(a, b):
         return div_matrices(a, b)
@@ -4889,7 +4898,7 @@ cdef class LambdaDouble(_Lambdify):
         c_inp = np.ascontiguousarray(inp.ravel(order=self.order), dtype=self.numpy_dtype)
         c_out = out
         for idx in range(nbroadcast):
-            self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size]) 
+            self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
 
     cpdef as_scipy_low_level_callable(self):
         from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
@@ -5135,7 +5144,7 @@ def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C',
                     raise ValueError("Long double not supported on this platform")
             else:
                 raise ValueError("Unknown numpy dtype.")
-                
+
             if as_scipy:
                 return ret.as_scipy_low_level_callable()
             return ret

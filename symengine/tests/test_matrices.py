@@ -12,6 +12,10 @@ except ImportError:
     HAVE_NUMPY = False
 
 
+def test_init():
+    raises(ValueError, lambda: DenseMatrix(2, 1, [0]*4))
+
+
 def test_get():
     A = DenseMatrix([[1, 2], [3, 4]])
 
@@ -229,6 +233,8 @@ def test_mul_matrix():
 
     assert A.mul_matrix(B) == DenseMatrix(2, 2, [a + b, 0, c + d, 0])
     assert A * B == DenseMatrix(2, 2, [a + b, 0, c + d, 0])
+    assert A @ B == DenseMatrix(2, 2, [a + b, 0, c + d, 0])
+    assert (A @ DenseMatrix(2, 1, [0]*2)).shape == (2, 1)
 
     C = DenseMatrix(2, 3, [1, 2, 3, 2, 3, 4])
     D = DenseMatrix(3, 2, [3, 4, 4, 5, 5, 6])
