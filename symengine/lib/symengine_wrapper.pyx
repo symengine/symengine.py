@@ -4063,7 +4063,16 @@ def module_cleanup():
 import atexit
 atexit.register(module_cleanup)
 
+
 def diff(expr, *args):
+    if isinstance(expr, MatrixBase):
+        # Don't sympify matrices so that mutable matrices
+        # return mutable matrices
+        return _diff(expr, *args)
+    return _diff(sympify(expr, *args))
+
+
+def _diff(expr, *args):
     cdef Basic prev
     cdef Basic b
     cdef size_t i
