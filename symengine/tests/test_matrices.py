@@ -658,7 +658,9 @@ def test_cross():
 def test_diff():
     x = symbols("x")
     M = DenseMatrix(1, 2, [x**2, x])
-    assert M.diff(x) == DenseMatrix(1, 2, [2*x, 1])
+    result = M.diff(x)
+    assert isinstance(result, DenseMatrix)
+    assert result == DenseMatrix(1, 2, [2*x, 1])
 
 
 def test_immutablematrix():

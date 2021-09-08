@@ -4069,7 +4069,7 @@ def diff(expr, *args):
         # Don't sympify matrices so that mutable matrices
         # return mutable matrices
         return _diff(expr, *args)
-    return _diff(sympify(expr, *args))
+    return _diff(sympify(expr), *args)
 
 
 def _diff(expr, *args):
