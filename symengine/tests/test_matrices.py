@@ -655,6 +655,12 @@ def test_cross():
         DenseMatrix(1, 2, [1, 1]).cross(DenseMatrix(1, 2, [1, 1])))
 
 
+def test_diff():
+    x = symbols("x")
+    M = DenseMatrix(1, 2, [x**2, x])
+    assert M.diff(x) == DenseMatrix(1, 2, [2*x, 1])
+
+
 def test_immutablematrix():
     A = ImmutableMatrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
     assert A.shape == (3, 3)
