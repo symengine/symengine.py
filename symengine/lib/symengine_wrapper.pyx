@@ -930,7 +930,7 @@ cdef class Basic(object):
             if (len(f) != 1):
                 raise RuntimeError("Variable w.r.t should be given")
             return self._diff(f.pop())
-        return diff(self, *args)
+        return _diff(self, *args)
 
     def subs_dict(Basic self not None, *args):
         warnings.warn("subs_dict() is deprecated. Use subs() instead", DeprecationWarning)
@@ -3687,7 +3687,7 @@ cdef class DenseMatrixBase(MatrixBase):
         return R
 
     def diff(self, *args):
-        return diff(self, *args)
+        return _diff(self, *args)
 
     #TODO: implement this in C++
     def subs(self, *args):
