@@ -10,6 +10,7 @@ mkdir dist-extract
 cd dist-extract
 tar -xvf ../dist/symengine-*.tar.gz
 cd symengine-*
+export PYTHON_SOURCE_DIR=$PWD
 
 # Build inplace so that nosetests can be run inside source directory
 python3 setup.py install build_ext --inplace --symengine-dir=$our_install_dir
