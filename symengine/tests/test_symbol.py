@@ -159,6 +159,7 @@ def test_dummy():
 
     assert x1 == x2
     assert x1 != xdummy1
+    assert xdummy1 == (xdummy1 + 1) - 1
     assert xdummy1 != xdummy2
     assert Dummy() != Dummy()
     assert Dummy('x') != Dummy('x')
