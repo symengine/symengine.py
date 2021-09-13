@@ -71,7 +71,7 @@ cdef object c2py(rcp_const_basic o):
             return S.ImaginaryUnit
         r = Complex.__new__(Complex)
     elif (symengine.is_a_Dummy(deref(o))):
-        r = Symbol.__new__(Dummy)
+        r = Dummy.__new__(Dummy)
     elif (symengine.is_a_Symbol(deref(o))):
         if (symengine.is_a_PySymbol(deref(o))):
             return <object>(deref(symengine.rcp_static_cast_PySymbol(o)).get_py_object())
