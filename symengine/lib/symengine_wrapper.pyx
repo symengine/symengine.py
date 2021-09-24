@@ -3241,6 +3241,34 @@ cdef class DenseMatrixBase(MatrixBase):
     def __str__(self):
         return deref(self.thisptr).__str__().decode("utf-8")
 
+      def _repr_latex_(self):
+        MAX_NUMBER_OF_ROWS = 24
+        MAX_NUMBER_OF_COLUMNS = 16
+
+        values = list(self)
+        ncols=self.shape[1]
+        nrows = self.shape[0]
+        if nrows > MAX_NUMBER_OF_ROWS:
+            nrows_display = MAX_NUMBER_OF_ROWS - 2
+        else:
+            nrows_display= nrows
+        ncols_display = min(ncols, MAX_NUMBER_OF_COLUMNS)
+        latex = r'$\displaystyle \left[\begin{matrix}'
+
+        newline = r'\\'
+        if ncols_display<ncols:
+            newline = ' & \cdots '  + newline
+        for row in range(nrows_display):
+            vv = values[row*ncols:(row*ncols)+ncols_display]
+            latex += ' & '.join([str(v) for v in vv])
+            if row < self.shape[0]-1:
+                latex += newline
+        if nrows_display < nrows:
+            latex += ' & '.join([r'\vdots' for v in vv])
+
+        latex += r'\end{matrix}\right]$'
+        return latex
+
     def __add__(a, b):
         a = _sympify(a, False)
         b = _sympify(b, False)
