@@ -725,3 +725,9 @@ def test_LUdecomp():
     for orig, new in p:
         res.row_swap(orig, new)
     assert res - testmat == zeros(4)
+
+def test_repr_latex():
+    testmat = DenseMatrix([[0, 2]])
+    latex_string = testmat._repr_latex_()
+    assert isinstance(latex_string, str)
+    
