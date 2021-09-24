@@ -3241,7 +3241,7 @@ cdef class DenseMatrixBase(MatrixBase):
     def __str__(self):
         return deref(self.thisptr).__str__().decode("utf-8")
 
-      def _repr_latex_(self):
+    def _repr_latex_(self):
         MAX_NUMBER_OF_ROWS = 24
         MAX_NUMBER_OF_COLUMNS = 16
 
