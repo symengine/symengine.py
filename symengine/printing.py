@@ -1,4 +1,4 @@
-from symengine.lib.symengine_wrapper import ccode, sympify, Basic, repr_latex
+from .lib.symengine_wrapper import ccode, sympify, Basic, repr_latex
 
 class CCodePrinter:
 
