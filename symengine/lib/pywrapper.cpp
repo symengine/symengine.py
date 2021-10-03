@@ -175,17 +175,12 @@ RCP<const Number> PyNumber::eval(long bits) const {
 }
 
 std::string PyNumber::__str__() const {
-    PyObject* temp;
-    std::string str;
-#if PY_MAJOR_VERSION > 2
-    temp = PyUnicode_AsUTF8String(pyobject_);
-    str = std::string(PyBytes_AsString(temp));
-#else
-    temp = PyObject_Str(pyobject_);
-    str = std::string(PyString_AsString(temp));
-#endif
-    Py_XDECREF(temp);
-    return str;
+    Py_ssize_t size;
+    PyObject *pystr = PyObject_Str(pyobject_);
+    const char* data = PyUnicode_AsUTF8AndSize(pystr, &size);
+    std::string result = std::string(data, size);
+    Py_XDECREF(pystr);
+    return result;
 }
 
 // PyFunctionClass

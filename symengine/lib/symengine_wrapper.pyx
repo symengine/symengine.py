@@ -2690,7 +2690,7 @@ class FunctionSymbol(Function):
     def _sage_(self):
         import sage.all as sage
         name = self.get_name()
-        return sage.function(name, *self.args_as_sage())
+        return sage.function(name)(*self.args_as_sage())
 
     def func(self, *values):
         name = self.get_name()
@@ -2711,7 +2711,7 @@ cdef rcp_const_basic pynumber_to_symengine(PyObject* o1):
 
 cdef PyObject* symengine_to_sage(rcp_const_basic o1):
     import sage.all as sage
-    t = sage.SR(c2py(o1)._sage_())
+    t = c2py(o1)._sage_()
     Py_XINCREF(<PyObject*>t)
     return <PyObject*>(t)
 
@@ -2765,7 +2765,10 @@ cdef class PyNumber(Number):
 
     def _sage_(self):
         import sage.all as sage
-        return sage.SR(self.pyobject())
+        res = self.pyobject()
+        if hasattr(res, '_sage_'):
+            return res._sage_()
+        return res
 
     def pyobject(self):
         return <object>deref(symengine.rcp_static_cast_PyNumber(self.thisptr)).get_py_object()
