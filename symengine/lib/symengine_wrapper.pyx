@@ -1262,7 +1262,7 @@ cdef class Dummy(Symbol):
 
     def _sympy_(self):
         import sympy
-        return sympy.Dummy(str(self))
+        return sympy.Dummy(str(self)[1:])
 
     @property
     def is_Dummy(self):
