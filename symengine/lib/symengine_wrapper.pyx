@@ -5418,11 +5418,13 @@ def cse(exprs):
     return (vec_pair_to_list(replacements), vec_basic_to_list(reduced_exprs))
 
 def latex(expr):
+    cdef symengine.DenseMatrix expr_
+    cdef Basic expr_
     if isinstance(expr, DenseMatrixBase):
-        cdef symengine.DenseMatrix expr_ = sympify(expr)
-        return symengine.latex(deref(expr_.thisptr)).decode("utf-8")
+        mat_expr_ = sympify(expr)
+        return symengine.latex(deref(mat_expr_.thisptr)).decode("utf-8")
     else:
-        cdef Basic expr_ = sympify(expr)
+        expr_ = sympify(expr)
         return symengine.latex(deref(expr_.thisptr)).decode("utf-8")
 
 cdef _flattened_vec(symengine.vec_basic &vec, exprs):
