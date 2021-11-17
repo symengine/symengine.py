@@ -708,6 +708,15 @@ def test_immutablematrix():
     assert isinstance(Z, ImmutableMatrix)
     assert Z == ImmutableMatrix([[1, 2], [3, 4], [5, 6]])
 
+    # Operations of one immutable and one mutable matrix should give immutable result
+    X = ImmutableMatrix([1])
+    Y = DenseMatrix([1])
+    assert type(X + Y) == ImmutableMatrix
+    assert type(Y + X) == ImmutableMatrix
+    assert type(X * Y) == ImmutableMatrix
+    assert type(Y * X) == ImmutableMatrix
+
+
 def test_atoms():
     a = Symbol("a")
     b = Symbol("b")

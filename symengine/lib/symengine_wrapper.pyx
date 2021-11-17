@@ -3570,19 +3570,31 @@ cdef class DenseMatrixBase(MatrixBase):
 
     def add_matrix(self, A):
         cdef MatrixBase A_ = sympify(A)
-        cdef DenseMatrixBase result = self.__class__(self.nrows(), self.ncols())
+        if isinstance(A, ImmutableDenseMatrix):
+            cls = A.__class__
+        else:
+            cls = self.__class__
+        cdef DenseMatrixBase result = cls(self.nrows(), self.ncols())
         deref(self.thisptr).add_matrix(deref(A_.thisptr), deref(result.thisptr))
         return result
 
     def mul_matrix(self, A):
         cdef MatrixBase A_ = sympify(A)
-        cdef DenseMatrixBase result = self.__class__(self.nrows(), A.ncols())
+        if isinstance(A, ImmutableDenseMatrix):
+            cls = A.__class__
+        else:
+            cls = self.__class__
+        cdef DenseMatrixBase result = cls(self.nrows(), A.ncols())
         deref(self.thisptr).mul_matrix(deref(A_.thisptr), deref(result.thisptr))
         return result
 
     def multiply_elementwise(self, A):
         cdef MatrixBase A_ = sympify(A)
-        cdef DenseMatrixBase result = self.__class__(self.nrows(), self.ncols())
+        if isinstance(A, ImmutableDenseMatrix):
+            cls = A.__class__
+        else:
+            cls = self.__class__
+        cdef DenseMatrixBase result = cls(self.nrows(), self.ncols())
         deref(self.thisptr).elementwise_mul_matrix(deref(A_.thisptr), deref(result.thisptr))
         return result
 
