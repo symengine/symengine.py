@@ -3243,7 +3243,7 @@ cdef class DenseMatrixBase(MatrixBase):
 
     def _repr_latex_(self):
         if repr_latex[0]:
-            return latex(deref(self.thisptr)).decode("utf-8")
+            return "${}$".format(latex(self))
         else:
             return None
 
