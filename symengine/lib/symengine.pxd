@@ -1099,6 +1099,7 @@ cdef extern from "<symengine/solve.h>" namespace "SymEngine":
 cdef extern from "<symengine/printers.h>" namespace "SymEngine":
     string ccode(const Basic &x) nogil except +
     string latex(const Basic &x) nogil except +
+    string latex(const DenseMatrix &x, unsigned max_rows, unsigned max_cols) nogil except +
 
 ## Defined in 'symengine/cwrapper.cpp'
 cdef struct CRCPBasic:

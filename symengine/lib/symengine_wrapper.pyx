@@ -3244,6 +3244,12 @@ cdef class DenseMatrixBase(MatrixBase):
     def __str__(self):
         return deref(self.thisptr).__str__().decode("utf-8")
 
+    def _repr_latex_(self):
+        if repr_latex[0]:
+            return "${}$".format(latex(self))
+        else:
+            return None
+
     def __add__(a, b):
         a = _sympify(a, False)
         b = _sympify(b, False)
@@ -5427,8 +5433,14 @@ def cse(exprs):
     return (vec_pair_to_list(replacements), vec_basic_to_list(reduced_exprs))
 
 def latex(expr):
-    cdef Basic expr_ = sympify(expr)
-    return symengine.latex(deref(expr_.thisptr)).decode("utf-8")
+    cdef DenseMatrixBase mat_expr
+    cdef Basic basic_expr
+    if isinstance(expr, DenseMatrixBase):
+        mat_expr = expr
+        return symengine.latex(deref(symengine.static_cast_DenseMatrix(mat_expr.thisptr)), 20, 12).decode("utf-8")
+    else:
+        basic_expr = sympify(expr)
+        return symengine.latex(deref(basic_expr.thisptr)).decode("utf-8")
 
 cdef _flattened_vec(symengine.vec_basic &vec, exprs):
     cdef Basic b
