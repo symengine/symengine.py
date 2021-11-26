@@ -1,4 +1,4 @@
-from symengine import symbols
+from symengine import symbols, init_printing
 from symengine.lib.symengine_wrapper import (DenseMatrix, Symbol, Integer,
     Rational, function_symbol, I, NonSquareMatrixError, ShapeError, zeros,
     ones, eye, ImmutableMatrix)
@@ -728,6 +728,7 @@ def test_LUdecomp():
 
 def test_repr_latex():
     testmat = DenseMatrix([[0, 2]])
+    init_printing(True)
     latex_string = testmat._repr_latex_()
     assert isinstance(latex_string, str)
-    
+    init_printing(False)
