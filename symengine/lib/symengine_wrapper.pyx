@@ -826,6 +826,10 @@ cdef list vec_pair_to_list(symengine.vec_pair& vec):
     return result
 
 
+def load_basic(bytes s):
+    return c2py(symengine.loads(s))
+
+
 repr_latex=[False]
 
 cdef class Basic(object):
@@ -835,6 +839,10 @@ cdef class Basic(object):
 
     def __repr__(self):
         return self.__str__()
+
+    def __reduce__(self):
+        cdef bytes s = deref(self.thisptr).dumps()
+        return (load_basic, (s,))
 
     def _repr_latex_(self):
         if repr_latex[0]:

@@ -1,6 +1,15 @@
-from symengine import symbols, sin, sinh, have_numpy, have_llvm
+from symengine import symbols, sin, sinh, have_numpy, have_llvm, cos
 import pickle
 import unittest
+
+
+def test_basic():
+    x, y, z = symbols('x y z')
+    expr = sin(cos(x + y)/z)**2
+    s = pickle.dumps(expr)
+    expr2 = pickle.loads(s)
+    assert expr == expr2
+
 
 @unittest.skipUnless(have_llvm, "No LLVM support")
 @unittest.skipUnless(have_numpy, "Numpy not installed")
