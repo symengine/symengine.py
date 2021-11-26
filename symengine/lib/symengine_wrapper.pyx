@@ -5422,7 +5422,7 @@ def latex(expr):
     cdef Basic basic_expr
     if isinstance(expr, DenseMatrixBase):
         mat_expr = expr
-        return symengine.latex(deref(mat_expr.thisptr), 20, 12).decode("utf-8")
+        return symengine.latex(deref(symengine.static_cast_DenseMatrix(mat_expr.thisptr)), 20, 12).decode("utf-8")
     else:
         basic_expr = sympify(expr)
         return symengine.latex(deref(basic_expr.thisptr)).decode("utf-8")
