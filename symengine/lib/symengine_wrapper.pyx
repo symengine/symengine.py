@@ -5418,7 +5418,7 @@ def cse(exprs):
     return (vec_pair_to_list(replacements), vec_basic_to_list(reduced_exprs))
 
 def latex(expr):
-    cdef DenseMatrix mat_expr
+    cdef DenseMatrixBase mat_expr
     cdef Basic basic_expr
     if isinstance(expr, DenseMatrixBase):
         mat_expr = expr
