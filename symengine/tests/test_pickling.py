@@ -1,4 +1,5 @@
 from symengine import symbols, sin, sinh, have_numpy, have_llvm, cos, Symbol
+from symengine.utilities import raises
 import pickle
 import unittest
 
@@ -11,21 +12,27 @@ def test_basic():
     assert expr == expr2
 
 
-class MySymbol(Symbol):
+class MySymbolBase(Symbol):
     def __init__(self, name, attr):
         super().__init__(name=name)
         self.attr = attr
 
+
+class MySymbol(MySymbolBase):
     def __reduce__(self):
         return (self.__class__, (self.name, self.attr))
 
 
 def test_pysymbol():
     a = MySymbol("hello", attr=1)
-    b = pickle.loads(pickle.dumps(a))
+    b = pickle.loads(pickle.dumps(a + 2)) - 2
     assert b.attr == 1
     a._unsafe_reset()
     b._unsafe_reset()
+
+    a = MySymbolBase("hello", attr=1)
+    raises(NotImplementedError, lambda: pickle.dumps(a + 2))
+    a._unsafe_reset()
 
 
 @unittest.skipUnless(have_llvm, "No LLVM support")
