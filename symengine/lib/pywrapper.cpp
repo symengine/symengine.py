@@ -327,7 +327,6 @@ void save_basic(cereal::PortableBinaryOutputArchive &ar, const Symbol &b)
 
 std::string wrapper_dumps(const Basic &x)
 {
-    std::cout << "qwe" << std::endl;
     std::ostringstream oss;
     unsigned short major = SYMENGINE_MAJOR_VERSION;
     unsigned short minor = SYMENGINE_MINOR_VERSION;
