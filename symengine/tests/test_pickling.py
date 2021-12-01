@@ -17,6 +17,11 @@ class MySymbolBase(Symbol):
         super().__init__(name=name)
         self.attr = attr
 
+    def __eq__(self, other):
+        if not isinstance(other, MySymbolBase):
+            return False
+        return self.name == other.name and self.attr == other.attr
+
 
 class MySymbol(MySymbolBase):
     def __reduce__(self):
@@ -26,13 +31,18 @@ class MySymbol(MySymbolBase):
 def test_pysymbol():
     a = MySymbol("hello", attr=1)
     b = pickle.loads(pickle.dumps(a + 2)) - 2
-    assert b.attr == 1
-    a._unsafe_reset()
-    b._unsafe_reset()
+    try:
+        assert a == b
+    finally:
+        a._unsafe_reset()
+        b._unsafe_reset()
 
     a = MySymbolBase("hello", attr=1)
-    raises(NotImplementedError, lambda: pickle.dumps(a + 2))
-    a._unsafe_reset()
+    try:
+        raises(NotImplementedError, lambda: pickle.dumps(a))
+        raises(NotImplementedError, lambda: pickle.dumps(a + 2))
+    finally:
+        a._unsafe_reset()
 
 
 @unittest.skipUnless(have_llvm, "No LLVM support")
