@@ -195,6 +195,9 @@ public:
     virtual hash_t __hash__() const;
 };
 
+std::string wrapper_dumps(const Basic &x);
+RCP<const Basic> wrapper_loads(const std::string &s);
+
 }
 
 #endif //SYMENGINE_PYWRAPPER_H

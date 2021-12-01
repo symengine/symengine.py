@@ -1,4 +1,5 @@
 #include "pywrapper.h"
+#include <symengine/serialize-cereal.h>
 
 #if PY_MAJOR_VERSION >= 3
 #define PyInt_FromLong PyLong_FromLong
@@ -267,6 +268,82 @@ int PyFunction::compare(const Basic &o) const {
     int cmp = pyfunction_class_->compare(*s.get_pyfunction_class());
     if (cmp != 0) return cmp;
     return unified_compare(get_vec(), s.get_vec());
+}
+
+inline PyObject* get_pickle_module() {
+    static PyObject *module = NULL;
+    if (module == NULL) {
+        module = PyImport_ImportModule("pickle");
+    }
+    return module;
+}
+
+RCP<const Basic> load_basic(cereal::PortableBinaryInputArchive &ar, RCP<const Symbol> &)
+{
+    bool is_pysymbol;
+    std::string name;
+    ar(is_pysymbol);
+    ar(name);
+    if (is_pysymbol) {
+        std::string pickle_str;
+        ar(pickle_str);
+        PyObject *module = get_pickle_module();
+        PyObject *pickle_bytes = PyBytes_FromStringAndSize(pickle_str.data(), pickle_str.size());
+        PyObject *obj = PyObject_CallMethod(module, "loads", "O", pickle_bytes);
+        RCP<const Basic> result = make_rcp<PySymbol>(name, obj);
+        Py_XDECREF(pickle_bytes);
+        return result;
+    } else {
+        return symbol(name);
+    }
+}
+
+void save_basic(cereal::PortableBinaryOutputArchive &ar, const Symbol &b)
+{
+    bool is_pysymbol = is_a_sub<PySymbol>(b);
+    ar(is_pysymbol);
+    ar(b.__str__());
+    if (is_pysymbol) {
+        RCP<const PySymbol> p = rcp_static_cast<const PySymbol>(b.rcp_from_this());
+        PyObject *module = get_pickle_module();
+        PyObject *pickle_bytes = PyObject_CallMethod(module, "dumps", "O", p->get_py_object());
+        Py_ssize_t size;
+        char* buffer;
+        PyBytes_AsStringAndSize(pickle_bytes, &buffer, &size);
+        std::string pickle_str(buffer, size);
+        ar(pickle_str);
+        Py_XDECREF(pickle_bytes);
+    }
+}
+
+std::string wrapper_dumps(const Basic &x)
+{
+    std::cout << "qwe" << std::endl;
+    std::ostringstream oss;
+    unsigned short major = SYMENGINE_MAJOR_VERSION;
+    unsigned short minor = SYMENGINE_MINOR_VERSION;
+    cereal::PortableBinaryOutputArchive{oss}(major, minor,
+                                             x.rcp_from_this());
+    return oss.str();
+}
+
+RCP<const Basic> wrapper_loads(const std::string &serialized)
+{
+    unsigned short major, minor;
+    RCP<const Basic> obj;
+    std::istringstream iss(serialized);
+    cereal::PortableBinaryInputArchive iarchive{iss};
+    iarchive(major, minor);
+    if (major != SYMENGINE_MAJOR_VERSION or minor != SYMENGINE_MINOR_VERSION) {
+        throw SerializationError(StreamFmt()
+                                 << "SymEngine-" << SYMENGINE_MAJOR_VERSION
+                                 << "." << SYMENGINE_MINOR_VERSION
+                                 << " was asked to deserialize an object "
+                                 << "created using SymEngine-" << major << "."
+                                 << minor << ".");
+    }
+    iarchive(obj);
+    return obj;
 }
 
 } // SymEngine
