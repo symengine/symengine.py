@@ -276,7 +276,7 @@ inline PyObject* get_pickle_module() {
         module = PyImport_ImportModule("pickle");
     }
     if (module == NULL) {
-        throw SymEngineException("error importing pickle module.")
+        throw SymEngineException("error importing pickle module.");
     }
     return module;
 }
