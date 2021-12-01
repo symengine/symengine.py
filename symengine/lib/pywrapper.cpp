@@ -294,7 +294,7 @@ RCP<const Basic> load_basic(cereal::PortableBinaryInputArchive &ar, RCP<const Sy
         PyObject *pickle_bytes = PyBytes_FromStringAndSize(pickle_str.data(), pickle_str.size());
         PyObject *obj = PyObject_CallMethod(module, "loads", "O", pickle_bytes);
         if (obj == NULL) {
-            throw SymEngineException("error when loading pickled symbol subclass object");
+            throw SerializationError("error when loading pickled symbol subclass object");
         }
         RCP<const Basic> result = make_rcp<PySymbol>(name, obj);
         Py_XDECREF(pickle_bytes);
@@ -314,7 +314,7 @@ void save_basic(cereal::PortableBinaryOutputArchive &ar, const Symbol &b)
         PyObject *module = get_pickle_module();
         PyObject *pickle_bytes = PyObject_CallMethod(module, "dumps", "O", p->get_py_object());
         if (pickle_bytes == NULL) {
-            throw SymEngineException("error when pickling symbol subclass object");
+            throw SerializationError("error when pickling symbol subclass object");
         }
         Py_ssize_t size;
         char* buffer;
