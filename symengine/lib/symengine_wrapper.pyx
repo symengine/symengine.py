@@ -2999,8 +2999,23 @@ cdef class Set(Expr):
 
 class Interval(Set):
 
-    def __new__(self, *args):
-        return interval(*args)
+    def __new__(self, *args, left_open=None, right_open=None):
+        list_args = list(args)
+        if ((left_open is not None) and (right_open is None)) or ((left_open is None) and (right_open is not None)):
+            raise ValueError("Both (or neither) keyword arguments for Interval should be specified")
+        if left_open is not None:
+            list_args.append(left_open)
+        if right_open is not None:
+            list_args.append(right_open)
+        return interval(*list_args)
+
+    @property
+    def start(self):
+        return self.args[0]
+
+    @property
+    def end(self):
+        return self.args[1]
 
     def _sympy_(self):
         import sympy
