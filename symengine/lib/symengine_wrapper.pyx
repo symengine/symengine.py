@@ -826,6 +826,10 @@ cdef list vec_pair_to_list(symengine.vec_pair& vec):
     return result
 
 
+def load_basic(bytes s):
+    return c2py(symengine.wrapper_loads(s))
+
+
 repr_latex=[False]
 
 cdef class Basic(object):
@@ -835,6 +839,10 @@ cdef class Basic(object):
 
     def __repr__(self):
         return self.__str__()
+
+    def __reduce__(self):
+        cdef bytes s = symengine.wrapper_dumps(deref(self.thisptr))
+        return (load_basic, (s,))
 
     def _repr_latex_(self):
         if repr_latex[0]:
@@ -1222,6 +1230,12 @@ cdef class Symbol(Expr):
     def _sympy_(self):
         import sympy
         return sympy.Symbol(str(self))
+
+    def __reduce__(self):
+        if type(self) == Symbol:
+            return Basic.__reduce__(self)
+        else:
+            raise NotImplementedError("pickling for Symbol subclass not implemented")
 
     def _sage_(self):
         import sage.all as sage
