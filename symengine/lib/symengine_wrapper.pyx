@@ -5471,6 +5471,11 @@ def latex(expr):
         basic_expr = sympify(expr)
         return symengine.latex(deref(basic_expr.thisptr)).decode("utf-8")
 
+def unicode(expr):
+    cdef Basic basic_expr
+    basic_expr = sympify(expr)
+    return symengine.unicode(deref(basic_expr.thisptr)).decode("utf-8")
+
 cdef _flattened_vec(symengine.vec_basic &vec, exprs):
     cdef Basic b
     if is_sequence(exprs):
