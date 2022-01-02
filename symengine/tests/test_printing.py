@@ -35,4 +35,4 @@ def test_init_printing():
 def test_unicode():
     x = Symbol("x")
     y = Integer(2)
-    assert unicode(x / y) == "x\n―\n2"
+    assert unicode(x / 2) == "x\n―\n2"
