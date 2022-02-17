@@ -32,6 +32,7 @@ environment:
     - BUILD_TYPE: "Debug"
       COMPILER: MinGW-w64
       PYTHON_VERSION: 310-x64
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       WITH_SYMPY: no
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
@@ -45,6 +46,7 @@ environment:
       PLATFORM: "x64"
       PYTHON_VERSION: 310-x64
       CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       WITH_MPFR: yes
       WITH_MPC: yes
       WITH_LLVM: yes
