@@ -29,7 +29,8 @@ from .lib.symengine_wrapper import (
     FunctionSymbol as AppliedUndef,
     golden_ratio as GoldenRatio,
     catalan as Catalan,
-    eulergamma as EulerGamma
+    eulergamma as EulerGamma,
+    unicode
 )
 from .utilities import var, symbols
 from .functions import *
