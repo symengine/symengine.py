@@ -7,8 +7,8 @@ from distutils.command.build_ext import build_ext as _build_ext
 from distutils.command.build import build as _build
 
 # Make sure the system has the right Python version.
-if sys.version_info[:2] < (3, 6):
-    print("SymEngine requires Python 3.6 or newer. "
+if sys.version_info[:2] < (3, 7):
+    print("SymEngine requires Python 3.7 or newer. "
           "Python %d.%d detected" % sys.version_info[:2])
     sys.exit(-1)
 
@@ -214,7 +214,7 @@ and dependencies of wheels
 '''
 
 setup(name="symengine",
-      version="0.8.1",
+      version="0.9.0",
       description="Python library providing wrappers to SymEngine",
       setup_requires=['cython>=0.29.24'],
       long_description=long_description,
@@ -222,7 +222,7 @@ setup(name="symengine",
       author_email="symengine@googlegroups.com",
       license="MIT",
       url="https://github.com/symengine/symengine.py",
-      python_requires='>=3.6,<4',
+      python_requires='>=3.7,<4',
       zip_safe=False,
       cmdclass = cmdclass,
       classifiers=[
@@ -232,9 +232,9 @@ setup(name="symengine",
         'Topic :: Scientific/Engineering',
         'Topic :: Scientific/Engineering :: Mathematics',
         'Topic :: Scientific/Engineering :: Physics',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         ]
       )

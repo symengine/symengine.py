@@ -57,7 +57,7 @@ if have_numpy:
         return Lambdify(args, *exprs, **kwargs)
 
 
-__version__ = "0.8.1"
+__version__ = "0.9.0"
 
 
 # To not expose internals
