@@ -31,7 +31,7 @@ environment:
       PYTHON_VERSION: 37-x64
     - BUILD_TYPE: "Debug"
       COMPILER: MinGW-w64
-      PYTHON_VERSION: 39-x64
+      PYTHON_VERSION: 37-x64
       WITH_SYMPY: no
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
