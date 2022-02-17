@@ -3,8 +3,6 @@ import os
 import subprocess
 import sys
 import platform
-from distutils.command.build_ext import build_ext as _build_ext
-from distutils.command.build import build as _build
 
 # Make sure the system has the right Python version.
 if sys.version_info[:2] < (3, 7):
@@ -28,12 +26,16 @@ if use_setuptools:
     try:
         from setuptools import setup
         from setuptools.command.install import install as _install
+        from setuptools.command.build_ext import build_ext as _build_ext
+        from setuptools.command.build import build as _build
     except ImportError:
         use_setuptools = False
 
 if not use_setuptools:
     from distutils.core import setup
     from distutils.command.install import install as _install
+    from distutils.command.build_ext import build_ext as _build_ext
+    from distutils.command.build import build as _build
 
 cmake_opts = [("PYTHON_BIN", sys.executable),
               ("CMAKE_INSTALL_RPATH_USE_LINK_PATH", "yes")]
