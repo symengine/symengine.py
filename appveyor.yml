@@ -31,7 +31,7 @@ environment:
       PYTHON_VERSION: 37-x64
     - BUILD_TYPE: "Debug"
       COMPILER: MinGW-w64
-      PYTHON_VERSION: 36-x64
+      PYTHON_VERSION: 310-x64
       WITH_SYMPY: no
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
@@ -43,7 +43,7 @@ environment:
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
       PLATFORM: "x64"
-      PYTHON_VERSION: 36-x64
+      PYTHON_VERSION: 310-x64
       CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
       WITH_MPFR: yes
       WITH_MPC: yes
