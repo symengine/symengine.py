@@ -55,12 +55,12 @@ jobs:
             OS: ubuntu-20.04
             CC: gcc
 
-          - BUILD_TYPE: Debug
-            PYTHON_VERSION: 3.9
-            WITH_BFD: yes
-            WITH_PIRANHA: yes
-            OS: ubuntu-20.04
-            CC: gcc
+          #- BUILD_TYPE: Debug
+          #  PYTHON_VERSION: 3.9
+          #  WITH_BFD: yes
+          #  WITH_PIRANHA: yes
+          #  OS: ubuntu-20.04
+          #  CC: gcc
 
           - BUILD_TYPE: Debug
             PYTHON_VERSION: 3.8
