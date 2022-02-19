@@ -22,12 +22,13 @@ if use_distutils is not None:
         print("Value {} for USE_DISTUTILS treated as False".
               format(use_distutils))
 
+from distutils.command.build import build as _build
+
 if use_setuptools:
     try:
         from setuptools import setup
         from setuptools.command.install import install as _install
         from setuptools.command.build_ext import build_ext as _build_ext
-        from setuptools.command.build import build as _build
     except ImportError:
         use_setuptools = False
 
@@ -35,7 +36,6 @@ if not use_setuptools:
     from distutils.core import setup
     from distutils.command.install import install as _install
     from distutils.command.build_ext import build_ext as _build_ext
-    from distutils.command.build import build as _build
 
 cmake_opts = [("PYTHON_BIN", sys.executable),
               ("CMAKE_INSTALL_RPATH_USE_LINK_PATH", "yes")]
