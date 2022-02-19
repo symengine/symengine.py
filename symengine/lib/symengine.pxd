@@ -379,6 +379,7 @@ cdef extern from "<symengine/integer.h>" namespace "SymEngine":
         Integer(integer_class i) nogil
         int compare(const Basic &o) nogil
         integer_class as_integer_class() nogil
+        RCP[Number] divint(const Integer &other) nogil
     cdef long mp_get_si(integer_class &i) nogil
     cdef double mp_get_d(integer_class &i) nogil
     cdef RCP[const Integer] integer(int i) nogil
@@ -390,6 +391,8 @@ cdef extern from "<symengine/integer.h>" namespace "SymEngine":
 cdef extern from "<symengine/rational.h>" namespace "SymEngine":
     cdef cppclass Rational(Number):
         rational_class as_rational_class() nogil
+        @staticmethod
+        RCP[const Number] from_two_ints(const long n, const long d) nogil
     cdef double mp_get_d(rational_class &i) nogil
     cdef RCP[const Number] from_mpq "SymEngine::Rational::from_mpq"(rational_class r) nogil
     cdef void get_num_den(const Rational &rat, const Ptr[RCP[Integer]] &num,
