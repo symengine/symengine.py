@@ -1664,7 +1664,25 @@ cdef class Number(Expr):
 class Rational(Number):
 
     def __new__(cls, p, q):
-        return Integer(p)/q
+        p = int(p)
+        q = int(q)
+        cdef int p_
+        cdef int q_
+        cdef symengine.integer_class p__
+        cdef symengine.integer_class q__
+        cdef string tmp
+        try:
+            # Try to convert p and q to int
+            p_ = p
+            q_ = q
+            return c2py(<rcp_const_basic>symengine.Rational.from_two_ints(p_, q_));
+        except OverflowError:
+            # Too big, need to use mpz
+            tmp = str(p).encode("utf-8")
+            p__ = symengine.integer_class(tmp)
+            tmp = str(q).encode("utf-8")
+            q__ = symengine.integer_class(tmp)
+            return c2py(<rcp_const_basic>symengine.Integer(p__).divint(symengine.Integer(q__)))
 
     @property
     def is_Rational(self):
