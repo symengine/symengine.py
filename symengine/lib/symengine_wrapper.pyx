@@ -4047,13 +4047,9 @@ cdef class ImmutableDenseMatrix(DenseMatrixBase):
         raise TypeError("Cannot set values of {}".format(self.__class__))
 
     def _applyfunc(self, f):
-        cdef int nr = self.nrows()
-        cdef int nc = self.ncols()
-        temp = DenseMatrix(self)
-        for i in range(nr):
-            for j in range(nc):
-                temp._set(i, j, f(temp._get(i, j)))
-        return ImmutableDenseMatrix(temp)
+        res = DenseMatrix(self)
+        res._applyfunc(f)
+        return ImmutableDenseMatrix(res)
 
 
 ImmutableMatrix = ImmutableDenseMatrix
