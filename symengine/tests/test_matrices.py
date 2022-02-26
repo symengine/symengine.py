@@ -741,3 +741,8 @@ def test_repr_latex():
     latex_string = testmat._repr_latex_()
     assert isinstance(latex_string, str)
     init_printing(False)
+
+
+def test_simplify():
+    A = ImmutableMatrix([1])
+    assert type(A.simplify()) == type(A)
