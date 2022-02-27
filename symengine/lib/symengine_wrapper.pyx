@@ -3906,7 +3906,7 @@ cdef class DenseMatrixBase(MatrixBase):
                 l.append(c2py(A.get(i, j))._sage_())
             s.append(l)
         import sage.all as sage
-        return sage.ImmutableMatrix(s)
+        return sage.Matrix(s, immutable=True)
 
     def dump_real(self, double[::1] out):
         cdef size_t ri, ci, nr, nc
