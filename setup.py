@@ -216,7 +216,7 @@ and dependencies of wheels
 '''
 
 setup(name="symengine",
-      version="0.9.0",
+      version="0.9.2",
       description="Python library providing wrappers to SymEngine",
       setup_requires=['cython>=0.29.24'],
       long_description=long_description,
