@@ -801,7 +801,7 @@ def test_construct_dense_matrix():
 @unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv_doubles():
     f = 4.347249999999999
-    a = sympify()
+    a = sympify(f)
     assert isinstance(a, RealDouble)
     assert sympify(a._sympy_()) == a
     assert float(a) == f
