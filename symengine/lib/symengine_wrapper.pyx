@@ -294,9 +294,9 @@ def sympy2symengine(a, raise_error=False):
             if a._prec > 53:
                 return RealMPFR(str(a), a._prec)
             else:
-                return RealDouble(float(str(a)))
+                return RealDouble(float(a))
         ELSE:
-            return RealDouble(float(str(a)))
+            return RealDouble(float(a))
     elif a is sympy.I:
         return I
     elif a is sympy.E:
@@ -1902,7 +1902,7 @@ class RealDouble(Float):
 
     def _sympy_(Basic self):
         import sympy
-        return sympy.Float(deref(self.thisptr).__str__().decode("utf-8"))
+        return sympy.Float(float(self))
 
     def _sage_(Basic self):
         import sage.all as sage

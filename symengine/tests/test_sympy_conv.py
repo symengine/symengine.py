@@ -3,7 +3,7 @@ from symengine import (Symbol, Integer, sympify, SympifyError, log,
         exp, gamma, have_mpfr, have_mpc, DenseMatrix, sin, cos, tan, cot,
         csc, sec, asin, acos, atan, acot, acsc, asec, sinh, cosh, tanh, coth,
         asinh, acosh, atanh, acoth, Add, Mul, Pow, diff, GoldenRatio,
-        Catalan, EulerGamma, UnevaluatedExpr)
+        Catalan, EulerGamma, UnevaluatedExpr, RealDouble)
 from symengine.lib.symengine_wrapper import (Subs, Derivative, RealMPFR,
         ComplexMPC, PyNumber, Function, LambertW, zeta, dirichlet_eta,
         KroneckerDelta, LeviCivita, erf, erfc, lowergamma, uppergamma,
@@ -515,7 +515,7 @@ def test_zeta():
     e1 = sympy.zeta(sympy.Symbol("x"), sympy.Symbol("y"))
     e2 = zeta(x, y)
     assert sympify(e1) == e2
-    assert e2._sympy_() == e1   
+    assert e2._sympy_() == e1
 
 
 @unittest.skipIf(not have_sympy, "SymPy not installed")
@@ -796,3 +796,13 @@ def test_construct_dense_matrix():
     B = DenseMatrix(A)
     assert B.shape == (2, 2)
     assert list(B) == [1, 2, 3, 5]
+
+
+@unittest.skipIf(not have_sympy, "SymPy not installed")
+def test_conv_doubles():
+    f = 4.347249999999999
+    a = sympify()
+    assert isinstance(a, RealDouble)
+    assert sympify(a._sympy_()) == a
+    assert float(a) == f
+    assert float(a._sympy_()) == f
