@@ -1524,6 +1524,32 @@ class Relational(Boolean):
     def is_Relational(self):
         return True
 
+    def __bool__(self):
+        # We will narrow down the boolean value of our relational with some simple checks
+        # Get the Left- and Right-hand-sides of the relation, since two expressions are equal if their difference
+        # is equal to 0.
+        # If the expand method will not cancel out free symbols in the given expression, then this
+        # will throw a TypeError.
+        lhs, rhs = self.args
+        difference = (lhs - rhs).expand()
+
+        if len(difference.free_symbols):
+            # If there are any free symbols, then boolean evaluation is ambiguous in most cases. Throw a Type Error
+            raise TypeError(f'Relational with free symbols cannot be cast as bool: {self}')
+        else:
+            # Instantiating relationals that are obviously True or False (according to symengine) will automatically
+            # simplify to BooleanTrue or BooleanFalse
+            relational_type = type(self)
+            simplified = relational_type(difference, S.Zero)
+            if isinstance(simplified, BooleanAtom):
+                return bool(simplified)
+            # If we still cannot determine whether or not the relational is true, then we can either outsource the
+            # evaluation to sympy (if available) or raise a ValueError expressing that the evaluation is unclear.
+            try:
+                return bool(self.simplify())
+            except ImportError:
+                raise ValueError(f'Boolean evaluation is unclear for relational: {self}')
+
 Rel = Relational
 
 
