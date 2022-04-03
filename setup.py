@@ -226,6 +226,7 @@ setup(name="symengine",
       url="https://github.com/symengine/symengine.py",
       python_requires='>=3.7,<4',
       zip_safe=False,
+      packages=['symengine'],
       cmdclass = cmdclass,
       classifiers=[
         'License :: OSI Approved :: MIT License',
