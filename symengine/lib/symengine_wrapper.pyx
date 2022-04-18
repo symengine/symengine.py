@@ -1419,6 +1419,9 @@ cdef class Boolean(Expr):
     def logical_not(self):
         return c2py(<rcp_const_basic>(deref(symengine.rcp_static_cast_Boolean(self.thisptr)).logical_not()))
 
+    def __bool__(self):
+        raise TypeError("cannot determine truth value of Boolean")
+
 
 cdef class BooleanAtom(Boolean):
 
@@ -1523,6 +1526,10 @@ class Relational(Boolean):
     @property
     def is_Relational(self):
         return True
+
+    def __bool__(self):
+        raise TypeError("cannot determine truth value of Relational")
+
 
 Rel = Relational
 
