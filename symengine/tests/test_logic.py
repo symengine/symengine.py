@@ -44,7 +44,7 @@ def test_And():
     assert And(True, False) == false
     assert And(False, False) == false
     assert And(True, True, True) == true
-    assert raises(TypeError, lambda: x < y and y < 1)
+    raises(TypeError, lambda: x < y and y < 1)
 
 
 def test_Or():
@@ -55,7 +55,7 @@ def test_Or():
     assert Or(True, False) == true
     assert Or(False, False) == false
     assert Or(True, False, False) == true
-    assert raises(TypeError, lambda: x < y or y < 1)
+    raises(TypeError, lambda: x < y or y < 1)
 
 
 def test_Nor():
