@@ -44,6 +44,7 @@ foreach (PKG MPC MPFR PIRANHA FLINT LLVM)
         set(HAVE_SYMENGINE_${PKG} False)
     endif()
 endforeach()
+option(SYMENGINE_INSTALL_PY_FILES "Install python files" ON)
 
 message("CMAKE_SYSTEM_PROCESSOR              : ${CMAKE_SYSTEM_PROCESSOR}")
 message("CMAKE_BUILD_TYPE                    : ${CMAKE_BUILD_TYPE}")
