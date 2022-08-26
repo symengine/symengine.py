@@ -5,7 +5,7 @@ from symengine import (
     loggamma, beta, polygamma, digamma, trigamma, sign, floor, ceiling, conjugate,
     nan, Float, UnevaluatedExpr
 )
-from symengine.utilities import raises
+from symengine.test_utilities import raises
 
 import unittest
 

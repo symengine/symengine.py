@@ -1,6 +1,6 @@
 import unittest
 
-from symengine.utilities import raises
+from symengine.test_utilities import raises
 from symengine import Symbol, sin, cos, sqrt, Add, function_symbol, have_numpy
 
 

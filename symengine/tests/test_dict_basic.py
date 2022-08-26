@@ -1,4 +1,4 @@
-from symengine.utilities import raises
+from symengine.test_utilities import raises
 
 from symengine import symbols, DictBasic, sin, Integer
 

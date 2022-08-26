@@ -2,7 +2,7 @@ from symengine import symbols, init_printing
 from symengine.lib.symengine_wrapper import (DenseMatrix, Symbol, Integer,
     Rational, function_symbol, I, NonSquareMatrixError, ShapeError, zeros,
     ones, eye, ImmutableMatrix)
-from symengine.utilities import raises
+from symengine.test_utilities import raises
 
 
 try:

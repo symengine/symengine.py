@@ -1,7 +1,7 @@
 from symengine.sympy_compat import (Integer, Rational, S, Basic, Add, Mul,
     Pow, symbols, Symbol, log, sin, cos, sech, csch, zeros, atan2, nan, Number, Float,
     Min, Max, RealDouble, have_mpfr, Abs)
-from symengine.utilities import raises
+from symengine.test_utilities import raises
 
 
 def test_Integer():

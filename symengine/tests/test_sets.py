@@ -1,4 +1,4 @@
-from symengine.utilities import raises
+from symengine.test_utilities import raises
 from symengine.lib.symengine_wrapper import (Interval, EmptySet, UniversalSet,
     FiniteSet, Union, Complement, ImageSet, ConditionSet, Reals, Rationals,
     Integers, And, Or, oo, Symbol, true, Ge, Eq, Gt)

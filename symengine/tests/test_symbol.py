@@ -1,5 +1,5 @@
 from symengine import Symbol, symbols, symarray, has_symbol, Dummy
-from symengine.utilities import raises
+from symengine.test_utilities import raises
 import unittest
 import platform
 
