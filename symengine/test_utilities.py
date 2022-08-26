@@ -1,3 +1,5 @@
+import sys
+
 try:
     import py
     from py.test import skip, raises
