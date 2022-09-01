@@ -1,5 +1,5 @@
-from symengine import Add, Mul, Symbol, Integer
-from symengine.utilities import raises
+from symengine import Symbol, Integer
+from symengine.test_utilities import raises
 
 
 def test_as_coefficients_dict():

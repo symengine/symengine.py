@@ -1,5 +1,5 @@
 from symengine import symbols, sin, sinh, have_numpy, have_llvm, cos, Symbol
-from symengine.utilities import raises
+from symengine.test_utilities import raises
 import pickle
 import unittest
 

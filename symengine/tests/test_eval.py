@@ -1,4 +1,4 @@
-from symengine.utilities import raises
+from symengine.test_utilities import raises
 from symengine import (Symbol, sin, cos, Integer, Add, I, RealDouble, ComplexDouble, sqrt)
 
 from unittest.case import SkipTest

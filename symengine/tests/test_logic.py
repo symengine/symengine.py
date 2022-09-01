@@ -1,4 +1,4 @@
-from symengine.utilities import raises
+from symengine.test_utilities import raises
 from symengine.lib.symengine_wrapper import (true, false, Eq, Ne, Ge, Gt, Le, Lt, Symbol,
                                             I, And, Or, Not, Nand, Nor, Xor, Xnor, Piecewise,
                                             Contains, Interval, FiniteSet, oo, log)
