@@ -10,19 +10,26 @@ jobs:
         include:
           - BUILD_TYPE: Debug
             WITH_BFD: yes
-            PYTHON_VERSION: 3.9
+            PYTHON_VERSION: '3.10'
+            TEST_SYMPY: yes
+            OS: ubuntu-20.04
+            CC: gcc
+
+          - BUILD_TYPE: Debug
+            WITH_BFD: yes
+            PYTHON_VERSION: '3.9'
             TEST_SYMPY: yes
             OS: ubuntu-20.04
             CC: gcc
 
           - BUILD_TYPE: Release
-            PYTHON_VERSION: 3.7
+            PYTHON_VERSION: '3.7'
             BUILD_SHARED_LIBS: yes
             OS: ubuntu-20.04
             CC: gcc
 
           - BUILD_TYPE: Release
-            PYTHON_VERSION: 3.7
+            PYTHON_VERSION: '3.7'
             WITH_MPFR: yes
             INTEGER_CLASS: gmpxx
             WITH_NUMPY: no
@@ -30,25 +37,25 @@ jobs:
             CC: gcc
 
           - BUILD_TYPE: Release
-            PYTHON_VERSION: 3.8
+            PYTHON_VERSION: '3.8'
             WITH_MPC: yes
             OS: ubuntu-20.04
             CC: gcc
 
           - BUILD_TYPE: Release
             WITH_MPFR: yes
-            PYTHON_VERSION: 3.8
+            PYTHON_VERSION: '3.8'
             OS: ubuntu-20.04
             CC: gcc
 
           - BUILD_TYPE: Release
-            PYTHON_VERSION: 3.9
+            PYTHON_VERSION: '3.9'
             WITH_MPC: yes
             OS: ubuntu-20.04
             CC: gcc
 
           - BUILD_TYPE: Release
-            PYTHON_VERSION: 3.9
+            PYTHON_VERSION: '3.9'
             WITH_MPC: yes
             INTEGER_CLASS: flint
             WITH_FLINT: yes
@@ -56,27 +63,27 @@ jobs:
             CC: gcc
 
           #- BUILD_TYPE: Debug
-          #  PYTHON_VERSION: 3.9
+          #  PYTHON_VERSION: '3.9'
           #  WITH_BFD: yes
           #  WITH_PIRANHA: yes
           #  OS: ubuntu-20.04
           #  CC: gcc
 
           - BUILD_TYPE: Debug
-            PYTHON_VERSION: 3.8
+            PYTHON_VERSION: '3.8'
             WITH_BFD: yes
             BUILD_SHARED_LIBS: yes
             OS: ubuntu-20.04
             CC: clang
     
           - BUILD_TYPE: Release
-            PYTHON_VERSION: 3.7
+            PYTHON_VERSION: '3.7'
             WITH_NUMPY: yes
             OS: ubuntu-20.04
             CC: clang
  
           - BUILD_TYPE: Debug
-            PYTHON_VERSION: 3.8
+            PYTHON_VERSION: '3.8'
             WITH_SYMPY: yes
             WITH_LLVM: 13 
             WITH_SCIPY: yes
@@ -85,31 +92,31 @@ jobs:
             EXTRA_APT_PACKAGES: 'llvm-13'
 
           - BUILD_TYPE: Debug
-            PYTHON_VERSION: 3.7
+            PYTHON_VERSION: '3.7'
             WITH_SCIPY: yes
             WITH_LLVM: 5.0
             OS: macos-latest
             CC: clang
 
           - BUILD_TYPE: Release
-            PYTHON_VERSION: 3.9
+            PYTHON_VERSION: '3.9'
             WITH_NUMPY: no
             OS: macos-latest
             CC: clang
 
           - BUILD_TYPE: Debug
-            PYTHON_VERSION: 3.7
+            PYTHON_VERSION: '3.7'
             WITH_NUMPY: no
             OS: macos-latest
             CC: gcc
 
           - BUILD_TYPE: Release
-            PYTHON_VERSION: 3.8
+            PYTHON_VERSION: '3.8'
             OS: macos-latest
             CC: gcc
 
           - BUILD_TYPE: Release
-            PYTHON_VERSION: 3.8
+            PYTHON_VERSION: '3.8'
             OS: ubuntu-20.04
             WITH_MPC: yes
             WITH_MPFR: yes
