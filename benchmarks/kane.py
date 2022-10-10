@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 sys.path.append("..")
 from timeit import default_timer as clock
@@ -20,7 +21,7 @@ cf = ce.subs(function_symbol("q5", Symbol("t")), Symbol("sq5"))
 t2 = clock()
 print("Total time:", t2-t1, "s")
 
-print "SymPy diff:"
+print("SymPy diff:")
 t1 = clock()
 g = f.diff(sympy.Symbol("sq5"))
 t2 = clock()
