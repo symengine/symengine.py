@@ -44,7 +44,7 @@ def test_S():
 
 
 def test_sympify_error1a():
-    class Test(object):
+    class Test:
         pass
     raises(SympifyError, lambda: sympify(Test()))
 

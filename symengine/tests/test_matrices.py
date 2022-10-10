@@ -721,7 +721,7 @@ def test_atoms():
     a = Symbol("a")
     b = Symbol("b")
     X = DenseMatrix([[a, 2], [b, 4]])
-    assert X.atoms(Symbol) == set([a, b])
+    assert X.atoms(Symbol) == {a, b}
 
 
 def test_LUdecomp():

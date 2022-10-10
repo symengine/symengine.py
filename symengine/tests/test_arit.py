@@ -133,27 +133,27 @@ def test_args():
     y = Symbol("y")
     assert (x**2).args == (x, 2)
     assert (x**2 + 5).args == (5, x**2)
-    assert set((x**2 + 2*x*y + 5).args) == set((x**2, 2*x*y, Integer(5)))
+    assert set((x**2 + 2*x*y + 5).args) == {x**2, 2*x*y, Integer(5)}
     assert (2*x**2).args == (2, x**2)
-    assert set((2*x**2*y).args) == set((Integer(2), x**2, y))
+    assert set((2*x**2*y).args) == {Integer(2), x**2, y}
 
 
 def test_atoms():
     x = Symbol("x")
     y = Symbol("y")
     z = Symbol("z")
-    assert (x**2).atoms() == set([x])
-    assert (x**2).atoms(Symbol) == set([x])
-    assert (x ** y + z).atoms() == set([x, y, z])
-    assert (x**y + z).atoms(Symbol) == set([x, y, z])
+    assert (x**2).atoms() == {x}
+    assert (x**2).atoms(Symbol) == {x}
+    assert (x ** y + z).atoms() == {x, y, z}
+    assert (x**y + z).atoms(Symbol) == {x, y, z}
 
 
 def test_free_symbols():
     x = Symbol("x")
     y = Symbol("y")
     z = Symbol("z")
-    assert (x**2).free_symbols == set([x])
-    assert (x**y + z).free_symbols == set([x, y, z])
+    assert (x**2).free_symbols == {x}
+    assert (x**y + z).free_symbols == {x, y, z}
 
 
 def test_as_numer_denom():

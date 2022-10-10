@@ -119,12 +119,12 @@ class BuildExtWithCmake(_build_ext):
         if not path.exists(path.join(build_dir, "CMakeCache.txt")):
             cmake_cmd.extend(self.get_generator())
         if subprocess.call(cmake_cmd, cwd=build_dir) != 0:
-            raise EnvironmentError("error calling cmake")
+            raise OSError("error calling cmake")
 
         if subprocess.call(["cmake", "--build", ".",
                             "--config", cmake_build_type[0]],
                            cwd=build_dir) != 0:
-            raise EnvironmentError("error building project")
+            raise OSError("error building project")
 
     def get_generator(self):
         if cmake_generator[0]:
@@ -176,13 +176,13 @@ class InstallWithCmake(_install):
         # CMake has to be called here to update PYTHON_INSTALL_PATH
         # if build and install were called separately by the user
         if subprocess.call(cmake_cmd, cwd=build_dir) != 0:
-            raise EnvironmentError("error calling cmake")
+            raise OSError("error calling cmake")
 
         if subprocess.call(["cmake", "--build", ".",
                             "--config", cmake_build_type[0],
                             "--target", "install"],
                            cwd=build_dir) != 0:
-            raise EnvironmentError("error installing")
+            raise OSError("error installing")
 
         import compileall
         compileall.compile_dir(path.join(self.install_platlib, "symengine"))
