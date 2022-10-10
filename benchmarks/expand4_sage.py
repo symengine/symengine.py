@@ -1,4 +1,3 @@
-from __future__ import print_function
 print("import...")
 from timeit import default_timer as clock
 from sage.all import var

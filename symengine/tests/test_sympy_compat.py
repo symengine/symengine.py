@@ -183,7 +183,7 @@ def test_subclass_symbol():
             return Symbol.__new__(cls, name)
 
         def __init__(self, name, extra_attribute):
-            super(Wrapper, self).__init__(name)
+            super().__init__(name)
             self.extra_attribute = extra_attribute
 
     # Instantiate the subclass
