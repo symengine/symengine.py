@@ -10,6 +10,13 @@ jobs:
         include:
           - BUILD_TYPE: Debug
             WITH_BFD: yes
+            PYTHON_VERSION: '3.11'
+            TEST_SYMPY: yes
+            OS: ubuntu-20.04
+            CC: gcc
+
+          - BUILD_TYPE: Debug
+            WITH_BFD: yes
             PYTHON_VERSION: '3.10'
             TEST_SYMPY: yes
             OS: ubuntu-20.04
