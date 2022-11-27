@@ -90,13 +90,14 @@ jobs:
             CC: clang
  
           - BUILD_TYPE: Debug
-            PYTHON_VERSION: '3.8'
+            PYTHON_VERSION: '3.10'
             WITH_SYMPY: yes
-            WITH_LLVM: 13 
+            WITH_LLVM: 15
             WITH_SCIPY: yes
-            OS: ubuntu-20.04
-            EXTRA_APT_REPOSITORY: 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main'
-            EXTRA_APT_PACKAGES: 'llvm-13'
+            INTEGER_CLASS: 'boostmp'
+            OS: ubuntu-22.04
+            EXTRA_APT_REPOSITORY: 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-15 main'
+            EXTRA_APT_PACKAGES: 'llvm-15'
 
           - BUILD_TYPE: Debug
             PYTHON_VERSION: '3.7'
