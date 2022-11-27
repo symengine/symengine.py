@@ -92,12 +92,12 @@ jobs:
           - BUILD_TYPE: Debug
             PYTHON_VERSION: '3.10'
             WITH_SYMPY: yes
-            WITH_LLVM: 15
+            WITH_LLVM: 14
             WITH_SCIPY: yes
             INTEGER_CLASS: 'boostmp'
             OS: ubuntu-22.04
-            EXTRA_APT_REPOSITORY: 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-15 main'
-            EXTRA_APT_PACKAGES: 'llvm-15'
+            EXTRA_APT_REPOSITORY: 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-14 main'
+            EXTRA_APT_PACKAGES: 'llvm-14'
 
           - BUILD_TYPE: Debug
             PYTHON_VERSION: '3.7'
