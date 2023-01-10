@@ -806,3 +806,12 @@ def test_conv_doubles():
     assert sympify(a._sympy_()) == a
     assert float(a) == f
     assert float(a._sympy_()) == f
+
+def test_conv_large_integers():
+    a = Integer(10)**10000
+    # check that convert to python int does not throw
+    b = int(a)
+    # check that convert to sympy int does not throw
+    if have_sympy:
+        c = a._sympy_()
+        d = sympify(c)
