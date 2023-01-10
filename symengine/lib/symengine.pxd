@@ -1104,6 +1104,19 @@ cdef extern from "<symengine/solve.h>" namespace "SymEngine":
     cdef RCP[const Set] solve(rcp_const_basic &f, RCP[const Symbol] &sym, RCP[const Set] &domain) nogil except +
     cdef vec_basic linsolve(const vec_basic &eqs, const vec_sym &syms) nogil except +
 
+cdef extern from "symengine/tribool.h" namespace "SymEngine":
+    cdef cppclass tribool:
+        pass  # tribool is an enum class
+
+    cdef bool is_true(tribool) nogil
+    cdef bool is_false(tribool) nogil
+    cdef bool is_indeterminate(tribool) nogil
+
+cdef extern from "symengine/tribool.h" namespace "SymEngine::tribool":
+    cdef tribool indeterminate
+    cdef tribool trifalse
+    cdef tribool tritrue
+
 cdef extern from "<symengine/printers.h>" namespace "SymEngine":
     string ccode(const Basic &x) nogil except +
     string latex(const Basic &x) nogil except +

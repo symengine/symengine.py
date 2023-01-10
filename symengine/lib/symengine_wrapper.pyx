@@ -3,7 +3,7 @@ cimport symengine
 from symengine cimport (RCP, pair, map_basic_basic, umap_int_basic,
     umap_int_basic_iterator, umap_basic_num, umap_basic_num_iterator,
     rcp_const_basic, std_pair_short_rcp_const_basic,
-    rcp_const_seriescoeffinterface, CRCPBasic)
+    rcp_const_seriescoeffinterface, CRCPBasic, tribool)
 from libcpp cimport bool as cppbool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -3696,39 +3696,39 @@ cdef class DenseMatrixBase(MatrixBase):
 
     @property
     def is_zero_matrix(self):
-        return tribool(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_zero())
+        return tribool_py(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_zero())
 
     @property
     def is_real_matrix(self):
-        return tribool(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_real())
+        return tribool_py(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_real())
 
     @property
     def is_diagonal(self):
-        return tribool(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_diagonal())
+        return tribool_py(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_diagonal())
 
     @property
     def is_symmetric(self):
-        return tribool(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_symmetric())
+        return tribool_py(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_symmetric())
 
     @property
     def is_hermitian(self):
-        return tribool(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_hermitian())
+        return tribool_py(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_hermitian())
 
     @property
     def is_weakly_diagonally_dominant(self):
-        return tribool(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_weakly_diagonally_dominant())
+        return tribool_py(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_weakly_diagonally_dominant())
 
     @property
     def is_strongly_diagonally_dominant(self):
-        return tribool(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_strictly_diagonally_dominant())
+        return tribool_py(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_strictly_diagonally_dominant())
 
     @property
     def is_positive_definite(self):
-        return tribool(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_positive_definite())
+        return tribool_py(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_positive_definite())
 
     @property
     def is_negative_definite(self):
-        return tribool(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_negative_definite())
+        return tribool_py(deref(symengine.static_cast_DenseMatrix(self.thisptr)).is_negative_definite())
 
     @property
     def T(self):
@@ -5347,47 +5347,51 @@ def contains(expr, sset):
     return c2py(<rcp_const_basic>(symengine.contains(expr_.thisptr, s)))
 
 
-def tribool(value):
-    if value == -1:
+def tribool_py(tribool value):
+    if is_indeterminate(value):
         return None
+    elif is_true(value):
+        return True
+    elif is_false(value):
+        return False
     else:
-        return bool(value)
+        raise RuntimeError("Internal error in symengine.py, tribool got a fourth value.")
 
 
 def is_zero(expr):
     cdef Basic expr_ = sympify(expr)
     cdef int tbool = symengine.is_zero(deref(expr_.thisptr))
-    return tribool(tbool)
+    return tribool_py(tbool)
 
 
 def is_positive(expr):
     cdef Basic expr_ = sympify(expr)
     cdef int tbool = symengine.is_positive(deref(expr_.thisptr))
-    return tribool(tbool)
+    return tribool_py(tbool)
 
 
 def is_negative(expr):
     cdef Basic expr_ = sympify(expr)
     cdef int tbool = symengine.is_negative(deref(expr_.thisptr))
-    return tribool(tbool)
+    return tribool_py(tbool)
 
 
 def is_nonpositive(expr):
     cdef Basic expr_ = sympify(expr)
     cdef int tbool = symengine.is_nonpositive(deref(expr_.thisptr))
-    return tribool(tbool)
+    return tribool_py(tbool)
 
 
 def is_nonnegative(expr):
     cdef Basic expr_ = sympify(expr)
     cdef int tbool = symengine.is_nonnegative(deref(expr_.thisptr))
-    return tribool(tbool)
+    return tribool_py(tbool)
 
 
 def is_real(expr):
     cdef Basic expr_ = sympify(expr)
     cdef int tbool = symengine.is_real(deref(expr_.thisptr))
-    return tribool(tbool)
+    return tribool_py(tbool)
 
 
 def set_union(*args):
