@@ -350,12 +350,12 @@ cdef extern from "<symengine/number.h>" namespace "SymEngine":
         pass
     cdef cppclass NumberWrapper(Basic):
         pass
-    cdef int is_zero(const Basic &x) nogil
-    cdef int is_positive(const Basic &x) nogil
-    cdef int is_negative(const Basic &x) nogil
-    cdef int is_nonnegative(const Basic &x) nogil
-    cdef int is_nonpositive(const Basic &x) nogil
-    cdef int is_real(const Basic &x) nogil
+    cdef tribool is_zero(const Basic &x) nogil
+    cdef tribool is_positive(const Basic &x) nogil
+    cdef tribool is_negative(const Basic &x) nogil
+    cdef tribool is_nonnegative(const Basic &x) nogil
+    cdef tribool is_nonpositive(const Basic &x) nogil
+    cdef tribool is_real(const Basic &x) nogil
 
 cdef extern from "pywrapper.h" namespace "SymEngine":
     cdef cppclass PyNumber(NumberWrapper):
@@ -829,15 +829,15 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
         void row_del(unsigned k) nogil
         void col_del(unsigned k) nogil
         rcp_const_basic trace() nogil
-        int is_zero() nogil
-        int is_real() nogil
-        int is_diagonal() nogil
-        int is_symmetric() nogil
-        int is_hermitian() nogil
-        int is_weakly_diagonally_dominant() nogil
-        int is_strictly_diagonally_dominant() nogil
-        int is_positive_definite() nogil
-        int is_negative_definite() nogil
+        tribool is_zero() nogil
+        tribool is_real() nogil
+        tribool is_diagonal() nogil
+        tribool is_symmetric() nogil
+        tribool is_hermitian() nogil
+        tribool is_weakly_diagonally_dominant() nogil
+        tribool is_strictly_diagonally_dominant() nogil
+        tribool is_positive_definite() nogil
+        tribool is_negative_definite() nogil
 
     bool is_a_DenseMatrix "SymEngine::is_a<SymEngine::DenseMatrix>"(const MatrixBase &b) nogil
     DenseMatrix* static_cast_DenseMatrix "static_cast<SymEngine::DenseMatrix*>"(const MatrixBase *a)

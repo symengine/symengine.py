@@ -3,7 +3,7 @@ cimport symengine
 from symengine cimport (RCP, pair, map_basic_basic, umap_int_basic,
     umap_int_basic_iterator, umap_basic_num, umap_basic_num_iterator,
     rcp_const_basic, std_pair_short_rcp_const_basic,
-    rcp_const_seriescoeffinterface, CRCPBasic, tribool)
+                        rcp_const_seriescoeffinterface, CRCPBasic, tribool, is_indeterminate, is_true, is_false)
 from libcpp cimport bool as cppbool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
@@ -5347,7 +5347,7 @@ def contains(expr, sset):
     return c2py(<rcp_const_basic>(symengine.contains(expr_.thisptr, s)))
 
 
-def tribool_py(tribool value):
+cdef tribool_py(tribool value):
     if is_indeterminate(value):
         return None
     elif is_true(value):
@@ -5360,37 +5360,37 @@ def tribool_py(tribool value):
 
 def is_zero(expr):
     cdef Basic expr_ = sympify(expr)
-    cdef int tbool = symengine.is_zero(deref(expr_.thisptr))
+    cdef tribool tbool = symengine.is_zero(deref(expr_.thisptr))
     return tribool_py(tbool)
 
 
 def is_positive(expr):
     cdef Basic expr_ = sympify(expr)
-    cdef int tbool = symengine.is_positive(deref(expr_.thisptr))
+    cdef tribool tbool = symengine.is_positive(deref(expr_.thisptr))
     return tribool_py(tbool)
 
 
 def is_negative(expr):
     cdef Basic expr_ = sympify(expr)
-    cdef int tbool = symengine.is_negative(deref(expr_.thisptr))
+    cdef tribool tbool = symengine.is_negative(deref(expr_.thisptr))
     return tribool_py(tbool)
 
 
 def is_nonpositive(expr):
     cdef Basic expr_ = sympify(expr)
-    cdef int tbool = symengine.is_nonpositive(deref(expr_.thisptr))
+    cdef tribool tbool = symengine.is_nonpositive(deref(expr_.thisptr))
     return tribool_py(tbool)
 
 
 def is_nonnegative(expr):
     cdef Basic expr_ = sympify(expr)
-    cdef int tbool = symengine.is_nonnegative(deref(expr_.thisptr))
+    cdef tribool tbool = symengine.is_nonnegative(deref(expr_.thisptr))
     return tribool_py(tbool)
 
 
 def is_real(expr):
     cdef Basic expr_ = sympify(expr)
-    cdef int tbool = symengine.is_real(deref(expr_.thisptr))
+    cdef tribool tbool = symengine.is_real(deref(expr_.thisptr))
     return tribool_py(tbool)
 
 
