@@ -1685,10 +1685,10 @@ class Rational(Number):
             return c2py(<rcp_const_basic>symengine.Rational.from_two_ints(p_, q_));
         except OverflowError:
             # Too big, need to use mpz
-            tmp = str(p).encode("utf-8")
-            p__ = symengine.integer_class(tmp)
-            tmp = str(q).encode("utf-8")
-            q__ = symengine.integer_class(tmp)
+            tmp = hex(p).encode("utf-8")
+            symengine.mp_set_str(p__, tmp)
+            tmp = hex(q).encode("utf-8")
+            symengine.mp_set_str(q__, tmp)
             return c2py(<rcp_const_basic>symengine.Integer(p__).divint(symengine.Integer(q__)))
 
     @property
@@ -1756,8 +1756,8 @@ class Integer(Rational):
         except OverflowError:
             # Too big, need to use mpz
             int_ok = False
-            tmp = str(i).encode("utf-8")
-            i__ = symengine.integer_class(tmp)
+            tmp = hex(i).encode("utf-8")
+            symengine.mp_set_str(i__, tmp)
         # Note: all other exceptions are left intact
         if int_ok:
             return c2py(<rcp_const_basic>symengine.integer(i_))
@@ -1817,7 +1817,7 @@ class Integer(Rational):
 
     def _sympy_(Basic self):
         import sympy
-        return sympy.Integer(deref(self.thisptr).__str__().decode("utf-8"))
+        return sympy.Integer(int(self))
 
     def _sage_(Basic self):
         try:
@@ -1828,7 +1828,9 @@ class Integer(Rational):
             return sage.Integer(str(self))
 
     def __int__(Basic self):
-        return int(str(self))
+        cdef string s = symengine.mp_get_hex_str(
+            deref(symengine.rcp_static_cast_Integer(self.thisptr)).as_integer_class())
+        return int(s.decode("utf-8"), base=16)
 
     @property
     def p(self):

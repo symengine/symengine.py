@@ -24,6 +24,8 @@ cdef extern from 'symengine/mp_class.h' namespace "SymEngine":
         integer_class(const string &s) except +
     mpz_t get_mpz_t(integer_class &a)
     const mpz_t get_mpz_t(const integer_class &a)
+    string mp_get_hex_str(const integer_class &a)
+    void mp_set_str(integer_class &a, const string &s)
     cdef cppclass rational_class:
         rational_class()
         rational_class(mpq_t)
