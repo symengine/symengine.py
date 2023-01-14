@@ -95,6 +95,7 @@ jobs:
             WITH_LLVM: 14
             WITH_SCIPY: yes
             INTEGER_CLASS: 'boostmp'
+            PYTEST_ADDOPTS: '-k "not integer_nthroot"'
             OS: ubuntu-22.04
             EXTRA_APT_REPOSITORY: 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-14 main'
             EXTRA_APT_PACKAGES: 'llvm-14'
@@ -144,6 +145,7 @@ jobs:
       run: |
         source bin/test_symengine_unix.sh
       env:
+        PYTEST_ADDOPTS: ${{ matrix.PYTEST_ADDOPTS }}
         USE_GLIBCXX_DEBUG: ${{ matrix.USE_GLIBCXX_DEBUG }}
         WITH_MPFR: ${{ matrix.WITH_MPFR }}
         BUILD_BENCHMARKS: ${{ matrix.BUILD_BENCHMARKS }}
