@@ -90,13 +90,15 @@ jobs:
             CC: clang
  
           - BUILD_TYPE: Debug
-            PYTHON_VERSION: '3.8'
+            PYTHON_VERSION: '3.10'
             WITH_SYMPY: yes
-            WITH_LLVM: 13 
+            WITH_LLVM: 14
             WITH_SCIPY: yes
-            OS: ubuntu-20.04
-            EXTRA_APT_REPOSITORY: 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main'
-            EXTRA_APT_PACKAGES: 'llvm-13'
+            INTEGER_CLASS: 'boostmp'
+            PYTEST_ADDOPTS: '-k "not integer_nthroot"'
+            OS: ubuntu-22.04
+            EXTRA_APT_REPOSITORY: 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-14 main'
+            EXTRA_APT_PACKAGES: 'llvm-14'
 
           - BUILD_TYPE: Debug
             PYTHON_VERSION: '3.7'
@@ -143,6 +145,7 @@ jobs:
       run: |
         source bin/test_symengine_unix.sh
       env:
+        PYTEST_ADDOPTS: ${{ matrix.PYTEST_ADDOPTS }}
         USE_GLIBCXX_DEBUG: ${{ matrix.USE_GLIBCXX_DEBUG }}
         WITH_MPFR: ${{ matrix.WITH_MPFR }}
         BUILD_BENCHMARKS: ${{ matrix.BUILD_BENCHMARKS }}
