@@ -5203,7 +5203,7 @@ def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C',
         Whether datatype is ``double`` (``double complex`` otherwise).
     backend : str
         'llvm' or 'lambda'. When ``None`` the environment variable
-        'SYMENGINE_LAMBDIFY_BACKEND' is used (taken as 'lambda' if unset).
+        'SYMENGINE_LAMBDIFY_BACKEND' is used (taken as 'llvm' if available, otherwise 'lambda').
     order : 'C' or 'F'
         C- or Fortran-contiguous memory layout. Note that this affects
         broadcasting: e.g. a (m, n) matrix taking 3 arguments and given a
@@ -5235,7 +5235,11 @@ def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C',
 
     """
     if backend is None:
-        backend = os.getenv('SYMENGINE_LAMBDIFY_BACKEND', "lambda")
+        IF HAVE_SYMENGINE_LLVM:
+            backend_default = 'llvm'
+        ELSE:
+            backend_default = 'lambda'
+        backend = os.getenv('SYMENGINE_LAMBDIFY_BACKEND', backend_default)
     if backend == "llvm":
         IF HAVE_SYMENGINE_LLVM:
             if dtype == None:
