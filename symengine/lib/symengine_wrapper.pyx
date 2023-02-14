@@ -5235,7 +5235,7 @@ def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C',
 
     """
     if backend is None:
-        IF HAVE_SYMENGINE_LLVM:
+        IF HAVE_SYMENGINE_LLVM and real:
             backend_default = 'llvm'
         ELSE:
             backend_default = 'lambda'
