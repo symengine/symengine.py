@@ -55,7 +55,9 @@ if have_numpy:
 
     def lambdify(args, exprs, **kwargs):
         return Lambdify(args, *exprs, **kwargs)
-
+else:
+    def lambdify(args, exprs, **kwargs):
+        raise ModuleNotFoundError("Cannot import numpy, which is required for `lambdify` to work")
 
 __version__ = "0.9.2"
 
