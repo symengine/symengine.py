@@ -56,8 +56,10 @@ if have_numpy:
     def lambdify(args, exprs, **kwargs):
         return Lambdify(args, *exprs, **kwargs)
 else:
-    def lambdify(args, exprs, **kwargs):
-        raise ModuleNotFoundError("Cannot import numpy, which is required for `lambdify` to work")
+    def __getattr__(name):
+        if name == 'lambdify':
+            raise AttributeError("Cannot import numpy, which is required for `lambdify` to work")
+        raise AttributeError
 
 __version__ = "0.9.2"
 
