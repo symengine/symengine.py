@@ -10,6 +10,15 @@ try:
     HAVE_NUMPY = True
 except ImportError:
     HAVE_NUMPY = False
+    
+try:
+    import sympy
+    from sympy.core.cache import clear_cache
+    import atexit
+    atexit.register(clear_cache)
+    have_sympy = True
+except ImportError:
+    have_sympy = False
 
 
 def test_init():
@@ -742,7 +751,7 @@ def test_repr_latex():
     assert isinstance(latex_string, str)
     init_printing(False)
 
-
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_simplify():
     A = ImmutableMatrix([1])
     assert type(A.simplify()) == type(A)
