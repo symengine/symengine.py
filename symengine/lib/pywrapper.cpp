@@ -281,27 +281,47 @@ inline PyObject* get_pickle_module() {
     return module;
 }
 
+PyObject* pickle_loads(const std::string &pickle_str) {
+    PyObject *module = get_pickle_module();
+    PyObject *pickle_bytes = PyBytes_FromStringAndSize(pickle_str.data(), pickle_str.size());
+    PyObject *obj = PyObject_CallMethod(module, "loads", "O", pickle_bytes);
+    Py_XDECREF(pickle_bytes);
+    if (obj == NULL) {
+        throw SerializationError("error when loading pickled symbol subclass object");
+    }
+    return obj;
+}
+
 RCP<const Basic> load_basic(cereal::PortableBinaryInputArchive &ar, RCP<const Symbol> &)
 {
     bool is_pysymbol;
+    bool store_pickle;
     std::string name;
     ar(is_pysymbol);
     ar(name);
     if (is_pysymbol) {
         std::string pickle_str;
         ar(pickle_str);
-        PyObject *module = get_pickle_module();
-        PyObject *pickle_bytes = PyBytes_FromStringAndSize(pickle_str.data(), pickle_str.size());
-        PyObject *obj = PyObject_CallMethod(module, "loads", "O", pickle_bytes);
-        if (obj == NULL) {
-            throw SerializationError("error when loading pickled symbol subclass object");
-        }
-        RCP<const Basic> result = make_rcp<PySymbol>(name, obj);
-        Py_XDECREF(pickle_bytes);
+        ar(store_pickle);
+        PyObject *obj = pickle_loads(pickle_str);
+        RCP<const Basic> result = make_rcp<PySymbol>(name, obj, store_pickle);
+        Py_XDECREF(obj);
         return result;
     } else {
         return symbol(name);
     }
+}
+
+std::string pickle_dumps(const PyObject * obj) {
+    PyObject *module = get_pickle_module();
+    PyObject *pickle_bytes = PyObject_CallMethod(module, "dumps", "O", obj);
+    if (pickle_bytes == NULL) {
+        throw SerializationError("error when pickling symbol subclass object");
+    }
+    Py_ssize_t size;
+    char* buffer;
+    PyBytes_AsStringAndSize(pickle_bytes, &buffer, &size);
+    return std::string(buffer, size);
 }
 
 void save_basic(cereal::PortableBinaryOutputArchive &ar, const Symbol &b)
@@ -311,17 +331,11 @@ void save_basic(cereal::PortableBinaryOutputArchive &ar, const Symbol &b)
     ar(b.__str__());
     if (is_pysymbol) {
         RCP<const PySymbol> p = rcp_static_cast<const PySymbol>(b.rcp_from_this());
-        PyObject *module = get_pickle_module();
-        PyObject *pickle_bytes = PyObject_CallMethod(module, "dumps", "O", p->get_py_object());
-        if (pickle_bytes == NULL) {
-            throw SerializationError("error when pickling symbol subclass object");
-        }
-        Py_ssize_t size;
-        char* buffer;
-        PyBytes_AsStringAndSize(pickle_bytes, &buffer, &size);
-        std::string pickle_str(buffer, size);
+        PyObject *obj = p->get_py_object();
+        std::string pickle_str = pickle_dumps(obj);
         ar(pickle_str);
-        Py_XDECREF(pickle_bytes);
+        ar(p->store_pickle);
+        Py_XDECREF(obj);
     }
 }
 
