@@ -59,7 +59,7 @@ else:
     def __getattr__(name):
         if name == 'lambdify':
             raise AttributeError("Cannot import numpy, which is required for `lambdify` to work")
-        raise AttributeError
+        raise AttributeError(f"module 'symengine' has no attribute '{name}'")
 
 __version__ = "0.9.2"
 
