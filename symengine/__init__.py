@@ -55,6 +55,11 @@ if have_numpy:
 
     def lambdify(args, exprs, **kwargs):
         return Lambdify(args, *exprs, **kwargs)
+else:
+    def __getattr__(name):
+        if name == 'lambdify':
+            raise AttributeError("Cannot import numpy, which is required for `lambdify` to work")
+        raise AttributeError(f"module 'symengine' has no attribute '{name}'")
 
 
 __version__ = "0.10.0"

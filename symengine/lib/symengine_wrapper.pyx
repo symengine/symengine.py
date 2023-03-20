@@ -46,6 +46,7 @@ cpdef void assign_to_capsule(object capsule, object value):
 
 cdef object c2py(rcp_const_basic o):
     cdef Basic r
+    cdef PyObject *obj
     if (symengine.is_a_Add(deref(o))):
         r = Expr.__new__(Add)
     elif (symengine.is_a_Mul(deref(o))):
@@ -74,7 +75,10 @@ cdef object c2py(rcp_const_basic o):
         r = Dummy.__new__(Dummy)
     elif (symengine.is_a_Symbol(deref(o))):
         if (symengine.is_a_PySymbol(deref(o))):
-            return <object>(deref(symengine.rcp_static_cast_PySymbol(o)).get_py_object())
+            obj = deref(symengine.rcp_static_cast_PySymbol(o)).get_py_object()
+            result = <object>(obj)
+            Py_XDECREF(obj);
+            return result
         r = Symbol.__new__(Symbol)
     elif (symengine.is_a_Constant(deref(o))):
         r = S.Pi
@@ -1216,16 +1220,26 @@ cdef class Expr(Basic):
 
 
 cdef class Symbol(Expr):
-
     """
     Symbol is a class to store a symbolic variable with a given name.
+    Subclassing Symbol leads to a memory leak due to a cycle in reference counting.
+    To avoid this with a performance penalty, set the kwarg store_pickle=True
+    in the constructor and support the pickle protocol in the subclass by
+    implmenting __reduce__.
     """
 
     def __init__(Basic self, name, *args, **kwargs):
+        cdef cppbool store_pickle;
         if type(self) == Symbol:
             self.thisptr = symengine.make_rcp_Symbol(name.encode("utf-8"))
         else:
-            self.thisptr = symengine.make_rcp_PySymbol(name.encode("utf-8"), <PyObject*>self)
+            store_pickle = kwargs.pop("store_pickle", False)
+            if store_pickle:
+                # First set the pointer to a regular symbol so that when pickle.dumps
+                # is called when the PySymbol is created, methods like name works.
+                self.thisptr = symengine.make_rcp_Symbol(name.encode("utf-8"))
+            self.thisptr = symengine.make_rcp_PySymbol(name.encode("utf-8"), <PyObject*>self,
+                store_pickle)
 
     def _sympy_(self):
         import sympy
@@ -2635,6 +2649,14 @@ class atan2(Function):
         cdef Basic Y = sympify(y)
         return c2py(symengine.atan2(X.thisptr, Y.thisptr))
 
+    def _sympy_(self):
+        import sympy
+        return sympy.atan2(*self.args_as_sympy())
+
+    def _sage_(self):
+        import sage.all as sage
+        return sage.atan2(*self.args_as_sage())
+
 # For backwards compatibility
 
 Sin = sin
@@ -3895,7 +3917,7 @@ cdef class DenseMatrixBase(MatrixBase):
                 l.append(c2py(A.get(i, j))._sympy_())
             s.append(l)
         import sympy
-        return sympy.Matrix(s)
+        return sympy.ImmutableMatrix(s)
 
     def _sage_(self):
         s = []
@@ -3906,7 +3928,7 @@ cdef class DenseMatrixBase(MatrixBase):
                 l.append(c2py(A.get(i, j))._sage_())
             s.append(l)
         import sage.all as sage
-        return sage.Matrix(s)
+        return sage.Matrix(s, immutable=True)
 
     def dump_real(self, double[::1] out):
         cdef size_t ri, ci, nr, nc
@@ -4045,6 +4067,12 @@ cdef class ImmutableDenseMatrix(DenseMatrixBase):
 
     def __setitem__(self, key, value):
         raise TypeError("Cannot set values of {}".format(self.__class__))
+
+    def _applyfunc(self, f):
+        res = DenseMatrix(self)
+        res._applyfunc(f)
+        return ImmutableDenseMatrix(res)
+
 
 ImmutableMatrix = ImmutableDenseMatrix
 
@@ -5203,7 +5231,7 @@ def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C',
         Whether datatype is ``double`` (``double complex`` otherwise).
     backend : str
         'llvm' or 'lambda'. When ``None`` the environment variable
-        'SYMENGINE_LAMBDIFY_BACKEND' is used (taken as 'lambda' if unset).
+        'SYMENGINE_LAMBDIFY_BACKEND' is used (taken as 'llvm' if available, otherwise 'lambda').
     order : 'C' or 'F'
         C- or Fortran-contiguous memory layout. Note that this affects
         broadcasting: e.g. a (m, n) matrix taking 3 arguments and given a
@@ -5235,7 +5263,11 @@ def Lambdify(args, *exprs, cppbool real=True, backend=None, order='C',
 
     """
     if backend is None:
-        backend = os.getenv('SYMENGINE_LAMBDIFY_BACKEND', "lambda")
+        IF HAVE_SYMENGINE_LLVM:
+            backend_default = 'llvm' if real else 'lambda'
+        ELSE:
+            backend_default = 'lambda'
+        backend = os.getenv('SYMENGINE_LAMBDIFY_BACKEND', backend_default)
     if backend == "llvm":
         IF HAVE_SYMENGINE_LLVM:
             if dtype == None:

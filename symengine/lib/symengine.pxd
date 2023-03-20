@@ -197,7 +197,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     bool neq(const Basic &a, const Basic &b) nogil except +
 
     RCP[const Symbol] rcp_static_cast_Symbol "SymEngine::rcp_static_cast<const SymEngine::Symbol>"(rcp_const_basic &b) nogil
-    RCP[const PySymbol] rcp_static_cast_PySymbol "SymEngine::rcp_static_cast<const SymEngine::PySymbol>"(rcp_const_basic &b) nogil
+    RCP[const PySymbol] rcp_static_cast_PySymbol "SymEngine::rcp_static_cast<const SymEngine::PySymbol>"(rcp_const_basic &b) nogil except +
     RCP[const Integer] rcp_static_cast_Integer "SymEngine::rcp_static_cast<const SymEngine::Integer>"(rcp_const_basic &b) nogil
     RCP[const Rational] rcp_static_cast_Rational "SymEngine::rcp_static_cast<const SymEngine::Rational>"(rcp_const_basic &b) nogil
     RCP[const Complex] rcp_static_cast_Complex "SymEngine::rcp_static_cast<const SymEngine::Complex>"(rcp_const_basic &b) nogil
@@ -369,8 +369,8 @@ cdef extern from "pywrapper.h" namespace "SymEngine":
 
 cdef extern from "pywrapper.h" namespace "SymEngine":
     cdef cppclass PySymbol(Symbol):
-        PySymbol(string name, PyObject* pyobj)
-        PyObject* get_py_object()
+        PySymbol(string name, PyObject* pyobj, bool use_pickle) except +
+        PyObject* get_py_object() except +
 
     string wrapper_dumps(const Basic &x) nogil except +
     rcp_const_basic wrapper_loads(const string &s) nogil except +
@@ -479,7 +479,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     rcp_const_basic make_rcp_Symbol "SymEngine::make_rcp<const SymEngine::Symbol>"(string name) nogil
     rcp_const_basic make_rcp_Dummy "SymEngine::make_rcp<const SymEngine::Dummy>"() nogil
     rcp_const_basic make_rcp_Dummy "SymEngine::make_rcp<const SymEngine::Dummy>"(string name) nogil
-    rcp_const_basic make_rcp_PySymbol "SymEngine::make_rcp<const SymEngine::PySymbol>"(string name, PyObject * pyobj) nogil
+    rcp_const_basic make_rcp_PySymbol "SymEngine::make_rcp<const SymEngine::PySymbol>"(string name, PyObject * pyobj, bool use_pickle) except +
     rcp_const_basic make_rcp_Constant "SymEngine::make_rcp<const SymEngine::Constant>"(string name) nogil
     rcp_const_basic make_rcp_Infty "SymEngine::make_rcp<const SymEngine::Infty>"(RCP[const Number] i) nogil
     rcp_const_basic make_rcp_NaN "SymEngine::make_rcp<const SymEngine::NaN>"() nogil

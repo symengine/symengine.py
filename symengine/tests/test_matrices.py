@@ -3,13 +3,23 @@ from symengine.lib.symengine_wrapper import (DenseMatrix, Symbol, Integer,
     Rational, function_symbol, I, NonSquareMatrixError, ShapeError, zeros,
     ones, eye, ImmutableMatrix)
 from symengine.test_utilities import raises
+import unittest
 
 
 try:
     import numpy as np
-    HAVE_NUMPY = True
+    have_numpy = True
 except ImportError:
-    HAVE_NUMPY = False
+    have_numpy = False
+    
+try:
+    import sympy
+    from sympy.core.cache import clear_cache
+    import atexit
+    atexit.register(clear_cache)
+    have_sympy = True
+except ImportError:
+    have_sympy = False
 
 
 def test_init():
@@ -520,10 +530,8 @@ def test_reshape():
     assert C != A
 
 
-# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+@unittest.skipIf(not have_numpy, 'requires numpy')
 def test_dump_real():
-    if not HAVE_NUMPY:  # nosetests work-around
-        return
     ref = [1, 2, 3, 4]
     A = DenseMatrix(2, 2, ref)
     out = np.empty(4)
@@ -531,10 +539,9 @@ def test_dump_real():
     assert np.allclose(out, ref)
 
 
-# @pytest.mark.skipif(not HAVE_NUMPY, reason='requires numpy')
+
+@unittest.skipIf(not have_numpy, 'requires numpy')
 def test_dump_complex():
-    if not HAVE_NUMPY:  # nosetests work-around
-        return
     ref = [1j, 2j, 3j, 4j]
     A = DenseMatrix(2, 2, ref)
     out = np.empty(4, dtype=np.complex128)
@@ -741,3 +748,8 @@ def test_repr_latex():
     latex_string = testmat._repr_latex_()
     assert isinstance(latex_string, str)
     init_printing(False)
+
+@unittest.skipIf(not have_sympy, "SymPy not installed")
+def test_simplify():
+    A = ImmutableMatrix([1])
+    assert type(A.simplify()) == type(A)
