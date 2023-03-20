@@ -2635,6 +2635,14 @@ class atan2(Function):
         cdef Basic Y = sympify(y)
         return c2py(symengine.atan2(X.thisptr, Y.thisptr))
 
+    def _sympy_(self):
+        import sympy
+        return sympy.atan2(*self.args_as_sympy())
+
+    def _sage_(self):
+        import sage.all as sage
+        return sage.atan2(*self.args_as_sage())
+
 # For backwards compatibility
 
 Sin = sin
