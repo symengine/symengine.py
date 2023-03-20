@@ -3895,7 +3895,7 @@ cdef class DenseMatrixBase(MatrixBase):
                 l.append(c2py(A.get(i, j))._sympy_())
             s.append(l)
         import sympy
-        return sympy.Matrix(s)
+        return sympy.ImmutableMatrix(s)
 
     def _sage_(self):
         s = []
@@ -3906,7 +3906,7 @@ cdef class DenseMatrixBase(MatrixBase):
                 l.append(c2py(A.get(i, j))._sage_())
             s.append(l)
         import sage.all as sage
-        return sage.Matrix(s)
+        return sage.Matrix(s, immutable=True)
 
     def dump_real(self, double[::1] out):
         cdef size_t ri, ci, nr, nc
@@ -4045,6 +4045,12 @@ cdef class ImmutableDenseMatrix(DenseMatrixBase):
 
     def __setitem__(self, key, value):
         raise TypeError("Cannot set values of {}".format(self.__class__))
+
+    def _applyfunc(self, f):
+        res = DenseMatrix(self)
+        res._applyfunc(f)
+        return ImmutableDenseMatrix(res)
+
 
 ImmutableMatrix = ImmutableDenseMatrix
 
