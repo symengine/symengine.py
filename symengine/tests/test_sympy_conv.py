@@ -2,7 +2,7 @@ from symengine import (Symbol, Integer, sympify, SympifyError, log,
         function_symbol, I, E, pi, oo, zoo, nan, true, false,
         exp, gamma, have_mpfr, have_mpc, DenseMatrix, sin, cos, tan, cot,
         csc, sec, asin, acos, atan, acot, acsc, asec, sinh, cosh, tanh, coth,
-        asinh, acosh, atanh, acoth, Add, Mul, Pow, diff, GoldenRatio,
+        asinh, acosh, atanh, acoth, atan2, Add, Mul, Pow, diff, GoldenRatio,
         Catalan, EulerGamma, UnevaluatedExpr, RealDouble)
 from symengine.lib.symengine_wrapper import (Subs, Derivative, RealMPFR,
         ComplexMPC, PyNumber, Function, LambertW, zeta, dirichlet_eta,
