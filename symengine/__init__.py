@@ -61,7 +61,8 @@ else:
             raise AttributeError("Cannot import numpy, which is required for `lambdify` to work")
         raise AttributeError(f"module 'symengine' has no attribute '{name}'")
 
-__version__ = "0.9.2"
+
+__version__ = "0.10.0"
 
 
 # To not expose internals
