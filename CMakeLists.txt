@@ -1,7 +1,15 @@
 cmake_minimum_required(VERSION 2.8.12)
+
+if (POLICY CMP0057)
+  cmake_policy(SET CMP0057 NEW) # needed for llvm >= 16
+endif ()
+
 project(python_wrapper)
 
 set(CMAKE_PREFIX_PATH ${SymEngine_DIR} ${CMAKE_PREFIX_PATH})
+
+include(GNUInstallDirs)
+
 find_package(SymEngine 0.8.1 REQUIRED CONFIG
              PATH_SUFFIXES lib/cmake/symengine cmake/symengine CMake/)
 message("SymEngine_DIR : " ${SymEngine_DIR})
