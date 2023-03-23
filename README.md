@@ -72,7 +72,8 @@ symengine.py is MIT licensed and uses several LGPL, BSD-3 and MIT licensed libra
 Licenses for the dependencies of pip wheels are as follows,
 
 pip wheels on Unix use GMP (LGPL-3.0-or-later), MPFR (LGPL-3.0-or-later),
-MPC (LGPL-3.0-or-later), LLVM (Apache-2.0), zlib (Zlib) and symengine (MIT AND BSD-3-Clause).
+MPC (LGPL-3.0-or-later), LLVM (Apache-2.0), zlib (Zlib), libxml2 (MIT),
+zstd (BSD-3-Clause) and symengine (MIT AND BSD-3-Clause).
 pip wheels on Windows use MPIR (LGPL-3.0-or-later) instead of GMP above and
 pthreads-win32 (LGPL-3.0-or-later) additionally.
 NumPy (BSD-3-Clause) and SymPy (BSD-3-Clause) are optional dependencies.
