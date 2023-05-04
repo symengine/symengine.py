@@ -2295,15 +2295,22 @@ class Mul(AssocOp):
 
     def as_powers_dict(Basic self):
         cdef RCP[const symengine.Mul] X = symengine.rcp_static_cast_Mul(self.thisptr)
-        cdef rcp_const_basic coef = <rcp_const_basic>(deref(X).get_coef())
         cdef map_basic_basic m = deref(X).get_dict()
-        d = c2py(coef).as_powers_dict()
+        coef = c2py(<rcp_const_basic>(deref(X).get_coef()))
+        if coef == 1:
+            d = collections.defaultdict(int)
+        else:
+            d = coef.as_powers_dict()
 
         it = m.begin()
         it_end = m.end()
         while it != it_end:
-            d[c2py(<rcp_const_basic>(deref(it).first))] =\
-                    c2py(<rcp_const_basic>(deref(it).second))
+            base = c2py(<rcp_const_basic>(deref(it).first))
+            exp = c2py(<rcp_const_basic>(deref(it).second))
+            if base.is_Rational and base.p < base.q and base.p > 0:
+                d[1/base] -= exp
+            else:
+                d[base] += exp
             inc(it)
 
         return d
@@ -2351,9 +2358,13 @@ class Pow(Expr):
     def func(self):
         return self.__class__
 
-    def as_powers_dict(self):
+    def as_powers_dict(Basic self):
         d = collections.defaultdict(int)
-        d[self.base] = self.exp
+        base, exp = self.as_base_exp()
+        if base.is_Rational and base.p < base.q and base.p > 0:
+            d[1/base] = -exp
+        else:
+            d[base] = exp
         return d
 
 
