@@ -1169,6 +1169,11 @@ cdef class Basic(object):
             raise TypeError("Can't convert expression to float")
         return complex(f)
 
+    def as_powers_dict(self):
+        d = collections.defaultdict(int)
+        d[self] = 1
+        return d
+
 
 def series(ex, x=None, x0=0, n=6, as_deg_coef_pair=False):
     # TODO: check for x0 an infinity, see sympy/core/expr.py
@@ -1344,6 +1349,11 @@ cdef class ImaginaryUnit(Complex):
 
     def __cinit__(Basic self):
         self.thisptr = symengine.I
+
+    def as_powers_dict(self):
+        d = collections.defaultdict(int)
+        d[minus_one] = half
+        return d
 
 I = ImaginaryUnit()
 
@@ -2078,6 +2088,13 @@ cdef class NegativeInfinity(Number):
         import sage.all as sage
         return -sage.oo
 
+    def as_powers_dict(self):
+        d = collections.defaultdict(int)
+        d[minus_one] = 1
+        d[oo] = 1
+        return d
+
+
 minus_oo = NegativeInfinity()
 
 
@@ -2276,6 +2293,21 @@ class Mul(AssocOp):
                 c2py(<rcp_const_basic>deref(X).get_coef())
         return d
 
+    def as_powers_dict(Basic self):
+        cdef RCP[const symengine.Mul] X = symengine.rcp_static_cast_Mul(self.thisptr)
+        cdef rcp_const_basic coef = <rcp_const_basic>(deref(X).get_coef())
+        cdef map_basic_basic m = deref(X).get_dict()
+        d = c2py(coef).as_powers_dict()
+
+        it = m.begin()
+        it_end = m.end()
+        while it != it_end:
+            d[c2py(<rcp_const_basic>(deref(it).first))] =\
+                    c2py(<rcp_const_basic>(deref(it).second))
+            inc(it)
+
+        return d
+
 
 class Pow(Expr):
 
@@ -2318,6 +2350,11 @@ class Pow(Expr):
     @property
     def func(self):
         return self.__class__
+
+    def as_powers_dict(self):
+        d = collections.defaultdict(int)
+        d[self.base] = self.exp
+        return d
 
 
 class Function(Expr):
