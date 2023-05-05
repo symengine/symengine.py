@@ -1169,6 +1169,11 @@ cdef class Basic(object):
             raise TypeError("Can't convert expression to float")
         return complex(f)
 
+    def as_powers_dict(self):
+        d = collections.defaultdict(int)
+        d[self] = 1
+        return d
+
 
 def series(ex, x=None, x0=0, n=6, as_deg_coef_pair=False):
     # TODO: check for x0 an infinity, see sympy/core/expr.py
@@ -1344,6 +1349,11 @@ cdef class ImaginaryUnit(Complex):
 
     def __cinit__(Basic self):
         self.thisptr = symengine.I
+
+    def as_powers_dict(self):
+        d = collections.defaultdict(int)
+        d[minus_one] = half
+        return d
 
 I = ImaginaryUnit()
 
@@ -2078,6 +2088,13 @@ cdef class NegativeInfinity(Number):
         import sage.all as sage
         return -sage.oo
 
+    def as_powers_dict(self):
+        d = collections.defaultdict(int)
+        d[minus_one] = 1
+        d[oo] = 1
+        return d
+
+
 minus_oo = NegativeInfinity()
 
 
@@ -2276,6 +2293,28 @@ class Mul(AssocOp):
                 c2py(<rcp_const_basic>deref(X).get_coef())
         return d
 
+    def as_powers_dict(Basic self):
+        cdef RCP[const symengine.Mul] X = symengine.rcp_static_cast_Mul(self.thisptr)
+        cdef map_basic_basic m = deref(X).get_dict()
+        coef = c2py(<rcp_const_basic>(deref(X).get_coef()))
+        if coef == 1:
+            d = collections.defaultdict(int)
+        else:
+            d = coef.as_powers_dict()
+
+        it = m.begin()
+        it_end = m.end()
+        while it != it_end:
+            base = c2py(<rcp_const_basic>(deref(it).first))
+            exp = c2py(<rcp_const_basic>(deref(it).second))
+            if base.is_Rational and base.p < base.q and base.p > 0:
+                d[1/base] -= exp
+            else:
+                d[base] += exp
+            inc(it)
+
+        return d
+
 
 class Pow(Expr):
 
@@ -2318,6 +2357,15 @@ class Pow(Expr):
     @property
     def func(self):
         return self.__class__
+
+    def as_powers_dict(Basic self):
+        d = collections.defaultdict(int)
+        base, exp = self.as_base_exp()
+        if base.is_Rational and base.p < base.q and base.p > 0:
+            d[1/base] = -exp
+        else:
+            d[base] = exp
+        return d
 
 
 class Function(Expr):
