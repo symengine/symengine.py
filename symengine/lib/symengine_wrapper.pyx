@@ -890,6 +890,16 @@ cdef class Basic(object):
         if A is None or B is None: return NotImplemented
         return c2py(symengine.div(A.thisptr, B.thisptr))
 
+    def __floordiv__(x, y):
+        return floor(x/y)
+
+    def __mod__(x, y):
+        return x - y * floor(x/y)
+
+    def __divmod__(x, y):
+        f = floor(x/y)
+        return f, x - y * f
+
     def __pow__(a, b, c):
         if c is not None:
             return powermod(a, b, c)
@@ -1829,15 +1839,6 @@ class Integer(Rational):
             return i >= 0
         else:
             return NotImplemented
-
-    def __floordiv__(x, y):
-        return quotient(x, y)
-
-    def __mod__(x, y):
-        return mod(x, y)
-
-    def __divmod__(x, y):
-        return quotient_mod(x, y)
 
     def _sympy_(Basic self):
         import sympy
