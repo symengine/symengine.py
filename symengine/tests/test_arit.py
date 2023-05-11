@@ -1,7 +1,7 @@
 from symengine.test_utilities import raises
 
 from symengine import (Symbol, Integer, Add, Mul, Pow, Rational, sqrt,
-    symbols, S, I, count_ops)
+    symbols, S, I, count_ops, floor)
 
 
 def test_arit1():
@@ -165,11 +165,22 @@ def test_as_numer_denom():
     assert x == Integer(-5)
     assert y == Integer(1)
 
+
+def test_floor():
+    exprs = [Symbol("x"), Symbol("y"), Integer(2), Rational(-3, 5), Integer(-3)]
+
+    for x in exprs:
+        for y in exprs:
+            assert x // y == floor(x / y)
+            assert x == y * (x // y) + x % y
+
+
 def test_as_real_imag():
     x, y = (5 + 6 * I).as_real_imag()
 
     assert x == 5
     assert y == 6
+
 
 def test_from_args():
     x = Symbol("x")
