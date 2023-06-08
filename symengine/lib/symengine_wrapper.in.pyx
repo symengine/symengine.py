@@ -30,7 +30,7 @@ try:
 except ImportError:
     have_numpy = False
 
-include "config.pxi"
+# include "config.pxi"
 
 class SympifyError(Exception):
     pass

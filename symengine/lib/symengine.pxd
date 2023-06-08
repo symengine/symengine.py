@@ -7,8 +7,6 @@ from libcpp.pair cimport pair
 from libcpp.set cimport set
 from libcpp.unordered_map cimport unordered_map
 
-include "config.pxi"
-
 cdef extern from "<set>" namespace "std":
     # Cython's libcpp.set does not support multiset in 0.29.x
     cdef cppclass multiset[T]:
@@ -394,7 +392,7 @@ cdef extern from "<symengine/mul.h>" namespace "SymEngine":
         void as_two_terms(const Ptr[RCP[Basic]] &a, const Ptr[RCP[Basic]] &b)
         RCP[const Number] get_coef()
         const map_basic_basic &get_dict()
-    cdef RCP[const Mul] mul_from_dict "SymEngine::Mul::from_dict"(RCP[const Number] coef, map_basic_basic &&d) nogil
+    cdef RCP[const Mul] mul_from_dict "SymEngine::Mul::from_dict"(RCP[const Number] coef, map_basic_basic &d) nogil
 
 cdef extern from "<symengine/pow.h>" namespace "SymEngine":
     cdef rcp_const_basic pow(rcp_const_basic &a, rcp_const_basic &b) except+ nogil
