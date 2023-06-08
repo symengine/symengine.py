@@ -4,10 +4,23 @@ from libcpp.map cimport map
 from libcpp.vector cimport vector
 from cpython.ref cimport PyObject
 from libcpp.pair cimport pair
-from libcpp.set cimport multiset, set
+from libcpp.set cimport set
 from libcpp.unordered_map cimport unordered_map
 
 include "config.pxi"
+
+cdef extern from "<set>" namespace "std":
+    # Cython's libcpp.set does not support multiset in 0.29.x
+    cdef cppclass multiset[T]:
+        cppclass iterator:
+            T& operator*()
+            iterator operator++() nogil
+            iterator operator--() nogil
+            bint operator==(iterator) nogil
+            bint operator!=(iterator) nogil
+        iterator begin() nogil
+        iterator end() nogil
+        iterator insert(T&) nogil
 
 cdef extern from 'symengine/mp_class.h' namespace "SymEngine":
     ctypedef unsigned long mp_limb_t
