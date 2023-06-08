@@ -870,12 +870,24 @@ cdef class Basic(object):
         cdef Basic B = B_
         return c2py(symengine.add(A.thisptr, B.thisptr))
 
+    def __radd__(Basic self, b):
+        B_ = _sympify(b, False)
+        if B_ is None or isinstance(B_, MatrixBase): return NotImplemented
+        cdef Basic B = B_
+        return c2py(symengine.add(B.thisptr, self.thisptr))
+
     def __sub__(a, b):
         cdef Basic A = _sympify(a, False)
         B_ = _sympify(b, False)
         if A is None or B_ is None or isinstance(B_, MatrixBase): return NotImplemented
         cdef Basic B = B_
         return c2py(symengine.sub(A.thisptr, B.thisptr))
+
+    def __rsub__(Basic self, b):
+        B_ = _sympify(b, False)
+        if B_ is None or isinstance(B_, MatrixBase): return NotImplemented
+        cdef Basic B = B_
+        return c2py(symengine.sub(B.thisptr, self.thisptr))
 
     def __mul__(a, b):
         cdef Basic A = _sympify(a, False)
@@ -884,19 +896,42 @@ cdef class Basic(object):
         cdef Basic B = B_
         return c2py(symengine.mul(A.thisptr, B.thisptr))
 
+    def __rmul__(Basic self, b):
+        B_ = _sympify(b, False)
+        if B_ is None or isinstance(B_, MatrixBase): return NotImplemented
+        cdef Basic B = B_
+        return c2py(symengine.mul(B.thisptr, self.thisptr))
+
     def __truediv__(a, b):
         cdef Basic A = _sympify(a, False)
-        cdef Basic B = _sympify(b, False)
-        if A is None or B is None: return NotImplemented
+        B_ = _sympify(b, False)
+        if A is None or B_ is None or isinstance(B_, MatrixBase): return NotImplemented
+        cdef Basic B = B_
         return c2py(symengine.div(A.thisptr, B.thisptr))
 
+    def __rtruediv__(Basic self, b):
+        B_ = _sympify(b, False)
+        if B_ is None or isinstance(B_, MatrixBase): return NotImplemented
+        cdef Basic B = B_
+        return c2py(symengine.div(B.thisptr, self.thisptr))
+
     def __floordiv__(x, y):
+        return floor(x/y)
+
+    def __rfloordiv__(y, x):
         return floor(x/y)
 
     def __mod__(x, y):
         return x - y * floor(x/y)
 
+    def __rmod__(y, x):
+        return x - y * floor(x/y)
+
     def __divmod__(x, y):
+        f = floor(x/y)
+        return f, x - y * f
+
+    def __rdivmod__(y, x):
         f = floor(x/y)
         return f, x - y * f
 
@@ -907,6 +942,11 @@ cdef class Basic(object):
         cdef Basic B = _sympify(b, False)
         if A is None or B is None: return NotImplemented
         return c2py(symengine.pow(A.thisptr, B.thisptr))
+
+    def __rpow__(Basic self, b):
+        cdef Basic B = _sympify(b, False)
+        if B is None: return NotImplemented
+        return c2py(symengine.pow(B.thisptr, self.thisptr))
 
     def __neg__(Basic self not None):
         return c2py(symengine.neg(self.thisptr))
@@ -3392,6 +3432,19 @@ cdef class DenseMatrixBase(MatrixBase):
             raise ShapeError("Invalid shapes for matrix addition. Got %s %s" % (a_.shape, b_.shape))
         return a_.add_matrix(b_)
 
+    def __radd__(MatrixBase self, a):
+        a = _sympify(a, False)
+        if not isinstance(a, MatrixBase):
+            return NotImplemented
+        cdef MatrixBase a_ = a
+        if (a_.shape == (0, 0)):
+            return self
+        if (self.shape == (0, 0)):
+            return a_
+        if (self.shape != a_.shape):
+            raise ShapeError("Invalid shapes for matrix addition. Got %s %s" % (a_.shape, self.shape))
+        return a_.add_matrix(self)
+
     def __mul__(a, b):
         a = _sympify(a, False)
         b = _sympify(b, False)
@@ -3409,6 +3462,17 @@ cdef class DenseMatrixBase(MatrixBase):
         else:
             return NotImplemented
 
+    def __rmul__(Basic self, a):
+        a = _sympify(a, False)
+        if isinstance(a, MatrixBase):
+            if (a.ncols() != self.nrows()):
+                raise ShapeError("Invalid shapes for matrix multiplication. Got %s %s" % (a.shape, self.shape))
+            return a.mul_matrix(self)
+        elif isinstance(a, Basic):
+            return self.mul_scalar(a)
+        else:
+            return NotImplemented
+
     def __matmul__(a, b):
         a = _sympify(a, False)
         b = _sympify(b, False)
@@ -3416,8 +3480,31 @@ cdef class DenseMatrixBase(MatrixBase):
             raise ShapeError("Invalid shapes for matrix multiplication. Got %s %s" % (a.shape, b.shape))
         return a.mul_matrix(b)
 
+    def __rmatmul__(Basic self, a):
+        a = _sympify(a, False)
+        if (a.ncols() != self.nrows()):
+            raise ShapeError("Invalid shapes for matrix multiplication. Got %s %s" % (a.shape, self.shape))
+        return a.mul_matrix(self)
+
     def __truediv__(a, b):
-        return div_matrices(a, b)
+        a = _sympify(a, False)
+        b = _sympify(b, False)
+        if isinstance(a, MatrixBase):
+            if isinstance(b, MatrixBase):
+                return a.mul_matrix(b.inv())
+            elif isinstance(b, Basic):
+                return a.mul_scalar(1/b)
+            else:
+                return NotImplemented
+        else:
+            return NotImplemented
+
+    def __rtruediv__(Basic self, a):
+        a = _sympify(a, False)
+        if isinstance(a, MatrixBase):
+            return a.mul_matrix(self.inv())
+        else:
+            return NotImplemented
 
     def __sub__(a, b):
         a = _sympify(a, False)
@@ -3429,6 +3516,15 @@ cdef class DenseMatrixBase(MatrixBase):
         if (a_.shape != b_.shape):
             raise ShapeError("Invalid shapes for matrix subtraction. Got %s %s" % (a.shape, b.shape))
         return a_.add_matrix(-b_)
+
+    def __rsub__(MatrixBase self, a):
+        a = _sympify(a, False)
+        if not isinstance(a, MatrixBase):
+            return NotImplemented
+        cdef MatrixBase a_ = a
+        if (a_.shape != self.shape):
+            raise ShapeError("Invalid shapes for matrix subtraction. Got %s %s" % (a.shape, self.shape))
+        return a_.add_matrix(-self)
 
     def __neg__(self):
         return self.mul_scalar(-1)
@@ -4037,19 +4133,6 @@ cdef class DenseMatrixBase(MatrixBase):
     def expand(self, *args, **kwargs):
         return self.applyfunc(lambda x : x.expand(*args, **kwargs))
 
-
-def div_matrices(a, b):
-    a = _sympify(a, False)
-    b = _sympify(b, False)
-    if isinstance(a, MatrixBase):
-        if isinstance(b, MatrixBase):
-            return a.mul_matrix(b.inv())
-        elif isinstance(b, Basic):
-            return a.mul_scalar(1/b)
-        else:
-            return NotImplemented
-    else:
-        return NotImplemented
 
 class DenseMatrixBaseIter(object):
 
