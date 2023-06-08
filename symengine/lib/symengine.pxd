@@ -655,68 +655,62 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
     cdef cppclass Log(Function):
         pass
 
-IF HAVE_SYMENGINE_MPFR:
-    cdef extern from "mpfr.h":
-        ctypedef struct __mpfr_struct:
-            pass
-        ctypedef __mpfr_struct mpfr_t[1]
-        ctypedef __mpfr_struct* mpfr_ptr
-        ctypedef const __mpfr_struct* mpfr_srcptr
-        ctypedef long mpfr_prec_t
-        ctypedef enum mpfr_rnd_t:
-            MPFR_RNDN
-            MPFR_RNDZ
-            MPFR_RNDU
-            MPFR_RNDD
-            MPFR_RNDA
-            MPFR_RNDF
-            MPFR_RNDNA
+cdef extern from "<symengine/real_mpfr.h>":
+    # These come from mpfr.h, but don't include mpfr.h to not break
+    # builds without mpfr
+    ctypedef struct __mpfr_struct:
+        pass
+    ctypedef __mpfr_struct mpfr_t[1]
+    ctypedef __mpfr_struct* mpfr_ptr
+    ctypedef const __mpfr_struct* mpfr_srcptr
+    ctypedef long mpfr_prec_t
+    ctypedef enum mpfr_rnd_t:
+        MPFR_RNDN
+        MPFR_RNDZ
+        MPFR_RNDU
+        MPFR_RNDD
+        MPFR_RNDA
+        MPFR_RNDF
+        MPFR_RNDNA
 
-    cdef extern from "<symengine/real_mpfr.h>" namespace "SymEngine":
-        cdef cppclass mpfr_class:
-            mpfr_class() nogil
-            mpfr_class(mpfr_prec_t prec) nogil
-            mpfr_class(string s, mpfr_prec_t prec, unsigned base) nogil
-            mpfr_class(mpfr_t m) nogil
-            mpfr_ptr get_mpfr_t() nogil
+cdef extern from "<symengine/real_mpfr.h>" namespace "SymEngine":
+    cdef cppclass mpfr_class:
+        mpfr_class() nogil
+        mpfr_class(mpfr_prec_t prec) nogil
+        mpfr_class(string s, mpfr_prec_t prec, unsigned base) nogil
+        mpfr_class(mpfr_t m) nogil
+        mpfr_ptr get_mpfr_t() nogil
 
-        cdef cppclass RealMPFR(Number):
-            RealMPFR(mpfr_class) nogil
-            mpfr_class as_mpfr() nogil
-            mpfr_prec_t get_prec() nogil
+    cdef cppclass RealMPFR(Number):
+        RealMPFR(mpfr_class) nogil
+        mpfr_class as_mpfr() nogil
+        mpfr_prec_t get_prec() nogil
 
-        RCP[const RealMPFR] real_mpfr(mpfr_class t) nogil
-ELSE:
-    cdef extern from "<symengine/real_mpfr.h>" namespace "SymEngine":
-        cdef cppclass RealMPFR(Number):
-            pass
+    RCP[const RealMPFR] real_mpfr(mpfr_class t) nogil
 
-IF HAVE_SYMENGINE_MPC:
-    cdef extern from "mpc.h":
-        ctypedef struct __mpc_struct:
-            pass
-        ctypedef __mpc_struct mpc_t[1]
-        ctypedef __mpc_struct* mpc_ptr
-        ctypedef const __mpc_struct* mpc_srcptr
+cdef extern from "<symengine/complex_mpc.h>":
+    # These come from mpc.h, but don't include mpc.h to not break
+    # builds without mpc
+    ctypedef struct __mpc_struct:
+        pass
+    ctypedef __mpc_struct mpc_t[1]
+    ctypedef __mpc_struct* mpc_ptr
+    ctypedef const __mpc_struct* mpc_srcptr
 
-    cdef extern from "<symengine/complex_mpc.h>" namespace "SymEngine":
-        cdef cppclass mpc_class:
-            mpc_class() nogil
-            mpc_class(mpfr_prec_t prec) nogil
-            mpc_class(mpc_t m) nogil
-            mpc_ptr get_mpc_t() nogil
-            mpc_class(string s, mpfr_prec_t prec, unsigned base) nogil
+cdef extern from "<symengine/complex_mpc.h>" namespace "SymEngine":
+    cdef cppclass mpc_class:
+        mpc_class() nogil
+        mpc_class(mpfr_prec_t prec) nogil
+        mpc_class(mpc_t m) nogil
+        mpc_ptr get_mpc_t() nogil
+        mpc_class(string s, mpfr_prec_t prec, unsigned base) nogil
 
-        cdef cppclass ComplexMPC(ComplexBase):
-            ComplexMPC(mpc_class) nogil
-            mpc_class as_mpc() nogil
-            mpfr_prec_t get_prec() nogil
+    cdef cppclass ComplexMPC(ComplexBase):
+        ComplexMPC(mpc_class) nogil
+        mpc_class as_mpc() nogil
+        mpfr_prec_t get_prec() nogil
 
-        RCP[const ComplexMPC] complex_mpc(mpc_class t) nogil
-ELSE:
-    cdef extern from "<symengine/complex_mpc.h>" namespace "SymEngine":
-        cdef cppclass ComplexMPC(Number):
-            pass
+    RCP[const ComplexMPC] complex_mpc(mpc_class t) nogil
 
 cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
     cdef cppclass MatrixBase:
@@ -923,10 +917,8 @@ cdef extern from "<symengine/logic.h>" namespace "SymEngine":
 
 cdef extern from "<utility>" namespace "std":
     cdef integer_class std_move_mpz "std::move" (integer_class) nogil
-    IF HAVE_SYMENGINE_MPFR:
-        cdef mpfr_class std_move_mpfr "std::move" (mpfr_class) nogil
-    IF HAVE_SYMENGINE_MPC:
-        cdef mpc_class std_move_mpc "std::move" (mpc_class) nogil
+    cdef mpfr_class std_move_mpfr "std::move" (mpfr_class) nogil
+    cdef mpc_class std_move_mpc "std::move" (mpc_class) nogil
     cdef map_basic_basic std_move_map_basic_basic "std::move" (map_basic_basic) nogil
     cdef PiecewiseVec std_move_PiecewiseVec "std::move" (PiecewiseVec) nogil
 
@@ -977,13 +969,11 @@ cdef extern from "<symengine/series.h>" namespace "SymEngine":
     ctypedef RCP[const SeriesCoeffInterface] rcp_const_seriescoeffinterface "SymEngine::RCP<const SymEngine::SeriesCoeffInterface>"
     rcp_const_seriescoeffinterface series "SymEngine::series"(rcp_const_basic &ex, RCP[const Symbol] &var, unsigned int prec) except+ nogil
 
-IF HAVE_SYMENGINE_MPFR:
-    cdef extern from "<symengine/eval_mpfr.h>" namespace "SymEngine":
-        void eval_mpfr(mpfr_t result, const Basic &b, mpfr_rnd_t rnd) except+ nogil
+cdef extern from "<symengine/eval_mpfr.h>" namespace "SymEngine":
+    void eval_mpfr(mpfr_t result, const Basic &b, mpfr_rnd_t rnd) except+ nogil
 
-IF HAVE_SYMENGINE_MPC:
-    cdef extern from "<symengine/eval_mpc.h>" namespace "SymEngine":
-        void eval_mpc(mpc_t result, const Basic &b, mpfr_rnd_t rnd) except+ nogil
+cdef extern from "<symengine/eval_mpc.h>" namespace "SymEngine":
+    void eval_mpc(mpc_t result, const Basic &b, mpfr_rnd_t rnd) except+ nogil
 
 cdef extern from "<symengine/parser.h>" namespace "SymEngine":
     rcp_const_basic parse(const string &n) except+ nogil
