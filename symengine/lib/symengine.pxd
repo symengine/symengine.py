@@ -110,6 +110,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     cdef struct RCPBasicKeyLess
     ctypedef set[rcp_const_basic] set_basic "SymEngine::set_basic"
     ctypedef multiset[rcp_const_basic] multiset_basic "SymEngine::multiset_basic"
+
     cdef cppclass Basic:
         string __str__() except+ nogil
         unsigned int hash() except+ nogil
@@ -159,96 +160,8 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     Ptr[RCP[Basic]] outArg(rcp_const_basic &arg) nogil
     Ptr[RCP[Integer]] outArg_Integer "SymEngine::outArg<SymEngine::RCP<const SymEngine::Integer>>"(RCP[const Integer] &arg) nogil
 
-    bool is_a_Add "SymEngine::is_a<SymEngine::Add>"(const Basic &b) nogil
-    bool is_a_Mul "SymEngine::is_a<SymEngine::Mul>"(const Basic &b) nogil
-    bool is_a_Pow "SymEngine::is_a<SymEngine::Pow>"(const Basic &b) nogil
-    bool is_a_Integer "SymEngine::is_a<SymEngine::Integer>"(const Basic &b) nogil
-    bool is_a_Rational "SymEngine::is_a<SymEngine::Rational>"(const Basic &b) nogil
-    bool is_a_Complex "SymEngine::is_a<SymEngine::Complex>"(const Basic &b) nogil
-    bool is_a_Symbol "SymEngine::is_a<SymEngine::Symbol>"(const Basic &b) nogil
-    bool is_a_Dummy "SymEngine::is_a<SymEngine::Dummy>"(const Basic &b) nogil
-    bool is_a_Constant "SymEngine::is_a<SymEngine::Constant>"(const Basic &b) nogil
-    bool is_a_Infty "SymEngine::is_a<SymEngine::Infty>"(const Basic &b) nogil
-    bool is_a_NaN "SymEngine::is_a<SymEngine::NaN>"(const Basic &b) nogil
-    bool is_a_Sin "SymEngine::is_a<SymEngine::Sin>"(const Basic &b) nogil
-    bool is_a_Cos "SymEngine::is_a<SymEngine::Cos>"(const Basic &b) nogil
-    bool is_a_Tan "SymEngine::is_a<SymEngine::Tan>"(const Basic &b) nogil
-    bool is_a_Cot "SymEngine::is_a<SymEngine::Cot>"(const Basic &b) nogil
-    bool is_a_Csc "SymEngine::is_a<SymEngine::Csc>"(const Basic &b) nogil
-    bool is_a_Sec "SymEngine::is_a<SymEngine::Sec>"(const Basic &b) nogil
-    bool is_a_ASin "SymEngine::is_a<SymEngine::ASin>"(const Basic &b) nogil
-    bool is_a_ACos "SymEngine::is_a<SymEngine::ACos>"(const Basic &b) nogil
-    bool is_a_ATan "SymEngine::is_a<SymEngine::ATan>"(const Basic &b) nogil
-    bool is_a_ACot "SymEngine::is_a<SymEngine::ACot>"(const Basic &b) nogil
-    bool is_a_ACsc "SymEngine::is_a<SymEngine::ACsc>"(const Basic &b) nogil
-    bool is_a_ASec "SymEngine::is_a<SymEngine::ASec>"(const Basic &b) nogil
-    bool is_a_Sinh "SymEngine::is_a<SymEngine::Sinh>"(const Basic &b) nogil
-    bool is_a_Cosh "SymEngine::is_a<SymEngine::Cosh>"(const Basic &b) nogil
-    bool is_a_Tanh "SymEngine::is_a<SymEngine::Tanh>"(const Basic &b) nogil
-    bool is_a_Coth "SymEngine::is_a<SymEngine::Coth>"(const Basic &b) nogil
-    bool is_a_Csch "SymEngine::is_a<SymEngine::Csch>"(const Basic &b) nogil
-    bool is_a_Sech "SymEngine::is_a<SymEngine::Sech>"(const Basic &b) nogil
-    bool is_a_ASinh "SymEngine::is_a<SymEngine::ASinh>"(const Basic &b) nogil
-    bool is_a_ACosh "SymEngine::is_a<SymEngine::ACosh>"(const Basic &b) nogil
-    bool is_a_ATanh "SymEngine::is_a<SymEngine::ATanh>"(const Basic &b) nogil
-    bool is_a_ACoth "SymEngine::is_a<SymEngine::ACoth>"(const Basic &b) nogil
-    bool is_a_ACsch "SymEngine::is_a<SymEngine::ACsch>"(const Basic &b) nogil
-    bool is_a_ASech "SymEngine::is_a<SymEngine::ASech>"(const Basic &b) nogil
-    bool is_a_FunctionSymbol "SymEngine::is_a<SymEngine::FunctionSymbol>"(const Basic &b) nogil
-    bool is_a_Abs "SymEngine::is_a<SymEngine::Abs>"(const Basic &b) nogil
-    bool is_a_Max "SymEngine::is_a<SymEngine::Max>"(const Basic &b) nogil
-    bool is_a_Min "SymEngine::is_a<SymEngine::Min>"(const Basic &b) nogil
-    bool is_a_Gamma "SymEngine::is_a<SymEngine::Gamma>"(const Basic &b) nogil
-    bool is_a_Derivative "SymEngine::is_a<SymEngine::Derivative>"(const Basic &b) nogil
-    bool is_a_Subs "SymEngine::is_a<SymEngine::Subs>"(const Basic &b) nogil
-    bool is_a_PyFunction "SymEngine::is_a<SymEngine::FunctionWrapper>"(const Basic &b) nogil
-    bool is_a_RealDouble "SymEngine::is_a<SymEngine::RealDouble>"(const Basic &b) nogil
-    bool is_a_ComplexDouble "SymEngine::is_a<SymEngine::ComplexDouble>"(const Basic &b) nogil
-    bool is_a_RealMPFR "SymEngine::is_a<SymEngine::RealMPFR>"(const Basic &b) nogil
-    bool is_a_ComplexMPC "SymEngine::is_a<SymEngine::ComplexMPC>"(const Basic &b) nogil
-    bool is_a_Log "SymEngine::is_a<SymEngine::Log>"(const Basic &b) nogil
-    bool is_a_BooleanAtom "SymEngine::is_a<SymEngine::BooleanAtom>"(const Basic &b) nogil
-    bool is_a_Equality "SymEngine::is_a<SymEngine::Equality>"(const Basic &b) nogil
-    bool is_a_Unequality "SymEngine::is_a<SymEngine::Unequality>"(const Basic &b) nogil
-    bool is_a_LessThan "SymEngine::is_a<SymEngine::LessThan>"(const Basic &b) nogil
-    bool is_a_StrictLessThan "SymEngine::is_a<SymEngine::StrictLessThan>"(const Basic &b) nogil
-    bool is_a_PyNumber "SymEngine::is_a<SymEngine::PyNumber>"(const Basic &b) nogil
-    bool is_a_ATan2 "SymEngine::is_a<SymEngine::ATan2>"(const Basic &b) nogil
-    bool is_a_LambertW "SymEngine::is_a<SymEngine::LambertW>"(const Basic &b) nogil
-    bool is_a_Zeta "SymEngine::is_a<SymEngine::Zeta>"(const Basic &b) nogil
-    bool is_a_DirichletEta "SymEngine::is_a<SymEngine::Dirichlet_eta>"(const Basic &b) nogil
-    bool is_a_KroneckerDelta "SymEngine::is_a<SymEngine::KroneckerDelta>"(const Basic &b) nogil
-    bool is_a_LeviCivita "SymEngine::is_a<SymEngine::LeviCivita>"(const Basic &b) nogil
-    bool is_a_Erf "SymEngine::is_a<SymEngine::Erf>"(const Basic &b) nogil
-    bool is_a_Erfc "SymEngine::is_a<SymEngine::Erfc>"(const Basic &b) nogil
-    bool is_a_LowerGamma "SymEngine::is_a<SymEngine::LowerGamma>"(const Basic &b) nogil
-    bool is_a_UpperGamma "SymEngine::is_a<SymEngine::UpperGamma>"(const Basic &b) nogil
-    bool is_a_LogGamma "SymEngine::is_a<SymEngine::LogGamma>"(const Basic &b) nogil
-    bool is_a_Beta "SymEngine::is_a<SymEngine::Beta>"(const Basic &b) nogil
-    bool is_a_PolyGamma "SymEngine::is_a<SymEngine::PolyGamma>"(const Basic &b) nogil
-    bool is_a_PySymbol "SymEngine::is_a_sub<SymEngine::PySymbol>"(const Basic &b) nogil
-    bool is_a_Sign "SymEngine::is_a<SymEngine::Sign>"(const Basic &b) nogil
-    bool is_a_Floor "SymEngine::is_a<SymEngine::Floor>"(const Basic &b) nogil
-    bool is_a_Ceiling "SymEngine::is_a<SymEngine::Ceiling>"(const Basic &b) nogil
-    bool is_a_Conjugate "SymEngine::is_a<SymEngine::Conjugate>"(const Basic &b) nogil
-    bool is_a_Interval "SymEngine::is_a<SymEngine::Interval>"(const Basic &b) nogil
-    bool is_a_EmptySet "SymEngine::is_a<SymEngine::EmptySet>"(const Basic &b) nogil
-    bool is_a_Reals "SymEngine::is_a<SymEngine::Reals>"(const Basic &b) nogil
-    bool is_a_Rationals "SymEngine::is_a<SymEngine::Rationals>"(const Basic &b) nogil
-    bool is_a_Integers "SymEngine::is_a<SymEngine::Integers>"(const Basic &b) nogil
-    bool is_a_UniversalSet "SymEngine::is_a<SymEngine::UniversalSet>"(const Basic &b) nogil
-    bool is_a_FiniteSet "SymEngine::is_a<SymEngine::FiniteSet>"(const Basic &b) nogil
-    bool is_a_Union "SymEngine::is_a<SymEngine::Union>"(const Basic &b) nogil
-    bool is_a_Complement "SymEngine::is_a<SymEngine::Complement>"(const Basic &b) nogil
-    bool is_a_ConditionSet "SymEngine::is_a<SymEngine::ConditionSet>"(const Basic &b) nogil
-    bool is_a_ImageSet "SymEngine::is_a<SymEngine::ImageSet>"(const Basic &b) nogil
-    bool is_a_UnevaluatedExpr "SymEngine::is_a<SymEngine::UnevaluatedExpr>"(const Basic &b) nogil
-    bool is_a_Piecewise "SymEngine::is_a<SymEngine::Piecewise>"(const Basic &b) nogil
-    bool is_a_Contains "SymEngine::is_a<SymEngine::Contains>"(const Basic &b) nogil
-    bool is_a_And "SymEngine::is_a<SymEngine::And>"(const Basic &b) nogil
-    bool is_a_Not "SymEngine::is_a<SymEngine::Not>"(const Basic &b) nogil
-    bool is_a_Or "SymEngine::is_a<SymEngine::Or>"(const Basic &b) nogil
-    bool is_a_Xor "SymEngine::is_a<SymEngine::Xor>"(const Basic &b) nogil
+    bool is_a[T] (const Basic &b) nogil
+    bool is_a_sub[T] (const Basic &b) nogil
     rcp_const_basic expand(rcp_const_basic &o, bool deep) except+ nogil
     void as_numer_denom(rcp_const_basic &x, const Ptr[RCP[Basic]] &numer, const Ptr[RCP[Basic]] &denom) nogil
     void as_real_imag(rcp_const_basic &x, const Ptr[RCP[Basic]] &real, const Ptr[RCP[Basic]] &imag) nogil
@@ -650,6 +563,9 @@ cdef extern from "<symengine/functions.h>" namespace "SymEngine":
     cdef cppclass Conjugate(OneArgFunction):
         pass
 
+    cdef cppclass UnevaluatedExpr(OneArgFunction):
+        pass
+
     cdef cppclass Log(Function):
         pass
 
@@ -763,7 +679,6 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
         tribool is_positive_definite() nogil
         tribool is_negative_definite() nogil
 
-    bool is_a_DenseMatrix "SymEngine::is_a<SymEngine::DenseMatrix>"(const MatrixBase &b) nogil
     DenseMatrix* static_cast_DenseMatrix "static_cast<SymEngine::DenseMatrix*>"(const MatrixBase *a)
     void inverse_FFLU "SymEngine::inverse_fraction_free_LU"(const DenseMatrix &A,
         DenseMatrix &B) except+ nogil
@@ -890,7 +805,6 @@ cdef extern from "<symengine/logic.h>" namespace "SymEngine":
 
     rcp_const_basic boolTrue
     rcp_const_basic boolFalse
-    bool is_a_Relational(const Basic &b) nogil
     cdef RCP[const Boolean] Eq(rcp_const_basic &lhs) except+ nogil
     cdef RCP[const Boolean] Eq(rcp_const_basic &lhs, rcp_const_basic &rhs) except+ nogil
     cdef RCP[const Boolean] Ne(rcp_const_basic &lhs, rcp_const_basic &rhs) except+ nogil
