@@ -827,13 +827,6 @@ cdef extern from "<symengine/logic.h>" namespace "SymEngine":
     cdef RCP[const Boolean] contains(rcp_const_basic &expr,
                                      RCP[const Set] &set) nogil
 
-cdef extern from "<utility>" namespace "std":
-    cdef integer_class std_move_mpz "std::move" (integer_class) nogil
-    cdef mpfr_class std_move_mpfr "std::move" (mpfr_class) nogil
-    cdef mpc_class std_move_mpc "std::move" (mpc_class) nogil
-    cdef map_basic_basic std_move_map_basic_basic "std::move" (map_basic_basic) nogil
-    cdef PiecewiseVec std_move_PiecewiseVec "std::move" (PiecewiseVec) nogil
-
 cdef extern from "<symengine/eval.h>" namespace "SymEngine":
     cdef cppclass EvalfDomain:
         pass

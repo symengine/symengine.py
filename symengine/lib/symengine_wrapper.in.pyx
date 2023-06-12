@@ -5,6 +5,7 @@ from symengine cimport (RCP, pair, map_basic_basic, umap_int_basic,
     rcp_const_basic, std_pair_short_rcp_const_basic,
                         rcp_const_seriescoeffinterface, CRCPBasic, tribool, is_indeterminate, is_true, is_false)
 from libcpp cimport bool as cppbool
+from libcpp.utility cimport move
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 from cpython cimport PyObject, Py_XINCREF, Py_XDECREF, \
@@ -2035,7 +2036,7 @@ class RealMPFR(Float):
             cdef string i_ = str(i).encode("utf-8")
             cdef symengine.mpfr_class m
             m = symengine.mpfr_class(i_, prec, base)
-            return c2py(<rcp_const_basic>symengine.real_mpfr(symengine.std_move_mpfr(m)))
+            return c2py(<rcp_const_basic>symengine.real_mpfr(move[symengine.mpfr](m)))
 
         def get_prec(Basic self):
             return Integer(deref(symengine.rcp_static_cast_RealMPFR(self.thisptr)).get_prec())
@@ -2064,7 +2065,7 @@ cdef class ComplexMPC(ComplexBase):
                 return
             cdef string i_ = ("(" + str(i) + " " + str(j) + ")").encode("utf-8")
             cdef symengine.mpc_class m = symengine.mpc_class(i_, prec, base)
-            self.thisptr = <rcp_const_basic>symengine.complex_mpc(symengine.std_move_mpc(m))
+            self.thisptr = <rcp_const_basic>symengine.complex_mpc(move[symengine.mpc](m))
 
         def _sympy_(self):
             import sympy
@@ -2330,7 +2331,7 @@ class Mul(AssocOp):
         d = collections.defaultdict(int)
         d[c2py(<rcp_const_basic>symengine.mul_from_dict(\
                 <RCP[const symengine.Number]>(one),
-                symengine.std_move_map_basic_basic(dict)))] =\
+                move[symengine.map_basic_basic](dict)))] =\
                 c2py(<rcp_const_basic>deref(X).get_coef())
         return d
 
@@ -5457,7 +5458,7 @@ def piecewise(*v):
         p.first = <rcp_const_basic>e.thisptr
         p.second = <RCP[symengine.const_Boolean]>symengine.rcp_static_cast_Boolean(b.thisptr)
         vec.push_back(p)
-    return c2py(symengine.piecewise(symengine.std_move_PiecewiseVec(vec)))
+    return c2py(symengine.piecewise(move[symengine.PiecewiseVec](vec)))
 
 
 def interval(start, end, left_open=False, right_open=False):
