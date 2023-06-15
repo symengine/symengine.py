@@ -2036,7 +2036,7 @@ class RealMPFR(Float):
             cdef string i_ = str(i).encode("utf-8")
             cdef symengine.mpfr_class m
             m = symengine.mpfr_class(i_, prec, base)
-            return c2py(<rcp_const_basic>symengine.real_mpfr(move[symengine.mpfr](m)))
+            return c2py(<rcp_const_basic>symengine.real_mpfr(move[symengine.mpfr_class](m)))
 
         def get_prec(Basic self):
             return Integer(deref(symengine.rcp_static_cast_RealMPFR(self.thisptr)).get_prec())
@@ -2065,7 +2065,7 @@ cdef class ComplexMPC(ComplexBase):
                 return
             cdef string i_ = ("(" + str(i) + " " + str(j) + ")").encode("utf-8")
             cdef symengine.mpc_class m = symengine.mpc_class(i_, prec, base)
-            self.thisptr = <rcp_const_basic>symengine.complex_mpc(move[symengine.mpc](m))
+            self.thisptr = <rcp_const_basic>symengine.complex_mpc(move[symengine.mpc_class](m))
 
         def _sympy_(self):
             import sympy
