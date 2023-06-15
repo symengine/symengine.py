@@ -11,7 +11,7 @@ add_custom_command(
        ${PROJECT_SOURCE_DIR}/cmake/preprocess.py
     COMMAND ${PYTHON_BIN} ${PROJECT_SOURCE_DIR}/cmake/preprocess.py
        ${CMAKE_CURRENT_SOURCE_DIR}/symengine_wrapper.in.pxd
-       ${CMAKE_CURRENT_SOURCE_DIR}/symengine_wrapper.pxd
+       ${CMAKE_CURRENT_BINARY_DIR}/symengine_wrapper.pxd
        HAVE_SYMENGINE_MPFR=${HAVE_SYMENGINE_MPFR}
        HAVE_SYMENGINE_MPC=${HAVE_SYMENGINE_MPC}
        HAVE_SYMENGINE_PIRANHA=${HAVE_SYMENGINE_PIRANHA}
@@ -23,11 +23,12 @@ add_custom_command(
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/symengine_wrapper.pyx
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/symengine_wrapper.in.pyx
-    	${CMAKE_CURRENT_SOURCE_DIR}/symengine_wrapper.in.pxd
+       ${CMAKE_CURRENT_SOURCE_DIR}/symengine_wrapper.in.pxd
+       ${CMAKE_CURRENT_BINARY_DIR}/symengine_wrapper.pxd
        ${PROJECT_SOURCE_DIR}/cmake/preprocess.py
     COMMAND ${PYTHON_BIN} ${PROJECT_SOURCE_DIR}/cmake/preprocess.py
        ${CMAKE_CURRENT_SOURCE_DIR}/symengine_wrapper.in.pyx
-       ${CMAKE_CURRENT_SOURCE_DIR}/symengine_wrapper.pyx
+       ${CMAKE_CURRENT_BINARY_DIR}/symengine_wrapper.pyx
        HAVE_SYMENGINE_MPFR=${HAVE_SYMENGINE_MPFR}
        HAVE_SYMENGINE_MPC=${HAVE_SYMENGINE_MPC}
        HAVE_SYMENGINE_PIRANHA=${HAVE_SYMENGINE_PIRANHA}
