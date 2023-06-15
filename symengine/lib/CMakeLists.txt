@@ -60,7 +60,7 @@ install(TARGETS symengine_wrapper
         )
 install(FILES
     symengine.pxd
-    symengine_wrapper.pxd
+    ${CMAKE_CURRENT_BINARY_DIR}/symengine_wrapper.pxd
     pywrapper.h
     DESTINATION ${PY_PATH}
     )
