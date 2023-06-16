@@ -63,13 +63,13 @@ if(NOT CYTHON_INCLUDE_DIRECTORIES)
 endif(NOT CYTHON_INCLUDE_DIRECTORIES)
 
 # Cythonizes the .pyx files into .cpp file (but doesn't compile it)
-macro(CYTHON_ADD_MODULE_PYX name filename)
+macro(CYTHON_ADD_MODULE_PYX cpp_name pyx_name)
     # Allow the user to specify dependencies as optional arguments
     set(DEPENDS ${DEPENDS} ${ARGN})
     add_custom_command(
-        OUTPUT ${name}
+        OUTPUT ${cpp_name}
         COMMAND ${CYTHON_BIN}
-        ARGS ${CYTHON_FLAGS} -I ${CYTHON_INCLUDE_DIRECTORIES} -o ${name} ${filename}
-        DEPENDS ${DEPENDS} ${filename}
-        COMMENT "Cythonizing ${filename}")
+        ARGS ${CYTHON_FLAGS} -I ${CYTHON_INCLUDE_DIRECTORIES} -o ${cpp_name} ${pyx_name}
+        DEPENDS ${DEPENDS} ${pyx_name}
+        COMMENT "Cythonizing ${pyx_name}")
 endmacro(CYTHON_ADD_MODULE_PYX)
