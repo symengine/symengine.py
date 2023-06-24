@@ -4846,7 +4846,7 @@ def powermod_list(a, b, m):
 def has_symbol(obj, symbol=None):
     cdef Basic b = _sympify(obj)
     cdef Basic s = _sympify(symbol)
-    require(s, Symbol)
+    require(s, (Symbol, FunctionSymbol))
     if (not symbol):
         return not b.free_symbols.empty()
     else:
