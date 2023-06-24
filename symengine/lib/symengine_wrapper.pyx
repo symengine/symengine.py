@@ -4846,12 +4846,11 @@ def powermod_list(a, b, m):
 def has_symbol(obj, symbol=None):
     cdef Basic b = _sympify(obj)
     cdef Basic s = _sympify(symbol)
-    require(s, Symbol)
+    require(s, (Symbol, FunctionSymbol))
     if (not symbol):
         return not b.free_symbols.empty()
     else:
-        return symengine.has_symbol(deref(b.thisptr),
-                deref(symengine.rcp_static_cast_Symbol(s.thisptr)))
+        return symengine.has_symbol(deref(b.thisptr), deref(s.thisptr))
 
 
 cdef class _Lambdify(object):
