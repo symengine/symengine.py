@@ -29,6 +29,10 @@ def test_args():
     e = cos(x)
     raises(TypeError, lambda: e.subs(x, 0, 3))
 
+    y = Symbol("y")
+    e = x + y
+    assert e.subs([(x, 0), (y, 2)]) == 2
+
 
 def test_f():
     x = Symbol("x")
