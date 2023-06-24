@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 2.8.12)
 if (POLICY CMP0057)
   cmake_policy(SET CMP0057 NEW) # needed for llvm >= 16
 endif ()
+if (POLICY CMP0074)
+  cmake_policy(SET CMP0074 NEW)  # allow user to set *_ROOT variables
+endif()
 
 project(python_wrapper)
 
