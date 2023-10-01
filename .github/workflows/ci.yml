@@ -10,6 +10,13 @@ jobs:
         include:
           - BUILD_TYPE: Debug
             WITH_BFD: yes
+            PYTHON_VERSION: '3.12'
+            TEST_SYMPY: yes
+            OS: ubuntu-20.04
+            CC: gcc
+
+          - BUILD_TYPE: Debug
+            WITH_BFD: yes
             PYTHON_VERSION: '3.11'
             TEST_SYMPY: yes
             OS: ubuntu-20.04
@@ -138,7 +145,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Build and test symengine
       shell: bash
