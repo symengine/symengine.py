@@ -24,14 +24,14 @@ environment:
       CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
     - BUILD_TYPE: "Debug"
       COMPILER: MinGW-w64
-      PYTHON_VERSION: 37-x64
+      PYTHON_VERSION: 39-x64
       WITH_NUMPY: no
     - BUILD_TYPE: "Release"
       COMPILER: MinGW-w64
-      PYTHON_VERSION: 37-x64
+      PYTHON_VERSION: 39-x64
     - BUILD_TYPE: "Debug"
       COMPILER: MinGW-w64
-      PYTHON_VERSION: 37-x64
+      PYTHON_VERSION: 39-x64
       WITH_SYMPY: no
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
