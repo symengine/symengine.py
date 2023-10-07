@@ -107,7 +107,7 @@ install:
 - if [%WITH_MPC%]==[yes] set "CMAKE_ARGS=%CMAKE_ARGS% -DWITH_MPC=yes"
 - if [%WITH_LLVM%]==[yes] set "CMAKE_ARGS=%CMAKE_ARGS% -DWITH_LLVM=yes -DMSVC_USE_MT=no"
 
-- echo "CMAKE_ARGS: %CMAKE_ARGS%"
+- echo "CMAKE_ARGS=%CMAKE_ARGS%"
 - cmake %CMAKE_ARGS% -DBUILD_SHARED_LIBS=yes -DBUILD_TESTS=no -DBUILD_BENCHMARKS=no -DCMAKE_INSTALL_PREFIX=C:\symengine ..
 
 - cmake --build . --config %BUILD_TYPE% --target install
