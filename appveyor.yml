@@ -19,17 +19,29 @@ environment:
       PLATFORM: "x64"
       PYTHON_VERSION: 38-x64
       CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
-    - BUILD_TYPE: "Debug"
-      COMPILER: MinGW-w64
-      PYTHON_VERSION: 39-x64
-      WITH_NUMPY: no
     - BUILD_TYPE: "Release"
-      COMPILER: MinGW-w64
-      PYTHON_VERSION: 39-x64
-    - BUILD_TYPE: "Debug"
-      COMPILER: MinGW-w64
+      COMPILER: MSVC15
+      PLATFORM: "x64"
       PYTHON_VERSION: 39-x64
       WITH_SYMPY: no
+      CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
+    - BUILD_TYPE: "Release"
+      COMPILER: MSVC15
+      PLATFORM: "x64"
+      PYTHON_VERSION: 311-x64
+      WITH_NUMPY: no
+      CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
+    #- BUILD_TYPE: "Debug"
+    #  COMPILER: MinGW-w64
+    #  PYTHON_VERSION: 39-x64
+    #  WITH_NUMPY: no
+    #- BUILD_TYPE: "Release"
+    #  COMPILER: MinGW-w64
+    #  PYTHON_VERSION: 39-x64
+    #- BUILD_TYPE: "Debug"
+    #  COMPILER: MinGW-w64
+    #  PYTHON_VERSION: 39-x64
+    #  WITH_SYMPY: no
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
       PLATFORM: "Win32"
