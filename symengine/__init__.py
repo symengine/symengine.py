@@ -1,7 +1,7 @@
 import os
 import sys
 
-if sys.version_info >= (3, 8, 0) and sys.platform == 'win32' \
+if sys.platform == 'win32' \
        and 'SYMENGINE_PY_ADD_PATH_TO_SEARCH_DIRS' in os.environ:
     for directory in os.environ['PATH'].split(';'):
         if os.path.isdir(directory):
@@ -63,7 +63,7 @@ else:
         raise AttributeError(f"module 'symengine' has no attribute '{name}'")
 
 
-__version__ = "0.10.0"
+__version__ = "0.11.0"
 
 
 # To not expose internals

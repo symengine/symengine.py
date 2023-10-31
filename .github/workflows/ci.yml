@@ -37,13 +37,13 @@ jobs:
             CC: gcc
 
           - BUILD_TYPE: Release
-            PYTHON_VERSION: '3.7'
+            PYTHON_VERSION: '3.8'
             BUILD_SHARED_LIBS: yes
             OS: ubuntu-20.04
             CC: gcc
 
           - BUILD_TYPE: Release
-            PYTHON_VERSION: '3.7'
+            PYTHON_VERSION: '3.8'
             WITH_MPFR: yes
             INTEGER_CLASS: gmpxx
             WITH_NUMPY: no
@@ -91,7 +91,7 @@ jobs:
             CC: clang
     
           - BUILD_TYPE: Release
-            PYTHON_VERSION: '3.7'
+            PYTHON_VERSION: '3.8'
             WITH_NUMPY: yes
             OS: ubuntu-20.04
             CC: clang
@@ -108,7 +108,7 @@ jobs:
             EXTRA_APT_PACKAGES: 'llvm-14'
 
           - BUILD_TYPE: Debug
-            PYTHON_VERSION: '3.7'
+            PYTHON_VERSION: '3.8'
             WITH_SCIPY: yes
             WITH_LLVM: 5.0
             OS: macos-latest
@@ -121,7 +121,7 @@ jobs:
             CC: clang
 
           - BUILD_TYPE: Debug
-            PYTHON_VERSION: '3.7'
+            PYTHON_VERSION: '3.8'
             WITH_NUMPY: no
             OS: macos-latest
             CC: gcc
@@ -183,6 +183,7 @@ jobs:
         WITH_MPC: ${{ matrix.WITH_MPC }}
         MAKEFLAGS: ${{ matrix.MAKEFLAGS }}
         BUILD_SHARED_LIBS: ${{ matrix.BUILD_SHARED_LIBS }}
+        PYTHON_VERSION: ${{ matrix.PYTHON_VERSION }}
 
     - name: Deploy Documentation
       if: ${{ (github.ref == 'refs/heads/main' && github.repository == 'Symengine/symengine.py') || (github.ref == 'refs/heads/master' && github.repository == 'Symengine/symengine.py')}}
