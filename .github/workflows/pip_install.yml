@@ -10,6 +10,7 @@ jobs:
         python-version: ['3.12', 'pypy3.10']  # Other versions above install successfully
     runs-on: ubuntu-latest
     steps:
+      - run: sudo apt-get update && sudo apt-get install -y libgmp-dev
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
