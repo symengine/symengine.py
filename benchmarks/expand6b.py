@@ -1,34 +1,25 @@
-#!/usr/bin/env python
-
 import sys
-sys.path.append("..")
 import os
-from timeit import default_timer as clock
-if os.environ.get("USE_SYMENGINE"):
-    from symengine import symbols, expand, sin
-else:
-    from sympy import symbols, expand, sin
+import argparse
+import timeit
+from sympy import symbols, expand
 
 def run_benchmark(n):
-    a0 = symbols("a0")
-    a1 = symbols("a1")
-    e = a0 + a1
-    f = 0;
-    for i in range(2, n):
-        s = symbols("a%s" % i)
-        e = e + sin(s)
-        f = f + sin(s)
-    f = -f
-    t1 = clock()
-    e = expand(e**2)
-    e = e.xreplace({a0: f})
-    e = expand(e)
-    t2 = clock()
-    print("%s ms" % (1000 * (t2 - t1)))
+    a_variables = [symbols(f'a{i}') for i in range(n)]
+    e = sum(a_variables)
+    f = -sum(a_variables[1:])
+
+    def benchmark():
+        e_squared = e**2
+        e_substituted = e_squared.subs(a_variables[0], f)
+        expanded_result = expand(e_substituted)
+
+    time_taken = timeit.timeit(benchmark, number=1000)  # Measure time over 1000 iterations
+    print(f"Time taken for n={n}: {time_taken:.2f} seconds")
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        n = int(sys.argv[1])
-    else:
-        n = 100
-    run_benchmark(n)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-n', type=int, default=100, help='Number of variables (default: 100)')
+    args = parser.parse_args()
+    
+    run_benchmark(args.n)
