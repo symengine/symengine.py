@@ -3529,6 +3529,9 @@ cdef class DenseMatrixBase(MatrixBase):
     def __neg__(self):
         return self.mul_scalar(-1)
 
+    def __abs__(self):
+        return self.applyfunc(abs)
+
     def __getitem__(self, item):
         if isinstance(item, slice):
             if (self.ncols() == 0 or self.nrows() == 0):
