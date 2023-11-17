@@ -687,7 +687,7 @@ cdef extern from "<symengine/matrix.h>" namespace "SymEngine":
         DenseMatrix &B) except+ nogil
     void FFLU_solve "SymEngine::fraction_free_LU_solve"(const DenseMatrix &A,
         const DenseMatrix &b, DenseMatrix &x) except+ nogil
-    void FFGJ_solve "SymEngine::fraction_free_gauss_jordan_solve"(const DenseMatrix &A,
+    int FFGJ_solve "SymEngine::fraction_free_gauss_jordan_solve"(const DenseMatrix &A,
         const DenseMatrix &b, DenseMatrix &x) except+ nogil
     void LDL_solve "SymEngine::LDL_solve"(const DenseMatrix &A, const DenseMatrix &b,
         DenseMatrix &x) except+ nogil

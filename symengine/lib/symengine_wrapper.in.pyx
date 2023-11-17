@@ -3998,9 +3998,11 @@ cdef class DenseMatrixBase(MatrixBase):
                 deref(symengine.static_cast_DenseMatrix(b_.thisptr)),
                 deref(symengine.static_cast_DenseMatrix(x.thisptr)))
         elif method.upper() == 'FFGJ':
-            symengine.FFGJ_solve(deref(symengine.static_cast_DenseMatrix(self.thisptr)),
+            failure = symengine.FFGJ_solve(deref(symengine.static_cast_DenseMatrix(self.thisptr)),
                 deref(symengine.static_cast_DenseMatrix(b_.thisptr)),
                 deref(symengine.static_cast_DenseMatrix(x.thisptr)))
+            if (failure != 0):
+                raise Exception("Underdetermined system. Failed to find non-zero pivot in column: %d" % failure)
         else:
             raise Exception("Unsupported method.")
 

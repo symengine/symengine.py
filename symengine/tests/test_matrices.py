@@ -11,7 +11,7 @@ try:
     have_numpy = True
 except ImportError:
     have_numpy = False
-    
+
 try:
     import sympy
     from sympy.core.cache import clear_cache
@@ -443,6 +443,15 @@ def test_solve():
     assert x == y
     x = A.solve(b, 'FFGJ')
     assert x == y
+
+    B = DenseMatrix(2, 2, [0]*4)
+    try:
+        B.solve(b, 'FFGJ')
+    except Exception:
+        pass
+    else:
+        raise Exception("this operation should have raised an exception")
+
 
 
 def test_FFLU():
