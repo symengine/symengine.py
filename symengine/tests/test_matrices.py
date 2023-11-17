@@ -286,10 +286,12 @@ def test_mul_scalar():
     assert a * A == DenseMatrix(2, 2, [a, 2*a, 3*a, 4*a])
 
 
-def test_neg():
+def test_neg_abs():
     A = DenseMatrix(2, 3, [1, 2, 3, 4, 5, 6])
     B = DenseMatrix(2, 3, [-1, -2, -3, -4, -5, -6])
     assert -A == B
+
+    assert A == abs(B)
 
 
 def test_sub():
