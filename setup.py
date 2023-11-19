@@ -65,6 +65,7 @@ global_user_options = [
     ('build-type=', None, 'build type: Release or Debug'),
     ('define=', 'D',
      'options to cmake <var>:<type>=<value>'),
+    ('py-limited-api=', None, 'Use Py_LIMITED_API with given version.'),
 ]
 
 def _process_define(arg):
@@ -91,6 +92,7 @@ class BuildExtWithCmake(_build_ext):
         self.symengine_dir = None
         self.generator = None
         self.build_type = "Release"
+        self.py_limited_api = None
 
     def finalize_options(self):
         _build_ext.finalize_options(self)
@@ -122,6 +124,13 @@ class BuildExtWithCmake(_build_ext):
         cmake_cmd.extend(process_opts(cmake_opts))
         if not path.exists(path.join(build_dir, "CMakeCache.txt")):
             cmake_cmd.extend(self.get_generator())
+
+        if self.py_limited_api:
+            assert self.py_limited_api.startswith("cp3")
+            py_ver_minor = int(self.py_limited_api[3:])
+            h = 3 * 16**6 + py_ver_minor * 16**4
+            cmake_cmd.append(f"-DWITH_PY_LIMITED_API={h}")
+
         if subprocess.call(cmake_cmd, cwd=build_dir) != 0:
             raise OSError("error calling cmake")
 
