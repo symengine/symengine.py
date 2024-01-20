@@ -95,6 +95,12 @@ def test_arit8():
     assert (2*y**(-2*x**2)) * (3*y**(2*x**2)) == 6
 
 
+def test_unary():
+    x = Symbol("x")
+    assert -x == 0 - x
+    assert +x == x
+
+
 def test_expand1():
     x = Symbol("x")
     y = Symbol("y")
