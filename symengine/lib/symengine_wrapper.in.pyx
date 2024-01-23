@@ -2415,8 +2415,15 @@ class Pow(Expr):
 class Function(Expr):
 
     def __new__(cls, *args, **kwargs):
-        if cls == Function and len(args) == 1:
-            return UndefFunction(args[0])
+        if cls == Function:
+            nargs = len(args)
+            if nargs == 0:
+                raise TypeError("Required at least one argument to Function")
+            elif nargs == 1:
+                return UndefFunction(args[0])
+            elif nargs > 1:
+                raise TypeError(f"Unexpected extra arguments {args[1:]}.")
+
         return super(Function, cls).__new__(cls)
 
     @property
@@ -2836,6 +2843,10 @@ class FunctionSymbol(Function):
             symengine.rcp_static_cast_FunctionSymbol(self.thisptr)
         name = deref(X).get_name().decode("utf-8")
         return str(name)
+
+    @property
+    def name(Basic self):
+        return self.get_name()
 
     def _sympy_(self):
         import sympy
