@@ -951,6 +951,9 @@ cdef class Basic(object):
     def __neg__(Basic self not None):
         return c2py(symengine.neg(self.thisptr))
 
+    def __pos__(self):
+        return self
+
     def __abs__(Basic self not None):
         return c2py(symengine.abs(self.thisptr))
 
