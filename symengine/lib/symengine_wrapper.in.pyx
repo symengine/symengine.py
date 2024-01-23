@@ -2841,6 +2841,10 @@ class FunctionSymbol(Function):
         name = deref(X).get_name().decode("utf-8")
         return str(name)
 
+    @property
+    def name(Basic self):
+        return self.get_name()
+
     def _sympy_(self):
         import sympy
         name = self.get_name()

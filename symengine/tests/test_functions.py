@@ -105,11 +105,14 @@ def test_derivative():
 
 def test_function():
     x = Symbol("x")
-    assert Function("f")(x) == function_symbol("f", x)
+    fx = Function("f")(x)
+    assert fx == function_symbol("f", x)
 
     raises(TypeError, lambda: Function("f", "x"))
     raises(TypeError, lambda: Function("f", x))
     raises(TypeError, lambda: Function())
+
+    assert fx.name == "f"
 
 
 def test_abs():
