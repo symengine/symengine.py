@@ -2412,8 +2412,15 @@ class Pow(Expr):
 class Function(Expr):
 
     def __new__(cls, *args, **kwargs):
-        if cls == Function and len(args) == 1:
-            return UndefFunction(args[0])
+        if cls == Function:
+            nargs = len(args)
+            if nargs == 0:
+                raise TypeError("Required at least one argument to Function")
+            elif nargs == 1:
+                return UndefFunction(args[0])
+            elif nargs > 1:
+                raise TypeError(f"Unexpected extra arguments {args[1:]}.")
+
         return super(Function, cls).__new__(cls)
 
     @property

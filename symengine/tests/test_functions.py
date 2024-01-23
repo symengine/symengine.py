@@ -103,6 +103,15 @@ def test_derivative():
     assert i == fxy.diff(y, 1, x)
 
 
+def test_function():
+    x = Symbol("x")
+    assert Function("f")(x) == function_symbol("f", x)
+
+    raises(TypeError, lambda: Function("f", "x"))
+    raises(TypeError, lambda: Function("f", x))
+    raises(TypeError, lambda: Function())
+
+
 def test_abs():
     x = Symbol("x")
     e = abs(x)
