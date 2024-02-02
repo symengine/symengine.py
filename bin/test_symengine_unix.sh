@@ -19,4 +19,3 @@ source bin/install_travis.sh
 # Build Python wrappers and test
 cd $PYTHON_SOURCE_DIR
 bin/test_travis.sh
-
