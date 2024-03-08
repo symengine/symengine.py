@@ -1,4 +1,5 @@
 from .lib.symengine_wrapper import Symbol, Basic
+
 from itertools import combinations, permutations, product, product as cartes
 import re as _re
 import string

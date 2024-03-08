@@ -52,14 +52,15 @@ if have_mpc:
     from .lib.symengine_wrapper import ComplexMPC
 
 if have_numpy:
-    from .lib.symengine_wrapper import (Lambdify, LambdifyCSE)
-
+    from .lib.symengine_wrapper import Lambdify, LambdifyCSE
     def lambdify(args, exprs, **kwargs):
+        if isinstance(exprs, Basic):
+            exprs = [exprs]
         return Lambdify(args, *exprs, **kwargs)
 else:
     def __getattr__(name):
-        if name == 'lambdify':
-            raise AttributeError("Cannot import numpy, which is required for `lambdify` to work")
+        if name in ('lambdify', 'Lambdify', 'LambdifyCSE'):
+            raise AttributeError(f"Cannot import numpy, which is required for `{name}` to work")
         raise AttributeError(f"module 'symengine' has no attribute '{name}'")
 
 
