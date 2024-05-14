@@ -12,7 +12,7 @@ jobs:
             WITH_BFD: yes
             PYTHON_VERSION: '3.13.0b1'
             TEST_SYMPY: yes
-            OS: ubuntu-24.04
+            OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Debug
