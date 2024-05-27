@@ -1627,7 +1627,9 @@ class Equality(Relational):
     def is_Equality(self):
         return True
 
-    func = __class__
+    @property
+    def func(self):
+        return self.__class__
 
 
 Eq = Equality
@@ -1648,7 +1650,9 @@ class Unequality(Relational):
         s = self.args_as_sage()
         return sage.ne(*s)
 
-    func = __class__
+    @property
+    def func(self):
+        return self.__class__
 
 
 Ne = Unequality
