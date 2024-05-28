@@ -14,6 +14,7 @@ jobs:
             TEST_SYMPY: yes
             OS: ubuntu-24.04
             CC: 'gcc -v'  # symengine's bin/install_travis.sh needs refactoring...
+            CXX: 'g++ -v'
 
           - BUILD_TYPE: Debug
             WITH_BFD: yes
