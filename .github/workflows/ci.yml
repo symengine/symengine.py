@@ -13,7 +13,7 @@ jobs:
             PYTHON_VERSION: '3.12'
             TEST_SYMPY: yes
             OS: ubuntu-24.04
-            CC: 'ccache gcc'  # symengine's bin/install_travis.sh needs refactoring...
+            CC: 'gcc -v'  # symengine's bin/install_travis.sh needs refactoring...
 
           - BUILD_TYPE: Debug
             WITH_BFD: yes
