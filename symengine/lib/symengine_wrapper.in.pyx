@@ -31,13 +31,6 @@ try:
 except ImportError:
     have_numpy = False
 
-try:
-    import flint as _flint
-    have_flint_py = True
-except ImportError:
-    _flint = None
-    have_flint_py = False
-
 
 class SympifyError(Exception):
     pass
@@ -505,17 +498,6 @@ def sympy2symengine(a, raise_error=False):
             return asech(a.args[0])
         elif isinstance(a, sympy.ConditionSet):
             return conditionset(*(a.args))
-
-    if have_flint_py:
-        if isinstance(a, _flint.types.nmod.nmod):
-            # Work around for sympy/sympy#26645
-            class _modular_integer(sympy.polys.domains.modularinteger.ModularInteger):
-                mod = int(a.modulus())
-                dom = sympy.polys.domains.ZZ
-                sym = True
-
-            b = _modular_integer(int(a))
-            return PyNumber(b, sympy_module)
 
     if raise_error:
         raise SympifyError(("sympy2symengine: Cannot convert '%r' (of type %s)"

@@ -778,7 +778,6 @@ def test_pynumber():
     assert isinstance(b, PyNumber)
     assert b == a                  # Check equality via SymEngine
     assert a == b                  # Check equality via SymPy
-    assert (b-a).simplify() == 0
     assert str(a) == str(b)
 
     a = 1 - a
