@@ -5156,11 +5156,11 @@ cdef class LambdaDouble(_Lambdify):
         pass
 
     cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
-        self.lambda_double.resize(1)
-        self.lambda_double[0].init(args_, outs_, cse)
+        self.lambda_visitor.reset(new symengine.LambdaRealDoubleVisitor())
+        deref(self.lambda_visitor).init(args_, outs_, cse)
 
     cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=0, int out_offset=0):
-        self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
+        deref(self.lambda_visitor).call(&out[out_offset], &inp[inp_offset])
 
     cpdef unsafe_eval(self, inp, out, unsigned nbroadcast=1):
         cdef double[::1] c_inp, c_out
@@ -5168,7 +5168,7 @@ cdef class LambdaDouble(_Lambdify):
         c_inp = np.ascontiguousarray(inp.ravel(order=self.order), dtype=self.numpy_dtype)
         c_out = out
         for idx in range(nbroadcast):
-            self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
+            deref(self.lambda_visitor).call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
 
     cpdef as_scipy_low_level_callable(self):
         from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
@@ -5176,7 +5176,7 @@ cdef class LambdaDouble(_Lambdify):
             raise RuntimeError("SciPy LowLevelCallable supports only functions with 1 output")
         addr1 = cast(<size_t>&_scipy_callback_lambda_real,
                         CFUNCTYPE(c_double, c_int, POINTER(c_double), c_void_p))
-        addr2 = cast(<size_t>&self.lambda_double[0], c_void_p)
+        addr2 = cast(<size_t>self.lambda_visitor.get(), c_void_p)
         return create_low_level_callable(self, addr1, addr2)
 
     cpdef as_ctypes(self):
@@ -5191,7 +5191,7 @@ cdef class LambdaDouble(_Lambdify):
         from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
         addr1 = cast(<size_t>&_ctypes_callback_lambda_real,
                         CFUNCTYPE(c_void_p, POINTER(c_double), POINTER(c_double), c_void_p))
-        addr2 = cast(<size_t>&self.lambda_double[0], c_void_p)
+        addr2 = cast(<size_t>self.lambda_visitor.get(), c_void_p)
         return addr1, addr2
 
 
@@ -5201,11 +5201,11 @@ cdef class LambdaComplexDouble(_Lambdify):
         pass
 
     cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
-        self.lambda_double.resize(1)
-        self.lambda_double[0].init(args_, outs_, cse)
+        self.lambda_visitor.reset(new symengine.LambdaComplexDoubleVisitor())
+        deref(self.lambda_visitor).init(args_, outs_, cse)
 
     cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out, int inp_offset=0, int out_offset=0):
-        self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
+        deref(self.lambda_visitor).call(&out[out_offset], &inp[inp_offset])
 
     cpdef unsafe_eval(self, inp, out, unsigned nbroadcast=1):
         cdef double complex[::1] c_inp, c_out
@@ -5213,7 +5213,7 @@ cdef class LambdaComplexDouble(_Lambdify):
         c_inp = np.ascontiguousarray(inp.ravel(order=self.order), dtype=self.numpy_dtype)
         c_out = out
         for idx in range(nbroadcast):
-            self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
+            deref(self.lambda_visitor).call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
 
 
 IF HAVE_SYMENGINE_LLVM:
@@ -5222,23 +5222,23 @@ IF HAVE_SYMENGINE_LLVM:
             self.opt_level = opt_level
 
         cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
-            self.lambda_double.resize(1)
-            self.lambda_double[0].init(args_, outs_, cse, self.opt_level)
+            self.lambda_visitor.reset(new symengine.LLVMDoubleVisitor())
+            deref(self.lambda_visitor).init(args_, outs_, cse, self.opt_level)
 
         cdef _load(self, const string &s):
-            self.lambda_double.resize(1)
-            self.lambda_double[0].loads(s)
+            self.lambda_visitor.reset(new symengine.LLVMDoubleVisitor())
+            deref(self.lambda_visitor).loads(s)
 
         def __reduce__(self):
             """
             Interface for pickle. Note that the resulting object is platform dependent.
             """
-            cdef bytes s = self.lambda_double[0].dumps()
+            cdef bytes s = deref(self.lambda_visitor).dumps()
             return llvm_loading_func, (self.args_size, self.tot_out_size, self.out_shapes, self.real, \
                 self.n_exprs, self.order, self.accum_out_sizes, self.numpy_dtype, s)
 
         cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=0, int out_offset=0):
-            self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
+            deref(self.lambda_visitor).call(&out[out_offset], &inp[inp_offset])
 
         cpdef unsafe_eval(self, inp, out, unsigned nbroadcast=1):
             cdef double[::1] c_inp, c_out
@@ -5246,7 +5246,7 @@ IF HAVE_SYMENGINE_LLVM:
             c_inp = np.ascontiguousarray(inp.ravel(order=self.order), dtype=self.numpy_dtype)
             c_out = out
             for idx in range(nbroadcast):
-                self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
+                deref(self.lambda_visitor).call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
 
         cpdef as_scipy_low_level_callable(self):
             from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
@@ -5256,7 +5256,7 @@ IF HAVE_SYMENGINE_LLVM:
                 raise RuntimeError("SciPy LowLevelCallable supports only functions with 1 output")
             addr1 = cast(<size_t>&_scipy_callback_llvm_real,
                             CFUNCTYPE(c_double, c_int, POINTER(c_double), c_void_p))
-            addr2 = cast(<size_t>&self.lambda_double[0], c_void_p)
+            addr2 = cast(<size_t>self.lambda_visitor.get(), c_void_p)
             return create_low_level_callable(self, addr1, addr2)
 
         cpdef as_ctypes(self):
@@ -5273,7 +5273,7 @@ IF HAVE_SYMENGINE_LLVM:
                 raise RuntimeError("Lambda function has to be real")
             addr1 = cast(<size_t>&_ctypes_callback_llvm_real,
                             CFUNCTYPE(c_void_p, POINTER(c_double), POINTER(c_double), c_void_p))
-            addr2 = cast(<size_t>&self.lambda_double[0], c_void_p)
+            addr2 = cast(<size_t>self.lambda_visitor.get(), c_void_p)
             return addr1, addr2
 
     cdef class LLVMFloat(_LLVMLambdify):
@@ -5281,23 +5281,23 @@ IF HAVE_SYMENGINE_LLVM:
             self.opt_level = opt_level
 
         cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
-            self.lambda_double.resize(1)
-            self.lambda_double[0].init(args_, outs_, cse, self.opt_level)
+            self.lambda_visitor.reset(new symengine.LLVMFloatVisitor())
+            deref(self.lambda_visitor).init(args_, outs_, cse, self.opt_level)
 
         cdef _load(self, const string &s):
-            self.lambda_double.resize(1)
-            self.lambda_double[0].loads(s)
+            self.lambda_visitor.reset(new symengine.LLVMFloatVisitor())
+            deref(self.lambda_visitor).loads(s)
 
         def __reduce__(self):
             """
             Interface for pickle. Note that the resulting object is platform dependent.
             """
-            cdef bytes s = self.lambda_double[0].dumps()
+            cdef bytes s = deref(self.lambda_visitor).dumps()
             return llvm_float_loading_func, (self.args_size, self.tot_out_size, self.out_shapes, self.real, \
                 self.n_exprs, self.order, self.accum_out_sizes, self.numpy_dtype, s)
 
         cpdef unsafe_real(self, float[::1] inp, float[::1] out, int inp_offset=0, int out_offset=0):
-            self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
+            deref(self.lambda_visitor).call(&out[out_offset], &inp[inp_offset])
 
         cpdef unsafe_eval(self, inp, out, unsigned nbroadcast=1):
             cdef float[::1] c_inp, c_out
@@ -5305,7 +5305,7 @@ IF HAVE_SYMENGINE_LLVM:
             c_inp = np.ascontiguousarray(inp.ravel(order=self.order), dtype=self.numpy_dtype)
             c_out = out
             for idx in range(nbroadcast):
-                self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
+                deref(self.lambda_visitor).call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
 
     IF HAVE_SYMENGINE_LLVM_LONG_DOUBLE:
         cdef class LLVMLongDouble(_LLVMLambdify):
@@ -5313,23 +5313,23 @@ IF HAVE_SYMENGINE_LLVM:
                 self.opt_level = opt_level
 
             cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
-                self.lambda_double.resize(1)
-                self.lambda_double[0].init(args_, outs_, cse, self.opt_level)
+                self.lambda_visitor.reset(new symengine.LLVMLongDoubleVisitor())
+                deref(self.lambda_visitor).init(args_, outs_, cse, self.opt_level)
 
             cdef _load(self, const string &s):
-                self.lambda_double.resize(1)
-                self.lambda_double[0].loads(s)
+                self.lambda_visitor.reset(new symengine.LLVMLongDoubleVisitor())
+                deref(self.lambda_visitor).loads(s)
 
             def __reduce__(self):
                 """
                 Interface for pickle. Note that the resulting object is platform dependent.
                 """
-                cdef bytes s = self.lambda_double[0].dumps()
+                cdef bytes s = deref(self.lambda_visitor).dumps()
                 return llvm_long_double_loading_func, (self.args_size, self.tot_out_size, self.out_shapes, self.real, \
                     self.n_exprs, self.order, self.accum_out_sizes, self.numpy_dtype, s)
 
             cpdef unsafe_real(self, long double[::1] inp, long double[::1] out, int inp_offset=0, int out_offset=0):
-                self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
+                deref(self.lambda_visitor).call(&out[out_offset], &inp[inp_offset])
 
             cpdef unsafe_eval(self, inp, out, unsigned nbroadcast=1):
                 cdef long double[::1] c_inp, c_out
@@ -5337,7 +5337,7 @@ IF HAVE_SYMENGINE_LLVM:
                 c_inp = np.ascontiguousarray(inp.ravel(order=self.order), dtype=self.numpy_dtype)
                 c_out = out
                 for idx in range(nbroadcast):
-                    self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
+                    deref(self.lambda_visitor).call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
 
     def llvm_loading_func(*args):
         return LLVMDouble(args, _load=True)
