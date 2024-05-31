@@ -12,7 +12,7 @@ jobs:
             WITH_BFD: yes
             PYTHON_VERSION: '3.12'
             TEST_SYMPY: yes
-            OS: ubuntu-24.04
+            OS: ubuntu-20.04
             CC: gcc
 
           - BUILD_TYPE: Debug
@@ -97,15 +97,16 @@ jobs:
             CC: clang
  
           - BUILD_TYPE: Debug
-            PYTHON_VERSION: '3.10'
+            PYTHON_VERSION: '3.12'
             WITH_SYMPY: yes
-            WITH_LLVM: 14
+            WITH_LLVM: 18
             WITH_SCIPY: yes
             INTEGER_CLASS: 'boostmp'
             PYTEST_ADDOPTS: '-k "not integer_nthroot"'
-            OS: ubuntu-22.04
-            EXTRA_APT_REPOSITORY: 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-14 main'
-            EXTRA_APT_PACKAGES: 'llvm-14'
+            OS: ubuntu-24.04
+            CC: gcc  # ubuntu nobel uses gcc-13
+            #EXTRA_APT_REPOSITORY: 'deb http://apt.llvm.org/jammy/ llvm-toolchain-nobel-18 main'
+            EXTRA_APT_PACKAGES: 'llvm-18'
 
           - BUILD_TYPE: Debug
             PYTHON_VERSION: '3.8'
