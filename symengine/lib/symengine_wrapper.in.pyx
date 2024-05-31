@@ -1214,7 +1214,7 @@ cdef class Basic(object):
         return int(float(self))
 
     def __long__(self):
-        return long(float(self))
+        return int(float(self))
 
     def __complex__(self):
         f = self.n(real=False)
