@@ -132,11 +132,12 @@ jobs:
             CC: gcc
 
           - BUILD_TYPE: Release
-            PYTHON_VERSION: '3.8'
+            PYTHON_VERSION: '3.11'
             OS: ubuntu-20.04
             WITH_MPC: yes
             WITH_MPFR: yes
             WITH_FLINT: yes
+            WITH_FLINT_PY: yes
             WITH_SCIPY: yes
             WITH_DOCS: yes
             INTEGER_CLASS: flint
