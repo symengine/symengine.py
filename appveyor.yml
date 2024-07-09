@@ -9,6 +9,13 @@ environment:
   matrix:
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
+      PLATFORM: "Win32"
+      PYTHON_VERSION: 39
+      CONDA_INSTALL_LOCN: C:\\Miniconda38-x64
+      WITH_MPFR: yes
+      WITH_MPC: yes
+    - BUILD_TYPE: "Release"
+      COMPILER: MSVC15
       PLATFORM: "x64"
       PYTHON_VERSION: 310-x64
       CONDA_INSTALL_LOCN: C:\\Miniconda38-x64
@@ -44,13 +51,6 @@ environment:
     #  WITH_SYMPY: no
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
-      PLATFORM: "Win32"
-      PYTHON_VERSION: 39
-      CONDA_INSTALL_LOCN: C:\\Miniconda38
-      WITH_MPFR: yes
-      WITH_MPC: yes
-    - BUILD_TYPE: "Release"
-      COMPILER: MSVC15
       PLATFORM: "x64"
       PYTHON_VERSION: 310-x64
       CONDA_INSTALL_LOCN: C:\\Miniconda38-x64
@@ -61,15 +61,17 @@ environment:
 install:
 - set PYTHON_SOURCE_DIR=%CD%
 - git clone https://github.com/sympy/symengine symengine-cpp
+- if [%PLATFORM%]==[Win32] set "CONDA_SUBDIR=win-32"
 
 - if [%COMPILER%]==[MSVC15] call %CONDA_INSTALL_LOCN%\Scripts\activate.bat
-- if [%COMPILER%]==[MSVC15] conda config --add channels conda-forge
-- if [%COMPILER%]==[MSVC15] if [%BUILD_TYPE%]==[Debug] conda config --add channels symengine/label/debug
 - if [%COMPILER%]==[MSVC15] set "CONDA_DEPS=mpir=3.0.0 vc=14"
 - if [%COMPILER%]==[MSVC15] if [%WITH_MPFR%]==[yes] set "CONDA_DEPS=%CONDA_DEPS% mpfr=3.1.5"
 - if [%COMPILER%]==[MSVC15] if [%WITH_MPC%]==[yes] set "CONDA_DEPS=%CONDA_DEPS% mpc=1.0.3"
 - if [%COMPILER%]==[MSVC15] if [%WITH_LLVM%]==[yes] set "CONDA_DEPS=%CONDA_DEPS% llvmdev=4.0"
-- if [%COMPILER%]==[MSVC15] conda install --yes %CONDA_DEPS%
+- if [%COMPILER%]==[MSVC15] set "CONDA_DEPS=%CONDA_DEPS% -c conda-forge"
+- if [%COMPILER%]==[MSVC15] if [%BUILD_TYPE%]==[Debug] set "CONDA_DEPS=%CONDA_DEPS% -c symengine/label/debug"
+- if [%COMPILER%]==[MSVC15] conda create -n deps --yes %CONDA_DEPS%
+- if [%COMPILER%]==[MSVC15] call conda activate deps
 - if [%COMPILER%]==[MSVC15] echo %CONDA_PREFIX%
 - if [%COMPILER%]==[MSVC15] echo %PATH%
 - if [%COMPILER%]==[MSVC15] set "PATH=%PATH%;%CONDA_PREFIX%\\Library\\bin;%CONDA_PREFIX%"
