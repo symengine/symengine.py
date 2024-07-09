@@ -111,24 +111,24 @@ jobs:
             PYTHON_VERSION: '3.8'
             WITH_SCIPY: yes
             WITH_LLVM: 5.0
-            OS: macos-latest
+            OS: macos-13
             CC: clang
 
           - BUILD_TYPE: Release
             PYTHON_VERSION: '3.9'
             WITH_NUMPY: no
-            OS: macos-latest
+            OS: macos-13
             CC: clang
 
           - BUILD_TYPE: Debug
             PYTHON_VERSION: '3.8'
             WITH_NUMPY: no
-            OS: macos-latest
+            OS: macos-13
             CC: gcc
 
           - BUILD_TYPE: Release
             PYTHON_VERSION: '3.8'
-            OS: macos-latest
+            OS: macos-13
             CC: gcc
 
           - BUILD_TYPE: Release
