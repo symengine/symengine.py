@@ -11,26 +11,26 @@ environment:
       COMPILER: MSVC15
       PLATFORM: "x64"
       PYTHON_VERSION: 310-x64
-      CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
+      CONDA_INSTALL_LOCN: C:\\Miniconda38-x64
       WITH_MPFR: yes
       WITH_MPC: yes
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
       PLATFORM: "x64"
       PYTHON_VERSION: 38-x64
-      CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
+      CONDA_INSTALL_LOCN: C:\\Miniconda38-x64
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
       PLATFORM: "x64"
       PYTHON_VERSION: 39-x64
       WITH_SYMPY: no
-      CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
+      CONDA_INSTALL_LOCN: C:\\Miniconda38-x64
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
       PLATFORM: "x64"
       PYTHON_VERSION: 311-x64
       WITH_NUMPY: no
-      CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
+      CONDA_INSTALL_LOCN: C:\\Miniconda38-x64
     #- BUILD_TYPE: "Debug"
     #  COMPILER: MinGW-w64
     #  PYTHON_VERSION: 39-x64
@@ -46,14 +46,14 @@ environment:
       COMPILER: MSVC15
       PLATFORM: "Win32"
       PYTHON_VERSION: 39
-      CONDA_INSTALL_LOCN: C:\\Miniconda36
+      CONDA_INSTALL_LOCN: C:\\Miniconda38
       WITH_MPFR: yes
       WITH_MPC: yes
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
       PLATFORM: "x64"
       PYTHON_VERSION: 310-x64
-      CONDA_INSTALL_LOCN: C:\\Miniconda36-x64
+      CONDA_INSTALL_LOCN: C:\\Miniconda38-x64
       WITH_MPFR: yes
       WITH_MPC: yes
       WITH_LLVM: yes
