@@ -63,7 +63,6 @@ install:
 - git clone https://github.com/sympy/symengine symengine-cpp
 
 - if [%COMPILER%]==[MSVC15] call %CONDA_INSTALL_LOCN%\Scripts\activate.bat
-- if [%COMPILER%]==[MSVC15] conda install --yes --quiet conda
 - if [%COMPILER%]==[MSVC15] conda config --add channels conda-forge
 - if [%COMPILER%]==[MSVC15] if [%BUILD_TYPE%]==[Debug] conda config --add channels symengine/label/debug
 - if [%COMPILER%]==[MSVC15] conda install --yes mpir=3.0.0 vc=14
