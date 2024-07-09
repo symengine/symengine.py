@@ -16,6 +16,10 @@ if [[ "${WITH_DOCS}" == "yes" ]]; then
     export conda_pkgs="${conda_pkgs} sphinx recommonmark";
 fi
 
+if [[ "${WITH_FLINT_PY}" == "yes" ]]; then
+    export conda_pkgs="${conda_pkgs} python-flint";  # python-flint affects sympy, see e.g. sympy/sympy#26645
+fi
+
 if [[ "${WITH_SAGE}" == "yes" ]]; then
     # This is split to avoid the 10 minute limit
     conda install -q sagelib=8.1
