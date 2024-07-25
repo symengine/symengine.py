@@ -1,7 +1,7 @@
 import unittest
 
 from symengine.test_utilities import raises
-from symengine import Symbol, sin, cos, sqrt, Add, function_symbol, have_numpy
+from symengine import Symbol, sin, cos, sqrt, Add, function_symbol, have_numpy, log
 
 
 def test_basic():
@@ -22,6 +22,12 @@ def test_sin():
     e = cos(x)
     assert e.subs({x: 0}) == 1
     assert e.subs(x, 0) == 1
+
+
+def test_subs_exception():
+    x = Symbol("x")
+    expr = sin(log(x))
+    raises(RuntimeError, lambda: expr.subs({x: 0}))
 
 
 def test_args():
