@@ -63,7 +63,7 @@ else:
         raise AttributeError(f"module 'symengine' has no attribute '{name}'")
 
 
-__version__ = "0.11.0"
+__version__ = "0.13.0"
 
 
 # To not expose internals
