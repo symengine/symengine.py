@@ -1,6 +1,3 @@
-# Test that numpy works in Cython:
-from numpy cimport ndarray
-
 # Test that libcpp module is present:
 from libcpp.vector cimport vector
 from libcpp.string cimport string
