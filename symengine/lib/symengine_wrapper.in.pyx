@@ -5135,24 +5135,24 @@ cdef class _Lambdify(object):
             return result
 
 
-cdef double _scipy_callback_lambda_real(int n, double *x, void *user_data) nogil:
+cdef double _scipy_callback_lambda_real(int n, double *x, void *user_data) noexcept nogil:
     cdef symengine.LambdaRealDoubleVisitor* lamb = <symengine.LambdaRealDoubleVisitor *>user_data
     cdef double result
     deref(lamb).call(&result, x)
     return result
 
-cdef void _ctypes_callback_lambda_real(double *output, const double *input, void *user_data) nogil:
+cdef void _ctypes_callback_lambda_real(double *output, const double *input, void *user_data) noexcept nogil:
     cdef symengine.LambdaRealDoubleVisitor* lamb = <symengine.LambdaRealDoubleVisitor *>user_data
     deref(lamb).call(output, input)
 
 IF HAVE_SYMENGINE_LLVM:
-    cdef double _scipy_callback_llvm_real(int n, double *x, void *user_data) nogil:
+    cdef double _scipy_callback_llvm_real(int n, double *x, void *user_data) noexcept nogil:
         cdef symengine.LLVMDoubleVisitor* lamb = <symengine.LLVMDoubleVisitor *>user_data
         cdef double result
         deref(lamb).call(&result, x)
         return result
 
-    cdef void _ctypes_callback_llvm_real(double *output, const double *input, void *user_data) nogil:
+    cdef void _ctypes_callback_llvm_real(double *output, const double *input, void *user_data) noexcept nogil:
         cdef symengine.LLVMDoubleVisitor* lamb = <symengine.LLVMDoubleVisitor *>user_data
         deref(lamb).call(output, input)
 
