@@ -75,8 +75,8 @@ cdef extern from "<symengine/symbol.h>" namespace "SymEngine":
         string get_name() nogil
 
 cdef extern from "<symengine/add.h>" namespace "SymEngine":
-    cdef RCP[Basic] add(RCP[Basic] &a, RCP[Basic] &b) nogil except+
-    cdef RCP[Basic] sub(RCP[Basic] &a, RCP[Basic] &b) nogil except+
+    cdef RCP[Basic] add(RCP[Basic] &a, RCP[Basic] &b) except+ nogil
+    cdef RCP[Basic] sub(RCP[Basic] &a, RCP[Basic] &b) except+ nogil
 
     cdef cppclass Add(Basic):
         void as_two_terms(const Ptr[RCP[Basic]] &a, const Ptr[RCP[Basic]] &b)
