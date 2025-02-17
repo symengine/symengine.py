@@ -13,7 +13,7 @@ set(CMAKE_PREFIX_PATH ${SymEngine_DIR} ${CMAKE_PREFIX_PATH})
 
 include(GNUInstallDirs)
 
-find_package(SymEngine 0.8.1 REQUIRED CONFIG
+find_package(SymEngine 0.14.0 REQUIRED CONFIG
              PATH_SUFFIXES lib/cmake/symengine cmake/symengine CMake/)
 message("SymEngine_DIR : " ${SymEngine_DIR})
 message("SymEngine Version : " ${SymEngine_VERSION})
