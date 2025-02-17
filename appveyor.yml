@@ -24,7 +24,7 @@ environment:
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
       PLATFORM: "x64"
-      PYTHON_VERSION: 38-x64
+      PYTHON_VERSION: 312-x64
       CONDA_INSTALL_LOCN: C:\\Miniconda38-x64
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
