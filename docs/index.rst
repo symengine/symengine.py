@@ -10,7 +10,7 @@ Symengine Python API Documentation
    :maxdepth: 2
    :caption: Contents:
 
-   source/modules
+   apidocs/index
 
 .. mdinclude:: ../README.md
 
