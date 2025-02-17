@@ -20,13 +20,7 @@ pip install symengine --user
 ### Conda package manager
 
 ```bash
-conda install python-symengine -c symengine -c conda-forge
-```
-
-Optionally, you may choose to install an early [developer preview](https://github.com/symengine/python-symengine-feedstock):
-
-```bash
-conda install python-symengine -c symengine/label/dev -c conda-forge
+conda install python-symengine -c conda-forge
 ```
 
 ### Build from source
