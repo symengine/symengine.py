@@ -1213,9 +1213,6 @@ cdef class Basic(object):
     def __int__(self):
         return int(float(self))
 
-    def __long__(self):
-        return int(float(self))
-
     def __complex__(self):
         f = self.n(real=False)
         if not isinstance(f, (ComplexDouble, RealDouble)):
@@ -1521,9 +1518,6 @@ cdef class BooleanTrue(BooleanAtom):
         return sympy.S.true
 
     def _sage_(self):
-        return True
-
-    def __nonzero__(self):
         return True
 
     def __bool__(self):
