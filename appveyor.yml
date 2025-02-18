@@ -97,7 +97,7 @@ install:
 
 - set "PATH=C:\Python%PYTHON_VERSION%;C:\Python%PYTHON_VERSION%\Scripts;%PATH%"
 - echo %PATH%
-- pip install nose pytest cython
+- pip install nose pytest cython setuptools
 - if NOT [%WITH_NUMPY%]==[no] pip install numpy
 - if NOT [%WITH_SYMPY%]==[no] pip install sympy
 
