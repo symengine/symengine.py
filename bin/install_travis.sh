@@ -2,7 +2,7 @@
 
 # symengine's bin/install_travis.sh will install miniconda
 
-export conda_pkgs="python=${PYTHON_VERSION} pip pytest gmp mpfr"
+export conda_pkgs="python=${PYTHON_VERSION} pip pytest setuptools gmp mpfr"
 
 if [[ "${WITH_NUMPY}" != "no" ]]; then
     export conda_pkgs="${conda_pkgs} numpy";
