@@ -24,7 +24,7 @@ if use_distutils is not None:
 
 if use_setuptools:
     try:
-        from setuptools import setup
+        from setuptools import Extension, setup
         from setuptools.command.install import install as _install
         from setuptools.command.build_ext import build_ext as _build_ext
     except ImportError:
@@ -36,7 +36,7 @@ if use_setuptools:
             from distutils.command.build import build as _build
 
 if not use_setuptools:
-    from distutils.core import setup
+    from distutils.core import Extension, setup
     from distutils.command.install import install as _install
     from distutils.command.build_ext import build_ext as _build_ext
     from distutils.command.build import build as _build
@@ -232,7 +232,8 @@ setup(name="symengine",
       url="https://github.com/symengine/symengine.py",
       python_requires='>=3.9,<4',
       zip_safe=False,
-      packages=[],
+      ext_modules=[Extension(name='symengine.lib', sources=[])],
+      packages=['symengine', 'symengine.tests'],
       cmdclass = cmdclass,
       classifiers=[
         'License :: OSI Approved :: MIT License',
