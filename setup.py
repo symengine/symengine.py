@@ -221,6 +221,13 @@ and dependencies of wheels
 
 '''
 
+ext_modules = []
+packages = ['symengine', 'symengine.tests']
+if platform.system() == 'Windows':
+    packages += ['symengine.lib']
+else:
+    ext_modules += [Extension(name='symengine.lib', sources=[])]
+
 setup(name="symengine",
       version="0.14.0",
       description="Python library providing wrappers to SymEngine",
@@ -232,8 +239,8 @@ setup(name="symengine",
       url="https://github.com/symengine/symengine.py",
       python_requires='>=3.9,<4',
       zip_safe=False,
-      ext_modules=[Extension(name='symengine.lib', sources=[])],
-      packages=['symengine', 'symengine.tests'],
+      ext_modules=ext_modules,
+      packages=packages,
       cmdclass = cmdclass,
       classifiers=[
         'License :: OSI Approved :: MIT License',
