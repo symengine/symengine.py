@@ -24,7 +24,7 @@ if use_distutils is not None:
 
 if use_setuptools:
     try:
-        from setuptools import Extension, setup
+        from setuptools import setup
         from setuptools.command.install import install as _install
         from setuptools.command.build_ext import build_ext as _build_ext
     except ImportError:
@@ -36,14 +36,13 @@ if use_setuptools:
             from distutils.command.build import build as _build
 
 if not use_setuptools:
-    from distutils.core import Extension, setup
+    from distutils.core import setup
     from distutils.command.install import install as _install
     from distutils.command.build_ext import build_ext as _build_ext
     from distutils.command.build import build as _build
 
 cmake_opts = [("PYTHON_BIN", sys.executable),
-              ("CMAKE_INSTALL_RPATH_USE_LINK_PATH", "yes"),
-              ("CMAKE_POLICY_VERSION_MINIMUM", "3.5")]
+              ("CMAKE_INSTALL_RPATH_USE_LINK_PATH", "yes")]
 cmake_generator = [None]
 cmake_build_type = ["Release"]
 
@@ -118,7 +117,7 @@ class BuildExtWithCmake(_build_ext):
 
         cmake_cmd = ["cmake", source_dir,
             "-DCMAKE_BUILD_TYPE=" + cmake_build_type[0],
-            "-DSYMENGINE_INSTALL_PY_FILES=OFF",
+            "-DSYMENGINE_INSTALL_PY_FILES=ON",
         ]
         cmake_cmd.extend(process_opts(cmake_opts))
         if not path.exists(path.join(build_dir, "CMakeCache.txt")):
@@ -233,8 +232,7 @@ setup(name="symengine",
       url="https://github.com/symengine/symengine.py",
       python_requires='>=3.9,<4',
       zip_safe=False,
-      ext_modules=[Extension(name='symengine.lib', sources=[])],
-      packages=['symengine', 'symengine.tests'],
+      packages=[],
       cmdclass = cmdclass,
       classifiers=[
         'License :: OSI Approved :: MIT License',
