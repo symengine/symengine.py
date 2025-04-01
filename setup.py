@@ -42,7 +42,8 @@ if not use_setuptools:
     from distutils.command.build import build as _build
 
 cmake_opts = [("PYTHON_BIN", sys.executable),
-              ("CMAKE_INSTALL_RPATH_USE_LINK_PATH", "yes")]
+              ("CMAKE_INSTALL_RPATH_USE_LINK_PATH", "yes"),
+              ("CMAKE_POLICY_VERSION_MINIMUM", "3.5")]
 cmake_generator = [None]
 cmake_build_type = ["Release"]
 
