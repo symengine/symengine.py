@@ -60,7 +60,7 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 endif()
 
 execute_process(
-    COMMAND ${PYTHON_BIN} -c "from sysconfig import get_paths; print(get_paths()['purelib'])"
+    COMMAND ${PYTHON_BIN} -c "from sysconfig import get_paths; print(get_paths()['platlib'])"
     OUTPUT_VARIABLE PYTHON_INSTALL_PATH_tmp
 )
 string(STRIP ${PYTHON_INSTALL_PATH_tmp} PYTHON_INSTALL_PATH_tmp)
