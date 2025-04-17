@@ -12,11 +12,13 @@ SET(Cython_FOUND FALSE)
 IF (CYTHON_BIN)
     # Try to run Cython, to make sure it works:
     execute_process(
-        COMMAND ${CYTHON_BIN} ${CYTHON_FLAGS} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cython_test.pyx
+        COMMAND bash -c "set -xe; ${CYTHON_BIN} ${CYTHON_FLAGS} ${CMAKE_CURRENT_SOURCE_DIR}/cython_test.pyx"
         RESULT_VARIABLE CYTHON_RESULT
         OUTPUT_VARIABLE CYTHON_OUTPUT
         ERROR_VARIABLE CYTHON_ERROR
-        )
+    )
+    MESSAGE(STATUS "CYTHON_RESULT: ${CYTHON_RESULT}")
+    MESSAGE(STATUS "CYTHON_RESULT: ${CYTHON_RESULT}")
     if (CYTHON_RESULT EQUAL 0)
         # Only if cython exits with the return code 0, we know that all is ok:
         SET(Cython_FOUND TRUE)

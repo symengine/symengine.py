@@ -1,7 +1,7 @@
 set(PYTHON_BIN python CACHE STRING "Python executable name")
 
 execute_process(
-	COMMAND ${PYTHON_BIN} -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())"
+	COMMAND ${PYTHON_BIN} -c "import setuptools; from distutils.sysconfig import get_python_inc; print(get_python_inc())"
 	OUTPUT_VARIABLE PYTHON_SYS_PATH
 	)
 string(STRIP ${PYTHON_SYS_PATH} PYTHON_SYS_PATH)
@@ -16,7 +16,7 @@ set(PYTHON_INSTALL_HEADER_PATH ${PYTHON_INCLUDE_PATH}/symengine
     CACHE BOOL "Python install headers path")
 
 execute_process(
-	COMMAND ${PYTHON_BIN} -c "from distutils.sysconfig import get_config_var; print(get_config_var('LIBDIR'))"
+	COMMAND ${PYTHON_BIN} -c "import setuptools; from distutils.sysconfig import get_config_var; print(get_config_var('LIBDIR'))"
 	OUTPUT_VARIABLE PYTHON_LIB_PATH
 	)
 string(STRIP ${PYTHON_LIB_PATH} PYTHON_LIB_PATH)
@@ -50,7 +50,7 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 endif()
 
 execute_process(
-	COMMAND ${PYTHON_BIN} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())"
+	COMMAND ${PYTHON_BIN} -c "import setuptools; from distutils.sysconfig import get_python_lib; print(get_python_lib())"
 	OUTPUT_VARIABLE PYTHON_INSTALL_PATH_tmp
 	)
 string(STRIP ${PYTHON_INSTALL_PATH_tmp} PYTHON_INSTALL_PATH_tmp)
