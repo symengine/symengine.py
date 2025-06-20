@@ -951,6 +951,9 @@ cdef class Basic(object):
     def __neg__(Basic self not None):
         return c2py(symengine.neg(self.thisptr))
 
+    def __pos__(self):
+        return self
+
     def __abs__(Basic self not None):
         return c2py(symengine.abs(self.thisptr))
 
@@ -1208,9 +1211,6 @@ cdef class Basic(object):
         return float(f)
 
     def __int__(self):
-        return int(float(self))
-
-    def __long__(self):
         return int(float(self))
 
     def __complex__(self):
@@ -1518,9 +1518,6 @@ cdef class BooleanTrue(BooleanAtom):
         return sympy.S.true
 
     def _sage_(self):
-        return True
-
-    def __nonzero__(self):
         return True
 
     def __bool__(self):
@@ -2416,8 +2413,15 @@ class Pow(Expr):
 class Function(Expr):
 
     def __new__(cls, *args, **kwargs):
-        if cls == Function and len(args) == 1:
-            return UndefFunction(args[0])
+        if cls == Function:
+            nargs = len(args)
+            if nargs == 0:
+                raise TypeError("Required at least one argument to Function")
+            elif nargs == 1:
+                return UndefFunction(args[0])
+            elif nargs > 1:
+                raise TypeError(f"Unexpected extra arguments {args[1:]}.")
+
         return super(Function, cls).__new__(cls)
 
     @property
@@ -2837,6 +2841,10 @@ class FunctionSymbol(Function):
             symengine.rcp_static_cast_FunctionSymbol(self.thisptr)
         name = deref(X).get_name().decode("utf-8")
         return str(name)
+
+    @property
+    def name(Basic self):
+        return self.get_name()
 
     def _sympy_(self):
         import sympy
@@ -5123,24 +5131,24 @@ cdef class _Lambdify(object):
             return result
 
 
-cdef double _scipy_callback_lambda_real(int n, double *x, void *user_data) nogil:
+cdef double _scipy_callback_lambda_real(int n, double *x, void *user_data) noexcept nogil:
     cdef symengine.LambdaRealDoubleVisitor* lamb = <symengine.LambdaRealDoubleVisitor *>user_data
     cdef double result
     deref(lamb).call(&result, x)
     return result
 
-cdef void _ctypes_callback_lambda_real(double *output, const double *input, void *user_data) nogil:
+cdef void _ctypes_callback_lambda_real(double *output, const double *input, void *user_data) noexcept nogil:
     cdef symengine.LambdaRealDoubleVisitor* lamb = <symengine.LambdaRealDoubleVisitor *>user_data
     deref(lamb).call(output, input)
 
 IF HAVE_SYMENGINE_LLVM:
-    cdef double _scipy_callback_llvm_real(int n, double *x, void *user_data) nogil:
+    cdef double _scipy_callback_llvm_real(int n, double *x, void *user_data) noexcept nogil:
         cdef symengine.LLVMDoubleVisitor* lamb = <symengine.LLVMDoubleVisitor *>user_data
         cdef double result
         deref(lamb).call(&result, x)
         return result
 
-    cdef void _ctypes_callback_llvm_real(double *output, const double *input, void *user_data) nogil:
+    cdef void _ctypes_callback_llvm_real(double *output, const double *input, void *user_data) noexcept nogil:
         cdef symengine.LLVMDoubleVisitor* lamb = <symengine.LLVMDoubleVisitor *>user_data
         deref(lamb).call(output, input)
 

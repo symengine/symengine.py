@@ -168,9 +168,9 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     void cse(vec_pair &replacements, vec_basic &reduced_exprs, const vec_basic &exprs) nogil except +
 
 cdef extern from "<symengine/subs.h>" namespace "SymEngine":
-    rcp_const_basic msubs (rcp_const_basic &x, const map_basic_basic &x) nogil
-    rcp_const_basic ssubs (rcp_const_basic &x, const map_basic_basic &x) nogil
-    rcp_const_basic xreplace (rcp_const_basic &x, const map_basic_basic &x) nogil
+    rcp_const_basic msubs (rcp_const_basic &x, const map_basic_basic &x) nogil except +
+    rcp_const_basic ssubs (rcp_const_basic &x, const map_basic_basic &x) nogil except +
+    rcp_const_basic xreplace (rcp_const_basic &x, const map_basic_basic &x) nogil except +
 
 cdef extern from "<symengine/derivative.h>" namespace "SymEngine":
     rcp_const_basic diff "SymEngine::sdiff"(rcp_const_basic &arg, rcp_const_basic &x) nogil except +
