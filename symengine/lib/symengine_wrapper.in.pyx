@@ -3998,6 +3998,10 @@ cdef class DenseMatrixBase(MatrixBase):
     def solve(self, b, method='LU'):
         cdef DenseMatrixBase b_ = sympify(b)
         cdef DenseMatrixBase x = self.__class__(b_.nrows(), b_.ncols())
+        if b_.rows != self.rows:
+            raise ValueError("Unexpected number of rows in b")
+        if x.rows != self.cols:
+            raise ValueError("Unexpected number of rows in x")
 
         if method.upper() == 'LU':
             ## solve() method of DenseMatrixBase uses LU factorization
