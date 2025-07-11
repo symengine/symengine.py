@@ -292,7 +292,7 @@ PyObject* pickle_loads(const std::string &pickle_str) {
     return obj;
 }
 
-RCP<const Basic> load_basic(cereal::PortableBinaryInputArchive &ar, RCP<const Symbol> &)
+RCP<const Basic> load_basic(RCPBasicAwareInputArchive<cereal::PortableBinaryInputArchive> &ar, RCP<const Symbol> &)
 {
     bool is_pysymbol;
     bool store_pickle;
@@ -324,7 +324,7 @@ std::string pickle_dumps(const PyObject * obj) {
     return std::string(buffer, size);
 }
 
-void save_basic(cereal::PortableBinaryOutputArchive &ar, const Symbol &b)
+void save_basic(RCPBasicAwareOutputArchive<cereal::PortableBinaryOutputArchive> &ar, const Symbol &b)
 {
     bool is_pysymbol = is_a_sub<PySymbol>(b);
     ar(is_pysymbol);
@@ -344,7 +344,7 @@ std::string wrapper_dumps(const Basic &x)
     std::ostringstream oss;
     unsigned short major = SYMENGINE_MAJOR_VERSION;
     unsigned short minor = SYMENGINE_MINOR_VERSION;
-    cereal::PortableBinaryOutputArchive{oss}(major, minor,
+    RCPBasicAwareOutputArchive<cereal::PortableBinaryOutputArchive>{oss}(major, minor,
                                              x.rcp_from_this());
     return oss.str();
 }
@@ -354,7 +354,7 @@ RCP<const Basic> wrapper_loads(const std::string &serialized)
     unsigned short major, minor;
     RCP<const Basic> obj;
     std::istringstream iss(serialized);
-    cereal::PortableBinaryInputArchive iarchive{iss};
+    RCPBasicAwareInputArchive<cereal::PortableBinaryInputArchive> iarchive{iss};
     iarchive(major, minor);
     if (major != SYMENGINE_MAJOR_VERSION or minor != SYMENGINE_MINOR_VERSION) {
         throw SerializationError(StreamFmt()

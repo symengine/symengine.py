@@ -22,26 +22,36 @@ execute_process(
 string(STRIP ${PYTHON_LIB_PATH} PYTHON_LIB_PATH)
 
 execute_process(
-	COMMAND ${PYTHON_BIN} -c "import sys; print(sys.prefix)"
-	OUTPUT_VARIABLE PYTHON_PREFIX_PATH
-	)
+    COMMAND ${PYTHON_BIN} -c "import sys; print(sys.prefix)"
+    OUTPUT_VARIABLE PYTHON_PREFIX_PATH
+)
 
 string(STRIP ${PYTHON_PREFIX_PATH} PYTHON_PREFIX_PATH)
 
 execute_process(
-	COMMAND ${PYTHON_BIN} -c "import sys; print('%s.%s' % sys.version_info[:2])"
+    COMMAND ${PYTHON_BIN} -c "import sys; print('%s.%s' % sys.version_info[:2])"
     OUTPUT_VARIABLE PYTHON_VERSION
-	)
+)
 string(STRIP ${PYTHON_VERSION} PYTHON_VERSION)
 message(STATUS "Python version: ${PYTHON_VERSION}")
 
 string(REPLACE "." "" PYTHON_VERSION_WITHOUT_DOTS ${PYTHON_VERSION})
 
+execute_process(
+    COMMAND ${PYTHON_BIN} -c "import sysconfig;print(bool(sysconfig.get_config_var('Py_GIL_DISABLED')))"
+    OUTPUT_VARIABLE PY_GIL_DISABLED
+)
+string(STRIP ${PY_GIL_DISABLED} PY_GIL_DISABLED)
+
+if ("${PY_GIL_DISABLED}" STREQUAL "True")
+  set (PY_THREAD "t")
+endif()
+
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
   FIND_LIBRARY(PYTHON_LIBRARY NAMES
-        python${PYTHON_VERSION}
+        python${PYTHON_VERSION}${PY_THREAD}
         python${PYTHON_VERSION}m
-        python${PYTHON_VERSION_WITHOUT_DOTS}
+        python${PYTHON_VERSION_WITHOUT_DOTS}${PY_THREAD}
       PATHS ${PYTHON_LIB_PATH} ${PYTHON_PREFIX_PATH}/lib ${PYTHON_PREFIX_PATH}/libs
       PATH_SUFFIXES ${CMAKE_LIBRARY_ARCHITECTURE}
       NO_DEFAULT_PATH
@@ -50,9 +60,9 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 endif()
 
 execute_process(
-    COMMAND ${PYTHON_BIN} -c "from sysconfig import get_paths; print(get_paths()['purelib'])"
-	OUTPUT_VARIABLE PYTHON_INSTALL_PATH_tmp
-	)
+    COMMAND ${PYTHON_BIN} -c "from sysconfig import get_paths; print(get_paths()['platlib'])"
+    OUTPUT_VARIABLE PYTHON_INSTALL_PATH_tmp
+)
 string(STRIP ${PYTHON_INSTALL_PATH_tmp} PYTHON_INSTALL_PATH_tmp)
 set(PYTHON_INSTALL_PATH ${PYTHON_INSTALL_PATH_tmp}
     CACHE BOOL "Python install path")
@@ -120,7 +130,7 @@ macro(ADD_PYTHON_LIBRARY name)
         configure_file(${CMAKE_SOURCE_DIR}/cmake/version_script.txt
             ${CMAKE_CURRENT_BINARY_DIR}/version_script_${name}.txt @ONLY)
         set_property(TARGET ${name} APPEND_STRING PROPERTY
-            LINK_FLAGS " -Wl,--version-script=${CMAKE_CURRENT_BINARY_DIR}/version_script_${name}.txt")
+            LINK_FLAGS " \"-Wl,--version-script=${CMAKE_CURRENT_BINARY_DIR}/version_script_${name}.txt\"")
     ELSE()
         add_library(${name} SHARED ${ARGN})
     ENDIF()
@@ -129,5 +139,9 @@ macro(ADD_PYTHON_LIBRARY name)
     IF(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
         target_link_libraries(${name} ${PYTHON_LIBRARY})
         set_target_properties(${name} PROPERTIES SUFFIX ".pyd")
+        IF("${PY_GIL_DISABLED}" STREQUAL "True")
+            target_compile_definitions(${name} PRIVATE Py_GIL_DISABLED=1)
+        ENDIF()
     ENDIF()
+
 endmacro(ADD_PYTHON_LIBRARY)

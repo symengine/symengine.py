@@ -27,6 +27,10 @@ def test_relationals():
     assert Ge(1, 1) == true
     assert Eq(I, 2) == false
     assert Ne(I, 2) == true
+    eq = Eq(x, y)
+    assert eq.func(*eq.args) == eq
+    ne = Ne(x, y)
+    assert ne.func(*ne.args) == ne
 
 
 def test_rich_cmp():
@@ -118,4 +122,3 @@ def test_Contains():
     assert Contains(x, Interval(1, 1)) != false
     assert Contains(oo, Interval(-oo, oo)) == false
     assert Contains(-oo, Interval(-oo, oo)) == false
-
