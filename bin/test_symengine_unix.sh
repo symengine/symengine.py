@@ -2,10 +2,10 @@ export PYTHON_SOURCE_DIR=`pwd`
 export TEST_CPP="no"
 export MAKEFLAGS="-j2"
 
-git clone -b update-CI https://github.com/bjodah/symengine symengine-cpp
+git clone https://github.com/symengine/symengine symengine-cpp
 cd symengine-cpp
 export SOURCE_DIR=`pwd`
-#git checkout `cat ../symengine_version.txt`
+git checkout `cat ../symengine_version.txt`
 cd ..
 
 # Setup travis for C++ library
