@@ -12,34 +12,34 @@ jobs:
             WITH_BFD: yes
             PYTHON_VERSION: '3.12'
             TEST_SYMPY: yes
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Debug
             WITH_BFD: yes
             PYTHON_VERSION: '3.11'
             TEST_SYMPY: yes
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Debug
             WITH_BFD: yes
             PYTHON_VERSION: '3.10'
             TEST_SYMPY: yes
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Debug
             WITH_BFD: yes
             PYTHON_VERSION: '3.9'
             TEST_SYMPY: yes
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Release
             PYTHON_VERSION: '3.13'
             BUILD_SHARED_LIBS: yes
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Release
@@ -47,25 +47,25 @@ jobs:
             WITH_MPFR: yes
             INTEGER_CLASS: gmpxx
             WITH_NUMPY: no
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Release
             PYTHON_VERSION: '3.13'
             WITH_MPC: yes
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Release
             WITH_MPFR: yes
             PYTHON_VERSION: '3.13'
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Release
             PYTHON_VERSION: '3.9'
             WITH_MPC: yes
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Release
@@ -73,27 +73,27 @@ jobs:
             WITH_MPC: yes
             INTEGER_CLASS: flint
             WITH_FLINT: yes
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: gcc
 
           #- BUILD_TYPE: Debug
           #  PYTHON_VERSION: '3.9'
           #  WITH_BFD: yes
           #  WITH_PIRANHA: yes
-          #  OS: ubuntu-20.04
+          #  OS: ubuntu-22.04
           #  CC: gcc
 
           - BUILD_TYPE: Debug
             PYTHON_VERSION: '3.13'
             WITH_BFD: yes
             BUILD_SHARED_LIBS: yes
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: clang
     
           - BUILD_TYPE: Release
             PYTHON_VERSION: '3.13'
             WITH_NUMPY: yes
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: clang
  
           - BUILD_TYPE: Debug
@@ -134,7 +134,7 @@ jobs:
 
           - BUILD_TYPE: Release
             PYTHON_VERSION: '3.11'
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             WITH_MPC: yes
             WITH_MPFR: yes
             WITH_FLINT: yes
