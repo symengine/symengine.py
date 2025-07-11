@@ -156,6 +156,7 @@ def test_dummy():
     x2 = Symbol('x')
     xdummy1 = Dummy('x')
     xdummy2 = Dummy('x')
+    assert xdummy1.dummy_index != xdummy2.dummy_index  # maybe test using "less than"?
 
     assert x1 == x2
     assert x1 != xdummy1

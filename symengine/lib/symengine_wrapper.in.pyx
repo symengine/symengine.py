@@ -1355,6 +1355,12 @@ cdef class Dummy(Symbol):
     def func(self):
         return self.__class__
 
+    @property
+    def dummy_index(self):
+        cdef RCP[const symengine.Dummy] this = \
+            symengine.rcp_static_cast_Dummy(self.thisptr)
+        cdef size_t index = deref(this).get_index()
+        return index
 
 def symarray(prefix, shape, **kwargs):
     """ Creates an nd-array of symbols
