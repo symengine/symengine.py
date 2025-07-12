@@ -146,6 +146,16 @@ jobs:
             CC: gcc
 
     steps:
+
+    - uses: conda-incubator/setup-miniconda@v3
+      if: matrix.MSYS_ENV == ''
+      with:
+        activate-environment: symengine
+        channel-priority: strict
+        architecture: x86_64
+        channels: conda-forge
+        conda-remove-defaults: "true"
+
     - name: Checkout code
       uses: actions/checkout@v4
 

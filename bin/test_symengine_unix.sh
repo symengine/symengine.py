@@ -10,7 +10,7 @@ cd ..
 
 # Setup travis for C++ library
 cd $SOURCE_DIR
-source bin/test_symengine_unix.sh
+source bin/test_symengine.sh
 
 # Setup travis for Python wrappers
 cd $PYTHON_SOURCE_DIR
