@@ -133,6 +133,7 @@ cdef extern from "<symengine/basic.h>" namespace "SymEngine":
     RCP[const Rational] rcp_static_cast_Rational "SymEngine::rcp_static_cast<const SymEngine::Rational>"(rcp_const_basic &b) nogil
     RCP[const Complex] rcp_static_cast_Complex "SymEngine::rcp_static_cast<const SymEngine::Complex>"(rcp_const_basic &b) nogil
     RCP[const Number] rcp_static_cast_Number "SymEngine::rcp_static_cast<const SymEngine::Number>"(rcp_const_basic &b) nogil
+    RCP[const Dummy] rcp_static_cast_Dummy "SymEngine::rcp_static_cast<const SymEngine::Dummy>"(rcp_const_basic &b) nogil
     RCP[const Add] rcp_static_cast_Add "SymEngine::rcp_static_cast<const SymEngine::Add>"(rcp_const_basic &b) nogil
     RCP[const Mul] rcp_static_cast_Mul "SymEngine::rcp_static_cast<const SymEngine::Mul>"(rcp_const_basic &b) nogil
     RCP[const Pow] rcp_static_cast_Pow "SymEngine::rcp_static_cast<const SymEngine::Pow>"(rcp_const_basic &b) nogil
@@ -180,7 +181,7 @@ cdef extern from "<symengine/symbol.h>" namespace "SymEngine":
         Symbol(string name) nogil
         string get_name() nogil
     cdef cppclass Dummy(Symbol):
-        pass
+        size_t get_index()
 
 cdef extern from "<symengine/number.h>" namespace "SymEngine":
     cdef cppclass Number(Basic):

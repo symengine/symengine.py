@@ -1343,9 +1343,13 @@ cdef class Dummy(Symbol):
         else:
             self.thisptr = symengine.make_rcp_Dummy(name.encode("utf-8"))
 
+    @property
+    def name(self):
+        return self.__str__()[1:]
+
     def _sympy_(self):
         import sympy
-        return sympy.Dummy(str(self)[1:])
+        return sympy.Dummy(name=self.name, dummy_index=self.dummy_index)
 
     @property
     def is_Dummy(self):
@@ -1355,6 +1359,12 @@ cdef class Dummy(Symbol):
     def func(self):
         return self.__class__
 
+    @property
+    def dummy_index(self):
+        cdef RCP[const symengine.Dummy] this = \
+            symengine.rcp_static_cast_Dummy(self.thisptr)
+        cdef size_t index = deref(this).get_index()
+        return index
 
 def symarray(prefix, shape, **kwargs):
     """ Creates an nd-array of symbols
