@@ -12,34 +12,34 @@ jobs:
             WITH_BFD: yes
             PYTHON_VERSION: '3.12'
             TEST_SYMPY: yes
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Debug
             WITH_BFD: yes
             PYTHON_VERSION: '3.11'
             TEST_SYMPY: yes
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Debug
             WITH_BFD: yes
             PYTHON_VERSION: '3.10'
             TEST_SYMPY: yes
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Debug
             WITH_BFD: yes
             PYTHON_VERSION: '3.9'
             TEST_SYMPY: yes
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Release
             PYTHON_VERSION: '3.13'
             BUILD_SHARED_LIBS: yes
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Release
@@ -47,25 +47,25 @@ jobs:
             WITH_MPFR: yes
             INTEGER_CLASS: gmpxx
             WITH_NUMPY: no
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Release
             PYTHON_VERSION: '3.13'
             WITH_MPC: yes
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Release
             WITH_MPFR: yes
             PYTHON_VERSION: '3.13'
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Release
             PYTHON_VERSION: '3.9'
             WITH_MPC: yes
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Release
@@ -73,39 +73,41 @@ jobs:
             WITH_MPC: yes
             INTEGER_CLASS: flint
             WITH_FLINT: yes
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: gcc
 
           #- BUILD_TYPE: Debug
           #  PYTHON_VERSION: '3.9'
           #  WITH_BFD: yes
           #  WITH_PIRANHA: yes
-          #  OS: ubuntu-20.04
+          #  OS: ubuntu-22.04
           #  CC: gcc
 
           - BUILD_TYPE: Debug
             PYTHON_VERSION: '3.13'
             WITH_BFD: yes
             BUILD_SHARED_LIBS: yes
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: clang
     
           - BUILD_TYPE: Release
             PYTHON_VERSION: '3.13'
             WITH_NUMPY: yes
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             CC: clang
  
           - BUILD_TYPE: Debug
-            PYTHON_VERSION: '3.10'
+            PYTHON_VERSION: '3.12'
             WITH_SYMPY: yes
-            WITH_LLVM: 14
+            WITH_LLVM: 18
             WITH_SCIPY: yes
+            WITH_LATEST_GCC: yes
             INTEGER_CLASS: 'boostmp'
             PYTEST_ADDOPTS: '-k "not integer_nthroot"'
-            OS: ubuntu-22.04
-            EXTRA_APT_REPOSITORY: 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-14 main'
-            EXTRA_APT_PACKAGES: 'llvm-14'
+            OS: ubuntu-24.04
+            CC: gcc  # ubuntu nobel uses gcc-13
+            #EXTRA_APT_REPOSITORY: 'deb http://apt.llvm.org/jammy/ llvm-toolchain-nobel-18 main'
+            EXTRA_APT_PACKAGES: 'llvm-18'
 
           - BUILD_TYPE: Debug
             PYTHON_VERSION: '3.13'
@@ -133,7 +135,7 @@ jobs:
 
           - BUILD_TYPE: Release
             PYTHON_VERSION: '3.11'
-            OS: ubuntu-20.04
+            OS: ubuntu-22.04
             WITH_MPC: yes
             WITH_MPFR: yes
             WITH_FLINT: yes
@@ -145,11 +147,21 @@ jobs:
             CC: gcc
 
     steps:
+
+    - uses: conda-incubator/setup-miniconda@v3
+      if: matrix.MSYS_ENV == ''
+      with:
+        activate-environment: symengine
+        channel-priority: strict
+        architecture: x86_64
+        channels: conda-forge
+        conda-remove-defaults: "true"
+
     - name: Checkout code
       uses: actions/checkout@v4
 
     - name: Build and test symengine
-      shell: bash
+      shell: bash -el {0}
       run: |
         source bin/test_symengine_unix.sh
       env:

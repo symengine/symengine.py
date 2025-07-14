@@ -34,4 +34,3 @@ if [[ "${WITH_SYMPY}" != "no" ]]; then
 fi
 
 conda clean --all
-source activate $our_install_dir;
