@@ -97,6 +97,7 @@ def test_is_conditions():
     assert i.is_complex
 
     assert pi.is_number
+    assert pi.is_Atom
 
 
 def test_perfect_power():
