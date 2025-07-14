@@ -101,6 +101,7 @@ jobs:
             WITH_SYMPY: yes
             WITH_LLVM: 18
             WITH_SCIPY: yes
+            WITH_LATEST_GCC: yes
             INTEGER_CLASS: 'boostmp'
             PYTEST_ADDOPTS: '-k "not integer_nthroot"'
             OS: ubuntu-24.04
