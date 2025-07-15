@@ -1398,6 +1398,10 @@ cdef class Constant(Expr):
     def is_number(self):
         return True
 
+    @property
+    def is_Atom(self):
+        return True
+
     def _sympy_(self):
         raise Exception("Unknown Constant")
 
