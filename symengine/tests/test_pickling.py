@@ -1,4 +1,4 @@
-from symengine import symbols, sin, sinh, have_numpy, have_llvm, cos, Symbol
+from symengine import symbols, sin, sinh, have_numpy, have_llvm, cos, Symbol, Dummy
 from symengine.test_utilities import raises
 import pickle
 import unittest
@@ -57,3 +57,19 @@ def test_llvm_double():
     ll = pickle.loads(ss)
     inp = [1, 2, 3]
     assert np.allclose(l(inp), ll(inp))
+
+
+def _check_pickling_roundtrip(arg):
+    s2 = pickle.dumps(arg)
+    arg2 = pickle.loads(s2)
+    assert arg == arg2
+    s3 = pickle.dumps(arg2)
+    arg3 = pickle.loads(s3)
+    assert arg == arg3
+
+
+def test_pickling_roundtrip():
+    x, y, z = symbols('x y z')
+    _check_pickling_roundtrip(x+y)
+    _check_pickling_roundtrip(Dummy('d'))
+    _check_pickling_roundtrip(Dummy('d') - z)
