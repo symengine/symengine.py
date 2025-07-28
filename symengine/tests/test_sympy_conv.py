@@ -1,6 +1,6 @@
 from symengine import (Symbol, Integer, sympify, SympifyError, log,
         function_symbol, I, E, pi, oo, zoo, nan, true, false,
-        exp, gamma, have_mpfr, have_mpc, DenseMatrix, sin, cos, tan, cot,
+        exp, gamma, have_mpfr, have_mpc, DenseMatrix, Dummy, sin, cos, tan, cot,
         csc, sec, asin, acos, atan, acot, acsc, asec, sinh, cosh, tanh, coth,
         asinh, acosh, atanh, acoth, atan2, Add, Mul, Pow, diff, GoldenRatio,
         Catalan, EulerGamma, UnevaluatedExpr, RealDouble)
@@ -833,3 +833,24 @@ def test_conv_large_integers():
     if have_sympy:
         c = a._sympy_()
         d = sympify(c)
+
+
+def _check_sympy_roundtrip(arg):
+    arg_sy1 = sympy.sympify(arg)
+    arg_se2 = sympify(arg_sy1)
+    assert arg == arg_se2
+    arg_sy2 = sympy.sympify(arg_se2)
+    assert arg_sy2 == arg_sy1
+    arg_se3 = sympify(arg_sy2)
+    assert arg_se3 == arg
+
+
+@unittest.skipIf(not have_sympy, "SymPy not installed")
+def test_sympy_roundtrip():
+    x = Symbol("x")
+    y = Symbol("y")
+    d = Dummy("d")
+    _check_sympy_roundtrip(x)
+    _check_sympy_roundtrip(x+y)
+    _check_sympy_roundtrip(x**y)
+    _check_sympy_roundtrip(d)
