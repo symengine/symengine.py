@@ -37,3 +37,8 @@ def test_Basic__has():
     assert e.has(xp3)
     assert e.has(ym4)
     assert not e.has(y-5)
+
+    assert (x + oo).has(oo)
+    assert (x - oo).has(-oo)
+    assert not (x + oo).has(-oo)
+    #assert not (x - oo).has(oo) <-- not sure we want to test explicitly for "x + NegativeInfinity"
