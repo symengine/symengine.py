@@ -19,7 +19,7 @@ from .lib.symengine_wrapper import (
     Max, Min, DenseMatrix, Matrix,
     ImmutableMatrix, ImmutableDenseMatrix, MutableDenseMatrix,
     MatrixBase, Basic, DictBasic, symarray, series, diff, zeros,
-    eye, diag, ones, Derivative, Subs, expand, has_symbol,
+    eye, diag, ones, Derivative, Subs, expand, has_basic, has_symbol,
     UndefFunction, Function, UnevaluatedExpr, latex,
     have_numpy, true, false, Equality, Unequality, GreaterThan,
     LessThan, StrictGreaterThan, StrictLessThan, Eq, Ne, Ge, Le,

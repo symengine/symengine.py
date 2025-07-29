@@ -1187,8 +1187,11 @@ cdef class Basic(object):
         cdef Basic _n = sympify(n)
         return c2py(symengine.coeff(deref(self.thisptr), deref(_x.thisptr), deref(_n.thisptr)))
 
-    def has(self, *symbols):
-        return any([has_symbol(self, symbol) for symbol in symbols])
+    def has(self, *args):
+        for arg in args:
+            if has_basic(self, arg):
+                return True
+        return False
 
     def args_as_sage(Basic self):
         cdef symengine.vec_basic Y = deref(self.thisptr).get_args()
@@ -4944,6 +4947,11 @@ def powermod_list(a, b, m):
     for i in range(v.size()):
         s.append(c2py(<rcp_const_basic>(v[i])))
     return s
+
+def has_basic(obj, looking_for=None):
+    cdef Basic b = _sympify(obj)
+    cdef Basic s = _sympify(looking_for)
+    return symengine.has_basic(deref(b.thisptr), deref(s.thisptr))
 
 def has_symbol(obj, symbol=None):
     cdef Basic b = _sympify(obj)

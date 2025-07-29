@@ -1,6 +1,6 @@
 from symengine.test_utilities import raises
 
-from symengine import Integer, I, S, Symbol, pi, Rational
+from symengine import Integer, I, S, Symbol, pi, Rational, has_basic
 from symengine.lib.symengine_wrapper import (perfect_power, is_square, integer_nthroot)
 
 
@@ -98,6 +98,10 @@ def test_is_conditions():
 
     assert pi.is_number
     assert pi.is_Atom
+
+
+def test_has_basic():
+    assert has_basic(3 + pi, pi)
 
 
 def test_perfect_power():
