@@ -769,6 +769,7 @@ cdef extern from "<symengine/prime_sieve.h>" namespace "SymEngine":
         unsigned next_prime() nogil
 
 cdef extern from "<symengine/visitor.h>" namespace "SymEngine":
+    bool has_basic(const Basic &b, const Basic &x) nogil except +
     bool has_symbol(const Basic &b, const Basic &x) nogil except +
     rcp_const_basic coeff(const Basic &b, const Basic &x, const Basic &n) nogil except +
     set_basic free_symbols(const Basic &b) nogil except +

@@ -26,3 +26,19 @@ def test_as_powers_dict():
     assert (x*(1/Integer(2))**y).as_powers_dict() == {x: Integer(1), Integer(2): -y}
     assert (2**y).as_powers_dict() == {2: y}
     assert (2**-y).as_powers_dict() == {2: -y}
+
+
+def test_Basic__has():
+    x = Symbol('x')
+    y = Symbol('y')
+    xp3 = (x+3)
+    ym4 = (y-4)
+    e = xp3**ym4
+    assert e.has(xp3)
+    assert e.has(ym4)
+    assert not e.has(y-5)
+
+    assert (x + oo).has(oo)
+    assert (x - oo).has(-oo)
+    assert not (x + oo).has(-oo)
+    #assert not (x - oo).has(oo) <-- not sure we want to test explicitly for "x + NegativeInfinity"
