@@ -86,6 +86,7 @@ def test_derivative():
 
     fxy = Function("f")(x, y)
     assert (1+fxy).has(fxy)
+    assert (1+fxy).has(1)
     g = Derivative(Function("f")(x, y), x, 2, y, 1)
     assert g == fxy.diff(x, x, y)
     assert g == fxy.diff(y, 1, x, 2)
