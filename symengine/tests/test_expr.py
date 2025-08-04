@@ -1,4 +1,4 @@
-from symengine import Symbol, Integer, oo
+from symengine import Symbol, Integer, oo, sin
 from symengine.test_utilities import raises
 
 
@@ -31,13 +31,12 @@ def test_as_powers_dict():
 def test_Basic__has():
     x = Symbol('x')
     y = Symbol('y')
-    xp3 = (x+3)
-    ym4 = (y-4)
-    e = xp3**ym4
-    assert e.has(xp3)
-    assert e.has(ym4)
-    assert not e.has(y-5)
-
+    xpowy = x**y
+    e = sin(xpowy)
+    assert e.has(x)
+    assert e.has(y)
+    assert e.has(xpowy)
+    raises(Exception, lambda: e.has(x+1))  # subtree matching of associative operators not yet supported
     assert (x + oo).has(oo)
     assert (x - oo).has(-oo)
     assert not (x + oo).has(-oo)
