@@ -15,7 +15,7 @@ cd symengine-*
 python3 setup.py install build_ext --inplace --symengine-dir=$our_install_dir
 
 if [[ "${SYMENGINE_PY_LIMITED_API:-}" != "" ]]; then
-  python3 -m abi3audit --assume-minimum-abi3 {SYMENGINE_PY_LIMITED_API} symengine/lib/symengine_wrapper.abi3.so
+  python3 -m abi3audit --assume-minimum-abi3 ${SYMENGINE_PY_LIMITED_API} symengine/lib/symengine_wrapper.abi3.so
 fi
 
 # Test python wrappers

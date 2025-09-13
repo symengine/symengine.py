@@ -3,11 +3,6 @@ import os
 import subprocess
 import sys
 import platform
-from setuptools import setup
-from setuptools.command.install import install as _install
-from setuptools.command.build_ext import build_ext as _build_ext
-from setuptools.command.bdist_wheel import bdist_wheel as _bdist_wheel
-from setuptools.command.build import build as _build
 
 # Make sure the system has the right Python version.
 if sys.version_info[:2] < (3, 9):
@@ -26,6 +21,37 @@ def _get_limited_api():
         return version
 
 limited_api = _get_limited_api()
+
+# use setuptools by default as per the official advice at:
+# packaging.python.org/en/latest/current.html#packaging-tool-recommendations
+use_setuptools = True
+# set the environment variable USE_DISTUTILS=True to force the use of distutils
+use_distutils = getenv('USE_DISTUTILS')
+if use_distutils is not None:
+    if use_distutils.lower() == 'true':
+        use_setuptools = False
+    else:
+        print("Value {} for USE_DISTUTILS treated as False".
+              format(use_distutils))
+
+if use_setuptools:
+    try:
+        from setuptools import setup
+        from setuptools.command.install import install as _install
+        from setuptools.command.build_ext import build_ext as _build_ext
+    except ImportError:
+        use_setuptools = False
+    else:
+        try:
+            from setuptools.command.build import build as _build
+        except ImportError:
+            from distutils.command.build import build as _build
+
+if not use_setuptools:
+    from distutils.core import setup
+    from distutils.command.install import install as _install
+    from distutils.command.build_ext import build_ext as _build_ext
+    from distutils.command.build import build as _build
 
 cmake_opts = [("PYTHON_BIN", sys.executable),
               ("CMAKE_INSTALL_RPATH_USE_LINK_PATH", "yes")]
@@ -187,20 +213,27 @@ class InstallWithCmake(_install):
         _install.run(self)
         self.cmake_install()
 
-class BdistWheelWithCmake(_bdist_wheel):
-    def finalize_options(self):
-        _bdist_wheel.finalize_options(self)
-        self.root_is_pure = False
-        if limited_api:
-            self.py_limited_api = f"cp{"".join(str(c) for c in limited_api)}"
-
 cmdclass={
-    'build': BuildWithCmake,
-    'build_ext': BuildExtWithCmake,
-    'install': InstallWithCmake,
-    'bdist_wheel': BdistWheelWithCmake,
-}
+          'build': BuildWithCmake,
+          'build_ext': BuildExtWithCmake,
+          'install': InstallWithCmake,
+          }
 
+try:
+    try:
+        from setuptools.command.bdist_wheel import bdist_wheel
+    except ImportError:
+        from wheel.bdist_wheel import bdist_wheel
+
+    class BdistWheelWithCmake(bdist_wheel):
+        def finalize_options(self):
+            bdist_wheel.finalize_options(self)
+            self.root_is_pure = False
+            if limited_api:
+                self.py_limited_api = "cp" + "".join(str(c) for c in limited_api)
+    cmdclass["bdist_wheel"] = BdistWheelWithCmake
+except ImportError:
+    pass
 
 long_description = '''
 SymEngine is a standalone fast C++ symbolic manipulation library.
@@ -215,13 +248,13 @@ and dependencies of wheels
 setup(name="symengine",
       version="0.14.1",
       description="Python library providing wrappers to SymEngine",
-      setup_requires=['cython>=0.29.24', 'setuptools>=70.1.0'],
+      setup_requires=['cython>=0.29.24', 'setuptools'],
       long_description=long_description,
       author="SymEngine development team",
       author_email="symengine@googlegroups.com",
       license="MIT",
       url="https://github.com/symengine/symengine.py",
-      python_requires=">=3.9,<4",
+      python_requires='>=3.9,<4',
       zip_safe=False,
       packages=[],
       cmdclass = cmdclass,
