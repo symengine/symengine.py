@@ -86,6 +86,7 @@ def test_derivative():
 
     fxy = Function("f")(x, y)
     assert (1+fxy).has(fxy)
+    assert (1+fxy).has(1)
     g = Derivative(Function("f")(x, y), x, 2, y, 1)
     assert g == fxy.diff(x, x, y)
     assert g == fxy.diff(y, 1, x, 2)
@@ -101,6 +102,18 @@ def test_derivative():
     assert i == fxy.diff(y, x)
     assert i == fxy.diff(y, 1, x, 1)
     assert i == fxy.diff(y, 1, x)
+
+
+def test_function():
+    x = Symbol("x")
+    fx = Function("f")(x)
+    assert fx == function_symbol("f", x)
+
+    raises(TypeError, lambda: Function("f", "x"))
+    raises(TypeError, lambda: Function("f", x))
+    raises(TypeError, lambda: Function())
+
+    assert fx.name == "f"
 
 
 def test_abs():

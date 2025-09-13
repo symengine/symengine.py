@@ -5,8 +5,8 @@ import sys
 import platform
 
 # Make sure the system has the right Python version.
-if sys.version_info[:2] < (3, 8):
-    print("SymEngine requires Python 3.8 or newer. "
+if sys.version_info[:2] < (3, 9):
+    print("SymEngine requires Python 3.9 or newer. "
           "Python %d.%d detected" % sys.version_info[:2])
     sys.exit(-1)
 
@@ -119,7 +119,7 @@ class BuildExtWithCmake(_build_ext):
 
         cmake_cmd = ["cmake", source_dir,
             "-DCMAKE_BUILD_TYPE=" + cmake_build_type[0],
-            "-DSYMENGINE_INSTALL_PY_FILES=OFF",
+            "-DSYMENGINE_INSTALL_PY_FILES=ON",
         ]
         cmake_cmd.extend(process_opts(cmake_opts))
         if not path.exists(path.join(build_dir, "CMakeCache.txt")):
@@ -231,17 +231,17 @@ and dependencies of wheels
 '''
 
 setup(name="symengine",
-      version="0.11.0",
+      version="0.14.1",
       description="Python library providing wrappers to SymEngine",
-      setup_requires=['cython>=0.29.24'],
+      setup_requires=['cython>=0.29.24', 'setuptools'],
       long_description=long_description,
       author="SymEngine development team",
       author_email="symengine@googlegroups.com",
       license="MIT",
       url="https://github.com/symengine/symengine.py",
-      python_requires='>=3.8,<4',
+      python_requires='>=3.9,<4',
       zip_safe=False,
-      packages=['symengine', 'symengine.lib', 'symengine.tests'],
+      packages=[],
       cmdclass = cmdclass,
       classifiers=[
         'License :: OSI Approved :: MIT License',
@@ -250,10 +250,10 @@ setup(name="symengine",
         'Topic :: Scientific/Engineering',
         'Topic :: Scientific/Engineering :: Mathematics',
         'Topic :: Scientific/Engineering :: Physics',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
         ]
       )

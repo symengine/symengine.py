@@ -278,10 +278,10 @@ def sympy2symengine(a, raise_error=False):
     """
     import sympy
     from sympy.core.function import AppliedUndef as sympy_AppliedUndef
-    if isinstance(a, sympy.Symbol):
+    if isinstance(a, sympy.Dummy):
+        return Dummy(a.name, a.dummy_index)
+    elif isinstance(a, sympy.Symbol):
         return Symbol(a.name)
-    elif isinstance(a, sympy.Dummy):
-        return Dummy(a.name)
     elif isinstance(a, sympy.Mul):
         return mul(*[sympy2symengine(x, raise_error) for x in a.args])
     elif isinstance(a, sympy.Add):
@@ -951,6 +951,9 @@ cdef class Basic(object):
     def __neg__(Basic self not None):
         return c2py(symengine.neg(self.thisptr))
 
+    def __pos__(self):
+        return self
+
     def __abs__(Basic self not None):
         return c2py(symengine.abs(self.thisptr))
 
@@ -1184,8 +1187,11 @@ cdef class Basic(object):
         cdef Basic _n = sympify(n)
         return c2py(symengine.coeff(deref(self.thisptr), deref(_x.thisptr), deref(_n.thisptr)))
 
-    def has(self, *symbols):
-        return any([has_symbol(self, symbol) for symbol in symbols])
+    def has(self, *args):
+        for arg in args:
+            if has_basic(self, arg):
+                return True
+        return False
 
     def args_as_sage(Basic self):
         cdef symengine.vec_basic Y = deref(self.thisptr).get_args()
@@ -1209,9 +1215,6 @@ cdef class Basic(object):
 
     def __int__(self):
         return int(float(self))
-
-    def __long__(self):
-        return long(float(self))
 
     def __complex__(self):
         f = self.n(real=False)
@@ -1301,10 +1304,10 @@ cdef class Symbol(Expr):
         return sympy.Symbol(str(self))
 
     def __reduce__(self):
-        if type(self) == Symbol:
+        if type(self) in (Symbol, Dummy):
             return Basic.__reduce__(self)
         else:
-            raise NotImplementedError("pickling for Symbol subclass not implemented")
+            raise NotImplementedError("pickling for subclass of Symbol or Dummy not implemented")
 
     def _sage_(self):
         import sage.all as sage
@@ -1337,15 +1340,20 @@ cdef class Symbol(Expr):
 
 cdef class Dummy(Symbol):
 
-    def __init__(Basic self, name=None, *args, **kwargs):
-        if name is None:
-            self.thisptr = symengine.make_rcp_Dummy()
+    def __init__(Basic self, name=None, dummy_index=None, *args, **kwargs):
+        cdef size_t index
+        if dummy_index is None:
+            if name is None:
+                self.thisptr = symengine.make_rcp_Dummy()
+            else:
+                self.thisptr = symengine.make_rcp_Dummy(name.encode("utf-8"))
         else:
-            self.thisptr = symengine.make_rcp_Dummy(name.encode("utf-8"))
+            index = dummy_index
+            self.thisptr = symengine.make_rcp_Dummy(name.encode("utf-8"), index)
 
     def _sympy_(self):
         import sympy
-        return sympy.Dummy(str(self)[1:])
+        return sympy.Dummy(name=self.name, dummy_index=self.dummy_index)
 
     @property
     def is_Dummy(self):
@@ -1355,6 +1363,12 @@ cdef class Dummy(Symbol):
     def func(self):
         return self.__class__
 
+    @property
+    def dummy_index(self):
+        cdef RCP[const symengine.Dummy] this = \
+            symengine.rcp_static_cast_Dummy(self.thisptr)
+        cdef size_t index = deref(this).get_index()
+        return index
 
 def symarray(prefix, shape, **kwargs):
     """ Creates an nd-array of symbols
@@ -1386,6 +1400,10 @@ cdef class Constant(Expr):
 
     @property
     def is_number(self):
+        return True
+
+    @property
+    def is_Atom(self):
         return True
 
     def _sympy_(self):
@@ -1520,9 +1538,6 @@ cdef class BooleanTrue(BooleanAtom):
     def _sage_(self):
         return True
 
-    def __nonzero__(self):
-        return True
-
     def __bool__(self):
         return True
 
@@ -1627,7 +1642,9 @@ class Equality(Relational):
     def is_Equality(self):
         return True
 
-    func = __class__
+    @property
+    def func(self):
+        return self.__class__
 
 
 Eq = Equality
@@ -1648,7 +1665,9 @@ class Unequality(Relational):
         s = self.args_as_sage()
         return sage.ne(*s)
 
-    func = __class__
+    @property
+    def func(self):
+        return self.__class__
 
 
 Ne = Unequality
@@ -2412,8 +2431,15 @@ class Pow(Expr):
 class Function(Expr):
 
     def __new__(cls, *args, **kwargs):
-        if cls == Function and len(args) == 1:
-            return UndefFunction(args[0])
+        if cls == Function:
+            nargs = len(args)
+            if nargs == 0:
+                raise TypeError("Required at least one argument to Function")
+            elif nargs == 1:
+                return UndefFunction(args[0])
+            elif nargs > 1:
+                raise TypeError(f"Unexpected extra arguments {args[1:]}.")
+
         return super(Function, cls).__new__(cls)
 
     @property
@@ -2833,6 +2859,10 @@ class FunctionSymbol(Function):
             symengine.rcp_static_cast_FunctionSymbol(self.thisptr)
         name = deref(X).get_name().decode("utf-8")
         return str(name)
+
+    @property
+    def name(Basic self):
+        return self.get_name()
 
     def _sympy_(self):
         import sympy
@@ -3528,6 +3558,9 @@ cdef class DenseMatrixBase(MatrixBase):
 
     def __neg__(self):
         return self.mul_scalar(-1)
+
+    def __abs__(self):
+        return self.applyfunc(abs)
 
     def __getitem__(self, item):
         if isinstance(item, slice):
@@ -4926,6 +4959,11 @@ def powermod_list(a, b, m):
         s.append(c2py(<rcp_const_basic>(v[i])))
     return s
 
+def has_basic(obj, looking_for=None):
+    cdef Basic b = _sympify(obj)
+    cdef Basic s = _sympify(looking_for)
+    return symengine.has_basic(deref(b.thisptr), deref(s.thisptr))
+
 def has_symbol(obj, symbol=None):
     cdef Basic b = _sympify(obj)
     cdef Basic s = _sympify(symbol)
@@ -5114,24 +5152,24 @@ cdef class _Lambdify(object):
             return result
 
 
-cdef double _scipy_callback_lambda_real(int n, double *x, void *user_data) nogil:
+cdef double _scipy_callback_lambda_real(int n, double *x, void *user_data) noexcept nogil:
     cdef symengine.LambdaRealDoubleVisitor* lamb = <symengine.LambdaRealDoubleVisitor *>user_data
     cdef double result
     deref(lamb).call(&result, x)
     return result
 
-cdef void _ctypes_callback_lambda_real(double *output, const double *input, void *user_data) nogil:
+cdef void _ctypes_callback_lambda_real(double *output, const double *input, void *user_data) noexcept nogil:
     cdef symengine.LambdaRealDoubleVisitor* lamb = <symengine.LambdaRealDoubleVisitor *>user_data
     deref(lamb).call(output, input)
 
 IF HAVE_SYMENGINE_LLVM:
-    cdef double _scipy_callback_llvm_real(int n, double *x, void *user_data) nogil:
+    cdef double _scipy_callback_llvm_real(int n, double *x, void *user_data) noexcept nogil:
         cdef symengine.LLVMDoubleVisitor* lamb = <symengine.LLVMDoubleVisitor *>user_data
         cdef double result
         deref(lamb).call(&result, x)
         return result
 
-    cdef void _ctypes_callback_llvm_real(double *output, const double *input, void *user_data) nogil:
+    cdef void _ctypes_callback_llvm_real(double *output, const double *input, void *user_data) noexcept nogil:
         cdef symengine.LLVMDoubleVisitor* lamb = <symengine.LLVMDoubleVisitor *>user_data
         deref(lamb).call(output, input)
 
@@ -5152,11 +5190,11 @@ cdef class LambdaDouble(_Lambdify):
         pass
 
     cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
-        self.lambda_double.resize(1)
-        self.lambda_double[0].init(args_, outs_, cse)
+        self.lambda_visitor.reset(new symengine.LambdaRealDoubleVisitor())
+        deref(self.lambda_visitor).init(args_, outs_, cse)
 
     cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=0, int out_offset=0):
-        self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
+        deref(self.lambda_visitor).call(&out[out_offset], &inp[inp_offset])
 
     cpdef unsafe_eval(self, inp, out, unsigned nbroadcast=1):
         cdef double[::1] c_inp, c_out
@@ -5164,7 +5202,7 @@ cdef class LambdaDouble(_Lambdify):
         c_inp = np.ascontiguousarray(inp.ravel(order=self.order), dtype=self.numpy_dtype)
         c_out = out
         for idx in range(nbroadcast):
-            self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
+            deref(self.lambda_visitor).call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
 
     cpdef as_scipy_low_level_callable(self):
         from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
@@ -5172,7 +5210,7 @@ cdef class LambdaDouble(_Lambdify):
             raise RuntimeError("SciPy LowLevelCallable supports only functions with 1 output")
         addr1 = cast(<size_t>&_scipy_callback_lambda_real,
                         CFUNCTYPE(c_double, c_int, POINTER(c_double), c_void_p))
-        addr2 = cast(<size_t>&self.lambda_double[0], c_void_p)
+        addr2 = cast(<size_t>self.lambda_visitor.get(), c_void_p)
         return create_low_level_callable(self, addr1, addr2)
 
     cpdef as_ctypes(self):
@@ -5187,7 +5225,7 @@ cdef class LambdaDouble(_Lambdify):
         from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
         addr1 = cast(<size_t>&_ctypes_callback_lambda_real,
                         CFUNCTYPE(c_void_p, POINTER(c_double), POINTER(c_double), c_void_p))
-        addr2 = cast(<size_t>&self.lambda_double[0], c_void_p)
+        addr2 = cast(<size_t>self.lambda_visitor.get(), c_void_p)
         return addr1, addr2
 
 
@@ -5197,11 +5235,11 @@ cdef class LambdaComplexDouble(_Lambdify):
         pass
 
     cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
-        self.lambda_double.resize(1)
-        self.lambda_double[0].init(args_, outs_, cse)
+        self.lambda_visitor.reset(new symengine.LambdaComplexDoubleVisitor())
+        deref(self.lambda_visitor).init(args_, outs_, cse)
 
     cpdef unsafe_complex(self, double complex[::1] inp, double complex[::1] out, int inp_offset=0, int out_offset=0):
-        self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
+        deref(self.lambda_visitor).call(&out[out_offset], &inp[inp_offset])
 
     cpdef unsafe_eval(self, inp, out, unsigned nbroadcast=1):
         cdef double complex[::1] c_inp, c_out
@@ -5209,7 +5247,7 @@ cdef class LambdaComplexDouble(_Lambdify):
         c_inp = np.ascontiguousarray(inp.ravel(order=self.order), dtype=self.numpy_dtype)
         c_out = out
         for idx in range(nbroadcast):
-            self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
+            deref(self.lambda_visitor).call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
 
 
 IF HAVE_SYMENGINE_LLVM:
@@ -5218,23 +5256,23 @@ IF HAVE_SYMENGINE_LLVM:
             self.opt_level = opt_level
 
         cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
-            self.lambda_double.resize(1)
-            self.lambda_double[0].init(args_, outs_, cse, self.opt_level)
+            self.lambda_visitor.reset(new symengine.LLVMDoubleVisitor())
+            deref(self.lambda_visitor).init(args_, outs_, cse, self.opt_level)
 
         cdef _load(self, const string &s):
-            self.lambda_double.resize(1)
-            self.lambda_double[0].loads(s)
+            self.lambda_visitor.reset(new symengine.LLVMDoubleVisitor())
+            deref(self.lambda_visitor).loads(s)
 
         def __reduce__(self):
             """
             Interface for pickle. Note that the resulting object is platform dependent.
             """
-            cdef bytes s = self.lambda_double[0].dumps()
+            cdef bytes s = deref(self.lambda_visitor).dumps()
             return llvm_loading_func, (self.args_size, self.tot_out_size, self.out_shapes, self.real, \
                 self.n_exprs, self.order, self.accum_out_sizes, self.numpy_dtype, s)
 
         cpdef unsafe_real(self, double[::1] inp, double[::1] out, int inp_offset=0, int out_offset=0):
-            self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
+            deref(self.lambda_visitor).call(&out[out_offset], &inp[inp_offset])
 
         cpdef unsafe_eval(self, inp, out, unsigned nbroadcast=1):
             cdef double[::1] c_inp, c_out
@@ -5242,7 +5280,7 @@ IF HAVE_SYMENGINE_LLVM:
             c_inp = np.ascontiguousarray(inp.ravel(order=self.order), dtype=self.numpy_dtype)
             c_out = out
             for idx in range(nbroadcast):
-                self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
+                deref(self.lambda_visitor).call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
 
         cpdef as_scipy_low_level_callable(self):
             from ctypes import c_double, c_void_p, c_int, cast, POINTER, CFUNCTYPE
@@ -5252,7 +5290,7 @@ IF HAVE_SYMENGINE_LLVM:
                 raise RuntimeError("SciPy LowLevelCallable supports only functions with 1 output")
             addr1 = cast(<size_t>&_scipy_callback_llvm_real,
                             CFUNCTYPE(c_double, c_int, POINTER(c_double), c_void_p))
-            addr2 = cast(<size_t>&self.lambda_double[0], c_void_p)
+            addr2 = cast(<size_t>self.lambda_visitor.get(), c_void_p)
             return create_low_level_callable(self, addr1, addr2)
 
         cpdef as_ctypes(self):
@@ -5269,7 +5307,7 @@ IF HAVE_SYMENGINE_LLVM:
                 raise RuntimeError("Lambda function has to be real")
             addr1 = cast(<size_t>&_ctypes_callback_llvm_real,
                             CFUNCTYPE(c_void_p, POINTER(c_double), POINTER(c_double), c_void_p))
-            addr2 = cast(<size_t>&self.lambda_double[0], c_void_p)
+            addr2 = cast(<size_t>self.lambda_visitor.get(), c_void_p)
             return addr1, addr2
 
     cdef class LLVMFloat(_LLVMLambdify):
@@ -5277,23 +5315,23 @@ IF HAVE_SYMENGINE_LLVM:
             self.opt_level = opt_level
 
         cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
-            self.lambda_double.resize(1)
-            self.lambda_double[0].init(args_, outs_, cse, self.opt_level)
+            self.lambda_visitor.reset(new symengine.LLVMFloatVisitor())
+            deref(self.lambda_visitor).init(args_, outs_, cse, self.opt_level)
 
         cdef _load(self, const string &s):
-            self.lambda_double.resize(1)
-            self.lambda_double[0].loads(s)
+            self.lambda_visitor.reset(new symengine.LLVMFloatVisitor())
+            deref(self.lambda_visitor).loads(s)
 
         def __reduce__(self):
             """
             Interface for pickle. Note that the resulting object is platform dependent.
             """
-            cdef bytes s = self.lambda_double[0].dumps()
+            cdef bytes s = deref(self.lambda_visitor).dumps()
             return llvm_float_loading_func, (self.args_size, self.tot_out_size, self.out_shapes, self.real, \
                 self.n_exprs, self.order, self.accum_out_sizes, self.numpy_dtype, s)
 
         cpdef unsafe_real(self, float[::1] inp, float[::1] out, int inp_offset=0, int out_offset=0):
-            self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
+            deref(self.lambda_visitor).call(&out[out_offset], &inp[inp_offset])
 
         cpdef unsafe_eval(self, inp, out, unsigned nbroadcast=1):
             cdef float[::1] c_inp, c_out
@@ -5301,7 +5339,7 @@ IF HAVE_SYMENGINE_LLVM:
             c_inp = np.ascontiguousarray(inp.ravel(order=self.order), dtype=self.numpy_dtype)
             c_out = out
             for idx in range(nbroadcast):
-                self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
+                deref(self.lambda_visitor).call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
 
     IF HAVE_SYMENGINE_LLVM_LONG_DOUBLE:
         cdef class LLVMLongDouble(_LLVMLambdify):
@@ -5309,23 +5347,23 @@ IF HAVE_SYMENGINE_LLVM:
                 self.opt_level = opt_level
 
             cdef _init(self, symengine.vec_basic& args_, symengine.vec_basic& outs_, cppbool cse):
-                self.lambda_double.resize(1)
-                self.lambda_double[0].init(args_, outs_, cse, self.opt_level)
+                self.lambda_visitor.reset(new symengine.LLVMLongDoubleVisitor())
+                deref(self.lambda_visitor).init(args_, outs_, cse, self.opt_level)
 
             cdef _load(self, const string &s):
-                self.lambda_double.resize(1)
-                self.lambda_double[0].loads(s)
+                self.lambda_visitor.reset(new symengine.LLVMLongDoubleVisitor())
+                deref(self.lambda_visitor).loads(s)
 
             def __reduce__(self):
                 """
                 Interface for pickle. Note that the resulting object is platform dependent.
                 """
-                cdef bytes s = self.lambda_double[0].dumps()
+                cdef bytes s = deref(self.lambda_visitor).dumps()
                 return llvm_long_double_loading_func, (self.args_size, self.tot_out_size, self.out_shapes, self.real, \
                     self.n_exprs, self.order, self.accum_out_sizes, self.numpy_dtype, s)
 
             cpdef unsafe_real(self, long double[::1] inp, long double[::1] out, int inp_offset=0, int out_offset=0):
-                self.lambda_double[0].call(&out[out_offset], &inp[inp_offset])
+                deref(self.lambda_visitor).call(&out[out_offset], &inp[inp_offset])
 
             cpdef unsafe_eval(self, inp, out, unsigned nbroadcast=1):
                 cdef long double[::1] c_inp, c_out
@@ -5333,7 +5371,7 @@ IF HAVE_SYMENGINE_LLVM:
                 c_inp = np.ascontiguousarray(inp.ravel(order=self.order), dtype=self.numpy_dtype)
                 c_out = out
                 for idx in range(nbroadcast):
-                    self.lambda_double[0].call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
+                    deref(self.lambda_visitor).call(&c_out[idx*self.tot_out_size], &c_inp[idx*self.args_size])
 
     def llvm_loading_func(*args):
         return LLVMDouble(args, _load=True)

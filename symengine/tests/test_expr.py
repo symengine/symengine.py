@@ -1,4 +1,4 @@
-from symengine import Symbol, Integer, oo
+from symengine import Symbol, Integer, oo, sin
 from symengine.test_utilities import raises
 
 
@@ -26,3 +26,18 @@ def test_as_powers_dict():
     assert (x*(1/Integer(2))**y).as_powers_dict() == {x: Integer(1), Integer(2): -y}
     assert (2**y).as_powers_dict() == {2: y}
     assert (2**-y).as_powers_dict() == {2: -y}
+
+
+def test_Basic__has():
+    x = Symbol('x')
+    y = Symbol('y')
+    xpowy = x**y
+    e = sin(xpowy)
+    assert e.has(x)
+    assert e.has(y)
+    assert e.has(xpowy)
+    raises(Exception, lambda: e.has(x+1))  # subtree matching of associative operators not yet supported
+    assert (x + oo).has(oo)
+    assert (x - oo).has(-oo)
+    assert not (x + oo).has(-oo)
+    #assert not (x - oo).has(oo) <-- not sure we want to test explicitly for "x + NegativeInfinity"
