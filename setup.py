@@ -128,6 +128,8 @@ class BuildExtWithCmake(_build_ext):
         if self.py_limited_api:
             assert self.py_limited_api.startswith("cp3")
             py_ver_minor = int(self.py_limited_api[3:])
+            if py_ver_minor < 11:
+                raise ValueError(f"symengine needs at least cp311 limited API support. Got {self.py_limited_api}")
             h = 3 * 16**6 + py_ver_minor * 16**4
             cmake_cmd.append(f"-DWITH_PY_LIMITED_API={h}")
 

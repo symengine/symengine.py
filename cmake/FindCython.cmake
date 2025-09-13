@@ -24,6 +24,19 @@ IF (CYTHON_BIN)
     else (CYTHON_RESULT EQUAL 0)
         SET(Cython_Compilation_Failed TRUE)
     endif (CYTHON_RESULT EQUAL 0)
+    execute_process(
+        COMMAND ${CYTHON_BIN} --version
+        RESULT_VARIABLE CYTHON_VERSION_RESULT
+        OUTPUT_VARIABLE CYTHON_VERSION_OUTPUT
+        ERROR_VARIABLE CYTHON_VERSION_ERROR
+    )
+    if (CYTHON_VERSION_RESULT EQUAL 0)
+        string(STRIP ${CYTHON_VERSION_OUTPUT} CYTHON_VERSION_OUTPUT)
+        if ("${CYTHON_VERSION_OUTPUT}" MATCHES "Cython version")
+             string(SUBSTRING "${CYTHON_VERSION_OUTPUT}" 15 -1 CYTHON_VERSION)
+        endif ()
+    endif ()
+    message(STATUS "Cython version: ${CYTHON_VERSION}")
 ENDIF (CYTHON_BIN)
 
 
@@ -31,6 +44,11 @@ IF (Cython_FOUND)
     IF (NOT Cython_FIND_QUIETLY)
         MESSAGE(STATUS "Found CYTHON: ${CYTHON_BIN}")
     ENDIF (NOT Cython_FIND_QUIETLY)
+    IF (WITH_PY_LIMITED_API AND "${CYTHON_VERSION}" VERSION_LESS "3.1")
+        MESSAGE(FATAL_ERROR
+            "Your Cython version (${CYTHON_VERSION}) is too old. Please upgrade Cython to 3.1 or newer."
+        )
+    ENDIF ()
 ELSE (Cython_FOUND)
     IF (Cython_FIND_REQUIRED)
         if(Cython_Compilation_Failed)
