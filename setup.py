@@ -3,6 +3,11 @@ import os
 import subprocess
 import sys
 import platform
+from setuptools import setup
+from setuptools.command.install import install as _install
+from setuptools.command.build_ext import build_ext as _build_ext
+from setuptools.command.bdist_wheel import bdist_wheel as _bdist_wheel
+from setuptools.command.build import build as _build
 
 # Make sure the system has the right Python version.
 if sys.version_info[:2] < (3, 9):
@@ -10,36 +15,17 @@ if sys.version_info[:2] < (3, 9):
           "Python %d.%d detected" % sys.version_info[:2])
     sys.exit(-1)
 
-# use setuptools by default as per the official advice at:
-# packaging.python.org/en/latest/current.html#packaging-tool-recommendations
-use_setuptools = True
-# set the environment variable USE_DISTUTILS=True to force the use of distutils
-use_distutils = getenv('USE_DISTUTILS')
-if use_distutils is not None:
-    if use_distutils.lower() == 'true':
-        use_setuptools = False
+def _get_limited_api():
+    value = os.environ.get("SYMENGINE_PY_LIMITED_API")
+    if not value:
+        return None
     else:
-        print("Value {} for USE_DISTUTILS treated as False".
-              format(use_distutils))
+        version = tuple(map(int, value.split(".")))
+        if version < (3, 11):
+            raise ValueError(f"symengine needs at least python 3.11 limited API support. Got {value}")
+        return version
 
-if use_setuptools:
-    try:
-        from setuptools import setup
-        from setuptools.command.install import install as _install
-        from setuptools.command.build_ext import build_ext as _build_ext
-    except ImportError:
-        use_setuptools = False
-    else:
-        try:
-            from setuptools.command.build import build as _build
-        except ImportError:
-            from distutils.command.build import build as _build
-
-if not use_setuptools:
-    from distutils.core import setup
-    from distutils.command.install import install as _install
-    from distutils.command.build_ext import build_ext as _build_ext
-    from distutils.command.build import build as _build
+limited_api = _get_limited_api()
 
 cmake_opts = [("PYTHON_BIN", sys.executable),
               ("CMAKE_INSTALL_RPATH_USE_LINK_PATH", "yes")]
@@ -92,7 +78,6 @@ class BuildExtWithCmake(_build_ext):
         self.symengine_dir = None
         self.generator = None
         self.build_type = "Release"
-        self.py_limited_api = None
 
     def finalize_options(self):
         _build_ext.finalize_options(self)
@@ -125,12 +110,8 @@ class BuildExtWithCmake(_build_ext):
         if not path.exists(path.join(build_dir, "CMakeCache.txt")):
             cmake_cmd.extend(self.get_generator())
 
-        if self.py_limited_api:
-            assert self.py_limited_api.startswith("cp3")
-            py_ver_minor = int(self.py_limited_api[3:])
-            if py_ver_minor < 11:
-                raise ValueError(f"symengine needs at least cp311 limited API support. Got {self.py_limited_api}")
-            h = 3 * 16**6 + py_ver_minor * 16**4
+        if limited_api:
+            h = limited_api[0] * 16**6 + limited_api[1] * 16**4
             cmake_cmd.append(f"-DWITH_PY_LIMITED_API={h}")
 
         if subprocess.call(cmake_cmd, cwd=build_dir) != 0:
@@ -206,21 +187,20 @@ class InstallWithCmake(_install):
         _install.run(self)
         self.cmake_install()
 
-cmdclass={
-          'build': BuildWithCmake,
-          'build_ext': BuildExtWithCmake,
-          'install': InstallWithCmake,
-          }
+class BdistWheelWithCmake(_bdist_wheel):
+    def finalize_options(self):
+        _bdist_wheel.finalize_options(self)
+        self.root_is_pure = False
+        if limited_api:
+            self.py_limited_api = f"cp{"".join(str(c) for c in limited_api)}"
 
-try:
-    from wheel.bdist_wheel import bdist_wheel
-    class BdistWheelWithCmake(bdist_wheel):
-        def finalize_options(self):
-            bdist_wheel.finalize_options(self)
-            self.root_is_pure = False
-    cmdclass["bdist_wheel"] = BdistWheelWithCmake
-except ImportError:
-    pass
+cmdclass={
+    'build': BuildWithCmake,
+    'build_ext': BuildExtWithCmake,
+    'install': InstallWithCmake,
+    'bdist_wheel': BdistWheelWithCmake,
+}
+
 
 long_description = '''
 SymEngine is a standalone fast C++ symbolic manipulation library.
@@ -235,13 +215,13 @@ and dependencies of wheels
 setup(name="symengine",
       version="0.14.1",
       description="Python library providing wrappers to SymEngine",
-      setup_requires=['cython>=0.29.24', 'setuptools'],
+      setup_requires=['cython>=0.29.24', 'setuptools>=70.1.0'],
       long_description=long_description,
       author="SymEngine development team",
       author_email="symengine@googlegroups.com",
       license="MIT",
       url="https://github.com/symengine/symengine.py",
-      python_requires='>=3.9,<4',
+      python_requires=">=3.9,<4",
       zip_safe=False,
       packages=[],
       cmdclass = cmdclass,
