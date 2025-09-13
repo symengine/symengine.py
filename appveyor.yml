@@ -4,7 +4,7 @@ image: "Visual Studio 2019"
 
 environment:
   global:
-    PLATFORMTOOLSET: "v140"
+    PLATFORMTOOLSET: "v142"
 
   matrix:
     - BUILD_TYPE: "Release"
