@@ -107,8 +107,8 @@ install:
 - mkdir build
 - cd build
 
-- if [%COMPILER%]==[MSVC15] if [%PLATFORM%]==[Win32] set "CMAKE_GENERATOR=Visual Studio 14 2019"
-- if [%COMPILER%]==[MSVC15] if [%PLATFORM%]==[x64] set "CMAKE_GENERATOR=Visual Studio 14 2019 Win64"
+- if [%COMPILER%]==[MSVC15] set "CMAKE_GENERATOR=Visual Studio 14 2019"
+- if [%COMPILER%]==[MSVC15] set "CMAKE_GENERATOR_PLATFORM=%PLATFORM%"
 - if [%COMPILER%]==[MinGW]  set "CMAKE_GENERATOR=MinGW Makefiles"
 - if [%COMPILER%]==[MinGW-w64] set "CMAKE_GENERATOR=MinGW Makefiles"
 
