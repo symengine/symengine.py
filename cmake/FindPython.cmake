@@ -77,7 +77,9 @@ execute_process(
 string(STRIP ${PYTHON_EXTENSION_SOABI_tmp} PYTHON_EXTENSION_SOABI_tmp)
 
 if (WITH_PY_LIMITED_API)
-    if (NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+        set(PYTHON_EXTENSION_SOABI_tmp "")
+    else()
         set(PYTHON_EXTENSION_SOABI_tmp ".abi3")
     endif()
 endif()
@@ -152,8 +154,11 @@ macro(ADD_PYTHON_LIBRARY name)
         ENDIF()
     ENDIF()
     IF(WITH_PY_LIMITED_API)
-        target_compile_definitions(${name} PRIVATE
-        Py_LIMITED_API=${WITH_PY_LIMITED_API}
-        CYTHON_LIMITED_API=1)
+        target_compile_definitions(
+            ${name}
+            PRIVATE
+              Py_LIMITED_API=${WITH_PY_LIMITED_API}
+              CYTHON_LIMITED_API=1
+        )
     ENDIF()
 endmacro(ADD_PYTHON_LIBRARY)
