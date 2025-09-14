@@ -38,17 +38,6 @@ environment:
       PYTHON_VERSION: 311-x64
       WITH_NUMPY: no
       CONDA_INSTALL_LOCN: C:\\Miniconda38-x64
-    #- BUILD_TYPE: "Debug"
-    #  COMPILER: MinGW-w64
-    #  PYTHON_VERSION: 39-x64
-    #  WITH_NUMPY: no
-    #- BUILD_TYPE: "Release"
-    #  COMPILER: MinGW-w64
-    #  PYTHON_VERSION: 39-x64
-    #- BUILD_TYPE: "Debug"
-    #  COMPILER: MinGW-w64
-    #  PYTHON_VERSION: 39-x64
-    #  WITH_SYMPY: no
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
       PLATFORM: "x64"
@@ -63,41 +52,23 @@ install:
 - git clone https://github.com/sympy/symengine symengine-cpp
 - if [%PLATFORM%]==[Win32] set "CONDA_SUBDIR=win-32"
 
-- if [%COMPILER%]==[MSVC15] call %CONDA_INSTALL_LOCN%\Scripts\activate.bat
-- if [%COMPILER%]==[MSVC15] set "CONDA_DEPS=mpir=3.0.0 vc=14"
-- if [%COMPILER%]==[MSVC15] if [%WITH_MPFR%]==[yes] set "CONDA_DEPS=%CONDA_DEPS% mpfr=3.1.5"
-- if [%COMPILER%]==[MSVC15] if [%WITH_MPC%]==[yes] set "CONDA_DEPS=%CONDA_DEPS% mpc=1.0.3"
-- if [%COMPILER%]==[MSVC15] if [%WITH_LLVM%]==[yes] set "CONDA_DEPS=%CONDA_DEPS% llvmdev=4.0"
-- if [%COMPILER%]==[MSVC15] set "CONDA_DEPS=%CONDA_DEPS% -c conda-forge"
-- if [%COMPILER%]==[MSVC15] if [%BUILD_TYPE%]==[Debug] set "CONDA_DEPS=%CONDA_DEPS% -c symengine/label/debug"
-- if [%COMPILER%]==[MSVC15] conda create -n deps --yes %CONDA_DEPS%
-- if [%COMPILER%]==[MSVC15] call conda activate deps
-- if [%COMPILER%]==[MSVC15] echo %CONDA_PREFIX%
-- if [%COMPILER%]==[MSVC15] echo %PATH%
-- if [%COMPILER%]==[MSVC15] set "PATH=%PATH%;%CONDA_PREFIX%\\Library\\bin;%CONDA_PREFIX%"
-- if [%COMPILER%]==[MSVC15] echo %PATH%
-
-- if [%COMPILER%]==[MinGW] set "PATH=C:\MinGW\bin;%PATH%"
-- if [%COMPILER%]==[MinGW] mingw-get update
-# workaround for https://github.com/appveyor/ci/issues/996
-- if [%COMPILER%]==[MinGW] mingw-get upgrade mingw32-libstdc++
-- if [%COMPILER%]==[MinGW] mingw-get install mingw32-gmp
-
-- if [%COMPILER%]==[MinGW-w64] set "PATH=C:\mingw64\bin;%PATH%"
-
-- rename "C:\Program Files\Git\usr\bin\sh.exe" "sh2.exe"
-
-- if [%COMPILER%]==[MinGW-w64] call symengine-cpp\bin\appveyor-download.cmd "https://raw.githubusercontent.com/symengine/dependencies/5cff7d1736877336cf9fb58267111beea4fa152f/x86_64-4.9.1-release-posix-seh-rt_v3-rev1.7z" -FileName mw64.7z
-- if [%COMPILER%]==[MinGW-w64] 7z x -oC:\ mw64.7z > NUL
-- if [%COMPILER%]==[MinGW-w64] call symengine-cpp\bin\appveyor-download.cmd "https://raw.githubusercontent.com/symengine/dependencies/5cff7d1736877336cf9fb58267111beea4fa152f/gmp-6.0.0-x86_64-w64-mingw32.7z" -FileName gmp.7z
-- if [%COMPILER%]==[MinGW-w64] 7z x -oC:\mingw64 gmp.7z > NUL
-
-- if NOT [%COMPILER%]==[MSVC15] call symengine-cpp\bin\appveyor-download.cmd "https://raw.githubusercontent.com/symengine/dependencies/dcc10cce2133e2b57e61c5ced6120139bbcdfa20/python-libs-mingw32.7z" -FileName pylibs.7z
-- if NOT [%COMPILER%]==[MSVC15] 7z x -aoa -oC:\ pylibs.7z > NUL
+- call %CONDA_INSTALL_LOCN%\Scripts\activate.bat
+- set "CONDA_DEPS=mpir=3.0.0 vc=14"
+- if [%WITH_MPFR%]==[yes] set "CONDA_DEPS=%CONDA_DEPS% mpfr=3.1.5"
+- if [%WITH_MPC%]==[yes] set "CONDA_DEPS=%CONDA_DEPS% mpc=1.0.3"
+- if [%WITH_LLVM%]==[yes] set "CONDA_DEPS=%CONDA_DEPS% llvmdev=4.0"
+- set "CONDA_DEPS=%CONDA_DEPS% -c conda-forge"
+- if [%BUILD_TYPE%]==[Debug] set "CONDA_DEPS=%CONDA_DEPS% -c symengine/label/debug"
+- conda create -n deps --yes %CONDA_DEPS%
+- call conda activate deps
+- echo %CONDA_PREFIX%
+- echo %PATH%
+- set "PATH=%PATH%;%CONDA_PREFIX%\\Library\\bin;%CONDA_PREFIX%"
+- echo %PATH%
 
 - set "PATH=C:\Python%PYTHON_VERSION%;C:\Python%PYTHON_VERSION%\Scripts;%PATH%"
 - echo %PATH%
-- pip install nose pytest cython setuptools
+- pip install pytest cython scikit-build-core cython-cmake setuptools_scm
 - if NOT [%WITH_NUMPY%]==[no] pip install numpy
 - if NOT [%WITH_SYMPY%]==[no] pip install sympy
 
@@ -107,14 +78,10 @@ install:
 - mkdir build
 - cd build
 
-- if [%COMPILER%]==[MSVC15] set "CMAKE_GENERATOR=Visual Studio 16 2019"
-- if [%COMPILER%]==[MSVC15] set "CMAKE_GENERATOR_PLATFORM=%PLATFORM%"
-- if [%COMPILER%]==[MinGW]  set "CMAKE_GENERATOR=MinGW Makefiles"
-- if [%COMPILER%]==[MinGW-w64] set "CMAKE_GENERATOR=MinGW Makefiles"
+- set "CMAKE_GENERATOR=Visual Studio 16 2019"
+- set "CMAKE_GENERATOR_PLATFORM=%PLATFORM%"
 
-- if [%COMPILER%]==[MSVC15] set "CMAKE_ARGS=-DCMAKE_PREFIX_PATH=%CONDA_PREFIX%\\Library"
-- if [%COMPILER%]==[MinGW] set "CMAKE_ARGS=-DCMAKE_PREFIX_PATH=C:\MinGW -DCMAKE_BUILD_TYPE=%BUILD_TYPE%"
-- if [%COMPILER%]==[MinGW-w64] set "CMAKE_ARGS=-DCMAKE_PREFIX_PATH=C:\mingw64 -DCMAKE_BUILD_TYPE=%BUILD_TYPE%"
+- set "CMAKE_ARGS=-DCMAKE_PREFIX_PATH=%CONDA_PREFIX%\\Library"
 
 - if [%WITH_MPFR%]==[yes] set "CMAKE_ARGS=%CMAKE_ARGS% -DWITH_MPFR=yes"
 - if [%WITH_MPC%]==[yes] set "CMAKE_ARGS=%CMAKE_ARGS% -DWITH_MPC=yes"
@@ -130,12 +97,10 @@ build_script:
 - set "PATH=C:\symengine\bin\;%PATH%"
 - set "SYMENGINE_PY_ADD_PATH_TO_SEARCH_DIRS=1"
 - echo %PATH%
-- if [%COMPILER%]==[MSVC15] python setup.py install build_ext --compiler=msvc --build-type=%BUILD_TYPE%
-- if [%COMPILER%]==[MinGW] python setup.py install build_ext --compiler=mingw --inplace
-- if [%COMPILER%]==[MinGW-w64] python setup.py install build_ext --compiler=mingw --inplace
+- set "CMAKE_ARGS="
+- python -m pip install -e . --no-build-isolation -Ccmake.build-type=%BUILD_TYPE% -vv
 
 test_script:
-- if not [%COMPILER%]==[MSVC15] nosetests
 - mkdir empty && cd empty
 - python %PYTHON_SOURCE_DIR%\bin\test_python.py
 

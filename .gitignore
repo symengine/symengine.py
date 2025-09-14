@@ -20,6 +20,7 @@ cython_test.cpp
 symengine/lib/symengine_wrapper.cpp
 symengine/lib/symengine_wrapper.pyx
 symengine/lib/symengine_wrapper.pxd
+symengine/_version.py
 
 # Config Files
 symengine/lib/config.pxi
@@ -33,6 +34,12 @@ MANIFEST
 dist/
 .*cache/
 symengine.egg-info/
+.cmake/
+.ninja_deps
+.ninja_log
+.skbuild-info.json
+CMakeInit.txt
+symengine/lib/symengine_wrapper.cpp.dep
 
 # Temp files
 *~

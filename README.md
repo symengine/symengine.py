@@ -27,10 +27,14 @@ conda install python-symengine -c conda-forge
 Install prerequisites.
 
 ```bash
-CMake       >= 2.8.12
-Python3     >= 3.8
-Cython      >= 0.29.24
-SymEngine   >= 0.7.0
+CMake       >= 3.21
+Python3     >= 3.9
+SymEngine   >= 0.14.0
+pip
+setuptools_scm           # will be automatically downloaded by pip
+scikit-build-core        # will be automatically downloaded by pip
+cython      >= 0.29.24   # will be automatically downloaded by pip
+cython-cmake             # will be automatically downloaded by pip
 ```
 
 For **SymEngine**, only a specific commit/tag (see `symengine_version.txt`) is
@@ -40,25 +44,22 @@ changes in **SymEngine**.
 Python wrappers can be installed by,
 
 ```bash
-python setup.py install
+pip install . -vv
 ```
 
-Additional options to `setup.py` are:
+If you are building SymEngine for development, you should implement
+the dependencies automatically installed by pip and do,
+```bash
+pip install -e . -vv --no-build-isolation
+```
+
+A few additional options to scikit-build-core are mentioned here:
 
 ```bash
-python setup.py install build_ext
-    --symengine-dir=/path/to/symengine/install/dir          # Path to SymEngine install directory or build directory
-    --compiler=mingw32|msvc|cygwin                          # Select the compiler for Windows
-    --generator=cmake-generator                             # CMake Generator
-    --build-type=Release|Debug                              # Set build-type for multi-configuration generators like MSVC
-    --define="var1=value1;var2=value2"                      # Give options to CMake
-    --inplace                                               # Build the extension in source tree
+pip install -e . -vv --no-build-isolation
+    -Ccmake.build-type=Release|Debug                                # Set build-type for multi-configuration generators like MSVC
+    -Ccmake.define.SymEngine_DIR=/path/to/symengine/install/dir     # Path to SymEngine install directory or build directory
 ```
-
-Standard options to `setup.py` like `--user`, `--prefix` can be used to
-configure install location.  NumPy is used if found by default, if you wish
-to make your choice of NumPy use explicit: then add
-e.g. `WITH_NUMPY=False` to `--define`.
 
 ### Notes on Dependencies
 
