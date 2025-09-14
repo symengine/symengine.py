@@ -8,6 +8,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - BUILD_TYPE: Release
+            PYTHON_VERSION: '3.13'
+            BUILD_SHARED_LIBS: yes
+            SYMENGINE_PY_LIMITED_API: '3.11'
+            OS: ubuntu-22.04
+            CC: gcc
+
           - BUILD_TYPE: Debug
             WITH_BFD: yes
             PYTHON_VERSION: '3.12'
@@ -197,6 +204,7 @@ jobs:
         MAKEFLAGS: ${{ matrix.MAKEFLAGS }}
         BUILD_SHARED_LIBS: ${{ matrix.BUILD_SHARED_LIBS }}
         PYTHON_VERSION: ${{ matrix.PYTHON_VERSION }}
+        SYMENGINE_PY_LIMITED_API: ${{ matrix.SYMENGINE_PY_LIMITED_API }}
 
     - name: Deploy Documentation
       if: ${{ (github.ref == 'refs/heads/main' && github.repository == 'Symengine/symengine.py') || (github.ref == 'refs/heads/master' && github.repository == 'Symengine/symengine.py')}}

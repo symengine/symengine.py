@@ -48,15 +48,17 @@ if ("${PY_GIL_DISABLED}" STREQUAL "True")
 endif()
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-  FIND_LIBRARY(PYTHON_LIBRARY NAMES
-        python${PYTHON_VERSION}${PY_THREAD}
-        python${PYTHON_VERSION}m
-        python${PYTHON_VERSION_WITHOUT_DOTS}${PY_THREAD}
-      PATHS ${PYTHON_LIB_PATH} ${PYTHON_PREFIX_PATH}/lib ${PYTHON_PREFIX_PATH}/libs
-      PATH_SUFFIXES ${CMAKE_LIBRARY_ARCHITECTURE}
-      NO_DEFAULT_PATH
-      NO_SYSTEM_ENVIRONMENT_PATH
-  )
+    if (WITH_PY_LIMITED_API)
+        set(PYTHON_LIBRARY_NAMES python3)
+    else()
+        set(PYTHON_LIBRARY_NAMES python${PYTHON_VERSION}${PY_THREAD} python${PYTHON_VERSION}m python${PYTHON_VERSION_WITHOUT_DOTS}${PY_THREAD})
+    endif()
+    FIND_LIBRARY(PYTHON_LIBRARY NAMES ${PYTHON_LIBRARY_NAMES}
+        PATHS ${PYTHON_LIB_PATH} ${PYTHON_PREFIX_PATH}/lib ${PYTHON_PREFIX_PATH}/libs
+        PATH_SUFFIXES ${CMAKE_LIBRARY_ARCHITECTURE}
+        NO_DEFAULT_PATH
+        NO_SYSTEM_ENVIRONMENT_PATH
+    )
 endif()
 
 execute_process(
@@ -73,6 +75,14 @@ execute_process(
     OUTPUT_VARIABLE PYTHON_EXTENSION_SOABI_tmp
 )
 string(STRIP ${PYTHON_EXTENSION_SOABI_tmp} PYTHON_EXTENSION_SOABI_tmp)
+
+if (WITH_PY_LIMITED_API)
+    if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+        set(PYTHON_EXTENSION_SOABI_tmp "")
+    else()
+        set(PYTHON_EXTENSION_SOABI_tmp ".abi3")
+    endif()
+endif()
 
 set(PYTHON_EXTENSION_SOABI ${PYTHON_EXTENSION_SOABI_tmp}
     CACHE STRING "Suffix for python extensions")
@@ -143,5 +153,12 @@ macro(ADD_PYTHON_LIBRARY name)
             target_compile_definitions(${name} PRIVATE Py_GIL_DISABLED=1)
         ENDIF()
     ENDIF()
-
+    IF(WITH_PY_LIMITED_API)
+        target_compile_definitions(
+            ${name}
+            PRIVATE
+              Py_LIMITED_API=${WITH_PY_LIMITED_API}
+              CYTHON_LIMITED_API=1
+        )
+    ENDIF()
 endmacro(ADD_PYTHON_LIBRARY)

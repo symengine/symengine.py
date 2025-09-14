@@ -10,6 +10,18 @@ if sys.version_info[:2] < (3, 9):
           "Python %d.%d detected" % sys.version_info[:2])
     sys.exit(-1)
 
+def _get_limited_api():
+    value = os.environ.get("SYMENGINE_PY_LIMITED_API")
+    if not value:
+        return None
+    else:
+        version = tuple(map(int, value.split(".")))
+        if version < (3, 11):
+            raise ValueError(f"symengine needs at least python 3.11 limited API support. Got {value}")
+        return version
+
+limited_api = _get_limited_api()
+
 # use setuptools by default as per the official advice at:
 # packaging.python.org/en/latest/current.html#packaging-tool-recommendations
 use_setuptools = True
@@ -65,6 +77,7 @@ global_user_options = [
     ('build-type=', None, 'build type: Release or Debug'),
     ('define=', 'D',
      'options to cmake <var>:<type>=<value>'),
+    ('py-limited-api=', None, 'Use Py_LIMITED_API with given version.'),
 ]
 
 def _process_define(arg):
@@ -122,6 +135,11 @@ class BuildExtWithCmake(_build_ext):
         cmake_cmd.extend(process_opts(cmake_opts))
         if not path.exists(path.join(build_dir, "CMakeCache.txt")):
             cmake_cmd.extend(self.get_generator())
+
+        if limited_api:
+            h = limited_api[0] * 16**6 + limited_api[1] * 16**4
+            cmake_cmd.append(f"-DWITH_PY_LIMITED_API={h}")
+
         if subprocess.call(cmake_cmd, cwd=build_dir) != 0:
             raise OSError("error calling cmake")
 
@@ -202,11 +220,17 @@ cmdclass={
           }
 
 try:
-    from wheel.bdist_wheel import bdist_wheel
+    try:
+        from setuptools.command.bdist_wheel import bdist_wheel
+    except ImportError:
+        from wheel.bdist_wheel import bdist_wheel
+
     class BdistWheelWithCmake(bdist_wheel):
         def finalize_options(self):
             bdist_wheel.finalize_options(self)
             self.root_is_pure = False
+            if limited_api:
+                self.py_limited_api = "cp" + "".join(str(c) for c in limited_api)
     cmdclass["bdist_wheel"] = BdistWheelWithCmake
 except ImportError:
     pass
