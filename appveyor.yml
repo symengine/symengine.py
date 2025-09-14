@@ -98,7 +98,7 @@ build_script:
 - set "SYMENGINE_PY_ADD_PATH_TO_SEARCH_DIRS=1"
 - echo %PATH%
 - set "CMAKE_ARGS="
-- python install -e . --no-build-isolation -Ccmake.build-type=%BUILD_TYPE% -vv
+- python -m pip install -e . --no-build-isolation -Ccmake.build-type=%BUILD_TYPE% -vv
 
 test_script:
 - mkdir empty && cd empty
