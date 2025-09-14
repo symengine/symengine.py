@@ -1,4 +1,3 @@
-set(PY_PATH ${PYTHON_INSTALL_PATH}/symengine/tests)
 install(
   FILES
     __init__.py
@@ -26,5 +25,5 @@ install(
     test_sympy_conv.py
     test_var.py
   DESTINATION
-    ${PY_PATH}
+    symengine/tests
 )

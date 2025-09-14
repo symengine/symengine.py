@@ -1,4 +1,0 @@
-{
-  global: PyInit_@PYTHON_EXTENSION_NAME@;
-  local: *;
-};

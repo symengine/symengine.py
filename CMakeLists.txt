@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12...4.0.0)
+cmake_minimum_required(VERSION 3.21...4.0.0)
 
 if (POLICY CMP0057)
   cmake_policy(SET CMP0057 NEW) # needed for llvm >= 16
@@ -7,7 +7,7 @@ if (POLICY CMP0074)
   cmake_policy(SET CMP0074 NEW)  # allow user to set *_ROOT variables
 endif()
 
-project(python_wrapper)
+project(${SKBUILD_PROJECT_NAME} LANGUAGES C CXX)
 
 set(CMAKE_PREFIX_PATH ${SymEngine_DIR} ${CMAKE_PREFIX_PATH})
 
@@ -21,13 +21,28 @@ set(CMAKE_BUILD_TYPE ${SYMENGINE_BUILD_TYPE})
 set(CMAKE_CXX_FLAGS_RELEASE ${SYMENGINE_CXX_FLAGS_RELEASE})
 set(CMAKE_CXX_FLAGS_DEBUG ${SYMENGINE_CXX_FLAGS_DEBUG})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SYMENGINE_CXX_FLAGS}")
-include_directories(${SYMENGINE_INCLUDE_DIRS})
 
-set(WITH_PY_LIMITED_API OFF CACHE STRING "Use CPython's limited API")
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
-find_package(Python REQUIRED)
-find_package(Cython REQUIRED)
-include_directories(${PYTHON_INCLUDE_PATH})
+find_package(
+  Python
+  COMPONENTS
+    Interpreter
+    Development.Module
+    ${SKBUILD_SABI_COMPONENT}
+  REQUIRED
+)
+
+if ("${SKBUILD_SABI_VERSION}" STREQUAL "")
+  set(CYTHON_MIN "0.29")
+else()
+  set(CYTHON_MIN "3.1")
+endif()
+
+find_package(Cython ${CYTHON_MIN} MODULE REQUIRED)
+include(UseCython)
+
+if ("${CYTHON_VERSION}" VERSION_LESS "${CYTHON_MIN}")
+  message(FATAL_ERROR "Cython version found: ${CYTHON_VERSION}. Minimum required: ${CYTHON_MIN}")
+endif()
 
 if (MINGW AND ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8"))
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DMS_WIN64")
@@ -56,7 +71,6 @@ foreach (PKG MPC MPFR PIRANHA FLINT LLVM)
         set(HAVE_SYMENGINE_${PKG} False)
     endif()
 endforeach()
-option(SYMENGINE_INSTALL_PY_FILES "Install python files" ON)
 
 message("CMAKE_SYSTEM_PROCESSOR              : ${CMAKE_SYSTEM_PROCESSOR}")
 message("CMAKE_BUILD_TYPE                    : ${CMAKE_BUILD_TYPE}")
@@ -69,9 +83,5 @@ message("HAVE_SYMENGINE_PIRANHA              : ${HAVE_SYMENGINE_PIRANHA}")
 message("HAVE_SYMENGINE_FLINT                : ${HAVE_SYMENGINE_FLINT}")
 message("HAVE_SYMENGINE_LLVM                 : ${HAVE_SYMENGINE_LLVM}")
 message("HAVE_SYMENGINE_LLVM_LONG_DOUBLE     : ${HAVE_SYMENGINE_LLVM_LONG_DOUBLE}")
-message("SYMENGINE_COPY_EXTENSION            : ${SYMENGINE_COPY_EXTENSION}")
-
-message("Copying source of python wrappers into: ${CMAKE_CURRENT_BINARY_DIR}")
-file(COPY symengine/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/symengine)
 
 add_subdirectory(symengine)

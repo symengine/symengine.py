@@ -2,7 +2,7 @@
 
 # symengine's bin/install_travis.sh will install miniconda
 
-export conda_pkgs="python=${PYTHON_VERSION} pip pytest setuptools gmp mpfr"
+export conda_pkgs="python=${PYTHON_VERSION} pip pytest python-build scikit-build-core ninja cython-cmake cython setuptools-scm gmp mpfr"
 
 if [[ "${WITH_NUMPY}" != "no" ]]; then
     export conda_pkgs="${conda_pkgs} numpy";
@@ -31,7 +31,7 @@ if [[ "${WITH_SAGE}" == "yes" ]]; then
     export conda_pkgs="${conda_pkgs} sage=8.1";
 fi
 
-conda install -q ${conda_pkgs} "cython>=0.29.24"
+conda install -q ${conda_pkgs}
 
 if [[ "${WITH_SYMPY}" != "no" ]]; then
     pip install sympy;

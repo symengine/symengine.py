@@ -5,16 +5,17 @@ set -e
 # Echo each command
 set -x
 
-python setup.py sdist
+python -m build . --sdist
 mkdir dist-extract
 cd dist-extract
 tar -xvf ../dist/symengine-*.tar.gz
 cd symengine-*
 
-# Build inplace so that nosetests can be run inside source directory
-python3 setup.py install build_ext --inplace --symengine-dir=$our_install_dir
-
-if [[ "${SYMENGINE_PY_LIMITED_API:-}" != "" ]]; then
+# Build inplace
+if [[ "${SYMENGINE_PY_LIMITED_API:-}" == "" ]]; then
+  python3 -m pip install -e . -vv -Ccmake.define.SymEngine_DIR=$our_install_dir
+else
+  python3 -m pip install -e . -vv -Ccmake.define.SymEngine_DIR=$our_install_dir -Cwheel.py-api="cp${SYMENGINE_PY_LIMITED_API/./}"
   python3 -m abi3audit --assume-minimum-abi3 ${SYMENGINE_PY_LIMITED_API} symengine/lib/symengine_wrapper.abi3.so -v
 fi
 
