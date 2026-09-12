@@ -9,7 +9,8 @@ from symengine.lib.symengine_wrapper import (Subs, Derivative, RealMPFR,
         KroneckerDelta, LeviCivita, erf, erfc, lowergamma, uppergamma,
         loggamma, beta, polygamma, sign, floor, ceiling, conjugate, And,
         Or, Not, Xor, Piecewise, Interval, EmptySet, FiniteSet, Contains,
-        Union, Complement, UniversalSet, Reals, Rationals, Integers)
+        Union, Complement, UniversalSet, Reals, Rationals, Integers,
+        PyFunction)
 import unittest
 
 # Note: We test _sympy_() for SymEngine -> SymPy conversion, as those are
@@ -854,3 +855,11 @@ def test_sympy_roundtrip():
     _check_sympy_roundtrip(x+y)
     _check_sympy_roundtrip(x**y)
     _check_sympy_roundtrip(d)
+
+
+@unittest.skipIf(not have_sympy, "SymPy not installed")
+def test_evalf_symbolic_pyfunction():
+    x = Symbol("x")
+    f = sympify(sympy.besselj(x, 1))
+    assert isinstance(f, PyFunction)
+    assert f.n() == f
