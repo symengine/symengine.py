@@ -213,6 +213,7 @@ cdef extern from "<symengine/number.h>" namespace "SymEngine":
         pass
     cdef cppclass NumberWrapper(Basic):
         pass
+    bool is_a_Number(const Basic &b) nogil
     cdef tribool is_zero(const Basic &x) nogil
     cdef tribool is_positive(const Basic &x) nogil
     cdef tribool is_negative(const Basic &x) nogil
