@@ -171,6 +171,8 @@ jobs:
       shell: bash -el {0}
       run: |
         source bin/test_symengine_unix.sh
+        pip install sphinx m2r2 sphinx-autodoc2 sphinx-book-theme
+        sphinx-build docs/ genDocs
       env:
         PYTEST_ADDOPTS: ${{ matrix.PYTEST_ADDOPTS }}
         USE_GLIBCXX_DEBUG: ${{ matrix.USE_GLIBCXX_DEBUG }}
@@ -205,6 +207,12 @@ jobs:
         BUILD_SHARED_LIBS: ${{ matrix.BUILD_SHARED_LIBS }}
         PYTHON_VERSION: ${{ matrix.PYTHON_VERSION }}
         SYMENGINE_PY_LIMITED_API: ${{ matrix.SYMENGINE_PY_LIMITED_API }}
+
+    - name: Generate documentation
+      shell: bash
+      run: |
+        pip install sphinx m2r2 sphinx-autodoc2 sphinx-book-theme
+        sphinx-build docs/ genDocs
 
     - name: Deploy Documentation
       if: ${{ (github.ref == 'refs/heads/main' && github.repository == 'Symengine/symengine.py') || (github.ref == 'refs/heads/master' && github.repository == 'Symengine/symengine.py')}}
