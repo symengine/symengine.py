@@ -31,14 +31,14 @@ jobs:
 
           - BUILD_TYPE: Debug
             WITH_BFD: yes
-            PYTHON_VERSION: '3.10'
+            PYTHON_VERSION: '3.14'
             TEST_SYMPY: yes
             OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Debug
             WITH_BFD: yes
-            PYTHON_VERSION: '3.9'
+            PYTHON_VERSION: '3.14'
             TEST_SYMPY: yes
             OS: ubuntu-22.04
             CC: gcc
@@ -70,13 +70,13 @@ jobs:
             CC: gcc
 
           - BUILD_TYPE: Release
-            PYTHON_VERSION: '3.9'
+            PYTHON_VERSION: '3.14'
             WITH_MPC: yes
             OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Release
-            PYTHON_VERSION: '3.9'
+            PYTHON_VERSION: '3.11'
             WITH_MPC: yes
             INTEGER_CLASS: flint
             WITH_FLINT: yes
@@ -84,7 +84,7 @@ jobs:
             CC: gcc
 
           #- BUILD_TYPE: Debug
-          #  PYTHON_VERSION: '3.9'
+          #  PYTHON_VERSION: '3.12'
           #  WITH_BFD: yes
           #  WITH_PIRANHA: yes
           #  OS: ubuntu-22.04
@@ -124,7 +124,7 @@ jobs:
             CC: clang
 
           - BUILD_TYPE: Release
-            PYTHON_VERSION: '3.9'
+            PYTHON_VERSION: '3.14'
             WITH_NUMPY: no
             OS: macos-15-intel
             CC: clang

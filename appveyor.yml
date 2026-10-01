@@ -10,7 +10,7 @@ environment:
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
       PLATFORM: "x64"
-      PYTHON_VERSION: 310-x64
+      PYTHON_VERSION: 314-x64
       CONDA_INSTALL_LOCN: C:\\Miniconda38-x64
       WITH_MPFR: yes
       WITH_MPC: yes
@@ -18,14 +18,14 @@ environment:
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
       PLATFORM: "Win32"
-      PYTHON_VERSION: 39
+      PYTHON_VERSION: 311
       CONDA_INSTALL_LOCN: C:\\Miniconda38-x64
       WITH_MPFR: yes
       WITH_MPC: yes
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
       PLATFORM: "x64"
-      PYTHON_VERSION: 310-x64
+      PYTHON_VERSION: 313-x64
       CONDA_INSTALL_LOCN: C:\\Miniconda38-x64
       WITH_MPFR: yes
       WITH_MPC: yes
@@ -37,7 +37,7 @@ environment:
     - BUILD_TYPE: "Release"
       COMPILER: MSVC15
       PLATFORM: "x64"
-      PYTHON_VERSION: 39-x64
+      PYTHON_VERSION: 314-x64
       WITH_SYMPY: no
       CONDA_INSTALL_LOCN: C:\\Miniconda38-x64
     - BUILD_TYPE: "Release"

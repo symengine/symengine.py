@@ -28,8 +28,8 @@ Install prerequisites.
 
 ```bash
 CMake       >= 3.21
-Python3     >= 3.9
-SymEngine   >= 0.14.0
+Python3     >= 3.11
+SymEngine   >= 0.15.0
 pip
 setuptools_scm           # will be automatically downloaded by pip
 scikit-build-core        # will be automatically downloaded by pip
