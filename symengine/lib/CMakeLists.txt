@@ -35,6 +35,12 @@ if ("${CYTHON_VERSION}" VERSION_GREATER_EQUAL "3.1")
   set(CYTHON_EXTRA_ARGS "-Xfreethreading_compatible=True")
 endif()
 
+foreach(pkg_dir ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/..)
+  if(NOT EXISTS ${pkg_dir}/__init__.py)
+    file(WRITE ${pkg_dir}/__init__.py "")
+  endif()
+endforeach()
+
 cython_transpile(
   ${CMAKE_CURRENT_BINARY_DIR}/symengine_wrapper.pyx
   LANGUAGE CXX
