@@ -17,10 +17,6 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(".."))
-
-import symengine
-
 # -- Project information -----------------------------------------------------
 
 project = 'symengine'
@@ -28,7 +24,7 @@ copyright = '2021, SymEngine development team <symengine@googlegroups.com>'
 author = 'SymEngine development team <symengine@googlegroups.com>'
 
 # The full version, including alpha/beta/rc tags
-release = symengine.__version__
+# release = symengine.__version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -46,9 +42,13 @@ extensions = [
     "sphinx.ext.duration",  # Shows times in the processing pipeline
     "sphinx.ext.mathjax",  # Need math support
     "sphinx.ext.githubpages",  # Puts the .nojekyll and CNAME files
-    "sphinxcontrib.apidoc",  # Automatically sets up sphinx-apidoc
     # "recommonmark", # Parses markdown
     "m2r2", # Parses markdown in rst
+    "autodoc2",
+]
+
+autodoc2_packages = [
+    "../symengine",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -87,4 +87,4 @@ html_theme_options = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# html_static_path = ['_static']
