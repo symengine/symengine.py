@@ -2900,8 +2900,13 @@ cdef PyObject* symengine_to_sympy(rcp_const_basic o1):
     return <PyObject*>(t)
 
 cdef RCP[const symengine.Number] sympy_eval(PyObject* o1, long bits):
+    cdef Basic X
     prec = max(1, int(round(bits/3.3219280948873626)-1))
-    cdef Number X = sympify((<object>o1).n(prec))
+    result = (<object>o1).n(prec)
+    X = sympify(result)
+    if not symengine.is_a_Number(deref(X.thisptr)):
+        raise NotImplementedError(
+            "expression cannot be evaluated to a number: %r" % (result,))
     return symengine.rcp_static_cast_Number(X.thisptr)
 
 cdef RCP[const symengine.Number] sage_eval(PyObject* o1, long bits):
