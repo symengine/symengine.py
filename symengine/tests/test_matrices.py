@@ -704,6 +704,7 @@ def test_immutablematrix():
     Y = ImmutableMatrix([[1, 2], [x, 4]])
     assert Y.subs(x, 3) == X
     assert Y.xreplace(x, 3) == X
+    assert Y.replace(x, 3) == X
 
     X = ImmutableMatrix([[1, 2], [3, 4]])
     Y = ImmutableMatrix([[5], [6]])

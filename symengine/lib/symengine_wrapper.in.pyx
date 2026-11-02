@@ -836,6 +836,79 @@ def load_basic(bytes s):
 
 repr_latex=[False]
 
+def _replace(expr, query, value, map, simultaneous, exact):
+    if not isinstance(query, type) and not callable(query):
+        _query = _sympify(query, False)
+        if _query is not None:
+            query = _query
+    if not isinstance(value, type) and not callable(value):
+        _value = _sympify(value, False)
+        if _value is not None:
+            value = _value
+
+    if isinstance(query, type):
+        _query = lambda e: isinstance(e, query)
+        if callable(value):
+            _value = lambda e, result: value(*e.args)
+        else:
+            raise TypeError(
+                "given a type, replace() expects another type or a callable")
+    elif isinstance(query, Basic):
+        # Without Wild support, a pattern matches only itself and the
+        # match dictionary is always empty.
+        _query = lambda e: {} if e == query else None
+        if isinstance(value, Basic):
+            _value = lambda e, result: value
+        elif callable(value):
+            _value = lambda e, result: value(**result)
+        else:
+            raise TypeError(
+                "given an expression, replace() expects another expression "
+                "or a callable")
+    elif callable(query):
+        _query = query
+        if callable(value):
+            _value = lambda e, result: value(e)
+        else:
+            raise TypeError(
+                "given a callable, replace() expects another callable")
+    else:
+        raise TypeError(
+            "first argument to replace() must be a type, an expression or "
+            "a callable")
+
+    mapping = {}
+
+    def rec_replace(e):
+        result = _query(e)
+        if result or result == {}:
+            v = _value(e, result)
+            if v is not None:
+                v = _sympify(v)
+                if v != e:
+                    if map:
+                        mapping[e] = v
+                    e = v
+        return e
+
+    def walk(rv):
+        args = rv.args
+        if args:
+            newargs = tuple([walk(a) for a in args])
+            if args != newargs:
+                rv = rv.func(*newargs)
+                if simultaneous:
+                    # if rv is something that was already matched (and
+                    # changed) then skip applying rec_replace again
+                    for i, a in enumerate(args):
+                        if rv == a and a != newargs[i]:
+                            return rv
+        return rec_replace(rv)
+
+    rv = walk(_sympify(expr))
+    return (rv, mapping) if map else rv
+
+
 cdef class Basic(object):
 
     def __str__(self):
@@ -1013,7 +1086,36 @@ cdef class Basic(object):
         cdef _DictBasic D = get_dict(*args)
         return c2py(symengine.xreplace(self.thisptr, D.c))
 
-    replace = xreplace
+    def replace(self, query, value, map=False, simultaneous=True, exact=None):
+        """
+        Replace matching subexpressions of ``self`` with ``value``.
+
+        Follows the semantics of SymPy's ``Basic.replace``:
+
+        1. ``query`` is a type and ``value`` is a type or a callable:
+           every instance of ``query`` is replaced by ``value(*expr.args)``.
+        2. ``query`` is an expression and ``value`` is an expression or a
+           callable: every subexpression equal to ``query`` is replaced by
+           ``value`` (or ``value()``). Wild patterns are not supported.
+        3. ``query`` and ``value`` are callables: every subexpression for
+           which ``query(expr)`` is true is replaced by ``value(expr)``.
+
+        The traversal is bottom-up. If ``map`` is True, also returns a
+        dictionary mapping each replaced subexpression to its replacement.
+        If ``simultaneous`` is False, replacements are allowed to be
+        matched again by ``query`` after their arguments change.
+
+        Examples
+        ========
+
+        >>> from symengine import symbols, sin, cos, Function
+        >>> x, y = symbols("x y")
+        >>> (sin(x) + cos(x)).replace(sin, cos)
+        2*cos(x)
+        >>> (x**2 + sin(x)).replace(lambda e: e.is_Pow, lambda e: e.args[0])
+        x + sin(x)
+        """
+        return _replace(self, query, value, map, simultaneous, exact)
 
     def msubs(Basic self not None, *args):
         cdef _DictBasic D = get_dict(*args)
@@ -3972,7 +4074,10 @@ cdef class DenseMatrixBase(MatrixBase):
         cdef _DictBasic D = get_dict(*args)
         return self.applyfunc(lambda x: x.xreplace(D))
 
-    replace = xreplace
+    def replace(self, query, value, map=False, simultaneous=True, exact=None):
+        return self.applyfunc(
+            lambda x: x.replace(query, value, map=map,
+                                simultaneous=simultaneous, exact=exact))
 
     @property
     def free_symbols(self):
