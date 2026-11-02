@@ -1,5 +1,6 @@
 #include "pywrapper.h"
 #include <symengine/serialize-cereal.h>
+#include <symengine/symengine_exception.h>
 
 #if PY_MAJOR_VERSION >= 3
 #define PyInt_FromLong PyLong_FromLong
@@ -243,7 +244,27 @@ RCP<const Basic> PyFunction::create(const vec_basic &x) const {
 }
 
 RCP<const Number> PyFunction::eval(long bits) const {
-    return pyfunction_class_->get_py_module()->eval_(pyobject_, bits);
+    RCP<const Number> result
+        = pyfunction_class_->get_py_module()->eval_(pyobject_, bits);
+    if (!result.is_null() && !PyErr_Occurred()) {
+        return result;
+    }
+
+    bool not_implemented = result.is_null();
+    if (PyErr_Occurred()) {
+        not_implemented
+            = PyErr_ExceptionMatches(PyExc_NotImplementedError) != 0;
+    }
+    PyErr_Clear();
+
+    if (not_implemented) {
+        // The Python function has no numerical value (e.g. it has free
+        // symbols). Signal the caller that it should stay unevaluated.
+        throw NotImplementedError(
+            "PyFunction cannot be evaluated to a number");
+    }
+
+    throw SymEngineException("Python function evaluation failed");
 }
 
 RCP<const Basic> PyFunction::diff_impl(const RCP<const Symbol> &s) const {
