@@ -16,7 +16,7 @@ if [[ "${SYMENGINE_PY_LIMITED_API:-}" == "" ]]; then
   python3 -m pip install -e . -vv -Ccmake.define.SymEngine_DIR=$our_install_dir
 else
   python3 -m pip install -e . -vv -Ccmake.define.SymEngine_DIR=$our_install_dir -Cwheel.py-api="cp${SYMENGINE_PY_LIMITED_API/./}"
-  python3 -m abi3audit --assume-minimum-abi3 ${SYMENGINE_PY_LIMITED_API} symengine/lib/symengine_wrapper.abi3.so -v
+  python3 -m abi3audit --assume-minimum-abi3 ${SYMENGINE_PY_LIMITED_API} symengine/lib/symengine_wrapper.abi3*.so -v
 fi
 
 # Test python wrappers

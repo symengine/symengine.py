@@ -9,7 +9,7 @@ jobs:
       matrix:
         include:
           - BUILD_TYPE: Release
-            PYTHON_VERSION: '3.13'
+            PYTHON_VERSION: '3.15'
             BUILD_SHARED_LIBS: yes
             SYMENGINE_PY_LIMITED_API: '3.11'
             OS: ubuntu-22.04
@@ -44,13 +44,13 @@ jobs:
             CC: gcc
 
           - BUILD_TYPE: Release
-            PYTHON_VERSION: '3.13'
+            PYTHON_VERSION: '3.15'
             BUILD_SHARED_LIBS: yes
             OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Release
-            PYTHON_VERSION: '3.13'
+            PYTHON_VERSION: '3.15'
             WITH_MPFR: yes
             INTEGER_CLASS: gmpxx
             WITH_NUMPY: no
@@ -58,14 +58,14 @@ jobs:
             CC: gcc
 
           - BUILD_TYPE: Release
-            PYTHON_VERSION: '3.13'
+            PYTHON_VERSION: '3.15'
             WITH_MPC: yes
             OS: ubuntu-22.04
             CC: gcc
 
           - BUILD_TYPE: Release
             WITH_MPFR: yes
-            PYTHON_VERSION: '3.13'
+            PYTHON_VERSION: '3.15'
             OS: ubuntu-22.04
             CC: gcc
 
@@ -91,14 +91,14 @@ jobs:
           #  CC: gcc
 
           - BUILD_TYPE: Debug
-            PYTHON_VERSION: '3.13'
+            PYTHON_VERSION: '3.15'
             WITH_BFD: yes
             BUILD_SHARED_LIBS: yes
             OS: ubuntu-22.04
             CC: clang
     
           - BUILD_TYPE: Release
-            PYTHON_VERSION: '3.13'
+            PYTHON_VERSION: '3.15'
             WITH_NUMPY: yes
             OS: ubuntu-22.04
             CC: clang
@@ -117,7 +117,7 @@ jobs:
             EXTRA_APT_PACKAGES: 'llvm-18'
 
           - BUILD_TYPE: Debug
-            PYTHON_VERSION: '3.13'
+            PYTHON_VERSION: '3.15'
             WITH_SCIPY: yes
             WITH_LLVM: 5.0
             OS: macos-15-intel
@@ -130,13 +130,13 @@ jobs:
             CC: clang
 
           - BUILD_TYPE: Debug
-            PYTHON_VERSION: '3.13'
+            PYTHON_VERSION: '3.15'
             WITH_NUMPY: no
             OS: macos-15-intel
             CC: gcc
 
           - BUILD_TYPE: Release
-            PYTHON_VERSION: '3.13'
+            PYTHON_VERSION: '3.15'
             OS: macos-15-intel
             CC: gcc
 
@@ -155,7 +155,7 @@ jobs:
 
     steps:
 
-    - uses: conda-incubator/setup-miniconda@v3
+    - uses: conda-incubator/setup-miniconda@v4
       if: matrix.MSYS_ENV == ''
       with:
         activate-environment: symengine
@@ -165,7 +165,7 @@ jobs:
         conda-remove-defaults: "true"
 
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
 
     - name: Build and test symengine
       shell: bash -el {0}

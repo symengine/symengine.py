@@ -31,7 +31,7 @@ if [[ "${WITH_SAGE}" == "yes" ]]; then
     export conda_pkgs="${conda_pkgs} sage=8.1";
 fi
 
-conda install -q ${conda_pkgs}
+conda install -q ${conda_pkgs} -c conda-forge -c conda-forge/label/python_rc
 
 if [[ "${WITH_SYMPY}" != "no" ]]; then
     pip install sympy;
