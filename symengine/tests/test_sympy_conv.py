@@ -863,3 +863,25 @@ def test_evalf_symbolic_pyfunction():
     f = sympify(sympy.besselj(x, 1))
     assert isinstance(f, PyFunction)
     assert f.n() == f
+
+
+@unittest.skipIf(not have_sympy, "SymPy not installed")
+def test_pyfunction_func():
+    class price(sympy.Function):
+        @staticmethod
+        def _imp_(a):
+            return 3 * a
+
+    x = Symbol("x")
+    y = Symbol("y")
+    p = sympify(price(sympy.Symbol("x")))
+    assert isinstance(p, PyFunction)
+    assert p.func.__name__ == "price"
+    assert p.func(*p.args) == p
+    # Rebuilding with new arguments keeps the wrapped SymPy class
+    for q in (p.func(y), p.subs(x, y),
+              sympify(price(sympy.floor(sympy.Symbol("y")))).replace(
+                  lambda e: isinstance(e, floor), lambda e: e.args[0])):
+        assert isinstance(q, PyFunction)
+        assert q == sympify(price(sympy.Symbol("y")))
+        assert type(q.pyobject())._imp_(2) == 6

@@ -1219,6 +1219,10 @@ cdef class Basic(object):
         return False
 
     @property
+    def is_Piecewise(self):
+        return False
+
+    @property
     def is_Equality(self):
         return False
 
@@ -1610,6 +1614,10 @@ eulergamma = EulerGamma()
 
 cdef class Boolean(Expr):
 
+    @property
+    def func(self):
+        return self.__class__
+
     def logical_not(self):
         return c2py(<rcp_const_basic>(deref(symengine.rcp_static_cast_Boolean(self.thisptr)).logical_not()))
 
@@ -1710,10 +1718,26 @@ class Xor(Boolean):
 
 
 class Relational(Boolean):
+    """A relation ``lhs rel_op rhs``.
+
+    ``lhs`` and ``rhs`` are the sides as stored, which can differ from the
+    order they were given in: the sides of an ``Equality`` or ``Unequality``
+    are kept in a canonical order, and there are no ``GreaterThan`` and
+    ``StrictGreaterThan`` classes, so ``Ge(a, b)`` is ``LessThan(b, a)`` and
+    ``Gt(a, b)`` is ``StrictLessThan(b, a)``, whose ``lhs`` is ``b``.
+    """
 
     @property
     def is_Relational(self):
         return True
+
+    @property
+    def lhs(self):
+        return self.args[0]
+
+    @property
+    def rhs(self):
+        return self.args[1]
 
     def __bool__(self):
         raise TypeError("cannot determine truth value of Relational")
@@ -1723,6 +1747,8 @@ Rel = Relational
 
 
 class Equality(Relational):
+
+    rel_op = "=="
 
     def __new__(cls, *args):
         return eq(*args)
@@ -1741,15 +1767,13 @@ class Equality(Relational):
     def is_Equality(self):
         return True
 
-    @property
-    def func(self):
-        return self.__class__
-
 
 Eq = Equality
 
 
 class Unequality(Relational):
+
+    rel_op = "!="
 
     def __new__(cls, *args):
         return ne(*args)
@@ -1764,15 +1788,13 @@ class Unequality(Relational):
         s = self.args_as_sage()
         return sage.ne(*s)
 
-    @property
-    def func(self):
-        return self.__class__
-
 
 Ne = Unequality
 
 
 class LessThan(Relational):
+
+    rel_op = "<="
 
     def __new__(cls, *args):
         return le(*args)
@@ -1792,6 +1814,8 @@ Le = LessThan
 
 
 class StrictLessThan(Relational):
+
+    rel_op = "<"
 
     def __new__(cls, *args):
         return lt(*args)
@@ -1858,6 +1882,39 @@ cdef class Number(Expr):
     @property
     def imag(self):
         return S.Zero
+
+    def round(self, n=None):
+        """Round to the nearest Integer, ties to even, or, if ``n`` is given,
+        to ``n`` decimal places, keeping the kind of number (an exact Rational
+        stays exact). Like SymPy's ``Number.round``.
+
+        A complex number is rounded in its real and imaginary parts; infinities
+        and nan are returned unchanged.
+        """
+        if isinstance(self, (Infinity, NegativeInfinity, ComplexInfinity, NaN)):
+            return self
+        if self.is_complex:
+            return self.real_part().round(n) + I * self.imaginary_part().round(n)
+        if n is not None:
+            scale = Integer(10) ** int(n)
+            result = (self * scale).round() / scale
+            if isinstance(self, Float):
+                bits = int(self.get_prec()) if isinstance(self, RealMPFR) else 53
+                return evalf(result, bits, real=True)
+            return result
+        floored = floor(self)
+        excess = self - floored
+        half = Rational(1, 2)
+        if excess > half:
+            return floored + 1
+        if excess < half:
+            return floored
+        # A tie (compared by value: a Float 0.5 is not equal to 1/2 as an
+        # expression) goes to the even neighbour.
+        return floored + floored % 2
+
+    def __round__(self, ndigits=None):
+        return self.round(ndigits)
 
 
 class Rational(Number):
@@ -2545,9 +2602,9 @@ class Function(Expr):
     def is_Function(self):
         return True
 
-    def func(self, *values):
-        import sys
-        return getattr(sys.modules[__name__], self.__class__.__name__.lower())(*values)
+    @property
+    def func(self):
+        return self.__class__
 
 
 class OneArgFunction(Function):
@@ -2973,17 +3030,31 @@ class FunctionSymbol(Function):
         name = self.get_name()
         return sage.function(name)(*self.args_as_sage())
 
-    def func(self, *values):
-        name = self.get_name()
-        return function_symbol(name, *values)
+    @property
+    def func(self):
+        # Like SymPy's, the undefined function itself: f(x).func is f.
+        return UndefFunction(self.get_name())
 
 
 class UndefFunction(object):
     def __init__(self, name):
         self.name = name
 
+    @property
+    def __name__(self):
+        return self.name
+
     def __call__(self, *values):
         return function_symbol(self.name, *values)
+
+    def __eq__(self, other):
+        return isinstance(other, UndefFunction) and self.name == other.name
+
+    def __hash__(self):
+        return hash((UndefFunction, self.name))
+
+    def __repr__(self):
+        return self.name
 
 
 cdef rcp_const_basic pynumber_to_symengine(PyObject* o1):
@@ -3079,8 +3150,41 @@ class PyFunction(FunctionSymbol):
         import sage.all as sage
         return sage.SR(self.pyobject())
 
+    @property
+    def func(self):
+        """Rebuilds the wrapped object with new arguments through its own
+        ``func``, so the result is again a PyFunction of the same class."""
+        pyfunc = getattr(self.pyobject(), "func", None)
+        if pyfunc is None:
+            return UndefFunction(self.get_name())
+        return _PyFunctionFunc(pyfunc)
+
     def pyobject(Basic self):
         return <object>deref(symengine.rcp_static_cast_PyFunction(self.thisptr)).get_py_object()
+
+class _PyFunctionFunc(object):
+    """``func`` of a PyFunction: its wrapped (SymPy) class, applied to
+    SymEngine arguments and converted back."""
+
+    def __init__(self, pyfunc):
+        self.pyfunc = pyfunc
+
+    @property
+    def __name__(self):
+        return self.pyfunc.__name__
+
+    def __call__(self, *values):
+        return sympify(self.pyfunc(*[_sympify(v)._sympy_() for v in values]))
+
+    def __eq__(self, other):
+        return isinstance(other, _PyFunctionFunc) and self.pyfunc == other.pyfunc
+
+    def __hash__(self):
+        return hash((_PyFunctionFunc, self.pyfunc))
+
+    def __repr__(self):
+        return repr(self.pyfunc)
+
 
 cdef class PyFunctionClass(object):
 
@@ -3231,8 +3335,23 @@ class Subs(Expr):
 
 class Piecewise(Function):
 
-    def __new__(self, *args):
+    def __new__(cls, *args):
+        # Also accept the flattened form of ``args`` (expr1, cond1, expr2,
+        # cond2, ...), so that ``p.func(*p.args) == p``.
+        if args and not isinstance(args[0], collections.abc.Iterable):
+            if len(args) % 2:
+                raise TypeError("Piecewise takes (expr, cond) pairs or an even "
+                                "number of arguments alternating expr and cond")
+            args = zip(args[0::2], args[1::2])
         return piecewise(*args)
+
+    @property
+    def func(self):
+        return self.__class__
+
+    @property
+    def is_Piecewise(self):
+        return True
 
     def _sympy_(self):
         import sympy

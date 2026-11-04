@@ -54,6 +54,22 @@ def test_f():
     assert f == g
 
 
+def test_func():
+    x = Symbol("x")
+    y = Symbol("y")
+    for e in (sin(x), log(x), log(x, 2), floor(x), ceiling(x), LambertW(x),
+              KroneckerDelta(x, y), zeta(x, y), exp(x), sign(x)):
+        assert e.func is type(e)
+        assert e.func(*e.args) == e
+    # An undefined function's func is the function itself, as in SymPy
+    f = function_symbol("f", x, y)
+    assert f.func(*f.args) == f
+    assert f.func == function_symbol("f", y).func
+    assert f.func != function_symbol("g", x).func
+    assert f.func.__name__ == "f"
+    assert f.func(y) == function_symbol("f", y)
+
+
 def test_derivative():
     x = Symbol("x")
     y = Symbol("y")
