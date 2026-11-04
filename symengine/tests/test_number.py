@@ -1,6 +1,8 @@
+from fractions import Fraction
+
 from symengine.test_utilities import raises
 
-from symengine import Integer, I, S, Symbol, pi, Rational
+from symengine import Integer, I, S, Symbol, pi, Rational, RealDouble, oo, nan
 from symengine.lib.symengine_wrapper import (perfect_power, is_square, integer_nthroot)
 
 
@@ -185,3 +187,22 @@ def test_is_nonnegative():
 def test_is_real():
     assert Rational(1, 2).is_real
     assert Symbol('x').is_real is None
+
+
+def test_round():
+    # To the nearest Integer, ties to even, like round() and SymPy
+    for v in (0.5, 1.5, 2.5, -0.5, -1.5, -2.5, 2.4999, 2.6, -2.6, 7.0):
+        assert RealDouble(v).round() == round(v)
+        assert RealDouble(v).round().is_Integer
+    for p, q in ((5, 2), (7, 2), (-5, 2), (-7, 2), (1, 3), (-2, 3), (4, 1)):
+        assert Rational(p, q).round() == round(Fraction(p, q))
+        assert Rational(p, q).round().is_Integer
+    assert round(Rational(5, 2)) == 2
+    # To n decimal places, keeping the kind of number
+    assert Rational(7, 3).round(2) == Rational(233, 100)
+    assert RealDouble(2.345).round(1) == RealDouble(2.3)
+    assert RealDouble(2.345).round(1).is_Float
+    assert Integer(1250).round(-2) == 1200
+    assert (Rational(5, 2) + I * Rational(7, 2)).round() == 2 + 4 * I
+    assert oo.round() == oo
+    assert nan.round() == nan
