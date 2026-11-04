@@ -2602,9 +2602,9 @@ class Function(Expr):
     def is_Function(self):
         return True
 
-    def func(self, *values):
-        import sys
-        return getattr(sys.modules[__name__], self.__class__.__name__.lower())(*values)
+    @property
+    def func(self):
+        return self.__class__
 
 
 class OneArgFunction(Function):
@@ -3030,17 +3030,31 @@ class FunctionSymbol(Function):
         name = self.get_name()
         return sage.function(name)(*self.args_as_sage())
 
-    def func(self, *values):
-        name = self.get_name()
-        return function_symbol(name, *values)
+    @property
+    def func(self):
+        # Like SymPy's, the undefined function itself: f(x).func is f.
+        return UndefFunction(self.get_name())
 
 
 class UndefFunction(object):
     def __init__(self, name):
         self.name = name
 
+    @property
+    def __name__(self):
+        return self.name
+
     def __call__(self, *values):
         return function_symbol(self.name, *values)
+
+    def __eq__(self, other):
+        return isinstance(other, UndefFunction) and self.name == other.name
+
+    def __hash__(self):
+        return hash((UndefFunction, self.name))
+
+    def __repr__(self):
+        return self.name
 
 
 cdef rcp_const_basic pynumber_to_symengine(PyObject* o1):
@@ -3136,8 +3150,41 @@ class PyFunction(FunctionSymbol):
         import sage.all as sage
         return sage.SR(self.pyobject())
 
+    @property
+    def func(self):
+        """Rebuilds the wrapped object with new arguments through its own
+        ``func``, so the result is again a PyFunction of the same class."""
+        pyfunc = getattr(self.pyobject(), "func", None)
+        if pyfunc is None:
+            return UndefFunction(self.get_name())
+        return _PyFunctionFunc(pyfunc)
+
     def pyobject(Basic self):
         return <object>deref(symengine.rcp_static_cast_PyFunction(self.thisptr)).get_py_object()
+
+class _PyFunctionFunc(object):
+    """``func`` of a PyFunction: its wrapped (SymPy) class, applied to
+    SymEngine arguments and converted back."""
+
+    def __init__(self, pyfunc):
+        self.pyfunc = pyfunc
+
+    @property
+    def __name__(self):
+        return self.pyfunc.__name__
+
+    def __call__(self, *values):
+        return sympify(self.pyfunc(*[_sympify(v)._sympy_() for v in values]))
+
+    def __eq__(self, other):
+        return isinstance(other, _PyFunctionFunc) and self.pyfunc == other.pyfunc
+
+    def __hash__(self):
+        return hash((_PyFunctionFunc, self.pyfunc))
+
+    def __repr__(self):
+        return repr(self.pyfunc)
+
 
 cdef class PyFunctionClass(object):
 
