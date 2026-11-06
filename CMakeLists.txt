@@ -9,18 +9,25 @@ endif()
 
 project(${SKBUILD_PROJECT_NAME} LANGUAGES C CXX)
 
-set(CMAKE_PREFIX_PATH ${SymEngine_DIR} ${CMAKE_PREFIX_PATH})
+option(USE_SYSTEM_SYMENGINE
+       "Use an installed SymEngine instead of building it from source" ON)
 
 include(GNUInstallDirs)
 
-find_package(SymEngine 0.15.0 REQUIRED CONFIG
-             PATH_SUFFIXES lib/cmake/symengine cmake/symengine CMake/)
-message("SymEngine_DIR : " ${SymEngine_DIR})
-message("SymEngine Version : " ${SymEngine_VERSION})
-set(CMAKE_BUILD_TYPE ${SYMENGINE_BUILD_TYPE})
-set(CMAKE_CXX_FLAGS_RELEASE ${SYMENGINE_CXX_FLAGS_RELEASE})
-set(CMAKE_CXX_FLAGS_DEBUG ${SYMENGINE_CXX_FLAGS_DEBUG})
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SYMENGINE_CXX_FLAGS}")
+if (USE_SYSTEM_SYMENGINE)
+  set(CMAKE_PREFIX_PATH ${SymEngine_DIR} ${CMAKE_PREFIX_PATH})
+  find_package(SymEngine 0.15.0 REQUIRED CONFIG
+               PATH_SUFFIXES lib/cmake/symengine cmake/symengine CMake/)
+  message("SymEngine_DIR : " ${SymEngine_DIR})
+  message("SymEngine Version : " ${SymEngine_VERSION})
+  set(CMAKE_BUILD_TYPE ${SYMENGINE_BUILD_TYPE})
+  set(CMAKE_CXX_FLAGS_RELEASE ${SYMENGINE_CXX_FLAGS_RELEASE})
+  set(CMAKE_CXX_FLAGS_DEBUG ${SYMENGINE_CXX_FLAGS_DEBUG})
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SYMENGINE_CXX_FLAGS}")
+else()
+  include(cmake/ExternalSymEngine.cmake)
+  message("SymEngine URL : " ${SYMENGINE_URL})
+endif()
 
 find_package(
   Python
