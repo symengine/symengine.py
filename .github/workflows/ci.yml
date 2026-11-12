@@ -119,7 +119,7 @@ jobs:
           - BUILD_TYPE: Debug
             PYTHON_VERSION: '3.13'
             WITH_SCIPY: yes
-            WITH_LLVM: 5.0
+            WITH_LLVM: 9.0
             OS: macos-15-intel
             CC: clang
 
