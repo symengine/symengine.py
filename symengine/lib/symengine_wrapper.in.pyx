@@ -1891,27 +1891,10 @@ cdef class Number(Expr):
         A complex number is rounded in its real and imaginary parts; infinities
         and nan are returned unchanged.
         """
-        if isinstance(self, (Infinity, NegativeInfinity, ComplexInfinity, NaN)):
-            return self
-        if self.is_complex:
-            return self.real_part().round(n) + I * self.imaginary_part().round(n)
-        if n is not None:
-            scale = Integer(10) ** int(n)
-            result = (self * scale).round() / scale
-            if isinstance(self, Float):
-                bits = int(self.get_prec()) if isinstance(self, RealMPFR) else 53
-                return evalf(result, bits, real=True)
-            return result
-        floored = floor(self)
-        excess = self - floored
-        half = Rational(1, 2)
-        if excess > half:
-            return floored + 1
-        if excess < half:
-            return floored
-        # A tie (compared by value: a Float 0.5 is not equal to 1/2 as an
-        # expression) goes to the even neighbour.
-        return floored + floored % 2
+        cdef RCP[const symengine.Number] x = symengine.rcp_static_cast_Number(self.thisptr)
+        if n is None:
+            return c2py(<rcp_const_basic>(symengine.number_round(deref(x))))
+        return c2py(<rcp_const_basic>(symengine.number_round(deref(x), int(n))))
 
     def __round__(self, ndigits=None):
         return self.round(ndigits)

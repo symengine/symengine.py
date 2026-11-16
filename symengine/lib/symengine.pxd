@@ -220,6 +220,8 @@ cdef extern from "<symengine/number.h>" namespace "SymEngine":
     cdef tribool is_nonnegative(const Basic &x) nogil
     cdef tribool is_nonpositive(const Basic &x) nogil
     cdef tribool is_real(const Basic &x) nogil
+    RCP[const Number] number_round "SymEngine::round"(const Number &x) nogil except +
+    RCP[const Number] number_round "SymEngine::round"(const Number &x, long n) nogil except +
 
 cdef extern from "pywrapper.h" namespace "SymEngine":
     cdef cppclass PyNumber(NumberWrapper):
