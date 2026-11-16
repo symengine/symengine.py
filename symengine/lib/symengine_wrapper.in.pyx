@@ -3113,6 +3113,14 @@ cdef class PyNumber(Number):
     def pyobject(self):
         return <object>deref(symengine.rcp_static_cast_PyNumber(self.thisptr)).get_py_object()
 
+    def round(self, n=None):
+        # SymEngine's round only knows its own number types, so round the
+        # wrapped object with its own __round__.
+        obj = self.pyobject()
+        if n is None:
+            return sympify(round(obj))
+        return sympify(round(obj, int(n)))
+
 
 class PyFunction(FunctionSymbol):
 

@@ -809,6 +809,17 @@ def test_pynumber():
 
 
 @unittest.skipIf(not have_sympy, "SymPy not installed")
+def test_pynumber_round():
+    # Rounded by the wrapped object, not SymEngine
+    from symengine.lib.symengine_wrapper import sympy_module
+    assert PyNumber(sympy.Float(2.7), sympy_module).round() == 3
+    assert PyNumber(sympy.Float(2.5), sympy_module).round() == 2
+    assert round(PyNumber(sympy.Float(2.25), sympy_module), 1) == \
+        sympify(sympy.Float(2.25).round(1))
+    assert PyNumber(sympy.nan, sympy_module).round() == nan
+
+
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_construct_dense_matrix():
     # Test for issue #347
     A = sympy.Matrix([[1, 2], [3, 5]])
