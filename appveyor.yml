@@ -56,7 +56,7 @@ install:
 - set "CONDA_DEPS=mpir=3.0.0 vc=14"
 - if [%WITH_MPFR%]==[yes] set "CONDA_DEPS=%CONDA_DEPS% mpfr=3.1.5"
 - if [%WITH_MPC%]==[yes] set "CONDA_DEPS=%CONDA_DEPS% mpc=1.0.3"
-- if [%WITH_LLVM%]==[yes] set "CONDA_DEPS=%CONDA_DEPS% llvmdev=9.0"
+- if [%WITH_LLVM%]==[yes] set "CONDA_DEPS=%CONDA_DEPS% llvmdev=9.0 zlib"
 - set "CONDA_DEPS=%CONDA_DEPS% -c conda-forge"
 - if [%BUILD_TYPE%]==[Debug] set "CONDA_DEPS=%CONDA_DEPS% -c symengine/label/debug"
 - conda create -n deps --yes %CONDA_DEPS%
