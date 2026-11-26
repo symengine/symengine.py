@@ -809,6 +809,17 @@ def test_pynumber():
 
 
 @unittest.skipIf(not have_sympy, "SymPy not installed")
+def test_pynumber_round():
+    # Rounded by the wrapped object, not SymEngine
+    from symengine.lib.symengine_wrapper import sympy_module
+    assert PyNumber(sympy.Float(2.7), sympy_module).round() == 3
+    assert PyNumber(sympy.Float(2.5), sympy_module).round() == 2
+    assert round(PyNumber(sympy.Float(2.25), sympy_module), 1) == \
+        sympify(sympy.Float(2.25).round(1))
+    assert PyNumber(sympy.nan, sympy_module).round() == nan
+
+
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_construct_dense_matrix():
     # Test for issue #347
     A = sympy.Matrix([[1, 2], [3, 5]])
@@ -863,3 +874,25 @@ def test_evalf_symbolic_pyfunction():
     f = sympify(sympy.besselj(x, 1))
     assert isinstance(f, PyFunction)
     assert f.n() == f
+
+
+@unittest.skipIf(not have_sympy, "SymPy not installed")
+def test_pyfunction_func():
+    class price(sympy.Function):
+        @staticmethod
+        def _imp_(a):
+            return 3 * a
+
+    x = Symbol("x")
+    y = Symbol("y")
+    p = sympify(price(sympy.Symbol("x")))
+    assert isinstance(p, PyFunction)
+    assert p.func.__name__ == "price"
+    assert p.func(*p.args) == p
+    # Rebuilding with new arguments keeps the wrapped SymPy class
+    for q in (p.func(y), p.subs(x, y),
+              sympify(price(sympy.floor(sympy.Symbol("y")))).replace(
+                  lambda e: isinstance(e, floor), lambda e: e.args[0])):
+        assert isinstance(q, PyFunction)
+        assert q == sympify(price(sympy.Symbol("y")))
+        assert type(q.pyobject())._imp_(2) == 6

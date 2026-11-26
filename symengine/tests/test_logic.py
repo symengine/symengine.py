@@ -33,6 +33,25 @@ def test_relationals():
     assert ne.func(*ne.args) == ne
 
 
+def test_relational_attributes():
+    for rel, rel_op in ((Eq(x, y), "=="), (Ne(x, y), "!="), (Le(x, y), "<="),
+                        (Lt(x, y), "<")):
+        assert rel.rel_op == rel_op
+        assert (rel.lhs, rel.rhs) == rel.args
+        assert rel.func(*rel.args) == rel
+    assert (Le(x, 1).lhs, Le(x, 1).rhs) == (x, 1)
+    # Ge and Gt are stored as LessThan and StrictLessThan with the sides swapped
+    assert (Ge(x, 1).rel_op, Ge(x, 1).lhs, Ge(x, 1).rhs) == ("<=", 1, x)
+    assert (Gt(x, 1).rel_op, Gt(x, 1).lhs, Gt(x, 1).rhs) == ("<", 1, x)
+    assert Ge(x, 1).func(*Ge(x, 1).args) == Ge(x, 1)
+
+
+def test_boolean_func():
+    for b in (And(x < 1, y < 1), Or(x < 1, y < 1), Not(Contains(x, Interval(0, 1))),
+              Xor(x < 1, y < 1), Contains(x, Interval(0, 1)), true, false):
+        assert b.func(*b.args) == b
+
+
 def test_rich_cmp():
     assert (x < y) == Lt(x, y)
     assert (x <= y) == Le(x, y)
@@ -115,6 +134,18 @@ def test_Piecewise():
     p = Piecewise((x, Contains(x, int1)), (y, Contains(x, int2)), (x + y, Contains(x, int3)))
     q = Piecewise((1, Contains(x, int1)), (0, Contains(x, int2)), (1, Contains(x, int3)))
     assert p.diff(x) == q
+
+
+def test_Piecewise_func():
+    p = Piecewise((x, x < 1), (y, True))
+    assert p.is_Piecewise
+    assert not x.is_Piecewise
+    assert p.func is Piecewise
+    assert p.args == (x, x < 1, y, true)
+    assert p.func(*p.args) == p
+    assert Piecewise(x, x < 1, y, True) == p
+    assert Piecewise(1, x < 1, 0, True) == Piecewise((1, x < 1), (0, True))
+    raises(TypeError, lambda: Piecewise(x, x < 1, y))
 
 
 def test_Contains():
