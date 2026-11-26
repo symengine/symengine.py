@@ -27,6 +27,7 @@ from .lib.symengine_wrapper import (
     Gt, Lt, And, Or, Not, Nand, Nor, Xor, Xnor, perfect_power, integer_nthroot,
     isprime, sqrt_mod, Expr, cse, count_ops, ccode, Piecewise, Contains, Interval, FiniteSet,
     linsolve,
+    AppliedUndef,
     FunctionSymbol,
     golden_ratio as GoldenRatio,
     catalan as Catalan,
@@ -38,7 +39,6 @@ from .functions import *
 from .printing import init_printing
 
 
-AppliedUndef = FunctionSymbol  # an alias
 EmptySet = wrapper.S.EmptySet
 UniversalSet = wrapper.S.UniversalSet
 Reals = wrapper.S.Reals

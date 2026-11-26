@@ -2951,7 +2951,7 @@ class Abs(OneArgFunction):
     def func(self):
         return self.__class__
 
-class FunctionSymbol(Function):
+class AppliedUndef(Function):
 
     def get_name(Basic self):
         cdef RCP[const symengine.FunctionSymbol] X = \
@@ -2976,6 +2976,9 @@ class FunctionSymbol(Function):
     def func(self, *values):
         name = self.get_name()
         return function_symbol(name, *values)
+
+
+FunctionSymbol = AppliedUndef  # an alias
 
 
 class UndefFunction(object):
