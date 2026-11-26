@@ -42,6 +42,36 @@ def test_conv1():
 
 
 @unittest.skipIf(not have_sympy, "SymPy not installed")
+def test_conv_symbol_assumptions():
+    import pickle
+    x = sympy.Symbol("x", real=True)
+    p = sympy.Symbol("p", positive=True)
+    t = sympy.Symbol("t")
+
+    # Plain SymPy symbols are still converted to plain SymEngine symbols
+    assert type(sympify(t)) == Symbol
+
+    xs = sympify(x)
+    assert isinstance(xs, Symbol)
+    assert xs.name == "x"
+    assert xs.is_real is True
+    assert sympify(p).is_positive is True
+    assert xs._sympy_() is x
+
+    # assumptions survive arithmetic and conversion back to SymPy
+    e = sympify(x**2 + p + t)
+    assert sympy.sympify(e) == x**2 + p + t
+    assert sympy.sympify(e - t - p) == x**2
+    assert sympy.sympify(e).subs(x, 2) == 4 + p + t
+    assert {s.is_real for s in e.free_symbols if s.name == "x"} == {True}
+
+    # pickling keeps the assumptions
+    e2 = pickle.loads(pickle.dumps(e))
+    assert e2 == e
+    assert sympy.sympify(e2) == x**2 + p + t
+
+
+@unittest.skipIf(not have_sympy, "SymPy not installed")
 def test_conv1b():
     x = sympy.Symbol("x")
     assert sympify(x) == Symbol("x")

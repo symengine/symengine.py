@@ -281,7 +281,9 @@ def sympy2symengine(a, raise_error=False):
     if isinstance(a, sympy.Dummy):
         return Dummy(a.name, a.dummy_index)
     elif isinstance(a, sympy.Symbol):
-        return Symbol(a.name)
+        if type(a) is sympy.Symbol and a.assumptions0 == {'commutative': True}:
+            return Symbol(a.name)
+        return SympySymbol(a)
     elif isinstance(a, sympy.Mul):
         return mul(*[sympy2symengine(x, raise_error) for x in a.args])
     elif isinstance(a, sympy.Add):
@@ -1438,6 +1440,60 @@ cdef class Symbol(Expr):
     @property
     def func(self):
         return self.__class__
+
+
+class SympySymbol(Symbol):
+    """
+    A Symbol that wraps a SymPy Symbol (or a subclass) so that information
+    not representable in SymEngine, like assumptions, is kept. Converting
+    back to SymPy returns the original SymPy object and assumption queries
+    like ``is_real`` are answered by SymPy.
+    """
+
+    def __new__(cls, sympy_obj):
+        return Symbol.__new__(cls, sympy_obj.name)
+
+    def __init__(self, sympy_obj):
+        self._sympy_obj = sympy_obj
+        super().__init__(sympy_obj.name, store_pickle=True)
+
+    def __reduce__(self):
+        return (SympySymbol, (self._sympy_obj,))
+
+    def _sympy_(self):
+        return self._sympy_obj
+
+    @property
+    def is_zero(self):
+        return self._sympy_obj.is_zero
+
+    @property
+    def is_positive(self):
+        return self._sympy_obj.is_positive
+
+    @property
+    def is_negative(self):
+        return self._sympy_obj.is_negative
+
+    @property
+    def is_nonpositive(self):
+        return self._sympy_obj.is_nonpositive
+
+    @property
+    def is_nonnegative(self):
+        return self._sympy_obj.is_nonnegative
+
+    @property
+    def is_real(self):
+        return self._sympy_obj.is_real
+
+    @property
+    def is_integer(self):
+        return self._sympy_obj.is_integer
+
+    @property
+    def is_complex(self):
+        return self._sympy_obj.is_complex
 
 
 cdef class Dummy(Symbol):
